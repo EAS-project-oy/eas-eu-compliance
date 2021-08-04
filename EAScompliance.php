@@ -903,7 +903,7 @@ function EAScompliance_settings(){
         , 'type' => 'text'
         , 'desc' => 'API URL'
         , 'id'   => 'easproj_eas_api_url'
-        , 'default' => 'https://internal1.easproject.com/api'
+        , 'default' => 'https://manager.easproject.com/api'
         )
     , 'AUTH_client_id' => array(
           'name' => 'EAS client ID'
