@@ -904,7 +904,7 @@ function EAScompliance_settings(){
         , 'desc' => 'API URL'
         , 'id'   => 'easproj_eas_api_url'
         , 'default' => 'https://manager.easproject.com/api'
-	, 'custom_attributes' => array('disabled'=>'')
+	
         )
     , 'AUTH_client_id' => array(
           'name' => 'EAS client ID'
