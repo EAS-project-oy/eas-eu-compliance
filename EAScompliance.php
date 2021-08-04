@@ -879,7 +879,7 @@ function EAScompliance_settings(){
        'section_title' => array(
                   'name'     => 'Settings'
                 , 'type'     => 'title'
-                , 'desc'     => '<img src="'.plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ).'" style="width: 300px;">'
+                , 'desc'     => '<img src="'.plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ).'" style="width: 150px;">'
             )
     , 'active' => array(
           'name' => 'Active'
