@@ -13,6 +13,9 @@
  */
 
 
+const DEVELOP = false;
+
+
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -79,7 +82,7 @@ function woocommerce_review_order_before_payment()
 		        <p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
 		        '
 		        .
-                (is_debug()?'
+                ((is_debug() and DEVELOP)?'
                     <h3>EAScompliance Debug</h3>
                     <p class="EAScompliance_debug">
                     <textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
@@ -109,7 +112,7 @@ function woocommerce_review_order_before_payment()
 };
 
 //// Debug Console
-if (is_debug()) {
+if (is_debug() and DEVELOP) {
     add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
     add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
 };
@@ -882,44 +885,44 @@ function EAScompliance_settings(){
                 , 'desc'     => '<img src="'.plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ).'" style="width: 150px;">'
             )
     , 'active' => array(
-          'name' => 'Active'
+          'name' => 'Enable/Disable'
         , 'type' => 'checkbox'
-        , 'desc' => 'Active'
+        , 'desc' => 'Enable EAS EU Compliance'
         , 'id'   => 'easproj_active'
         , 'default' => 'yes'
         )
     , 'debug' => array(
           'name' => 'Debug'
         , 'type' => 'checkbox'
-        , 'desc' => 'Debug'
+        , 'desc' => 'Log debug messages'
         , 'id'   => 'easproj_debug'
         , 'default' => 'yes'
         )
     , 'EAS_API_URL' => array(
-            'name' => 'EAS API Base URL'
+          'name' => 'EAS API Base URL'
         , 'type' => 'text'
         , 'desc' => 'API URL'
         , 'id'   => 'easproj_eas_api_url'
         , 'default' => 'https://internal1.easproject.com/api'
         )
     , 'AUTH_client_id' => array(
-            'name' => 'AUTH client id'
+          'name' => 'EAS client ID'
         , 'type' => 'text'
-        , 'desc' => 'OAUTH client_id'
+        , 'desc' => 'Use the client ID you received from EAS Project.'
         , 'id'   => 'easproj_auth_client_id'
         , 'default' => 'ZHNhZHNhZmE='
         )
     , 'AUTH_client_secret' => array(
-          'name' => 'AUTH client secret'
+          'name' => 'EAS client secret'
         , 'type' => 'password'
-        , 'desc' => 'OAUTH client_secret<br>Please request your API Key here: <a href="https://easproject.com/about-us/#contactus">https://easproject.com/about-us/#contactus</a>'
+        , 'desc' => 'Use the client ID you received from EAS Project.<br>Please request your API Key here: <a href="https://easproject.com/about-us/#contactus">https://easproject.com/about-us/#contactus</a>'
         , 'id'   => 'easproj_auth_client_secret'
         , 'default' => 'af14516a-c224-4a66-8f43-6640e7a709fe'
         )
     , 'language' => array(
           'name' => 'Language'
         , 'type' => 'select'
-        , 'desc' => 'EAScompliance language'
+        , 'desc' => 'Choose language for user interface of EAS EU compliance'
         , 'id'   => 'easproj_language'
         , 'default' => 'EN'
         , 'options' => array('EN', 'RU')
@@ -932,13 +935,13 @@ function EAScompliance_settings(){
         , 'options' => $shipping_methods
         )
     , 'shipping_methods_latest' => array(
-          'name' => 'Shipping methods latest'
+          'name' => ''
         , 'type' => 'multiselect'
-        , 'desc' => 'Latest saved shipping methods'
+        , 'desc' => ''
         , 'id'   => 'easproj_shipping_methods_latest'
         , 'options' => $shipping_methods
 //        , 'default' => array_keys($shipping_methods)
-        , 'css' => 'background-color: grey;'
+        , 'css' => 'background-color: grey;display:none'
         , 'value' => array_keys($shipping_methods)
         )
     , 'HSCode_field' => array(
