@@ -2,7 +2,11 @@
 
 /**
  * Plugin Name: EAS EU compliance
- * Description: European Union customs duties calculation and collection
+ * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
+ * Author: EAS project
+ * Author URI: https://easproject.com/about-us/
+ * Developer: EAS project
+ * Developer URI: https://easproject.com/about-us/
  * Version: 1.0.5
  * WC requires at least: 4.8.0
  * WC tested up to: 5.5.1
@@ -875,6 +879,7 @@ function EAScompliance_settings(){
        'section_title' => array(
                   'name'     => 'Settings'
                 , 'type'     => 'title'
+                , 'desc'     => '<img src="'.plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ).'" style="width: 300px;">'
             )
     , 'active' => array(
           'name' => 'Active'
