@@ -904,20 +904,21 @@ function EAScompliance_settings(){
         , 'desc' => 'API URL'
         , 'id'   => 'easproj_eas_api_url'
         , 'default' => 'https://manager.easproject.com/api'
+	, 'custom_attributes' => array('disabled'=>'')
         )
     , 'AUTH_client_id' => array(
           'name' => 'EAS client ID'
         , 'type' => 'text'
         , 'desc' => 'Use the client ID you received from EAS Project.'
         , 'id'   => 'easproj_auth_client_id'
-        , 'default' => 'ZHNhZHNhZmE='
+     
         )
     , 'AUTH_client_secret' => array(
           'name' => 'EAS client secret'
         , 'type' => 'password'
         , 'desc' => 'Use the client ID you received from EAS Project.<br>Please request your API Key here: <a href="https://easproject.com/about-us/#contactus">https://easproject.com/about-us/#contactus</a>'
         , 'id'   => 'easproj_auth_client_secret'
-        , 'default' => 'af14516a-c224-4a66-8f43-6640e7a709fe'
+        
         )
     , 'language' => array(
           'name' => 'Language'
