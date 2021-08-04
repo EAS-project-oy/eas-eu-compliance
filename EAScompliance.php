@@ -9,7 +9,7 @@
  * Developer URI: https://easproject.com/about-us/
  * Version: 1.0.5
  * WC requires at least: 4.8.0
- * WC tested up to: 5.5.1
+ * WC tested up to: 5.5.2
  */
 
 
