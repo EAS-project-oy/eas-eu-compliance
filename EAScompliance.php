@@ -584,8 +584,8 @@ function EAScompliance_redirect_confirm() {
         global $woocommerce;
         $cart = WC()->cart;
 
+        $payload_item_k = 0;
         foreach($woocommerce->cart->cart_contents as $k => &$item) {
-            $payload_item_k = array_search($k, array_column($payload_items, 'item_id'));
             $payload_item = $payload_items[$payload_item_k];
 
             $tax_rates = WC_Tax::get_rates();
@@ -593,6 +593,7 @@ function EAScompliance_redirect_confirm() {
 
             $item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
             $item['EAScompliance ITEM'] = $payload_item;
+            $payload_item_k += 1;
         }
 
 //        throw new Exception('debug');
@@ -799,7 +800,7 @@ function woocommerce_checkout_create_order($order)
     $order->add_meta_data("easproj_payload", $payload , true);
 
     // saving token to notify EAS during order status change
-    $order->add_meta_data('easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
+    $order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
 
 }
 
@@ -816,11 +817,11 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
         throw new Exception($errstr);
     });
     try {
-        if (!($status_from == 'pending' and $status_to == 'processing' and !($order->get_meta('easproj_payment_processed')=='yes')))
+        if (!($status_from == 'pending' and $status_to == 'processing' and !($order->get_meta('_easproj_payment_processed')=='yes')))
             return;
 
         $auth_token =             get_oauth_token();
-        $confirmation_token = $order->get_meta('easproj_token');
+        $confirmation_token = $order->get_meta('_easproj_token');
 
         $payment_jreq = array('token'=>$confirmation_token, 'checkout_payment_id' =>'order_'.$order_id);
 
@@ -851,7 +852,7 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
             throw new Exception($http_response_header[0]. '\n\n'.$payment_body);
         }
 
-        $order->add_meta_data('easproj_payment_processed', 'yes', true);
+        $order->add_meta_data('_easproj_payment_processed', 'yes', true);
         $order->save();
     }
     catch (Exception $ex) {
