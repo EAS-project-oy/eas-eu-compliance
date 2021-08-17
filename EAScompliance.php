@@ -308,10 +308,9 @@ function make_eas_api_request_json()
         $product_id = $item['product_id'];
         $product = wc_get_product( $product_id );
 
-
-        $location_warehouse_country = array_get($countries, $product->get_attribute('easproj_warehouse_country'), '');
-        $originating_country = array_get($countries, $product->get_attribute('easproj_originating_country'), '');
-        $seller_registration_country = array_get($countries, $product->get_attribute('easproj_seller_reg_country'), '');
+        $location_warehouse_country = array_get($countries, $product->get_attribute(woocommerce_settings_get_option_sql('easproj_warehouse_country')), '');
+        $originating_country = array_get($countries, $product->get_attribute(woocommerce_settings_get_option_sql('easproj_originating_country')), '');
+        $seller_registration_country = array_get($countries, $product->get_attribute(woocommerce_settings_get_option_sql('easproj_seller_reg_country')), '');
 
         $items[] = [
             'short_description' => $product->get_name()
@@ -320,7 +319,7 @@ function make_eas_api_request_json()
             , 'quantity' => $item['quantity']
             , 'cost_provided_by_em' => floatval($product->get_price())
             , 'weight' => $product->get_weight() == '' ? 0 : floatval( $product->get_weight() )
-            , 'hs6p_received' => $product->get_attribute(WC_Admin_Settings::get_option('easproj_hs6p_received'))
+            , 'hs6p_received' => $product->get_attribute(woocommerce_settings_get_option_sql('easproj_hs6p_received'))
             // DEBUG check product country:
             //$cart = WC()->cart->get_cart();
             //$cart[array_key_first($cart)]['product_id'];
@@ -329,8 +328,8 @@ function make_eas_api_request_json()
 
             , 'location_warehouse_country' => $location_warehouse_country == '' ? wc_get_base_location()['country'] : $location_warehouse_country // Country of the store. Should be filled by EM in the store for each Item
             , 'type_of_goods' => $product->is_virtual() ? 'TBE' : 'GOODS'
-            , 'reduced_tbe_vat_group' => $product->get_attribute('easproj_attribute_reduced_tbe_vat_group') === 'yes'
-            , 'act_as_disclosed_agent' => ''.$product->get_attribute('easproj_disclosed_agent') == 'yes' ? true: false
+            , 'reduced_tbe_vat_group' => $product->get_attribute(woocommerce_settings_get_option_sql('easproj_reduced_vat_group')) === 'yes'
+            , 'act_as_disclosed_agent' => ''.$product->get_attribute(woocommerce_settings_get_option_sql('easproj_disclosed_agent')) == 'yes' ? true: false
             , 'seller_registration_country' => $seller_registration_country == '' ? wc_get_base_location()['country'] : $seller_registration_country
             , 'originating_country' => $originating_country == '' ? wc_get_base_location()['country'] : $originating_country // Country of manufacturing of goods
         ];
@@ -878,6 +877,23 @@ function EAScompliance_settings(){
         $shipping_methods[$id] = $shipping_method->get_method_title();
     }
 
+
+    global $wpdb;
+    $res =   $wpdb->get_results("SELECT * FROM wplm_woocommerce_attribute_taxonomies att", ARRAY_A);
+
+    $attributes = array(
+          'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
+        , 'easproj_warehouse_country'=>'(add new) - easproj_warehouse_country'
+        , 'easproj_reduced_vat_group'=>'(add new) - easproj_reduced_vat_group'
+        , 'easproj_disclosed_agent'=>'(add new) - easproj_disclosed_agent'
+        , 'easproj_seller_reg_country'=>'(add new) - easproj_seller_reg_country'
+        , 'easproj_originating_country'=>'(add new) - easproj_originating_country'
+    );
+
+    foreach(wc_get_attribute_taxonomy_labels() as $slug=>$att_label) {
+        $attributes[$slug] = $att_label.' - '.$slug;
+    }
+
     return array(
        'section_title' => array(
                   'name'     => 'Settings'
@@ -947,51 +963,51 @@ function EAScompliance_settings(){
         )
     , 'HSCode_field' => array(
           'name' => 'HSCODE'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'HSCode attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_hs6p_received'
         , 'default' => 'easproj_hs6p_received'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'Warehouse_country' => array(
           'name' => 'Warehouse country'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'Location warehouse country attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_warehouse_country'
         , 'default' => 'easproj_warehouse_country'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'Reduced_tbe_vat_group' => array(
           'name' => 'Reduced VAT for TBE'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_reduced_vat_group'
         , 'default' => 'easproj_reduced_vat_group'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'Disclosed_agent' => array(
           'name' => 'Act as Disclosed Agent'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_disclosed_agent'
         , 'default' => 'easproj_disclosed_agent'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'Seller_country' => array(
           'name' => 'Seller registration country'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'Seller registration country attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_seller_reg_country'
         , 'default' => 'easproj_seller_reg_country'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'Originating_country' => array(
           'name' => 'Originating Country'
-        , 'type' => 'text'
+        , 'type' => 'select'
         , 'desc' => 'Originating Country attribute slug. Attribute will be created if does not exist.'
         , 'id'   => 'easproj_originating_country'
         , 'default' => 'easproj_originating_country'
-        , 'custom_attributes' => array('disabled'=>'')
+        , 'options' => $attributes
         )
     , 'section_end' => array(
             'type' => 'sectionend'
@@ -1065,7 +1081,7 @@ try {
 
 
     //create attributes that did not exist
-    $slug = 'easproj_hs6p_received';
+    $slug = woocommerce_settings_get_option_sql('easproj_hs6p_received');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
         $attr = array(
             'id' => $slug
@@ -1079,7 +1095,7 @@ try {
         if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
     };
 
-    $slug = 'easproj_disclosed_agent';
+    $slug = woocommerce_settings_get_option_sql('easproj_disclosed_agent');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
         $attr = array(
             'id' => $slug
@@ -1117,7 +1133,7 @@ try {
         wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
     }
 
-    $slug = 'easproj_seller_reg_country';
+    $slug = woocommerce_settings_get_option_sql('easproj_seller_reg_country');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
         $attr = array(
             'id' => $slug
@@ -1155,7 +1171,7 @@ try {
         }
     }
 
-    $slug = 'easproj_originating_country';
+    $slug = woocommerce_settings_get_option_sql('easproj_originating_country');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
         $attr = array(
             'id' => $slug
@@ -1193,7 +1209,7 @@ try {
         }
     }
 
-    $slug = 'easproj_warehouse_country';
+    $slug = woocommerce_settings_get_option_sql('easproj_warehouse_country');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
         $attr = array(
            'id' => $slug
@@ -1249,7 +1265,7 @@ try {
         */
     };
 
-    $slug = 'easproj_reduced_vat_group';
+    $slug = woocommerce_settings_get_option_sql('easproj_reduced_vat_group');
     if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
         $attr = array(
               'id' => $slug
