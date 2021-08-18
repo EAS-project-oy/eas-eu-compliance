@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE');
+
 //custom logger for Settings->WooCommerce->Status->Logs->eascompliance-* log files
 function logger() {
 
@@ -799,8 +801,7 @@ function woocommerce_checkout_create_order($order)
     if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
         $delivery_country = $_POST['billing_country'];
     }
-    $european_countries = array_flip(preg_split('/\s/', 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE'));
-    if (!array_key_exists($delivery_country, $european_countries)) {
+    if (!array_key_exists($delivery_country, EUROPEAN_COUNTRIES)) {
         return;
     }
 
@@ -1392,11 +1393,21 @@ try {
     }
 
 
-    // check EAS API connection and deactivate plugin on failure
+    // check EAS API connection / tax rates and deactivate plugin on failure
     if (woocommerce_settings_get_option('easproj_active') == 'yes')
     {
         try {
             get_oauth_token();
+
+            // there must be no EU tax rates except for EAScompliance
+            foreach (EUROPEAN_COUNTRIES as $c) {
+                foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
+                    if ($tax_rate['label'] != 'EAScompliance') {
+                        throw new Exception("There must be only EAScompliance tax rate for country $c");
+                    }
+                }
+            }
+
         } catch (Exception $ex) {
             WC_Admin_Settings::save_fields(array(
                 'active' => array(
@@ -1406,7 +1417,7 @@ try {
                 , 'id'   => 'easproj_active'
                 , 'default' => 'yes')
             ), array('easproj_active' => 'no') );
-            throw new Exception('EAS API connection failed. Plugin deactivated. (' . $ex->getMessage() . ')', 0, $ex);
+            throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
         }
     }
 
