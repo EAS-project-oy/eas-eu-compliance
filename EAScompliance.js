@@ -27,7 +27,7 @@ jQuery(document).ready(function($) {
     $('.button_calc').on('click', function (ev) {
 
         block($('.EAScompliance'));
-        $('.button_calc').text('Calculating Customs duties...');
+        $('.button_calc').text('Calculating taxes and duties ...');
 
         $(document.body).trigger("update_checkout");
 
@@ -84,7 +84,7 @@ jQuery(document).ready(function($) {
         if ($('.EAScompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
 
-            $('.button_calc').text('Recalculate Customs Duties');
+            $('.button_calc').text('Recalculate Taxes and Duties');
 
             form_data = atob($(".EAScompliance_status").attr('checkout-form-data'));
 

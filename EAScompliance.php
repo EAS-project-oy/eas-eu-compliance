@@ -21,6 +21,23 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+//custom logger for Settings->WooCommerce->Status->Logs->eascompliance-* log files
+function logger() {
+
+    static $l = null;
+    if ($l !== null) return $l;
+
+    class EASLogHandler extends WC_Log_Handler_File {
+        public function handle( $timestamp, $level, $message, $context ) {
+            WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>'eascompliance'));
+        }
+    }
+    $handlers = array(new EASLogHandler());
+
+    $l = new WC_Logger($handlers);
+    return $l;
+}
+
 // gets woocommerce settings when woocommerce_settings_get_option is undefined
 function woocommerce_settings_get_option_sql($option) {
     global $wpdb;
@@ -103,7 +120,7 @@ function woocommerce_review_order_before_payment()
     }
     echo format($template,
         [
-              'button_name' => esc_html__('Calculate Customs Duties', 'woocommerce')
+              'button_name' => esc_html__('Calculate Taxes and Duties', 'woocommerce')
             , 'ordered_total' => WC()->cart->get_cart_contents_total()
             , 'status' => EAScompliance_is_set() ? 'present' : 'not present'
             , 'needs_recalculate' => EAScompliance_needs_recalculate() ? 'yes' : 'no'
@@ -455,8 +472,10 @@ function EAScompliance_ajaxhandler() {
         //// build json reply
         $jres['status'] = 'error';
         $jres['message'] = $e->getMessage();
-        wc_get_logger()->error($e->getMessage());
-        wc_get_logger()->debug(print_r($jres, true));
+        logger()->error($e->getMessage(), array(
+            'source' => 'fatal-errors',
+        ));
+        logger()->debug(print_r($jres, true));
         if (is_debug()) {
             $jres['debug'] = $jdebug;
         }
@@ -624,8 +643,8 @@ function EAScompliance_redirect_confirm() {
     catch (Exception $e) {
         $jres['status'] = 'error';
         $jres['message'] = $e->getMessage();
-        wc_get_logger()->error($e->getMessage());
-        wc_get_logger()->debug(print_r($jres, true));
+        logger()->error($e->getMessage());
+        logger()->debug(print_r($jres, true));
         wc_add_notice( $e->getMessage(), 'error' );
         if (is_debug()) {
             $jres['debug'] = $jdebug;
@@ -1321,9 +1340,8 @@ try {
     }
 }
 catch (Exception $e) {
+    logger()->error($e->getMessage());
     WC_Admin_Settings::add_error($e->getMessage());
-    wc_get_logger()->error($e->getMessage());
-
 }
 
 };
