@@ -38,6 +38,18 @@ function logger() {
     return $l;
 }
 
+function log_exception(Exception $ex) {
+    $txt = '';
+    while (true) {
+        $txt .= "\n".$ex->getMessage().' @'.$ex->getFile().':'.$ex->getLine();
+
+        $ex = $ex->getPrevious();
+        if ($ex == null) break;
+    }
+    $txt = ltrim($txt, "\n");
+    logger()->error($txt);
+}
+
 // gets woocommerce settings when woocommerce_settings_get_option is undefined
 function woocommerce_settings_get_option_sql($option) {
     global $wpdb;
@@ -174,7 +186,11 @@ function get_oauth_token() {
         )
     );
 
+    //prevent Warning: Cannot modify header information - headers already sent
+    error_reporting(E_ERROR);
     $auth_response = file_get_contents($auth_url, false, stream_context_create($options));
+    error_reporting(E_ALL);
+
     if ($auth_response === FALSE) {
         if (is_debug()) {
             //check php configuration
@@ -187,7 +203,7 @@ function get_oauth_token() {
         throw new Exception('Auth request failed: ' . error_get_last()['message']);
     }
     $jdebug['step'] = 'decode AUTH token';
-    $auth_j = json_decode($auth_response, true);
+    $auth_j = json_decode($auth_response, true, 512, JSON_THROW_ON_ERROR);
     $jdebug['AUTH response'] = $auth_j;
 
     $auth_token = $auth_j['access_token'];
@@ -387,7 +403,7 @@ function EAScompliance_ajaxhandler() {
                 'method'  => 'POST'
               , 'header'  => "Content-type: application/json\r\n"
                     . 'Authorization: Bearer '. $auth_token."\r\n"
-              , 'content' => json_encode($calc_jreq, true)
+              , 'content' => json_encode($calc_jreq, JSON_THROW_ON_ERROR)
               , 'ignore_errors' => true
             )
             , 'ssl' => array(
@@ -456,7 +472,7 @@ function EAScompliance_ajaxhandler() {
 
         // replace redirect_uri=undefined with correct link
         // redirect URL to redirect_uri_checker
-        $confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash())));
+        $confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR));
 
         $redirect_uri = admin_url('admin-ajax.php').'?action=EAScompliance_redirect_confirm'.'&confirm_hash='.$confirm_hash;
 
@@ -472,9 +488,7 @@ function EAScompliance_ajaxhandler() {
         //// build json reply
         $jres['status'] = 'error';
         $jres['message'] = $e->getMessage();
-        logger()->error($e->getMessage(), array(
-            'source' => 'fatal-errors',
-        ));
+        log_exception($e);
         logger()->debug(print_r($jres, true));
         if (is_debug()) {
             $jres['debug'] = $jdebug;
@@ -638,12 +652,14 @@ function EAScompliance_redirect_confirm() {
         //DEBUG SAMPLE: return WC()->cart->get_cart();
         $woocommerce->cart->set_session();   // when in ajax calls, saves it.
 
+        logger()->debug("redirect_confirm successful\n".print_r($jdebug, true));
+
         restore_error_handler();
     }
     catch (Exception $e) {
         $jres['status'] = 'error';
         $jres['message'] = $e->getMessage();
-        logger()->error($e->getMessage());
+        log_exception($e);
         logger()->debug(print_r($jres, true));
         wc_add_notice( $e->getMessage(), 'error' );
         if (is_debug()) {
@@ -764,7 +780,7 @@ function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_
 
 
 
-//// Checkout -> Order Hook
+//// Checkout -> Order Hook (before Order created)
 if (is_active()) {
     add_action('woocommerce_checkout_create_order', 'woocommerce_checkout_create_order');
 }
@@ -811,7 +827,7 @@ function woocommerce_checkout_create_order($order)
     $item['EAScompliance NEEDS RECALCULATE'] = false;
     $woocommerce->cart->set_session();
 
-    if (json_encode($calc_jreq_saved, true) != json_encode($calc_jreq_new, true))
+    if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
     {
         // reset EAScompliance if json's mismatch
         $item['EAScompliance NEEDS RECALCULATE'] = true;
@@ -829,6 +845,60 @@ function woocommerce_checkout_create_order($order)
 
 }
 
+//// After Order has been created
+if (is_active()) {
+    add_action('woocommerce_checkout_order_created', 'woocommerce_checkout_order_created');
+}
+function woocommerce_checkout_order_created ($order) {
+    //notify EAS API on Order number
+
+    $order_id = $order->get_id();
+
+    set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
+        throw new Exception($errstr);
+    });
+
+    try {
+        $auth_token =             get_oauth_token();
+        $confirmation_token = $order->get_meta('_easproj_token');
+
+        $jreq = array('order_token'=>$confirmation_token, 'external_order_id' =>'order_'.$order_id);
+
+        $options = array(
+            'http' => array(
+                'method'  => 'POST'
+            , 'header'  => "Content-type: application/json\r\n"
+                    . 'Authorization: Bearer '. $auth_token."\r\n"
+            , 'content' => json_encode($jreq, JSON_THROW_ON_ERROR)
+            , 'ignore_errors' => true
+            )
+        , 'ssl' => array(
+                'verify_peer' => false
+            , 'verify_peer_name' => false
+            )
+        );
+        $context = stream_context_create($options);
+
+        $notify_url = woocommerce_settings_get_option_sql('easproj_eas_api_url').'/updateExternalOrderId';
+        $notify_body = file_get_contents($notify_url, false, $context);
+
+        $notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
+
+        if ($notify_status == '200') {
+            $order->add_order_note("Notify Order number $order_id successful");
+        }
+        else {
+            throw new Exception($http_response_header[0]. '\n\n'.$notify_body);
+        }
+
+        $order->add_meta_data('_easproj_order_number_notified', 'yes', true);
+        $order->save();
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        $order->add_order_note("Notify Order number $order_id failed: ".$ex->getMessage());
+    }
+}
 
 //// When Order status changes from Pending to Processing, send payment verification
 if (is_active()) {
@@ -855,7 +925,7 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
                 'method'  => 'POST'
             , 'header'  => "Content-type: application/json\r\n"
                     . 'Authorization: Bearer '. $auth_token."\r\n"
-            , 'content' => json_encode($payment_jreq, true)
+            , 'content' => json_encode($payment_jreq, JSON_THROW_ON_ERROR)
             , 'ignore_errors' => true
             )
         , 'ssl' => array(
@@ -881,6 +951,7 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
         $order->save();
     }
     catch (Exception $ex) {
+        log_exception($ex);
         $order->add_order_note('Order status change notification failed: '.$ex->getMessage());
     }
 
@@ -1335,12 +1406,14 @@ try {
                 , 'id'   => 'easproj_active'
                 , 'default' => 'yes')
             ), array('easproj_active' => 'no') );
-            throw new Exception('EAS API connection failed. Plugin deactivated. (' . $ex->getMessage() . ')');
+            throw new Exception('EAS API connection failed. Plugin deactivated. (' . $ex->getMessage() . ')', 0, $ex);
         }
     }
+
+    logger()->info('Plugin activated');
 }
 catch (Exception $e) {
-    logger()->error($e->getMessage());
+    log_exception($e);
     WC_Admin_Settings::add_error($e->getMessage());
 }
 
