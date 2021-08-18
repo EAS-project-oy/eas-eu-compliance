@@ -801,7 +801,7 @@ function woocommerce_checkout_create_order($order)
     if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
         $delivery_country = $_POST['billing_country'];
     }
-    if (!array_key_exists($delivery_country, EUROPEAN_COUNTRIES)) {
+    if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
         return;
     }
 
