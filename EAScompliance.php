@@ -857,7 +857,7 @@ function woocommerce_checkout_create_order($order)
 
         //only work for European countries
 
-        $delivery_country = $_POST['shipping_country'];
+        $delivery_country = array_get($_POST, 'shipping_country', $_POST['billing_country']);
         $ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
         if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
             $delivery_country = $_POST['billing_country'];
