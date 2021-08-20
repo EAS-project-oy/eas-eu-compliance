@@ -21,6 +21,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+// change error messages into ErrorException for this script
+function error_handler($severity, $message, $file, $line) {
+    throw new ErrorException($message, 0, $severity, $file, $line);
+}
+set_error_handler('error_handler');
+
 const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE');
 
 //custom logger for Settings->WooCommerce->Status->Logs->eascompliance-* log files
@@ -140,7 +146,7 @@ function woocommerce_review_order_before_payment()
             , 'needs_recalculate' => EAScompliance_needs_recalculate() ? 'yes' : 'no'
             , 'checkout_form_data' => $checkout_form_data
         ]);
-};
+}
 
 //// Debug Console
 if (is_debug() and DEVELOP) {
@@ -150,10 +156,14 @@ if (is_debug() and DEVELOP) {
 function EAScompliance_debug() {
     $debug_input = stripslashes($_POST['debug_input']);
     try {
+        set_error_handler('error_handler');
         $jres = print_r(eval($debug_input), true);
     }
-    catch (Exception $e) {
-        $jres = 'Error: '.$e->getMessage();
+    catch (Exception $ex) {
+        $jres = 'Error: '.$ex->getMessage();
+    }
+    finally {
+        restore_error_handler();
     }
     wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
 
@@ -233,11 +243,6 @@ function get_oauth_token() {
 
 function make_eas_api_request_json()
 {
-    set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-        throw new Exception($errstr);
-    });
-
-
     $jdebug = array();
 
 
@@ -399,10 +404,7 @@ if (is_active()) {
 }
 function EAScompliance_ajaxhandler() {
     try {
-        set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-            throw new Exception($errstr);
-        });
-
+        set_error_handler('error_handler');
         $jdebug = array();
 
         $jdebug['step'] = 'get OAUTH token';
@@ -504,17 +506,20 @@ function EAScompliance_ajaxhandler() {
 //        throw new Exception('debug');
 
     }
-    catch (Exception $e) {
+    catch (Exception $ex) {
 
         //// build json reply
         $jres['status'] = 'error';
-        $jres['message'] = $e->getMessage();
-        log_exception($e);
+        $jres['message'] = $ex->getMessage();
+        log_exception($ex);
         logger()->debug(print_r($jres, true));
         if (is_debug()) {
             $jres['debug'] = $jdebug;
         }
         wp_send_json($jres);
+    }
+    finally {
+        restore_error_handler();
     }
 
     //// build json reply
@@ -540,9 +545,7 @@ function EAScompliance_redirect_confirm() {
     $jdebug = array();
 
     try {
-        set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-            throw new Exception($errstr);
-        });
+        set_error_handler('error_handler');
 
         global $woocommerce;
         $cart = WC()->cart;
@@ -677,15 +680,18 @@ function EAScompliance_redirect_confirm() {
 
         restore_error_handler();
     }
-    catch (Exception $e) {
+    catch (Exception $ex) {
         $jres['status'] = 'error';
-        $jres['message'] = $e->getMessage();
-        log_exception($e);
+        $jres['message'] = $ex->getMessage();
+        log_exception($ex);
         logger()->debug(print_r($jres, true));
-        wc_add_notice( $e->getMessage(), 'error' );
+        wc_add_notice( $ex->getMessage(), 'error' );
         if (is_debug()) {
             $jres['debug'] = $jdebug;
         }
+    }
+    finally {
+        restore_error_handler();
     }
 
     //redirect back to checkout
@@ -717,36 +723,44 @@ if (is_active()) {
     add_filter('woocommerce_checkout_create_order_tax_item', 'woocommerce_checkout_create_order_tax_item', 10, 3);
 }
 function  woocommerce_checkout_create_order_tax_item ($order_item_tax, $tax_rate_id, $order) {
+    try {
+        set_error_handler('error_handler');
+        // add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
+        $tax_rate_name = 'EAScompliance';
+        global $wpdb;
+        $tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A );
+        $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
-    // add EAScompliance with values taken from EAS API response and save EAScompliance in order_item meta-data
+        if ($tax_rate_id == $tax_rate_id0 and EAScompliance_is_set()) {
+            $cart_items = array_values(WC()->cart->get_cart_contents());
 
-    $tax_rate_name = 'EAScompliance';
-    global $wpdb;
-    $tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A );
-    $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+            $ix = 0;
+            $total = 0;
+            foreach($order->get_items() as $k=>$item) {
+                $cart_item = $cart_items[$ix];
+                $item_amount = $cart_item['EAScompliance AMOUNT'];
+                $total += $item_amount;
+                $item->add_meta_data('Customs duties', $item_amount);
+                $item->set_taxes(array(
+                    'total'    => array($tax_rate_id0=>$item_amount),
+                    'subtotal' => array($tax_rate_id0=>$item_amount),
+                ));
 
-    if ($tax_rate_id == $tax_rate_id0 and EAScompliance_is_set()) {
-        $cart_items = array_values(WC()->cart->get_cart_contents());
-
-        $ix = 0;
-        $total = 0;
-        foreach($order->get_items() as $k=>$item) {
-            $cart_item = $cart_items[$ix];
-            $item_amount = $cart_item['EAScompliance AMOUNT'];
-            $total += $item_amount;
-            $item->add_meta_data('Customs duties', $item_amount);
-            $item->set_taxes(array(
-                'total'    => array($tax_rate_id0=>$item_amount),
-                'subtotal' => array($tax_rate_id0=>$item_amount),
-            ));
-
-            $ix += 1;
+                $ix += 1;
+            }
+            $order_item_tax->save();
+            $order->update_taxes();
+            $order->set_total($order->get_total()+$total);
         }
-        $order_item_tax->save();
-        $order->update_taxes();
-        $order->set_total($order->get_total()+$total);
+        return $order_item_tax;
     }
-    return $order_item_tax;
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 // Order review Tax
@@ -754,29 +768,51 @@ if (is_active()) {
     add_filter('woocommerce_cart_totals_taxes_total_html', 'woocommerce_cart_totals_taxes_total_html', 10);
 }
 function  woocommerce_cart_totals_taxes_total_html () {
-    $total = WC()->cart->get_taxes_total(true, false);
-    if (EAScompliance_is_set()) {
-        $cart_items = array_values(WC()->cart->get_cart_contents());
-        foreach($cart_items as $cart_item) {
-            $total += $cart_item['EAScompliance AMOUNT'];
+    try {
+        set_error_handler('error_handler');
+
+        $total = WC()->cart->get_taxes_total(true, false);
+        if (EAScompliance_is_set()) {
+            $cart_items = array_values(WC()->cart->get_cart_contents());
+            foreach($cart_items as $cart_item) {
+                $total += $cart_item['EAScompliance AMOUNT'];
+            }
         }
+        return wc_price(wc_format_decimal( $total, wc_get_price_decimals() ));
     }
-    return wc_price(wc_format_decimal( $total, wc_get_price_decimals() ));
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 // Order review Total
 if (is_active()) {
     add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
 }
 function  woocommerce_cart_totals_order_total_html2 ($value) {
-    $total = WC()->cart->get_total('edit');
+    try {
+        set_error_handler('error_handler');
 
-    if (EAScompliance_is_set()) {
-        $cart_items = array_values(WC()->cart->get_cart_contents());
-        foreach($cart_items as $cart_item) {
-            $total += $cart_item['EAScompliance AMOUNT'];
+        $total = WC()->cart->get_total('edit');
+
+        if (EAScompliance_is_set()) {
+            $cart_items = array_values(WC()->cart->get_cart_contents());
+            foreach ($cart_items as $cart_item) {
+                $total += $cart_item['EAScompliance AMOUNT'];
+            }
         }
+        return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
     }
-    return '<strong>' . wc_price(wc_format_decimal( $total, wc_get_price_decimals() )) . '</strong> ';
+    catch (Exception $ex) {
+            log_exception($ex);
+            throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 
@@ -785,18 +821,27 @@ if (is_active()) {
     add_filter('woocommerce_order_item_after_calculate_taxes', 'woocommerce_order_item_after_calculate_taxes', 10, 2);
 }
 function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_tax_for) {
+    try {
+        set_error_handler('error_handler');
+        // Recalculate process must set taxes from order_item meta-data 'Customs duties'
+        $tax_rate_name = 'EAScompliance';
+        global $wpdb;
+        $tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+        $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
-    // Recalculate process must set taxes from order_item meta-data 'Customs duties'
-    $tax_rate_name = 'EAScompliance';
-    global $wpdb;
-    $tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A );
-    $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
-
-    $amount = $order_item->get_meta('Customs duties');
-    $order_item->set_taxes(array(
-        'total'    => array($tax_rate_id0=>$amount),
-        'subtotal' => array($tax_rate_id0=>$amount),
-    ));
+        $amount = $order_item->get_meta('Customs duties');
+        $order_item->set_taxes(array(
+            'total' => array($tax_rate_id0 => $amount),
+            'subtotal' => array($tax_rate_id0 => $amount),
+        ));
+    }
+    catch (Exception $ex) {
+            log_exception($ex);
+            throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 
@@ -807,62 +852,66 @@ if (is_active()) {
 }
 function woocommerce_checkout_create_order($order)
 {
+    try {
+        set_error_handler('error_handler');
 
-    set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-        throw new Exception($errstr);
-    });
+        //only work for European countries
 
+        $delivery_country = $_POST['shipping_country'];
+        $ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
+        if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
+            $delivery_country = $_POST['billing_country'];
+        }
+        if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
+            return;
+        }
 
-    //only work for European countries
+        //disable order if customs duties are missing
+        if (!EAScompliance_is_set()) {
+            throw new Exception('CUSTOMS DUTIES MISSING');
+        }
 
-    $delivery_country = $_POST['shipping_country'];
-    $ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
-    if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
-        $delivery_country = $_POST['billing_country'];
-    }
-    if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
-        return;
-    }
+        // compare new json with saved version. We need to offer customs duties recalculation if json changed
+        $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
 
-    //disable order if customs duties are missing
-    if (!EAScompliance_is_set()) {
-        throw new Exception('CUSTOMS DUTIES MISSING');
-    }
+        $calc_jreq_new = make_eas_api_request_json();
 
-    // compare new json with saved version. We need to offer customs duties recalculation if json changed
-    $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+        // exclude external_order_id because get_cart_hash is always different
+        $calc_jreq_saved['external_order_id'] = '';
+        $calc_jreq_new['external_order_id'] = '';
 
-    $calc_jreq_new = make_eas_api_request_json();
-
-    // exclude external_order_id because get_cart_hash is always different
-    $calc_jreq_saved['external_order_id'] = '';
-    $calc_jreq_new['external_order_id'] = '';
-
-    //save new request in first item
-    global $woocommerce;
-    $cart = WC()->cart;
-    $k = array_key_first ($cart->get_cart());
-    $item = &$woocommerce->cart->cart_contents[$k];
-    $item['EAS API REQUEST JSON ORDERED'] = $calc_jreq_new;
-    $item['EAScompliance NEEDS RECALCULATE'] = false;
-    $woocommerce->cart->set_session();
-
-    if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
-    {
-        // reset EAScompliance if json's mismatch
-        $item['EAScompliance NEEDS RECALCULATE'] = true;
+        //save new request in first item
+        global $woocommerce;
+        $cart = WC()->cart;
+        $k = array_key_first ($cart->get_cart());
+        $item = &$woocommerce->cart->cart_contents[$k];
+        $item['EAS API REQUEST JSON ORDERED'] = $calc_jreq_new;
+        $item['EAScompliance NEEDS RECALCULATE'] = false;
         $woocommerce->cart->set_session();
-        throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
+
+        if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
+        {
+            // reset EAScompliance if json's mismatch
+            $item['EAScompliance NEEDS RECALCULATE'] = true;
+            $woocommerce->cart->set_session();
+            throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
+        }
+
+
+        //save payload in order metadata
+        $payload = $item['EASPROJ API PAYLOAD'];
+        $order->add_meta_data("easproj_payload", $payload , true);
+
+        // saving token to notify EAS during order status change
+        $order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
     }
-
-
-    //save payload in order metadata
-    $payload = $item['EASPROJ API PAYLOAD'];
-    $order->add_meta_data("easproj_payload", $payload , true);
-
-    // saving token to notify EAS during order status change
-    $order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
-
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 //// After Order has been created
@@ -873,12 +922,9 @@ function woocommerce_checkout_order_created ($order) {
     //notify EAS API on Order number
 
     $order_id = $order->get_id();
-
-    set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-        throw new Exception($errstr);
-    });
-
     try {
+        set_error_handler('error_handler');
+
         $auth_token =             get_oauth_token();
         $confirmation_token = $order->get_meta('_easproj_token');
 
@@ -920,6 +966,9 @@ function woocommerce_checkout_order_created ($order) {
         log_exception($ex);
         $order->add_order_note("Notify Order number $order_id failed: ".$ex->getMessage());
     }
+    finally {
+        restore_error_handler();
+    }
 }
 
 //// When Order status changes from Pending to Processing, send payment verification
@@ -928,12 +977,9 @@ if (is_active()) {
 }
 function woocommerce_order_status_changed($order_id, $status_from, $status_to, $order)
 {
-
-
-    set_error_handler(function($errno, string $errstr , string $errfile , int $errline  , array $errcontext){
-        throw new Exception($errstr);
-    });
     try {
+        set_error_handler('error_handler');
+
         if (!(($status_to == 'completed' or $status_to == 'processing') and !($order->get_meta('_easproj_payment_processed')=='yes')))
             return;
 
@@ -977,6 +1023,9 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
     catch (Exception $ex) {
         log_exception($ex);
         $order->add_order_note('Order status change notification failed: '.$ex->getMessage());
+    }
+    finally {
+        restore_error_handler();
     }
 
 }
@@ -1133,14 +1182,24 @@ function EAScompliance_settings(){
 //// Settings startup check
 add_filter( 'woocommerce_settings_start', 'woocommerce_settings_start');
 function woocommerce_settings_start() {
+    try {
+        set_error_handler('error_handler');
 
-    // if new shipping method found, display admin notification to update settings
-    $shipping_methods_latest = array_keys(WC_Shipping::instance()->get_shipping_methods());
-    $shipping_methods_saved = woocommerce_settings_get_option('easproj_shipping_methods_latest');
-    $shipping_methods_saved = $shipping_methods_saved ? $shipping_methods_saved : array();
+        // if new shipping method found, display admin notification to update settings
+        $shipping_methods_latest = array_keys(WC_Shipping::instance()->get_shipping_methods());
+        $shipping_methods_saved = woocommerce_settings_get_option('easproj_shipping_methods_latest');
+        $shipping_methods_saved = $shipping_methods_saved ? $shipping_methods_saved : array();
 
-    if (array_diff($shipping_methods_latest, $shipping_methods_saved)) {
-        WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update plugin setting.');
+        if (array_diff($shipping_methods_latest, $shipping_methods_saved)) {
+            WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update plugin setting.');
+        }
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
     }
 }
 
@@ -1148,310 +1207,335 @@ function woocommerce_settings_start() {
 //// Settings tab
 add_filter( 'woocommerce_settings_tabs_array', 'woocommerce_settings_tabs_array');
 function woocommerce_settings_tabs_array( $settings_tabs ) {
-    $settings_tabs['settings_tab_compliance'] = 'EAS EU compliance';
-    return $settings_tabs;
+    try {
+        set_error_handler('error_handler');
+
+        $settings_tabs['settings_tab_compliance'] = 'EAS EU compliance';
+        return $settings_tabs;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 };
 
 
 //// Settings fields
 add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'woocommerce_settings_tabs_settings_tab_compliance' );
 function woocommerce_settings_tabs_settings_tab_compliance() {
-    woocommerce_admin_fields(EAScompliance_settings());
+    try {
+        set_error_handler('error_handler');
+
+        woocommerce_admin_fields(EAScompliance_settings());
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 };
 
 //// Settings Save and Plugin Setup
 add_action( 'woocommerce_update_options_settings_tab_compliance', 'woocommerce_update_options_settings_tab_compliance' );
 function woocommerce_update_options_settings_tab_compliance() {
+    try {
+        set_error_handler('error_handler');
 
-try {
-    woocommerce_update_options( EAScompliance_settings() );
-
-
-    // taxes must be enabled to see taxes at order
-    update_option( 'woocommerce_calc_taxes', 'yes' );
-
-    // add tax rate
-    global $wpdb;
-    $tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance'", ARRAY_A );
-    $tax_rate_id = array_get($tax_rates,0, array('tax_rate_id'=>null))['tax_rate_id'];
-
-    if (!$tax_rate_id) {
-        $tax_rate    = array(
-            'tax_rate_country'  => '',
-            'tax_rate_state'    => '',
-            'tax_rate'          => '0.0000',
-            'tax_rate_name'     => 'EAScompliance',
-            'tax_rate_priority' => '1',
-            'tax_rate_compound' => '0',
-            'tax_rate_shipping' => '1',
-            'tax_rate_order'    => '1',
-            'tax_rate_class'    => '',
-        );
-        $tax_rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
-//            update_option( 'woocommerce_calc_taxes', 'yes' );
-//            update_option( 'woocommerce_default_customer_address', 'base' );
-//            update_option( 'woocommerce_tax_based_on', 'base' );
-    }
+        woocommerce_update_options( EAScompliance_settings() );
 
 
-    //create attributes that did not exist
-    $slug = woocommerce_settings_get_option_sql('easproj_hs6p_received');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
-        $attr = array(
-            'id' => $slug
-            , 'name' => 'HSCODE'
-            , 'slug' => $slug
-            , 'type' => 'text'
-            , 'order_by' => 'name'
-            , 'has_archives' => false
-        );
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
-    };
+        // taxes must be enabled to see taxes at order
+        update_option( 'woocommerce_calc_taxes', 'yes' );
 
-    $slug = woocommerce_settings_get_option_sql('easproj_disclosed_agent');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
-        $attr = array(
-            'id' => $slug
-            , 'name' => 'Act as Disclosed Agent'
-            , 'slug' => $slug
-            , 'type' => 'text'
-            , 'order_by' => 'name'
-            , 'has_archives' => false
-        );
-        delete_transient('wc_attribute_taxonomies');
-        WC_Cache_Helper::incr_cache_prefix('woocommerce-attributes');
-
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {
-            throw new Exception($attr_id->get_error_message());
-        }
-
-        $taxonomy = wc_attribute_taxonomy_name($slug);
-        register_taxonomy(
-            $taxonomy,
-            apply_filters('woocommerce_taxonomy_objects_' . $taxonomy, array('product')),
-            apply_filters(
-                'woocommerce_taxonomy_args_' . $taxonomy,
-                array(
-                    'labels' => array(
-                        'name' => $slug,
-                    ),
-                    'hierarchical' => false,
-                    'show_ui' => false,
-                    'query_var' => true,
-                    'rewrite' => false,
-                )
-            )
-        );
-        wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
-    }
-
-    $slug = woocommerce_settings_get_option_sql('easproj_seller_reg_country');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
-        $attr = array(
-            'id' => $slug
-            , 'name' => 'Seller registration country'
-            , 'slug' => $slug
-            , 'type' => 'select'
-            , 'order_by' => 'name'
-            , 'has_archives' => false
-        );
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
-        $taxonomy=wc_attribute_taxonomy_name($slug);
-        register_taxonomy(
-            $taxonomy,
-            apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-            apply_filters(
-                'woocommerce_taxonomy_args_' . $taxonomy,
-                array(
-                    'labels'       => array(
-                        'name' => $slug,
-                    ),
-                    'hierarchical' => false,
-                    'show_ui'      => false,
-                    'query_var'    => true,
-                    'rewrite'      => false,
-                )
-            )
-        );
-
-        $countries = WC()->countries->countries;
-        foreach ($countries as $country_code => $country)
-        {
-            $taxonomy = wc_attribute_taxonomy_name($slug);
-            wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
-        }
-    }
-
-    $slug = woocommerce_settings_get_option_sql('easproj_originating_country');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
-        $attr = array(
-            'id' => $slug
-            , 'name' => 'Originating Country'
-            , 'slug' => $slug
-            , 'type' => 'select'
-            , 'order_by' => 'name'
-            , 'has_archives' => false
-        );
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
-        $taxonomy=wc_attribute_taxonomy_name($slug);
-        register_taxonomy(
-            $taxonomy,
-            apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-            apply_filters(
-                'woocommerce_taxonomy_args_' . $taxonomy,
-                array(
-                    'labels'       => array(
-                        'name' => $slug,
-                    ),
-                    'hierarchical' => false,
-                    'show_ui'      => false,
-                    'query_var'    => true,
-                    'rewrite'      => false,
-                )
-            )
-        );
-
-        $countries = WC()->countries->countries;
-        foreach ($countries as $country_code => $country)
-        {
-            $taxonomy = wc_attribute_taxonomy_name($slug);
-            wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
-        }
-    }
-
-    $slug = woocommerce_settings_get_option_sql('easproj_warehouse_country');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
-        $attr = array(
-           'id' => $slug
-        , 'name' => 'Warehouse country'
-        , 'slug' => $slug
-        , 'type' => 'select'
-        , 'order_by' => 'name'
-        , 'has_archives' => false
-        );
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
-        $taxonomy=wc_attribute_taxonomy_name($slug);
-        register_taxonomy(
-            $taxonomy,
-            apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-            apply_filters(
-                'woocommerce_taxonomy_args_' . $taxonomy,
-                array(
-                    'labels'       => array(
-                        'name' => $slug,
-                    ),
-                    'hierarchical' => false,
-                    'show_ui'      => false,
-                    'query_var'    => true,
-                    'rewrite'      => false,
-                )
-            )
-        );
-
-        $countries = WC()->countries->countries;
-        foreach ($countries as $country_code => $country)
-        {
-            $taxonomy = wc_attribute_taxonomy_name($slug);
-            wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
-        }
-
-        /*
-        // DEBUG SAMPLE that lists country attributes
+        // add tax rate
         global $wpdb;
-        $res =  $wpdb->get_results("
-            SELECT att.attribute_name, tt.taxonomy, t.name
-            FROM wplm_terms t
-            JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
-            JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
-            WHERE att.attribute_name = 'country'
-        ", ARRAY_A);
+        $tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance'", ARRAY_A );
+        $tax_rate_id = array_get($tax_rates,0, array('tax_rate_id'=>null))['tax_rate_id'];
 
-        $txt = implode("\t", array_keys($res[0]))."\n";
-        foreach($res as $row) {
-            $txt .= implode("\t", array_values($row))."\n";
+        if (!$tax_rate_id) {
+            $tax_rate    = array(
+                'tax_rate_country'  => '',
+                'tax_rate_state'    => '',
+                'tax_rate'          => '0.0000',
+                'tax_rate_name'     => 'EAScompliance',
+                'tax_rate_priority' => '1',
+                'tax_rate_compound' => '0',
+                'tax_rate_shipping' => '1',
+                'tax_rate_order'    => '1',
+                'tax_rate_class'    => '',
+            );
+            $tax_rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
+    //            update_option( 'woocommerce_calc_taxes', 'yes' );
+    //            update_option( 'woocommerce_default_customer_address', 'base' );
+    //            update_option( 'woocommerce_tax_based_on', 'base' );
         }
-        return $txt;
-        */
-    };
-
-    $slug = woocommerce_settings_get_option_sql('easproj_reduced_vat_group');
-    if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
-        $attr = array(
-              'id' => $slug
-            , 'name' => 'Reduced VAT for TBE'
-            , 'slug' => $slug
-            , 'type' => 'text'
-            , 'order_by' => 'name'
-            , 'has_archives' => false
-        );
-        delete_transient( 'wc_attribute_taxonomies' );
-        WC_Cache_Helper::incr_cache_prefix( 'woocommerce-attributes' );
-
-        $attr_id = wc_create_attribute($attr);
-        if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
-
-        $taxonomy=wc_attribute_taxonomy_name($slug);
-        register_taxonomy(
-            $taxonomy,
-            apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-            apply_filters(
-                'woocommerce_taxonomy_args_' . $taxonomy,
-                array(
-                    'labels'       => array(
-                        'name' => $slug,
-                    ),
-                    'hierarchical' => false,
-                    'show_ui'      => false,
-                    'query_var'    => true,
-                    'rewrite'      => false,
-                )
-            )
-        );
-        wp_insert_term('yes', $taxonomy, array('slug' => $slug.'_yes'));
-    }
 
 
-    // check EAS API connection / tax rates and deactivate plugin on failure
-    if (woocommerce_settings_get_option('easproj_active') == 'yes')
-    {
-        try {
-            get_oauth_token();
+        //create attributes that did not exist
+        $slug = woocommerce_settings_get_option_sql('easproj_hs6p_received');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+            $attr = array(
+                'id' => $slug
+                , 'name' => 'HSCODE'
+                , 'slug' => $slug
+                , 'type' => 'text'
+                , 'order_by' => 'name'
+                , 'has_archives' => false
+            );
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+        };
 
-            // there must be no EU tax rates except for EAScompliance
-            foreach (EUROPEAN_COUNTRIES as $c) {
-                foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
-                    if ($tax_rate['label'] != 'EAScompliance') {
-                        throw new Exception("There must be only EAScompliance tax rate for country $c");
-                    }
-                }
+        $slug = woocommerce_settings_get_option_sql('easproj_disclosed_agent');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
+            $attr = array(
+                'id' => $slug
+                , 'name' => 'Act as Disclosed Agent'
+                , 'slug' => $slug
+                , 'type' => 'text'
+                , 'order_by' => 'name'
+                , 'has_archives' => false
+            );
+            delete_transient('wc_attribute_taxonomies');
+            WC_Cache_Helper::incr_cache_prefix('woocommerce-attributes');
+
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
             }
 
-        } catch (Exception $ex) {
-            WC_Admin_Settings::save_fields(array(
-                'active' => array(
-                    'name' => 'Active'
-                , 'type' => 'checkbox'
-                , 'desc' => 'Active'
-                , 'id'   => 'easproj_active'
-                , 'default' => 'yes')
-            ), array('easproj_active' => 'no') );
-            throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
+            $taxonomy = wc_attribute_taxonomy_name($slug);
+            register_taxonomy(
+                $taxonomy,
+                apply_filters('woocommerce_taxonomy_objects_' . $taxonomy, array('product')),
+                apply_filters(
+                    'woocommerce_taxonomy_args_' . $taxonomy,
+                    array(
+                        'labels' => array(
+                            'name' => $slug,
+                        ),
+                        'hierarchical' => false,
+                        'show_ui' => false,
+                        'query_var' => true,
+                        'rewrite' => false,
+                    )
+                )
+            );
+            wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
         }
+
+        $slug = woocommerce_settings_get_option_sql('easproj_seller_reg_country');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+            $attr = array(
+                'id' => $slug
+                , 'name' => 'Seller registration country'
+                , 'slug' => $slug
+                , 'type' => 'select'
+                , 'order_by' => 'name'
+                , 'has_archives' => false
+            );
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+            $taxonomy=wc_attribute_taxonomy_name($slug);
+            register_taxonomy(
+                $taxonomy,
+                apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+                apply_filters(
+                    'woocommerce_taxonomy_args_' . $taxonomy,
+                    array(
+                        'labels'       => array(
+                            'name' => $slug,
+                        ),
+                        'hierarchical' => false,
+                        'show_ui'      => false,
+                        'query_var'    => true,
+                        'rewrite'      => false,
+                    )
+                )
+            );
+
+            $countries = WC()->countries->countries;
+            foreach ($countries as $country_code => $country)
+            {
+                $taxonomy = wc_attribute_taxonomy_name($slug);
+                wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+            }
+        }
+
+        $slug = woocommerce_settings_get_option_sql('easproj_originating_country');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+            $attr = array(
+                'id' => $slug
+                , 'name' => 'Originating Country'
+                , 'slug' => $slug
+                , 'type' => 'select'
+                , 'order_by' => 'name'
+                , 'has_archives' => false
+            );
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+            $taxonomy=wc_attribute_taxonomy_name($slug);
+            register_taxonomy(
+                $taxonomy,
+                apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+                apply_filters(
+                    'woocommerce_taxonomy_args_' . $taxonomy,
+                    array(
+                        'labels'       => array(
+                            'name' => $slug,
+                        ),
+                        'hierarchical' => false,
+                        'show_ui'      => false,
+                        'query_var'    => true,
+                        'rewrite'      => false,
+                    )
+                )
+            );
+
+            $countries = WC()->countries->countries;
+            foreach ($countries as $country_code => $country)
+            {
+                $taxonomy = wc_attribute_taxonomy_name($slug);
+                wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+            }
+        }
+
+        $slug = woocommerce_settings_get_option_sql('easproj_warehouse_country');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+            $attr = array(
+               'id' => $slug
+            , 'name' => 'Warehouse country'
+            , 'slug' => $slug
+            , 'type' => 'select'
+            , 'order_by' => 'name'
+            , 'has_archives' => false
+            );
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+            $taxonomy=wc_attribute_taxonomy_name($slug);
+            register_taxonomy(
+                $taxonomy,
+                apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+                apply_filters(
+                    'woocommerce_taxonomy_args_' . $taxonomy,
+                    array(
+                        'labels'       => array(
+                            'name' => $slug,
+                        ),
+                        'hierarchical' => false,
+                        'show_ui'      => false,
+                        'query_var'    => true,
+                        'rewrite'      => false,
+                    )
+                )
+            );
+
+            $countries = WC()->countries->countries;
+            foreach ($countries as $country_code => $country)
+            {
+                $taxonomy = wc_attribute_taxonomy_name($slug);
+                wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+            }
+
+            /*
+            // DEBUG SAMPLE that lists country attributes
+            global $wpdb;
+            $res =  $wpdb->get_results("
+                SELECT att.attribute_name, tt.taxonomy, t.name
+                FROM wplm_terms t
+                JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
+                JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
+                WHERE att.attribute_name = 'country'
+            ", ARRAY_A);
+
+            $txt = implode("\t", array_keys($res[0]))."\n";
+            foreach($res as $row) {
+                $txt .= implode("\t", array_values($row))."\n";
+            }
+            return $txt;
+            */
+        };
+
+        $slug = woocommerce_settings_get_option_sql('easproj_reduced_vat_group');
+        if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+            $attr = array(
+                  'id' => $slug
+                , 'name' => 'Reduced VAT for TBE'
+                , 'slug' => $slug
+                , 'type' => 'text'
+                , 'order_by' => 'name'
+                , 'has_archives' => false
+            );
+            delete_transient( 'wc_attribute_taxonomies' );
+            WC_Cache_Helper::incr_cache_prefix( 'woocommerce-attributes' );
+
+            $attr_id = wc_create_attribute($attr);
+            if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+
+            $taxonomy=wc_attribute_taxonomy_name($slug);
+            register_taxonomy(
+                $taxonomy,
+                apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+                apply_filters(
+                    'woocommerce_taxonomy_args_' . $taxonomy,
+                    array(
+                        'labels'       => array(
+                            'name' => $slug,
+                        ),
+                        'hierarchical' => false,
+                        'show_ui'      => false,
+                        'query_var'    => true,
+                        'rewrite'      => false,
+                    )
+                )
+            );
+            wp_insert_term('yes', $taxonomy, array('slug' => $slug.'_yes'));
+        }
+
+
+        // check EAS API connection / tax rates and deactivate plugin on failure
+        if (woocommerce_settings_get_option('easproj_active') == 'yes')
+        {
+            try {
+                get_oauth_token();
+
+                // there must be no EU tax rates except for EAScompliance
+                foreach (EUROPEAN_COUNTRIES as $c) {
+                    foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
+                        if ($tax_rate['label'] != 'EAScompliance') {
+                            throw new Exception("There must be only EAScompliance tax rate for country $c");
+                        }
+                    }
+                }
+
+            } catch (Exception $ex) {
+                WC_Admin_Settings::save_fields(array(
+                    'active' => array(
+                        'name' => 'Active'
+                    , 'type' => 'checkbox'
+                    , 'desc' => 'Active'
+                    , 'id'   => 'easproj_active'
+                    , 'default' => 'yes')
+                ), array('easproj_active' => 'no') );
+                throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
+            }
+        }
+
+        logger()->info('Plugin activated');
     }
-
-    logger()->info('Plugin activated');
+    catch (Exception $ex) {
+        log_exception($ex);
+        WC_Admin_Settings::add_error($ex->getMessage());
+    }
+    finally {
+        restore_error_handler();
+    }
 }
-catch (Exception $e) {
-    log_exception($e);
-    WC_Admin_Settings::add_error($e->getMessage());
-}
-
-};
 
 //// utility funtion to format strings
 function format($string, $vars) {
@@ -1471,3 +1555,5 @@ function array_get($arr, $key, $default = null) {
         return $default;
     }
 }
+
+restore_error_handler();
