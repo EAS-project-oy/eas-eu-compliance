@@ -181,6 +181,7 @@ function get_oauth_token() {
             'method'  => 'POST'
         , 'header'  => "Content-type: application/x-www-form-urlencoded\r\n"
         , 'content' => http_build_query($auth_data)
+        , 'ignore_errors' => true
         )
     , 'ssl' => array(
             'verify_peer' => false
@@ -193,6 +194,7 @@ function get_oauth_token() {
     $auth_response = file_get_contents($auth_url, false, stream_context_create($options));
     error_reporting(E_ALL);
 
+    // request failed
     if ($auth_response === FALSE) {
         if (is_debug()) {
             //check php configuration
@@ -200,16 +202,30 @@ function get_oauth_token() {
             phpinfo (INFO_CONFIGURATION) ;
             $jdebug['phpinfo'] = ob_get_contents ();
             ob_end_clean () ;
-            $jdebug['allow_url_fopen'] = ini_get('allow_url_fopen') ;
+            $jdebug['allow_url_fopen'] = ini_get('allow_url_fopen');
         }
         throw new Exception('Auth request failed: ' . error_get_last()['message']);
     }
+
+    $auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
+
+    // response not OK
+    if ($auth_response_status != '200') {
+        logger()->debug('auth response: '.$auth_response);
+        throw new Exception("Authentication failed with response status $auth_response_status");
+    }
+
+    // response OK, but authentication failed with code 200 and empty response for any reason
+    if ($auth_response==='') {
+        throw new Exception('Invalid Credentials provided. Please check EAS client ID and EAS client secret.');
+    }
+
     $jdebug['step'] = 'decode AUTH token';
     $auth_j = json_decode($auth_response, true, 512, JSON_THROW_ON_ERROR);
     $jdebug['AUTH response'] = $auth_j;
 
     $auth_token = $auth_j['access_token'];
-    logger()->debug('OUTH token request successful: '.$auth_token);
+    logger()->info('OAUTH token request successful');
     return $auth_token;
 
 }
@@ -484,7 +500,7 @@ function EAScompliance_ajaxhandler() {
         $jdebug['redirect_uri'] = $redirect_uri;
         $jdebug['CALC response'] = $calc_response;
 
-        logger()->debug('/calculate request successful');
+        logger()->info('/calculate request successful');
 //        throw new Exception('debug');
 
     }
@@ -657,7 +673,7 @@ function EAScompliance_redirect_confirm() {
         //DEBUG SAMPLE: return WC()->cart->get_cart();
         $woocommerce->cart->set_session();   // when in ajax calls, saves it.
 
-        logger()->debug("redirect_confirm successful\n".print_r($jdebug, true));
+        logger()->info("redirect_confirm successful\n".print_r($jdebug, true));
 
         restore_error_handler();
     }
@@ -898,7 +914,7 @@ function woocommerce_checkout_order_created ($order) {
         $order->add_meta_data('_easproj_order_number_notified', 'yes', true);
         $order->save();
 
-        logger()->debug("Notify Order number $order_id successful");
+        logger()->info("Notify Order number $order_id successful");
     }
     catch (Exception $ex) {
         log_exception($ex);
@@ -956,7 +972,7 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
         $order->add_meta_data('_easproj_payment_processed', 'yes', true);
         $order->save();
 
-        logger()->debug("Notify Order $order_id status change successful");
+        logger()->info("Notify Order $order_id status change successful");
     }
     catch (Exception $ex) {
         log_exception($ex);
