@@ -209,7 +209,9 @@ function get_oauth_token() {
     $jdebug['AUTH response'] = $auth_j;
 
     $auth_token = $auth_j['access_token'];
+    logger()->debug('OUTH token request successful: '.$auth_token);
     return $auth_token;
+
 }
 
 
@@ -482,6 +484,7 @@ function EAScompliance_ajaxhandler() {
         $jdebug['redirect_uri'] = $redirect_uri;
         $jdebug['CALC response'] = $calc_response;
 
+        logger()->debug('/calculate request successful');
 //        throw new Exception('debug');
 
     }
@@ -894,6 +897,8 @@ function woocommerce_checkout_order_created ($order) {
 
         $order->add_meta_data('_easproj_order_number_notified', 'yes', true);
         $order->save();
+
+        logger()->debug("Notify Order number $order_id successful");
     }
     catch (Exception $ex) {
         log_exception($ex);
@@ -950,6 +955,8 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
 
         $order->add_meta_data('_easproj_payment_processed', 'yes', true);
         $order->save();
+
+        logger()->debug("Notify Order $order_id status change successful");
     }
     catch (Exception $ex) {
         log_exception($ex);
