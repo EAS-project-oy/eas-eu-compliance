@@ -913,7 +913,7 @@ function woocommerce_order_status_changed($order_id, $status_from, $status_to, $
         throw new Exception($errstr);
     });
     try {
-        if (!($status_from == 'pending' and $status_to == 'processing' and !($order->get_meta('_easproj_payment_processed')=='yes')))
+        if (!(($status_to == 'completed' or $status_to == 'processing') and !($order->get_meta('_easproj_payment_processed')=='yes')))
             return;
 
         $auth_token =             get_oauth_token();
