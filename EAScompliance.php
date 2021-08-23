@@ -481,6 +481,10 @@ function EAScompliance_ajaxhandler() {
                 $error_message = $calc_error['data']['message'];
             }
 
+            if (array_key_exists('message', $calc_error)) {
+                $error_message = $calc_error['message'];
+            }
+
             if (array_key_exists('errors', $calc_error)) {
                 $error_message = join(' ', array_values($calc_error['errors']));
             }
@@ -513,7 +517,7 @@ function EAScompliance_ajaxhandler() {
         $jres['status'] = 'error';
         $jres['message'] = $ex->getMessage();
         log_exception($ex);
-        logger()->debug(print_r($jres, true));
+        logger()->debug(print_r($jdebug, true));
         if (is_debug()) {
             $jres['debug'] = $jdebug;
         }
