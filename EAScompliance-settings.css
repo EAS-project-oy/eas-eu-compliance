@@ -1,6 +1,6 @@
 :root {
-  --settings-fg-color: #0080ff;
-  --settings-bg-color: #c1e0ff;
+  --settings-fg-color: #004368;
+  --settings-bg-color: #e4ebf2;
 }
 
 [id^="easproj_"], [class^="easproj_"], [for^="easproj_"], [name^="easproj_"]
