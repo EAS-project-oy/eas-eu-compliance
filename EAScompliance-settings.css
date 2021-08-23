@@ -1,0 +1,17 @@
+:root {
+  --settings-fg-color: #0080ff;
+  --settings-bg-color: #c1e0ff;
+}
+
+[id^="easproj_"], [class^="easproj_"], [for^="easproj_"], [name^="easproj_"]
+{
+  color: var(--settings-fg-color) !important;
+}
+
+select[name^="easproj_"] option {
+  background-color: var(--settings-bg-color) !important;
+}
+
+.easproject_settings .titledesc {
+  color: var(--settings-fg-color) !important;
+}

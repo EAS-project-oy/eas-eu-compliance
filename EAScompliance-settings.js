@@ -20,4 +20,9 @@ jQuery(document).ready(function($) {
     }
 
 
+    if ($('.nav-tab-active').text() === 'EAS EU compliance') {
+        $('#mainform').addClass('easproject_settings')
+    }
+
+
 })

@@ -102,6 +102,9 @@ if (is_active()) {
     add_action('admin_enqueue_scripts', 'EAScompliance_settings_scripts');
 }
 function EAScompliance_settings_scripts() {
+    // include css
+    wp_enqueue_style( 'EAScompliance', plugins_url( '/EAScompliance-settings.css', __FILE__ ));
+
     // include javascript
     wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance-settings.js', __FILE__ ), array('jquery'));
 };
