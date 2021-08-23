@@ -560,7 +560,8 @@ function EAScompliance_redirect_confirm() {
             $item['EAScompliance SET'] = false;
 
             //redirect back to checkout
-            return wp_safe_redirect( wc_get_checkout_url() );
+            wp_safe_redirect( wc_get_checkout_url() );
+            exit();
         }
 
         $jdebug['step'] = 'receive checkout token';
@@ -695,7 +696,8 @@ function EAScompliance_redirect_confirm() {
     }
 
     //redirect back to checkout
-    return wp_safe_redirect( wc_get_checkout_url() );
+    wp_safe_redirect( wc_get_checkout_url() );
+    exit();
 };
 
 function EAScompliance_is_set()
