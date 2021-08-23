@@ -64,6 +64,7 @@ function woocommerce_settings_get_option_sql($option) {
     $res =  $wpdb->get_results("
         SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = '$option'
         ", ARRAY_A);
+    if (count($res) == 0) return null;
     return $res[0]['option_value'];
 }
 
@@ -676,9 +677,8 @@ function EAScompliance_redirect_confirm() {
         //DEBUG SAMPLE: return WC()->cart->get_cart();
         $woocommerce->cart->set_session();   // when in ajax calls, saves it.
 
-        logger()->info("redirect_confirm successful\n".print_r($jdebug, true));
-
-        restore_error_handler();
+        logger()->info("redirect_confirm successful");
+        logger()->debug(print_r($jres, true));
     }
     catch (Exception $ex) {
         $jres['status'] = 'error';
@@ -1068,14 +1068,14 @@ function EAScompliance_settings(){
         , 'type' => 'checkbox'
         , 'desc' => 'Enable EAS EU Compliance'
         , 'id'   => 'easproj_active'
-        , 'default' => 'yes'
+        , 'default' => 'no'
         )
     , 'debug' => array(
           'name' => 'Debug'
         , 'type' => 'checkbox'
         , 'desc' => 'Log debug messages'
         , 'id'   => 'easproj_debug'
-        , 'default' => 'yes'
+        , 'default' => 'no'
         )
     , 'EAS_API_URL' => array(
           'name' => 'EAS API Base URL'
