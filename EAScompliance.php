@@ -772,32 +772,83 @@ function  woocommerce_checkout_create_order_tax_item ($order_item_tax, $tax_rate
     }
 }
 
-// Order review Tax
+// Order review Tax field
 if (is_active()) {
-    add_filter('woocommerce_cart_totals_taxes_total_html', 'woocommerce_cart_totals_taxes_total_html', 10);
+    add_filter('woocommerce_cart_get_taxes', 'woocommerce_cart_get_taxes', 10);
 }
-function  woocommerce_cart_totals_taxes_total_html () {
+function  woocommerce_cart_get_taxes ($total_taxes)
+{
     try {
         set_error_handler('error_handler');
 
-        $total = WC()->cart->get_taxes_total(true, false);
-        if (EAScompliance_is_set()) {
-            $cart_items = array_values(WC()->cart->get_cart_contents());
-            foreach($cart_items as $cart_item) {
-                $total += $cart_item['EAScompliance AMOUNT'];
-            }
+        if (!EAScompliance_is_set()) {
+            return $total_taxes;
         }
-        return wc_price(wc_format_decimal( $total, wc_get_price_decimals() ));
+
+        $tax_rate_name = 'EAScompliance';
+        global $wpdb;
+        $tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+        $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+
+        $total = 0;
+        $cart_items = array_values(WC()->cart->get_cart_contents());
+        foreach($cart_items as $cart_item) {
+            $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+        }
+
+        $total_taxes[$tax_rate_id0] += $total;
+
+        return $total_taxes;
     }
     catch (Exception $ex) {
         log_exception($ex);
         throw $ex;
     }
-    finally {
+        finally {
         restore_error_handler();
     }
 }
-// Order review Total
+
+// Fix tax_rate for Klarna plugin:
+// klarna-payments-for-woocommerce/classes/requests/helpers/class-kp-order-lines.php:158
+//  'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
+if (is_active()) {
+    add_filter('woocommerce_cart_totals_get_item_tax_rates', 'woocommerce_cart_totals_get_item_tax_rates', 10, 3);
+}
+function  woocommerce_cart_totals_get_item_tax_rates ($item_tax_rates, $item, $cart)
+{
+    try {
+        set_error_handler('error_handler');
+
+        if (!EAScompliance_is_set()) {
+            return $item_tax_rates;
+        }
+
+        $tax_rate_name = 'EAScompliance';
+        global $wpdb;
+        $tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+        $tax_rate_id0 = intval($tax_rates[0]['tax_rate_id']);
+
+        $cart_items = $cart->get_cart();
+        $item_tax = $cart_items[$item->key]['EAScompliance AMOUNT'];
+        $item_total = $cart_items[$item->key]['line_total'];
+
+        $item_tax_rates[$tax_rate_id0]['rate'] = intval(floor(10000 * $item_tax / $item_total) / 10000);
+
+        return $item_tax_rates;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+        finally {
+        restore_error_handler();
+    }
+}
+
+
+
+// Order review Total field
 if (is_active()) {
     add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
 }
@@ -810,7 +861,7 @@ function  woocommerce_cart_totals_order_total_html2 ($value) {
         if (EAScompliance_is_set()) {
             $cart_items = array_values(WC()->cart->get_cart_contents());
             foreach ($cart_items as $cart_item) {
-                $total += $cart_item['EAScompliance AMOUNT'];
+                $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
             }
         }
         return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
@@ -1200,7 +1251,7 @@ function woocommerce_settings_start() {
         $shipping_methods_saved = $shipping_methods_saved ? $shipping_methods_saved : array();
 
         if (array_diff($shipping_methods_latest, $shipping_methods_saved)) {
-            WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update plugin setting.');
+            WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update EAS EU compliance plugin setting.');
         }
     }
     catch (Exception $ex) {
