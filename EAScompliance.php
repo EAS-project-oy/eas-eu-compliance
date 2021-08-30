@@ -1170,6 +1170,7 @@ function EAScompliance_settings(){
     , 'shipping_methods_postal' => array(
           'name' => 'Shipping methods by post'
         , 'type' => 'multiselect'
+        , 'class' => 'wc-enhanced-select'
         , 'desc' => 'Select shipping methods for delivery by post'
         , 'id'   => 'easproj_shipping_method_postal'
         , 'options' => $shipping_methods
