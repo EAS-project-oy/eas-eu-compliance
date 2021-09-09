@@ -13,7 +13,7 @@
  */
 
 
-const DEVELOP = true;
+const DEVELOP = false;
 
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
@@ -904,9 +904,6 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
         }
         else {
             $order = wc_get_order($order_id);
-            logger()->info('Klarna order_id '.print_r($order_id, true));
-            logger()->info('Klarna $order_lines before '.print_r($klarna_order_lines, true));
-
             $ix = 0;
             foreach($order->get_data()['line_items'] as $order_item) {
                 $product = wc_get_product($order_item->get_product_id());
@@ -926,6 +923,7 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
                 $ix += 1;
             }
 
+            logger()->info('Klarna order_id '.print_r($order_id, true));
             logger()->info('Klarna $order_lines after '.print_r($klarna_order_lines, true));
             return $klarna_order_lines;
         }
