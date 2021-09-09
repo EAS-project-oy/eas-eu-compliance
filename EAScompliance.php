@@ -13,7 +13,7 @@
  */
 
 
-const DEVELOP = false;
+const DEVELOP = true;
 
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
@@ -884,8 +884,6 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
             return $klarna_order_lines;
         }
 
-        logger()->info('Klarna $order_lines before '.print_r($klarna_order_lines, true));
-
         if (! $order_id) {
             $ix = 0;
             foreach(WC()->cart->cart_contents as $k=>$cart_item) {
@@ -906,6 +904,8 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
         }
         else {
             $order = wc_get_order($order_id);
+            logger()->info('Klarna order_id '.print_r($order_id, true));
+            logger()->info('Klarna $order_lines before '.print_r($klarna_order_lines, true));
 
             $ix = 0;
             foreach($order->get_data()['line_items'] as $order_item) {
@@ -915,6 +915,7 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
                     'name'                  => $product->get_name(),
                     'quantity'              => $order_item->get_quantity(),
                     'unit_price'            => round(100.0 * ( $order_item->get_subtotal() + $order_item->get_subtotal_tax() ) / $order_item->get_quantity()),
+                    'tax_rate'            => -1,
                     'total_amount'          => round(100.0 * ($order_item->get_total()+$order_item->get_total_tax())),
                     'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
                     'total_discount_amount' => 0,
@@ -925,11 +926,10 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
                 $ix += 1;
             }
 
-            logger()->info('Klarna order_id '.print_r($order_id, true));
+            logger()->info('Klarna $order_lines after '.print_r($klarna_order_lines, true));
             return $klarna_order_lines;
         }
 
-        logger()->info('Klarna $order_lines after '.print_r($klarna_order_lines, true));
         return $klarna_order_lines;
     }
     catch (Exception $ex) {
