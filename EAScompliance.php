@@ -709,20 +709,45 @@ function EAScompliance_redirect_confirm() {
 
 function EAScompliance_is_set()
 {
-    $cart = WC()->cart;
-    $k = array_key_first ($cart->get_cart());
-    $item = $cart->get_cart_contents()[$k];
-    if (!array_key_exists('EAScompliance SET', $item)) return false;
-    return ($item['EAScompliance SET'] === true);
+    try {
+        set_error_handler('error_handler');
+
+        $cart = WC()->cart;
+        $k = array_key_first ($cart->get_cart());
+        if ($k === null) return false;
+
+        $item = $cart->get_cart_contents()[$k];
+        if (!array_key_exists('EAScompliance SET', $item)) return false;
+        return ($item['EAScompliance SET'] === true);
+
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 function EAScompliance_needs_recalculate()
 {
-    $cart = WC()->cart;
-    $k = array_key_first ($cart->get_cart());
-    $item = $cart->get_cart_contents()[$k];
-    if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) return false;
-    return ($item['EAScompliance NEEDS RECALCULATE'] === true);
+    try {
+        set_error_handler('error_handler');
+
+        $cart = WC()->cart;
+        $k = array_key_first ($cart->get_cart());
+        $item = $cart->get_cart_contents()[$k];
+        if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) return false;
+        return ($item['EAScompliance NEEDS RECALCULATE'] === true);
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
 }
 
 
@@ -846,6 +871,75 @@ function  woocommerce_cart_totals_get_item_tax_rates ($item_tax_rates, $item, $c
     }
 }
 
+//Klarna plugin hook to calculate lines submitted
+if (is_active()) {
+    add_filter('kp_wc_api_order_lines', 'kp_wc_api_order_lines', 10, 3);
+}
+function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
+{
+    try {
+        set_error_handler('error_handler');
+
+        if (!EAScompliance_is_set()) {
+            return $klarna_order_lines;
+        }
+
+        logger()->info('Klarna $order_lines before '.print_r($klarna_order_lines, true));
+
+        if (! $order_id) {
+            $ix = 0;
+            foreach(WC()->cart->cart_contents as $k=>$cart_item) {
+                $klarna_item = array(
+                    'reference'             => $cart_item['data']->get_sku(),
+                    'name'                  => $cart_item['data']->get_name(),
+                    'quantity'              => $cart_item['quantity'],
+                    'unit_price'            => round(100.0 * $cart_item['line_total'] / $cart_item['quantity']),
+                    'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ($cart_item['line_total']-$cart_item['line_tax'])),
+                    'total_amount'          => round(100.0 * $cart_item['line_total']),
+                    'total_tax_amount'      => round(100.0 * $cart_item['line_tax']),
+                    'total_discount_amount' => 0,
+                );
+
+                $klarna_order_lines[$ix] = $klarna_item;
+                $ix += 1;
+            }
+        }
+        else {
+            $order = wc_get_order($order_id);
+
+            $ix = 0;
+            foreach($order->get_data()['line_items'] as $order_item) {
+                $product = wc_get_product($order_item->get_product_id());
+                $klarna_item = array(
+                    'reference'             => $product->get_sku(),
+                    'name'                  => $product->get_name(),
+                    'quantity'              => $order_item->get_quantity(),
+                    'unit_price'            => round(100.0 * ( $order_item->get_subtotal() + $order_item->get_subtotal_tax() ) / $order_item->get_quantity()),
+                    'total_amount'          => round(100.0 * ($order_item->get_total()+$order_item->get_total_tax())),
+                    'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
+                    'total_discount_amount' => 0,
+                );
+                $klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ($klarna_item['total_amount']-$klarna_item['total_tax_amount']));
+
+                $klarna_order_lines[$ix] =$klarna_item;
+                $ix += 1;
+            }
+
+            logger()->info('Klarna order_id '.print_r($order_id, true));
+            return $klarna_order_lines;
+        }
+
+        logger()->info('Klarna $order_lines after '.print_r($klarna_order_lines, true));
+        return $klarna_order_lines;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+}
 
 
 // Order review Total field
@@ -876,7 +970,7 @@ function  woocommerce_cart_totals_order_total_html2 ($value) {
 }
 
 
-//// Replace order_item taxes with customs duties during Recalculate
+// Replace order_item taxes with customs duties during Recalculate
 if (is_active()) {
     add_filter('woocommerce_order_item_after_calculate_taxes', 'woocommerce_order_item_after_calculate_taxes', 10, 2);
 }
