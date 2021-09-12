@@ -125,7 +125,7 @@ jQuery(document).ready(function($) {
             (
                 $('.EAScompliance_status').text() == 'present'
                 && $('.EAScompliance_status').attr('needs-recalculate') === 'no'
-                && $(".woocommerce-error").length == 0 // error notice appears when RE-CALCULATE is necessary
+                //&& $(".woocommerce-error").length == 0 // error notice appears when RE-CALCULATE is necessary
             )
         ) {
             $('.button_calc').hide();
