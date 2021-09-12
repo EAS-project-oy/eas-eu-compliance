@@ -620,8 +620,8 @@ function EAScompliance_redirect_confirm() {
         // Sample $payload_j:
         //  {
         //      "eas_fee": 3.65,
-        //      "merchandise_cost": 91,
-        //      "delivery_charge": 5,
+        //      "merchandise_cost": 91, // sum of items cost without VAT AND eas_fee
+        //      "delivery_charge": 5, // delivery charge without VAT
         //      "order_id": "67c8825a612a586fa82f5c8c08bba662",
         //      "items": [
         //        {
@@ -681,6 +681,8 @@ function EAScompliance_redirect_confirm() {
         $item['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
         $item['EAScompliance SET'] = true;
         $item['EAScompliance NEEDS RECALCULATE'] = false;
+        $item['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge'];
+        $item['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
 
         //DEBUG SAMPLE: return WC()->cart->get_cart();
         $woocommerce->cart->set_session();   // when in ajax calls, saves it.
@@ -951,8 +953,15 @@ function  woocommerce_cart_totals_order_total_html2 ($value) {
         $total = WC()->cart->get_total('edit');
 
         if (EAScompliance_is_set()) {
+
             $cart_items = array_values(WC()->cart->get_cart_contents());
+            $first = true;
             foreach ($cart_items as $cart_item) {
+                if ($first) {
+                    //replace cart total with one from $payload_j['merchandise_cost']
+                    $total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
+                    $first = false;
+                }
                 $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
             }
         }
@@ -986,6 +995,39 @@ function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_
             'total' => array($tax_rate_id0 => $amount),
             'subtotal' => array($tax_rate_id0 => $amount),
         ));
+    }
+    catch (Exception $ex) {
+            log_exception($ex);
+            throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+}
+
+
+//Replace chosen shipping method cost with $payload_j['delivery_charge']
+if (is_active()) {
+    add_filter('woocommerce_shipping_packages', 'woocommerce_shipping_packages', 10, 1);
+}
+function  woocommerce_shipping_packages ($packages) {
+    try {
+        set_error_handler('error_handler');
+
+        if (!EAScompliance_is_set()) {
+            return $packages;
+        }
+
+        foreach($packages as $px=>&$p ) {
+            $cart_item0 = $p['contents'][array_key_first($p['contents'])];
+
+            foreach(WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
+                 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+            }
+
+        }
+
+        return $packages;
     }
     catch (Exception $ex) {
             log_exception($ex);
