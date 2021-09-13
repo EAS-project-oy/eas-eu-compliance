@@ -443,13 +443,13 @@ function EAScompliance_ajaxhandler() {
         $jdebug['step'] = 'send /calculate request';
         $calc_url = woocommerce_settings_get_option('easproj_eas_api_url').'/calculate';
         $calc_body = file_get_contents($calc_url, false, $context);
+        $jdebug['CALC response body'] = $calc_body;
 
         $calc_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
         if ($calc_status != '200') {
             $jdebug['CALC response headers'] = $http_response_header;
             $jdebug['CALC response status'] = $calc_status;
-            $jdebug['CALC response body'] = $calc_body;
 
             $error_message = $http_response_header[0];
 
@@ -507,6 +507,13 @@ function EAScompliance_ajaxhandler() {
         $redirect_uri = admin_url('admin-ajax.php').'?action=EAScompliance_redirect_confirm'.'&confirm_hash='.$confirm_hash;
 
         $calc_response = str_replace('redirect_uri=undefined',  "redirect_uri=" . $redirect_uri, $calc_response);
+
+
+        //when ordering Hoodie-France (attribute easproj_warehouse_country is France), then redirect_uri is not present and $calc_response starts from 'undefinded?'
+        if (substr($calc_response,0,  strlen('undefined?')) == 'undefined?') {
+            $calc_response = substr($calc_response,strlen('undefined'), strlen($redirect_uri))."redirect_uri=" . $redirect_uri;
+        }
+
         $jdebug['redirect_uri'] = $redirect_uri;
         $jdebug['CALC response'] = $calc_response;
 
