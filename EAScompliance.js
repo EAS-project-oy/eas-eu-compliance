@@ -43,16 +43,14 @@ jQuery(document).ready(function($) {
                 , dataType: 'json'
                 , success: function (j) {
                     unblock($('.EAScompliance'));
-                    $('.button_calc').text('Customs Duties Added!')
+                    $('.button_calc').text('Customs taxes and duties added...')
                     $('.EAScompliance_status').html('Waiting for Customs Duties Calculation and <a href="'+j['CALC response']+'" target="_self">confirmation</a> for confirmation details')
 
                     $('.EAScompliance_debug_output').val(JSON.stringify(j, null,' '))
                     console.log(j)
 
                     if (j.status === 'ok') {
-                        //sometimes eas_checkout_token is appended with '?', while should be '&':
-                        redirect_to = j['CALC response'].replace('?eas_checkout_token=', '&eas_checkout_token=')
-                        window.open(redirect_to, '_self');
+                        window.open(j['CALC response'], '_self');
                     } else {
                         $el = $('<div class="woocommerce-error">').text(j['message']);
                         $('.woocommerce-notices-wrapper:first').prepend($el);
