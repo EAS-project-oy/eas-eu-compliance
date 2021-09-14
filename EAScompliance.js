@@ -50,7 +50,9 @@ jQuery(document).ready(function($) {
                     console.log(j)
 
                     if (j.status === 'ok') {
-                        window.open(j['CALC response'], '_self');
+                        //sometimes eas_checkout_token is appended with '?', while should be '&':
+                        redirect_to = j['CALC response'].replace('?eas_checkout_token=', '&eas_checkout_token=')
+                        window.open(redirect_to, '_self');
                     } else {
                         $el = $('<div class="woocommerce-error">').text(j['message']);
                         $('.woocommerce-notices-wrapper:first').prepend($el);

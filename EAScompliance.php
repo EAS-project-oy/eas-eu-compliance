@@ -423,12 +423,17 @@ function EAScompliance_ajaxhandler() {
         $jdebug['CALC request'] = $calc_jreq;
         //DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);
 
+        $confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR));
+        $redirect_uri = admin_url('admin-ajax.php').'?action=EAScompliance_redirect_confirm'.'&confirm_hash='.$confirm_hash;
+        $jdebug['redirect_uri'] = $redirect_uri;
+
         $jdebug['step'] = 'prepare EAS API /calculate request';
         $options = array(
             'http' => array(
                 'method'  => 'POST'
-              , 'header'  => "Content-type: application/json\r\n"
-                    . 'Authorization: Bearer '. $auth_token."\r\n"
+              , 'header'  => 'Content-type: application/json' . "\r\n"
+                    . 'Authorization: Bearer '. $auth_token . "\r\n"
+                    . 'x-redirect-uri: '. $redirect_uri . "\r\n"
               , 'content' => json_encode($calc_jreq, JSON_THROW_ON_ERROR)
               , 'ignore_errors' => true
             )
@@ -499,25 +504,9 @@ function EAScompliance_ajaxhandler() {
         $jdebug['step'] = 'parse /calculate response';
         // CALC response should be quoted link to confirmation page: "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"
         $calc_response = trim(json_decode($calc_body));
-
-        // replace redirect_uri=undefined with correct link
-        // redirect URL to redirect_uri_checker
-        $confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR));
-
-        $redirect_uri = admin_url('admin-ajax.php').'?action=EAScompliance_redirect_confirm'.'&confirm_hash='.$confirm_hash;
-
-        $calc_response = str_replace('redirect_uri=undefined',  "redirect_uri=" . $redirect_uri, $calc_response);
-
-
-        //when ordering Hoodie-France (attribute easproj_warehouse_country is France), then redirect_uri is not present and $calc_response starts from 'undefinded?'
-        if (substr($calc_response,0,  strlen('undefined?')) == 'undefined?') {
-            $calc_response = substr($calc_response,strlen('undefined'), strlen($redirect_uri))."redirect_uri=" . $redirect_uri;
-        }
-
-        $jdebug['redirect_uri'] = $redirect_uri;
         $jdebug['CALC response'] = $calc_response;
 
-        logger()->info('/calculate request successful');
+        logger()->info('/calculate request successful, $calc_response '.$calc_response);
 //        throw new Exception('debug');
 
     }
