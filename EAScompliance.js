@@ -118,14 +118,23 @@ jQuery(document).ready(function($) {
         }
         european_countries = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE'.split(' ')
 
+        //take needs-recalculate from server because it may change without checkout page reloading
+        needs_recalculate = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'EAScompliance_needs_recalculate_ajax'}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })})).needs_recalculate;
+
         if
         (
             european_countries.indexOf(delivery_country) < 0
             ||
             (
                 $('.EAScompliance_status').text() == 'present'
-                && $('.EAScompliance_status').attr('needs-recalculate') === 'no'
-                //&& $(".woocommerce-error").length == 0 // error notice appears when RE-CALCULATE is necessary
+                && needs_recalculate === false
             )
         ) {
             $('.button_calc').hide();

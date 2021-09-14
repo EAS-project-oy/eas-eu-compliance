@@ -13,7 +13,7 @@
  */
 
 
-const DEVELOP = false;
+const DEVELOP = true;
 
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
@@ -754,6 +754,31 @@ function EAScompliance_needs_recalculate()
 
 
 
+//// check needs_recalculate via ajax
+if (is_active()) {
+    add_action('wp_ajax_EAScompliance_needs_recalculate_ajax', 'EAScompliance_needs_recalculate_ajax');
+    add_action('wp_ajax_nopriv_EAScompliance_needs_recalculate_ajax', 'EAScompliance_needs_recalculate_ajax');
+};
+function EAScompliance_needs_recalculate_ajax() {
+    try {
+        set_error_handler('error_handler');
+
+        $needs_recalculate = EAScompliance_needs_recalculate();
+        wp_send_json(array('needs_recalculate' => $needs_recalculate));
+
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+};
+
+
+
+
 //// Replace order_item taxes with EAScompliance during order creation
 if (is_active()) {
     add_filter('woocommerce_checkout_create_order_tax_item', 'woocommerce_checkout_create_order_tax_item', 10, 3);
@@ -1023,6 +1048,11 @@ function  woocommerce_shipping_packages ($packages) {
 
             foreach(WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
                  $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+
+                 //update $calc_jreq_saved with new delivery_cost
+                 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+                 $calc_jreq_saved['delivery_cost'] = (int)$cart_item0['EAScompliance DELIVERY CHARGE'];
+                 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
             }
 
         }
@@ -1079,12 +1109,12 @@ function woocommerce_checkout_create_order($order)
         $cart = WC()->cart;
         $k = array_key_first ($cart->get_cart());
         $item = &$woocommerce->cart->cart_contents[$k];
-        $item['EAS API REQUEST JSON ORDERED'] = $calc_jreq_new;
         $item['EAScompliance NEEDS RECALCULATE'] = false;
         $woocommerce->cart->set_session();
 
         if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
         {
+            logger()->debug('$calc_jreq_saved '.print_r($calc_jreq_saved, true).'  $calc_jreq_new  '.print_r($calc_jreq_new, true));
             // reset EAScompliance if json's mismatch
             $item['EAScompliance NEEDS RECALCULATE'] = true;
             $woocommerce->cart->set_session();
