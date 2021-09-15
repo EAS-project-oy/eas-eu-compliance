@@ -13,7 +13,7 @@
  */
 
 
-const DEVELOP = true;
+const DEVELOP = false;
 
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/

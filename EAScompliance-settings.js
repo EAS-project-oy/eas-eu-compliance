@@ -24,5 +24,8 @@ jQuery(document).ready(function($) {
         $('#mainform').addClass('easproject_settings')
     }
 
+    //hiding title, because it is rendered when 'General' tab is active
+    $('.woocommerce-layout__header-heading:contains(\'EAS EU compliance\')').hide()
+
 
 })
