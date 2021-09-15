@@ -22,10 +22,11 @@ jQuery(document).ready(function($) {
 
     if ($('.nav-tab-active').text() === 'EAS EU compliance') {
         $('#mainform').addClass('easproject_settings')
+    } else {
+        //hiding title, because it is rendered when 'General' tab is active
+        $('.woocommerce-layout__header-heading:contains(\'EAS EU compliance\')').hide()
     }
 
-    //hiding title, because it is rendered when 'General' tab is active
-    $('.woocommerce-layout__header-heading:contains(\'EAS EU compliance\')').hide()
 
 
 })
