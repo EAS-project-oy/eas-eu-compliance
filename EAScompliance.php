@@ -664,6 +664,7 @@ function EAScompliance_redirect_confirm() {
             $tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
 
             $item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
+            $item['EAScompliance unit_cost'] = $payload_item['unit_cost'];
             $item['EAScompliance ITEM'] = $payload_item;
             $payload_item_k += 1;
         }
@@ -811,7 +812,22 @@ function  woocommerce_checkout_create_order_tax_item ($order_item_tax, $tax_rate
             }
             $order_item_tax->save();
             $order->update_taxes();
-            $order->set_total($order->get_total()+$total);
+
+            //Calculate Order Total
+            $total = 0;
+            $cart_items = array_values(WC()->cart->get_cart_contents());
+            $first = true;
+            foreach ($cart_items as $cart_item) {
+                if ($first) {
+                    //replace cart total with one from $payload_j['merchandise_cost']
+                    $total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
+                    $first = false;
+                }
+                $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+            }
+
+            //Set Order Total
+            $order->set_total($total);
         }
         return $order_item_tax;
     }
@@ -860,6 +876,121 @@ function  woocommerce_cart_get_taxes ($total_taxes)
         restore_error_handler();
     }
 }
+
+
+
+// Checkout Order review Item Subtotal
+if (is_active()) {
+    add_filter('woocommerce_cart_item_subtotal', 'woocommerce_cart_item_subtotal', 10, 3);
+}
+function  woocommerce_cart_item_subtotal ($price_html, $cart_item, $cart_item_key )
+{
+    try {
+        set_error_handler('error_handler');
+
+        if (!EAScompliance_is_set()) {
+            return $price_html;
+        }
+
+        return wc_price($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+        finally {
+        restore_error_handler();
+    }
+}
+
+
+// Checkout Order review Cart Subtotal
+if (is_active()) {
+    add_filter('woocommerce_cart_subtotal', 'woocommerce_cart_subtotal', 10, 3);
+}
+function  woocommerce_cart_subtotal ($cart_subtotal, $compound, $cart )
+{
+    try {
+        set_error_handler('error_handler');
+
+        if (!EAScompliance_is_set()) {
+            return $cart_subtotal;
+        }
+
+        $subtotal = 0;
+        $cart_items = array_values(WC()->cart->get_cart_contents());
+        foreach($cart_items as $cart_item) {
+            $subtotal += $cart_item['quantity'] * $cart_item['EAScompliance unit_cost'];
+        }
+
+        return wc_price($subtotal);
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+        finally {
+        restore_error_handler();
+    }
+}
+
+
+// Checkout Order review Total field
+if (is_active()) {
+    add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
+}
+function  woocommerce_cart_totals_order_total_html2 ($value) {
+    try {
+        set_error_handler('error_handler');
+
+        $total = WC()->cart->get_total('edit');
+
+        if (EAScompliance_is_set()) {
+
+            $cart_items = array_values(WC()->cart->get_cart_contents());
+            $first = true;
+            foreach ($cart_items as $cart_item) {
+                if ($first) {
+                    //replace cart total with one from $payload_j['merchandise_cost']
+                    $total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
+                    $first = false;
+                }
+                $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+            }
+        }
+        return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+}
+
+//// Order Items
+if (is_active()) {
+    add_action('woocommerce_checkout_create_order_line_item', 'woocommerce_checkout_create_order_line_item', 10, 4);
+};
+function woocommerce_checkout_create_order_line_item($order_item_product, $cart_item_key, $values, $order) {
+    try {
+        set_error_handler('error_handler');
+
+        $cart_item = WC()->cart->get_cart()[$cart_item_key];
+        $order_item_product->set_subtotal($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
+        $order_item_product->set_total($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
+
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+};
+
 
 // Fix tax_rate for Klarna plugin:
 // klarna-payments-for-woocommerce/classes/requests/helpers/class-kp-order-lines.php:158
@@ -960,41 +1091,6 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
     catch (Exception $ex) {
         log_exception($ex);
         throw $ex;
-    }
-    finally {
-        restore_error_handler();
-    }
-}
-
-
-// Order review Total field
-if (is_active()) {
-    add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
-}
-function  woocommerce_cart_totals_order_total_html2 ($value) {
-    try {
-        set_error_handler('error_handler');
-
-        $total = WC()->cart->get_total('edit');
-
-        if (EAScompliance_is_set()) {
-
-            $cart_items = array_values(WC()->cart->get_cart_contents());
-            $first = true;
-            foreach ($cart_items as $cart_item) {
-                if ($first) {
-                    //replace cart total with one from $payload_j['merchandise_cost']
-                    $total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
-                    $first = false;
-                }
-                $total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
-            }
-        }
-        return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
-    }
-    catch (Exception $ex) {
-            log_exception($ex);
-            throw $ex;
     }
     finally {
         restore_error_handler();
