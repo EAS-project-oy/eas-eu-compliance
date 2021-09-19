@@ -1000,7 +1000,11 @@ function EAScompliance_Klarna_settings_fix($kp_settings) {
     try {
         set_error_handler('error_handler');
 
-        $country = WC()->customer->get_billing_country();
+        $customer = WC()->customer;
+        if (!$customer) {
+            return $kp_settings;
+        }
+        $country = $customer->get_billing_country();
         if ($country != 'FI') {
             foreach(array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
                 if (!array_key_exists($s.strtolower( $country ), $kp_settings)) {
