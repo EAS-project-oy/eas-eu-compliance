@@ -992,6 +992,36 @@ function woocommerce_checkout_create_order_line_item($order_item_product, $cart_
 };
 
 
+// Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
+if (is_active()) {
+    add_filter('option_woocommerce_klarna_payments_settings', 'EAScompliance_Klarna_settings_fix');
+}
+function EAScompliance_Klarna_settings_fix($kp_settings) {
+    try {
+        set_error_handler('error_handler');
+
+        $country = WC()->customer->get_billing_country();
+        if ($country != 'FI') {
+            foreach(array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
+                if (!array_key_exists($s.strtolower( $country ), $kp_settings)) {
+                    $kp_settings[$s . strtolower( $country )] = -1;
+                }
+            }
+        }
+        return $kp_settings;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        restore_error_handler();
+    }
+
+
+}
+
+
 // Fix tax_rate for Klarna plugin:
 // klarna-payments-for-woocommerce/classes/requests/helpers/class-kp-order-lines.php:158
 //  'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
