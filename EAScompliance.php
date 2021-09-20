@@ -977,6 +977,10 @@ function woocommerce_checkout_create_order_line_item($order_item_product, $cart_
     try {
         set_error_handler('error_handler');
 
+        if (!EAScompliance_is_set()) {
+            return;
+        }
+
         $cart_item = WC()->cart->get_cart()[$cart_item_key];
         $order_item_product->set_subtotal($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
         $order_item_product->set_total($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
@@ -1177,7 +1181,11 @@ function  woocommerce_shipping_packages ($packages) {
             $cart_item0 = $p['contents'][array_key_first($p['contents'])];
 
             foreach(WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
-                 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+                 if (array_key_exists($shm, $packages[$px]['rates'])) {
+                     $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+                 }
+
+
 
                  //update $calc_jreq_saved with new delivery_cost
                  $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
