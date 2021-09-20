@@ -1185,8 +1185,6 @@ function  woocommerce_shipping_packages ($packages) {
                      $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
                  }
 
-
-
                  //update $calc_jreq_saved with new delivery_cost
                  $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
                  $calc_jreq_saved['delivery_cost'] = (int)$cart_item0['EAScompliance DELIVERY CHARGE'];
@@ -1255,6 +1253,8 @@ function woocommerce_checkout_create_order($order)
             logger()->debug('$calc_jreq_saved '.print_r($calc_jreq_saved, true).'  $calc_jreq_new  '.print_r($calc_jreq_new, true));
             // reset EAScompliance if json's mismatch
             $item['EAScompliance NEEDS RECALCULATE'] = true;
+            // reset calculate of cart since calculate may have changed previous values
+            $item['EAScompliance SET'] = false;
             $woocommerce->cart->set_session();
             throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
         }
