@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // change error messages into ErrorException for this script
-function error_handler($severity, $message, $file, $line) {
+function error_handler( $severity, $message, $file, $line) {
 	throw new ErrorException($message, 0, $severity, $file, $line);
 }
 set_error_handler('error_handler');
@@ -46,7 +46,7 @@ function logger() {
 	return $l;
 }
 
-function log_exception(Exception $ex) {
+function log_exception( Exception $ex) {
 	$txt = '';
 	while (true) {
 		$txt .= "\n".$ex->getMessage().' @'.$ex->getFile().':'.$ex->getLine();
@@ -59,7 +59,7 @@ function log_exception(Exception $ex) {
 }
 
 // gets woocommerce settings when woocommerce_settings_get_option is undefined
-function woocommerce_settings_get_option_sql($option) {
+function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
 	$res =  $wpdb->get_results("
 		SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = '$option'
@@ -784,7 +784,7 @@ function EAScompliance_needs_recalculate_ajax() {
 if (is_active()) {
 	add_filter('woocommerce_checkout_create_order_tax_item', 'woocommerce_checkout_create_order_tax_item', 10, 3);
 }
-function  woocommerce_checkout_create_order_tax_item ($order_item_tax, $tax_rate_id, $order) {
+function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order) {
 	try {
 		set_error_handler('error_handler');
 		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
@@ -844,7 +844,7 @@ function  woocommerce_checkout_create_order_tax_item ($order_item_tax, $tax_rate
 if (is_active()) {
 	add_filter('woocommerce_cart_get_taxes', 'woocommerce_cart_get_taxes', 10);
 }
-function  woocommerce_cart_get_taxes ($total_taxes)
+function woocommerce_cart_get_taxes( $total_taxes)
 {
 	try {
 		set_error_handler('error_handler');
@@ -883,7 +883,7 @@ function  woocommerce_cart_get_taxes ($total_taxes)
 if (is_active()) {
 	add_filter('woocommerce_cart_item_subtotal', 'woocommerce_cart_item_subtotal', 10, 3);
 }
-function  woocommerce_cart_item_subtotal ($price_html, $cart_item, $cart_item_key )
+function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key )
 {
 	try {
 		set_error_handler('error_handler');
@@ -908,7 +908,7 @@ function  woocommerce_cart_item_subtotal ($price_html, $cart_item, $cart_item_ke
 if (is_active()) {
 	add_filter('woocommerce_cart_subtotal', 'woocommerce_cart_subtotal', 10, 3);
 }
-function  woocommerce_cart_subtotal ($cart_subtotal, $compound, $cart )
+function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart )
 {
 	try {
 		set_error_handler('error_handler');
@@ -939,7 +939,7 @@ function  woocommerce_cart_subtotal ($cart_subtotal, $compound, $cart )
 if (is_active()) {
 	add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
 }
-function  woocommerce_cart_totals_order_total_html2 ($value) {
+function woocommerce_cart_totals_order_total_html2( $value) {
 	try {
 		set_error_handler('error_handler');
 
@@ -973,7 +973,7 @@ function  woocommerce_cart_totals_order_total_html2 ($value) {
 if (is_active()) {
 	add_action('woocommerce_checkout_create_order_line_item', 'woocommerce_checkout_create_order_line_item', 10, 4);
 };
-function woocommerce_checkout_create_order_line_item($order_item_product, $cart_item_key, $values, $order) {
+function woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1000,7 +1000,7 @@ function woocommerce_checkout_create_order_line_item($order_item_product, $cart_
 if (is_active()) {
 	add_filter('option_woocommerce_klarna_payments_settings', 'EAScompliance_Klarna_settings_fix');
 }
-function EAScompliance_Klarna_settings_fix($kp_settings) {
+function EAScompliance_Klarna_settings_fix( $kp_settings) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1036,7 +1036,7 @@ function EAScompliance_Klarna_settings_fix($kp_settings) {
 if (is_active()) {
 	add_filter('woocommerce_cart_totals_get_item_tax_rates', 'woocommerce_cart_totals_get_item_tax_rates', 10, 3);
 }
-function  woocommerce_cart_totals_get_item_tax_rates ($item_tax_rates, $item, $cart)
+function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart)
 {
 	try {
 		set_error_handler('error_handler');
@@ -1071,7 +1071,7 @@ function  woocommerce_cart_totals_get_item_tax_rates ($item_tax_rates, $item, $c
 if (is_active()) {
 	add_filter('kp_wc_api_order_lines', 'kp_wc_api_order_lines', 10, 3);
 }
-function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
+function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 {
 	try {
 		set_error_handler('error_handler');
@@ -1140,7 +1140,7 @@ function  kp_wc_api_order_lines($klarna_order_lines, $order_id)
 if (is_active()) {
 	add_filter('woocommerce_order_item_after_calculate_taxes', 'woocommerce_order_item_after_calculate_taxes', 10, 2);
 }
-function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_tax_for) {
+function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for) {
 	try {
 		set_error_handler('error_handler');
 		// Recalculate process must set taxes from order_item meta-data 'Customs duties'
@@ -1168,7 +1168,7 @@ function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_
 //if (is_active()) {
 //    add_filter('woocommerce_order_get_tax_totals', 'woocommerce_order_get_tax_totals', 10, 2);
 //}
-//function  woocommerce_order_get_tax_totals ($tax_totals, $order) {
+//function woocommerce_order_get_tax_totals ( $tax_totals, $order) {
 //    try {
 //        set_error_handler('error_handler');
 //
@@ -1193,7 +1193,7 @@ function  woocommerce_order_item_after_calculate_taxes ($order_item, $calculate_
 if (is_active()) {
 	add_filter('woocommerce_shipping_packages', 'woocommerce_shipping_packages', 10, 1);
 }
-function  woocommerce_shipping_packages ($packages) {
+function woocommerce_shipping_packages( $packages) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1234,7 +1234,7 @@ function  woocommerce_shipping_packages ($packages) {
 if (is_active()) {
 	add_action('woocommerce_checkout_create_order', 'woocommerce_checkout_create_order');
 }
-function woocommerce_checkout_create_order($order)
+function woocommerce_checkout_create_order( $order)
 {
 	try {
 		set_error_handler('error_handler');
@@ -1304,7 +1304,7 @@ function woocommerce_checkout_create_order($order)
 if (is_active()) {
 	add_action('woocommerce_checkout_order_created', 'woocommerce_checkout_order_created');
 }
-function woocommerce_checkout_order_created ($order) {
+function woocommerce_checkout_order_created( $order) {
 	//notify EAS API on Order number
 
 	$order_id = $order->get_id();
@@ -1361,7 +1361,7 @@ function woocommerce_checkout_order_created ($order) {
 if (is_active()) {
 	add_action('woocommerce_order_status_changed', 'woocommerce_order_status_changed', 10, 4);
 }
-function woocommerce_order_status_changed($order_id, $status_from, $status_to, $order)
+function woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order)
 {
 	try {
 		set_error_handler('error_handler');
@@ -1469,7 +1469,7 @@ function EAScompliance_settings(){
 		, 'desc' => 'API URL'
 		, 'id'   => 'easproj_eas_api_url'
 		, 'default' => 'https://manager.easproject.com/api'
-	
+
 		)
 	, 'AUTH_client_id' => array(
 		  'name' => 'EAS client ID'
@@ -1925,7 +1925,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 }
 
 //// utility funtion to format strings
-function format($string, $vars) {
+function format( $string, $vars) {
 	$patterns = array_keys($vars);
 	$replacements = array_values($vars);
 	foreach ($patterns as &$pattern) {
@@ -1934,7 +1934,7 @@ function format($string, $vars) {
 	return preg_replace($patterns, $replacements, $string);
 };
 // to avoid undefined index in arrays
-function array_get($arr, $key, $default = null) {
+function array_get( $arr, $key, $default = null) {
 	if (array_key_exists($key, $arr)) {
 		return $arr[$key];
 	}
