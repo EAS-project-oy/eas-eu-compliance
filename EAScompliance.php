@@ -94,10 +94,10 @@ if (is_active()) {
 }
 function EAScompliance_javascript() {
 	// include css
-	wp_enqueue_style( 'EAScompliance-css', plugins_url( '/EAScompliance.css', __FILE__ ));
+	wp_enqueue_style( 'EAScompliance-css', plugins_url( '/EAScompliance.css', __FILE__ ), array(), filemtime(dirname(__FILE__ ) . '/EAScompliance.css'));
 
 	// include javascript
-	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance.js', __FILE__ ), array('jquery'));
+	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance.js', __FILE__ ), array('jquery'), filemtime(dirname(__FILE__ ) . '/EAScompliance.js'));
 
 	// Pass ajax_url to javascript
 	wp_localize_script( 'EAScompliance', 'plugin_ajax_object', array( 'ajax_url' => admin_url('admin-ajax.php') ));
@@ -109,10 +109,10 @@ if (is_active()) {
 }
 function EAScompliance_settings_scripts() {
 	// include css
-	wp_enqueue_style( 'EAScompliance', plugins_url( '/EAScompliance-settings.css', __FILE__ ));
+	wp_enqueue_style( 'EAScompliance', plugins_url( '/EAScompliance-settings.css', __FILE__ ), array(), filemtime(dirname(__FILE__ ) . '/EAScompliance-settings.css'));
 
 	// include javascript
-	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance-settings.js', __FILE__ ), array('jquery'));
+	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance-settings.js', __FILE__ ), array('jquery'), filemtime(dirname(__FILE__ ) . '/EAScompliance-settings.js'));
 };
 
 
