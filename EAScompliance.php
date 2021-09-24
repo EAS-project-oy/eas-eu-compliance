@@ -119,17 +119,16 @@ function EAScompliance_settings_scripts() {
 
 //// Checkout -> Before 'Proceed Order' Hook
 if (is_active()) {
-	add_action( 'woocommerce_review_order_before_payment','woocommerce_review_order_before_payment');
+	add_action( 'woocommerce_review_order_before_payment', 'woocommerce_review_order_before_payment');
 }
-function woocommerce_review_order_before_payment()
-{
+function woocommerce_review_order_before_payment() {
 	$template = '
 				<div class="form-row EAScompliance">
 				<button type="button" class="button alt button_calc">$button_name</button>
 				<p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
 				'
 				.
-				((is_debug() and DEVELOP)?'
+				((is_debug() && DEVELOP)?'
 					<h3>EAScompliance Debug</h3>
 					<p class="EAScompliance_debug">
 					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
@@ -159,7 +158,7 @@ function woocommerce_review_order_before_payment()
 }
 
 //// Debug Console
-if (is_debug() and DEVELOP) {
+if (is_debug() && DEVELOP) {
 	add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
 	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
 };
@@ -487,11 +486,11 @@ function EAScompliance_ajaxhandler() {
 
 			$calc_error = json_decode($calc_body, true);
 
-			if (array_key_exists('code', $calc_error) and array_key_exists('type', $calc_error)) {
+			if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
 				$error_message = $calc_error['code'] . ' ' . $calc_error['type'];
 			}
 
-			if (array_key_exists('data', $calc_error) and array_key_exists('message', $calc_error['data'])) {
+			if (array_key_exists('data', $calc_error) && array_key_exists('message', $calc_error['data'])) {
 				$error_message = $calc_error['data']['message'];
 			}
 
@@ -805,7 +804,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A );
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
-		if ($tax_rate_id == $tax_rate_id0 and EAScompliance_is_set()) {
+		if ($tax_rate_id == $tax_rate_id0 && EAScompliance_is_set()) {
 			$cart_items = array_values(WC()->cart->get_cart_contents());
 
 			$ix = 0;
@@ -1378,7 +1377,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	try {
 		set_error_handler('error_handler');
 
-		if (!(($status_to == 'completed' or $status_to == 'processing') and !($order->get_meta('_easproj_payment_processed')=='yes'))) {
+		if (!(($status_to == 'completed' or $status_to == 'processing') && !($order->get_meta('_easproj_payment_processed')=='yes'))) {
             return;
         }
 
