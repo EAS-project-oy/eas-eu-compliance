@@ -65,9 +65,9 @@ function log_exception( Exception $ex) {
 // gets woocommerce settings when woocommerce_settings_get_option is undefined
 function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
-	$res =  $wpdb->get_results("
-		SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = '$option'
-		", ARRAY_A);
+	$res =  $wpdb->get_results($wpdb->prepare("
+            SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
+		",$option), ARRAY_A);
 	if (count($res) == 0) {
         return null;
     }
@@ -802,7 +802,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
 		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A );
+		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A );
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		if ($tax_rate_id == $tax_rate_id0 and EAScompliance_is_set()) {
@@ -867,7 +867,7 @@ function woocommerce_cart_get_taxes( $total_taxes)
 
 		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		$total = 0;
@@ -1059,7 +1059,7 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 
 		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
 		$tax_rate_id0 = intval($tax_rates[0]['tax_rate_id']);
 
 		$cart_items = $cart->get_cart();
@@ -1158,7 +1158,7 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 		// Recalculate process must set taxes from order_item meta-data 'Customs duties'
 		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = '{$tax_rate_name}'", ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		$amount = $order_item->get_meta('Customs duties');
