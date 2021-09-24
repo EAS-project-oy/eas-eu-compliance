@@ -214,7 +214,7 @@ function get_oauth_token() {
 	error_reporting(E_ALL);
 
 	// request failed
-	if ($auth_response === FALSE) {
+	if ($auth_response === false) {
 		if (is_debug()) {
 			//check php configuration
 			ob_start () ;
@@ -592,7 +592,7 @@ function EAScompliance_redirect_confirm() {
 				)
 		);
 		$jwt_key_response = file_get_contents($jwt_key_url, false, stream_context_create($options));
-		if ($jwt_key_response === FALSE) {
+		if ($jwt_key_response === false) {
 			$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
 			throw new Exception(error_get_last()['message']);
 		}
