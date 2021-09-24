@@ -33,7 +33,9 @@ const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE',
 function logger() {
 
 	static $l = null;
-	if ($l !== null) return $l;
+	if ($l !== null) {
+        return $l;
+    }
 
 	class EASLogHandler extends WC_Log_Handler_File {
 		public function handle( $timestamp, $level, $message, $context ) {
@@ -52,7 +54,9 @@ function log_exception( Exception $ex) {
 		$txt .= "\n".$ex->getMessage().' @'.$ex->getFile().':'.$ex->getLine();
 
 		$ex = $ex->getPrevious();
-		if ($ex == null) break;
+		if ($ex == null) {
+            break;
+        }
 	}
 	$txt = ltrim($txt, "\n");
 	logger()->error($txt);
@@ -64,7 +68,9 @@ function woocommerce_settings_get_option_sql( $option) {
 	$res =  $wpdb->get_results("
 		SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = '$option'
 		", ARRAY_A);
-	if (count($res) == 0) return null;
+	if (count($res) == 0) {
+        return null;
+    }
 	return $res[0]['option_value'];
 }
 
@@ -717,10 +723,14 @@ function EAScompliance_is_set()
 
 		$cart = WC()->cart;
 		$k = array_key_first ($cart->get_cart());
-		if ($k === null) return false;
+		if ($k === null) {
+            return false;
+        }
 
 		$item = $cart->get_cart_contents()[$k];
-		if (!array_key_exists('EAScompliance SET', $item)) return false;
+		if (!array_key_exists('EAScompliance SET', $item)) {
+            return false;
+        }
 		return ($item['EAScompliance SET'] === true);
 
 	}
@@ -741,7 +751,9 @@ function EAScompliance_needs_recalculate()
 		$cart = WC()->cart;
 		$k = array_key_first ($cart->get_cart());
 		$item = $cart->get_cart_contents()[$k];
-		if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) return false;
+		if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) {
+            return false;
+        }
 		return ($item['EAScompliance NEEDS RECALCULATE'] === true);
 	}
 	catch (Exception $ex) {
@@ -1366,8 +1378,9 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	try {
 		set_error_handler('error_handler');
 
-		if (!(($status_to == 'completed' or $status_to == 'processing') and !($order->get_meta('_easproj_payment_processed')=='yes')))
-			return;
+		if (!(($status_to == 'completed' or $status_to == 'processing') and !($order->get_meta('_easproj_payment_processed')=='yes'))) {
+            return;
+        }
 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
