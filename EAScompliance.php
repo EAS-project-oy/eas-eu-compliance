@@ -51,7 +51,7 @@ function logger() {
 function log_exception( Exception $ex) {
 	$txt = '';
 	while (true) {
-		$txt .= "\n".$ex->getMessage().' @'.$ex->getFile().':'.$ex->getLine();
+		$txt .= "\n" . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
 
 		$ex = $ex->getPrevious();
 		if ($ex == null) {
@@ -170,7 +170,7 @@ function EAScompliance_debug() {
 		$jres = print_r(eval($debug_input), true);
 	}
 	catch (Exception $ex) {
-		$jres = 'Error: '.$ex->getMessage();
+		$jres = 'Error: ' . $ex->getMessage();
 	}
 	finally {
 		restore_error_handler();
@@ -189,7 +189,7 @@ function get_oauth_token() {
 	$jdebug['step'] = 'OAUTH2 Authorise at EAS API server';
 
 	//woocommerce_settings_get_option is undefined when called via Credit Card payment type
-	$auth_url = woocommerce_settings_get_option_sql('easproj_eas_api_url').'/auth/open-id/connect';
+	$auth_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/auth/open-id/connect';
 	$auth_data = array(
 		'client_id' => woocommerce_settings_get_option_sql('easproj_auth_client_id')
 		, 'client_secret' => woocommerce_settings_get_option_sql('easproj_auth_client_secret')
@@ -231,7 +231,7 @@ function get_oauth_token() {
 
 	// response not OK
 	if ($auth_response_status != '200') {
-		logger()->debug('auth response: '.$auth_response);
+		logger()->debug('auth response: ' . $auth_response);
 		throw new Exception("Authentication failed with response status $auth_response_status");
 	}
 
@@ -347,7 +347,7 @@ function make_eas_api_request_json()
 		$checkout['shipping_phone'] = $checkout['billing_phone'];
 	}
 
-	$delivery_state_province = array_get($checkout, 'shipping_state', '') == '' ? '' : ''.WC()->countries->states[$checkout['shipping_country']][$checkout['shipping_state']];
+	$delivery_state_province = array_get($checkout, 'shipping_state', '') == '' ? '' : '' . WC()->countries->states[$checkout['shipping_country']][$checkout['shipping_state']];
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method'] = $delivery_method;
 	$calc_jreq['delivery_cost'] = (int)($cart->get_shipping_total());
@@ -383,7 +383,7 @@ function make_eas_api_request_json()
 		$items[] = [
 			'short_description' => $product->get_name()
 			, 'long_description' => $product->get_name()
-			, 'id_provided_by_em' =>  ''.$product->get_sku() == '' ? $k : $product->get_sku()
+			, 'id_provided_by_em' =>  '' . $product->get_sku() == '' ? $k : $product->get_sku()
 			, 'quantity' => $item['quantity']
 			, 'cost_provided_by_em' => floatval($product->get_price())
 			, 'weight' => $product->get_weight() == '' ? 0 : floatval( $product->get_weight() )
@@ -397,7 +397,7 @@ function make_eas_api_request_json()
 			, 'location_warehouse_country' => $location_warehouse_country == '' ? wc_get_base_location()['country'] : $location_warehouse_country // Country of the store. Should be filled by EM in the store for each Item
 			, 'type_of_goods' => $product->is_virtual() ? 'TBE' : 'GOODS'
 			, 'reduced_tbe_vat_group' => $product->get_attribute(woocommerce_settings_get_option_sql('easproj_reduced_vat_group')) === 'yes'
-			, 'act_as_disclosed_agent' => ''.$product->get_attribute(woocommerce_settings_get_option_sql('easproj_disclosed_agent')) == 'yes' ? true: false
+			, 'act_as_disclosed_agent' => '' . $product->get_attribute(woocommerce_settings_get_option_sql('easproj_disclosed_agent')) == 'yes' ? true: false
 			, 'seller_registration_country' => $seller_registration_country == '' ? wc_get_base_location()['country'] : $seller_registration_country
 			, 'originating_country' => $originating_country == '' ? wc_get_base_location()['country'] : $originating_country // Country of manufacturing of goods
 		];
@@ -430,7 +430,7 @@ function EAScompliance_ajaxhandler() {
 		//DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);
 
 		$confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR));
-		$redirect_uri = admin_url('admin-ajax.php').'?action=EAScompliance_redirect_confirm'.'&confirm_hash='.$confirm_hash;
+		$redirect_uri = admin_url('admin-ajax.php') . '?action=EAScompliance_redirect_confirm' . '&confirm_hash=' . $confirm_hash;
 		$jdebug['redirect_uri'] = $redirect_uri;
 
 		$jdebug['step'] = 'prepare EAS API /calculate request';
@@ -438,8 +438,8 @@ function EAScompliance_ajaxhandler() {
 			'http' => array(
 				'method'  => 'POST'
 			  , 'header'  => 'Content-type: application/json' . "\r\n"
-					. 'Authorization: Bearer '. $auth_token . "\r\n"
-					. 'x-redirect-uri: '. $redirect_uri . "\r\n"
+					. 'Authorization: Bearer ' . $auth_token . "\r\n"
+					. 'x-redirect-uri: ' . $redirect_uri . "\r\n"
 			  , 'content' => json_encode($calc_jreq, JSON_THROW_ON_ERROR)
 			  , 'ignore_errors' => true
 			)
@@ -452,7 +452,7 @@ function EAScompliance_ajaxhandler() {
 		$context = stream_context_create($options);
 
 		$jdebug['step'] = 'send /calculate request';
-		$calc_url = woocommerce_settings_get_option('easproj_eas_api_url').'/calculate';
+		$calc_url = woocommerce_settings_get_option('easproj_eas_api_url') . '/calculate';
 		$calc_body = file_get_contents($calc_url, false, $context);
 		$jdebug['CALC response body'] = $calc_body;
 
@@ -488,7 +488,7 @@ function EAScompliance_ajaxhandler() {
 			$calc_error = json_decode($calc_body, true);
 
 			if (array_key_exists('code', $calc_error) and array_key_exists('type', $calc_error)) {
-				$error_message = $calc_error['code'] . ' '.$calc_error['type'];
+				$error_message = $calc_error['code'] . ' ' . $calc_error['type'];
 			}
 
 			if (array_key_exists('data', $calc_error) and array_key_exists('message', $calc_error['data'])) {
@@ -516,7 +516,7 @@ function EAScompliance_ajaxhandler() {
 
 		$jdebug['CALC response'] = $calc_response;
 
-		logger()->info('/calculate request successful, $calc_response '.$calc_response);
+		logger()->info('/calculate request successful, $calc_response ' . $calc_response);
 //        throw new Exception('debug');
 
 	}
@@ -582,7 +582,7 @@ function EAScompliance_redirect_confirm() {
 		$jdebug['JWT token'] = $eas_checkout_token;
 
 		//// request validation key
-		$jwt_key_url = woocommerce_settings_get_option('easproj_eas_api_url').'/auth/keys';
+		$jwt_key_url = woocommerce_settings_get_option('easproj_eas_api_url') . '/auth/keys';
 		$options = array(
 			'http' => array(
 				'method'  => 'GET'
@@ -609,13 +609,13 @@ function EAScompliance_redirect_confirm() {
 		$jwt_payload = base64_decode($arr[1], false); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
 
 		// JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'
-		$jwt_signature = base64_decode(str_replace(array('-', '_'), array('+', '/'), $arr[2]).'==', true);
+		$jwt_signature = base64_decode(str_replace(array('-', '_'), array('+', '/'), $arr[2]) . '==', true);
 
 		//// Validate JWT token signed with key
 		$jdebug['step'] = 'validate token signed with key';
-		$verified = openssl_verify($arr[0].'.'.$arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
+		$verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
 		if (!($verified===1)){
-			throw new Exception('JWT verification failed: '.$verified);
+			throw new Exception('JWT verification failed: ' . $verified);
 		}
 
 
@@ -1023,7 +1023,7 @@ function EAScompliance_Klarna_settings_fix( $kp_settings) {
 		$country = $customer->get_billing_country();
 		if ($country != 'FI') {
 			foreach(array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
-				if (!array_key_exists($s.strtolower( $country ), $kp_settings)) {
+				if (!array_key_exists($s . strtolower( $country ), $kp_settings)) {
 					$kp_settings[$s . strtolower( $country )] = -1;
 				}
 			}
@@ -1131,8 +1131,8 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 				$ix += 1;
 			}
 
-			logger()->info('Klarna order_id '.print_r($order_id, true));
-			logger()->info('Klarna $order_lines after '.print_r($klarna_order_lines, true));
+			logger()->info('Klarna order_id ' . print_r($order_id, true));
+			logger()->info('Klarna $order_lines after ' . print_r($klarna_order_lines, true));
 			return $klarna_order_lines;
 		}
 
@@ -1185,7 +1185,7 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 //        set_error_handler('error_handler');
 //
 //        foreach($tax_totals as $code=>$tax) {
-//            logger()->debug('$tax '.print_r($tax, true));
+//            logger()->debug('$tax ' . print_r($tax, true));
 //            if ($tax->label == 'VAT') {
 //                $tax->label = 'VAT, fees and duties';
 //            }
@@ -1286,7 +1286,7 @@ function woocommerce_checkout_create_order( $order)
 
 		if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
 		{
-			logger()->debug('$calc_jreq_saved '.print_r($calc_jreq_saved, true).'  $calc_jreq_new  '.print_r($calc_jreq_new, true));
+			logger()->debug('$calc_jreq_saved ' . print_r($calc_jreq_saved, true) . '  $calc_jreq_new  ' . print_r($calc_jreq_new, true));
 			// reset EAScompliance if json's mismatch
 			$item['EAScompliance NEEDS RECALCULATE'] = true;
 			// reset calculate of cart since calculate may have changed previous values
@@ -1326,13 +1326,13 @@ function woocommerce_checkout_order_created( $order) {
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
 
-		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' =>'order_'.$order_id);
+		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' =>'order_' . $order_id);
 
 		$options = array(
 			'http' => array(
 				'method'  => 'POST'
 			, 'header'  => "Content-type: application/json\r\n"
-					. 'Authorization: Bearer '. $auth_token."\r\n"
+					. 'Authorization: Bearer ' . $auth_token . "\r\n"
 			, 'content' => json_encode($jreq, JSON_THROW_ON_ERROR)
 			, 'ignore_errors' => true
 			)
@@ -1343,7 +1343,7 @@ function woocommerce_checkout_order_created( $order) {
 		);
 		$context = stream_context_create($options);
 
-		$notify_url = woocommerce_settings_get_option_sql('easproj_eas_api_url').'/updateExternalOrderId';
+		$notify_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/updateExternalOrderId';
 		$notify_body = file_get_contents($notify_url, false, $context);
 
 		$notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
@@ -1352,7 +1352,7 @@ function woocommerce_checkout_order_created( $order) {
 			$order->add_order_note("Notify Order number $order_id successful");
 		}
 		else {
-			throw new Exception($http_response_header[0]. '\n\n'.$notify_body);
+			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
 		}
 
 		$order->add_meta_data('_easproj_order_number_notified', 'yes', true);
@@ -1362,7 +1362,7 @@ function woocommerce_checkout_order_created( $order) {
 	}
 	catch (Exception $ex) {
 		log_exception($ex);
-		$order->add_order_note("Notify Order number $order_id failed: ".$ex->getMessage());
+		$order->add_order_note("Notify Order number $order_id failed: " . $ex->getMessage());
 	}
 	finally {
 		restore_error_handler();
@@ -1385,13 +1385,13 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
 
-		$payment_jreq = array('token'=>$confirmation_token, 'checkout_payment_id' =>'order_'.$order_id);
+		$payment_jreq = array('token'=>$confirmation_token, 'checkout_payment_id' =>'order_' . $order_id);
 
 		$options = array(
 			'http' => array(
 				'method'  => 'POST'
 			, 'header'  => "Content-type: application/json\r\n"
-					. 'Authorization: Bearer '. $auth_token."\r\n"
+					. 'Authorization: Bearer ' . $auth_token . "\r\n"
 			, 'content' => json_encode($payment_jreq, JSON_THROW_ON_ERROR)
 			, 'ignore_errors' => true
 			)
@@ -1402,16 +1402,16 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		);
 		$context = stream_context_create($options);
 
-		$payment_url = woocommerce_settings_get_option_sql('easproj_eas_api_url').'/payment/verify';
+		$payment_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
 		$payment_body = file_get_contents($payment_url, false, $context);
 
 		$payment_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 		if ($payment_status == '200') {
-			$order->add_order_note("Order status changed from $status_from to $status_to. EAS API payment notified");
+			$order->add_order_note("Order status changed from $status_from to $status_to .  EAS API payment notified");
 		}
 		else {
-			throw new Exception($http_response_header[0]. '\n\n'.$payment_body);
+			throw new Exception($http_response_header[0] . '\n\n' . $payment_body);
 		}
 
 		$order->add_meta_data('_easproj_payment_processed', 'yes', true);
@@ -1421,7 +1421,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	}
 	catch (Exception $ex) {
 		log_exception($ex);
-		$order->add_order_note('Order status change notification failed: '.$ex->getMessage());
+		$order->add_order_note('Order status change notification failed: ' . $ex->getMessage());
 	}
 	finally {
 		restore_error_handler();
@@ -1453,14 +1453,14 @@ function EAScompliance_settings(){
 	);
 
 	foreach(wc_get_attribute_taxonomy_labels() as $slug=>$att_label) {
-		$attributes[$slug] = $att_label.' - '.$slug;
+		$attributes[$slug] = $att_label . ' - ' . $slug;
 	}
 
 	return array(
 	   'section_title' => array(
 				  'name'     => 'Settings'
 				, 'type'     => 'title'
-				, 'desc'     => '<img src="'.plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ).'" style="width: 150px;">'
+				, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
 			)
 	, 'active' => array(
 		  'name' => 'Enable/Disable'
@@ -1853,9 +1853,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 				WHERE att.attribute_name = 'country'
 			", ARRAY_A);
 
-			$txt = implode("\t", array_keys($res[0]))."\n";
+			$txt = implode("\t", array_keys($res[0])) . "\n";
 			foreach($res as $row) {
-				$txt .= implode("\t", array_values($row))."\n";
+				$txt .= implode("\t", array_values($row)) . "\n";
 			}
 			return $txt;
 			*/
@@ -1894,7 +1894,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 					)
 				)
 			);
-			wp_insert_term('yes', $taxonomy, array('slug' => $slug.'_yes'));
+			wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
 		}
 
 
@@ -1942,7 +1942,7 @@ function format( $string, $vars) {
 	$patterns = array_keys($vars);
 	$replacements = array_values($vars);
 	foreach ($patterns as &$pattern) {
-		$pattern = '/\$'.$pattern.'/';
+		$pattern = '/\$' . $pattern . '/';
 	}
 	return preg_replace($patterns, $replacements, $string);
 };
