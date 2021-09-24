@@ -34,8 +34,8 @@ function logger() {
 
 	static $l = null;
 	if ($l !== null) {
-        return $l;
-    }
+		return $l;
+	}
 
 	class EASLogHandler extends WC_Log_Handler_File {
 		public function handle( $timestamp, $level, $message, $context ) {
@@ -55,8 +55,8 @@ function log_exception( Exception $ex) {
 
 		$ex = $ex->getPrevious();
 		if ($ex == null) {
-            break;
-        }
+		    break;
+		}
 	}
 	$txt = ltrim($txt, "\n");
 	logger()->error($txt);
@@ -66,11 +66,11 @@ function log_exception( Exception $ex) {
 function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
 	$res =  $wpdb->get_results($wpdb->prepare("
-            SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
+		    SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
 		",$option), ARRAY_A);
 	if (count($res) == 0) {
-        return null;
-    }
+		return null;
+	}
 	return $res[0]['option_value'];
 }
 
@@ -717,13 +717,13 @@ function EAScompliance_is_set()
 		$cart = WC()->cart;
 		$k = array_key_first ($cart->get_cart());
 		if ($k === null) {
-            return false;
-        }
+		    return false;
+		}
 
 		$item = $cart->get_cart_contents()[$k];
 		if (!array_key_exists('EAScompliance SET', $item)) {
-            return false;
-        }
+			return false;
+		}
 		return ( $item['EAScompliance SET'] === true );
 
 	} catch (Exception $ex) {
@@ -743,8 +743,8 @@ function EAScompliance_needs_recalculate()
 		$k = array_key_first ($cart->get_cart());
 		$item = $cart->get_cart_contents()[$k];
 		if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) {
-            return false;
-        }
+			return false;
+		}
 		return ( $item['EAScompliance NEEDS RECALCULATE'] === true );
 	} catch (Exception $ex) {
 		log_exception($ex);
@@ -1338,8 +1338,8 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		set_error_handler('error_handler');
 
 		if ( !( ( $status_to == 'completed' or $status_to == 'processing' ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
-            return;
-        }
+			return;
+		}
 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
