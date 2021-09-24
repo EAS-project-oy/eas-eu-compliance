@@ -128,13 +128,13 @@ function woocommerce_review_order_before_payment() {
 				<p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
 				'
 				.
-				((is_debug() && DEVELOP)?'
+				( ( is_debug() && DEVELOP )?'
 					<h3>EAScompliance Debug</h3>
 					<p class="EAScompliance_debug">
 					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
 					<button type="button" class="button EAScompliance_debug_button">eval</button>
 					<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea> 
-				</p>':'')
+				</p>':'' )
 				.
 				'</div>';
 
@@ -167,11 +167,9 @@ function EAScompliance_debug() {
 	try {
 		set_error_handler('error_handler');
 		$jres = print_r(eval($debug_input), true);
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		$jres = 'Error: ' . $ex->getMessage();
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 	wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
@@ -333,7 +331,7 @@ function make_eas_api_request_json()
 
 	// substitute billing address to shipping address  if checkbox 'Ship to a different address?' was empty
 	$ship_to_different_address = array_get($checkout, 'ship_to_different_address', false);
-	if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
+	if ( !($ship_to_different_address === 'true' or $ship_to_different_address === '1') ) {
 		$checkout['shipping_country'] = $checkout['billing_country'];
 		$checkout['shipping_state'] = $checkout['billing_state'];
 		$checkout['shipping_company'] = $checkout['billing_company'];
@@ -349,7 +347,7 @@ function make_eas_api_request_json()
 	$delivery_state_province = array_get($checkout, 'shipping_state', '') == '' ? '' : '' . WC()->countries->states[$checkout['shipping_country']][$checkout['shipping_state']];
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method'] = $delivery_method;
-	$calc_jreq['delivery_cost'] = (int)($cart->get_shipping_total());
+	$calc_jreq['delivery_cost'] = (int) ( $cart->get_shipping_total() );
 	$calc_jreq['payment_currency'] = get_woocommerce_currency();
 
 	$calc_jreq['is_delivery_to_person'] = array_get($checkout, 'shipping_company', '') == '';
@@ -371,7 +369,7 @@ function make_eas_api_request_json()
 	$jdebug['step'] = 'fill json request with cart data';
 	$countries = array_flip(WC()->countries->countries);
 	$items = array();
-	foreach($cart->get_cart() as $k => $item) {
+	foreach ($cart->get_cart() as $k => $item) {
 		$product_id = $item['product_id'];
 		$product = wc_get_product( $product_id );
 
@@ -511,15 +509,14 @@ function EAScompliance_ajaxhandler() {
 		$calc_response = trim(json_decode($calc_body));
 
 		//sometimes eas_checkout_token is appended with '?' while should be '&':
-		$calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=',  $calc_response);
+		$calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 
 		$jdebug['CALC response'] = $calc_response;
 
 		logger()->info('/calculate request successful, $calc_response ' . $calc_response);
 //        throw new Exception('debug');
 
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 
 		//// build json reply
 		$jres['status'] = 'error';
@@ -530,8 +527,7 @@ function EAScompliance_ajaxhandler() {
 			$jres['debug'] = $jdebug;
 		}
 		wp_send_json($jres);
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 
@@ -613,7 +609,7 @@ function EAScompliance_redirect_confirm() {
 		//// Validate JWT token signed with key
 		$jdebug['step'] = 'validate token signed with key';
 		$verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
-		if (!($verified===1)){
+		if ( !($verified===1) ) {
 			throw new Exception('JWT verification failed: ' . $verified);
 		}
 
@@ -662,7 +658,7 @@ function EAScompliance_redirect_confirm() {
 		$cart = WC()->cart;
 
 		$payload_item_k = 0;
-		foreach($woocommerce->cart->cart_contents as $k => &$item) {
+		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 			$payload_item = $payload_items[$payload_item_k];
 
 			$tax_rates = WC_Tax::get_rates();
@@ -695,8 +691,7 @@ function EAScompliance_redirect_confirm() {
 
 		logger()->info("redirect_confirm successful");
 		logger()->debug(print_r($jres, true));
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		$jres['status'] = 'error';
 		$jres['message'] = $ex->getMessage();
 		log_exception($ex);
@@ -705,8 +700,7 @@ function EAScompliance_redirect_confirm() {
 		if (is_debug()) {
 			$jres['debug'] = $jdebug;
 		}
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 
@@ -730,14 +724,12 @@ function EAScompliance_is_set()
 		if (!array_key_exists('EAScompliance SET', $item)) {
             return false;
         }
-		return ($item['EAScompliance SET'] === true);
+		return ( $item['EAScompliance SET'] === true );
 
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -753,13 +745,11 @@ function EAScompliance_needs_recalculate()
 		if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) {
             return false;
         }
-		return ($item['EAScompliance NEEDS RECALCULATE'] === true);
-	}
-	catch (Exception $ex) {
+		return ( $item['EAScompliance NEEDS RECALCULATE'] === true );
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -778,12 +768,10 @@ function EAScompliance_needs_recalculate_ajax() {
 		$needs_recalculate = EAScompliance_needs_recalculate();
 		wp_send_json(array('needs_recalculate' => $needs_recalculate));
 
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 };
@@ -809,7 +797,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 
 			$ix = 0;
 			$total = 0;
-			foreach($order->get_items() as $k=>$item) {
+			foreach ($order->get_items() as $k=>$item) {
 				$cart_item = $cart_items[$ix];
 				$item_amount = $cart_item['EAScompliance AMOUNT'];
 				$total += $item_amount;
@@ -841,12 +829,10 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 			$order->set_total($total);
 		}
 		return $order_item_tax;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -871,19 +857,17 @@ function woocommerce_cart_get_taxes( $total_taxes)
 
 		$total = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
-		foreach($cart_items as $cart_item) {
+		foreach ($cart_items as $cart_item) {
 			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
 		}
 
 		$total_taxes[$tax_rate_id0] += $total;
 
 		return $total_taxes;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-		finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -904,12 +888,10 @@ function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key
 		}
 
 		return wc_price($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-		finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -930,17 +912,15 @@ function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart )
 
 		$subtotal = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
-		foreach($cart_items as $cart_item) {
+		foreach ($cart_items as $cart_item) {
 			$subtotal += $cart_item['quantity'] * $cart_item['EAScompliance unit_cost'];
 		}
 
 		return wc_price($subtotal);
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-		finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -970,12 +950,10 @@ function woocommerce_cart_totals_order_total_html2( $value) {
 			}
 		}
 		return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -996,12 +974,10 @@ function woocommerce_checkout_create_order_line_item( $order_item_product, $cart
 		$order_item_product->set_subtotal($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
 		$order_item_product->set_total($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
 
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 };
@@ -1021,19 +997,17 @@ function EAScompliance_Klarna_settings_fix( $kp_settings) {
 		}
 		$country = $customer->get_billing_country();
 		if ($country != 'FI') {
-			foreach(array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
+			foreach (array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
 				if (!array_key_exists($s . strtolower( $country ), $kp_settings)) {
 					$kp_settings[$s . strtolower( $country )] = -1;
 				}
 			}
 		}
 		return $kp_settings;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 
@@ -1068,12 +1042,10 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 		$item_tax_rates[$tax_rate_id0]['rate'] = intval(floor(10000 * $item_tax / $item_total) / 10000);
 
 		return $item_tax_rates;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-		finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1093,14 +1065,14 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 
 		if (! $order_id) {
 			$ix = 0;
-			foreach(WC()->cart->cart_contents as $k=>$cart_item) {
+			foreach (WC()->cart->cart_contents as $k=>$cart_item) {
 				$klarna_item = array(
 					'reference'             => $cart_item['data']->get_sku(),
 					'name'                  => $cart_item['data']->get_name(),
 					'quantity'              => $cart_item['quantity'],
 					'unit_price'            => round(100.0 * $cart_item['line_total'] / $cart_item['quantity']),
-					'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ($cart_item['line_total']-$cart_item['line_tax'])),
-					'total_amount'          => round(100.0 * $cart_item['line_total']),
+					'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total']-$cart_item['line_tax']) ),
+					'total_amount'          => round(100.0 * $cart_item['line_total'] ),
 					'total_tax_amount'      => round(100.0 * $cart_item['line_tax']),
 					'total_discount_amount' => 0,
 				);
@@ -1108,11 +1080,10 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 				$klarna_order_lines[$ix] = $klarna_item;
 				$ix += 1;
 			}
-		}
-		else {
+		} else {
 			$order = wc_get_order($order_id);
 			$ix = 0;
-			foreach($order->get_data()['line_items'] as $order_item) {
+			foreach ($order->get_data()['line_items'] as $order_item) {
 				$product = wc_get_product($order_item->get_product_id());
 				$klarna_item = array(
 					'reference'             => $product->get_sku(),
@@ -1124,7 +1095,7 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 					'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
 					'total_discount_amount' => 0,
 				);
-				$klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ($klarna_item['total_amount']-$klarna_item['total_tax_amount']));
+				$klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount']-$klarna_item['total_tax_amount']) );
 
 				$klarna_order_lines[$ix] =$klarna_item;
 				$ix += 1;
@@ -1136,12 +1107,10 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
 		}
 
 		return $klarna_order_lines;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1165,12 +1134,10 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 			'total' => array($tax_rate_id0 => $amount),
 			'subtotal' => array($tax_rate_id0 => $amount),
 		));
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 			log_exception($ex);
 			throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1183,7 +1150,7 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 //    try {
 //        set_error_handler('error_handler');
 //
-//        foreach($tax_totals as $code=>$tax) {
+//        foreach ($tax_totals as $code=>$tax) {
 //            logger()->debug('$tax ' . print_r($tax, true));
 //            if ($tax->label == 'VAT') {
 //                $tax->label = 'VAT, fees and duties';
@@ -1212,29 +1179,27 @@ function woocommerce_shipping_packages( $packages) {
 			return $packages;
 		}
 
-		foreach($packages as $px=>&$p ) {
+		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first($p['contents'])];
 
-			foreach(WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
+			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
 				 if (array_key_exists($shm, $packages[$px]['rates'])) {
 					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
 				 }
 
 				 //update $calc_jreq_saved with new delivery_cost
 				 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
-				 $calc_jreq_saved['delivery_cost'] = (int)$cart_item0['EAScompliance DELIVERY CHARGE'];
+				 $calc_jreq_saved['delivery_cost'] = (int) $cart_item0['EAScompliance DELIVERY CHARGE'];
 				 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
 			}
 
 		}
 
 		return $packages;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 			log_exception($ex);
 			throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1254,7 +1219,7 @@ function woocommerce_checkout_create_order( $order)
 
 		$delivery_country = array_get($_POST, 'shipping_country', $_POST['billing_country']);
 		$ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
-		if (!($ship_to_different_address === 'true' or $ship_to_different_address === '1')) {
+		if ( !($ship_to_different_address === 'true' or $ship_to_different_address === '1') ) {
 			$delivery_country = $_POST['billing_country'];
 		}
 		if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
@@ -1283,7 +1248,7 @@ function woocommerce_checkout_create_order( $order)
 		$item['EAScompliance NEEDS RECALCULATE'] = false;
 		$woocommerce->cart->set_session();
 
-		if (json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR))
+		if ( json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR) )
 		{
 			logger()->debug('$calc_jreq_saved ' . print_r($calc_jreq_saved, true) . '  $calc_jreq_new  ' . print_r($calc_jreq_new, true));
 			// reset EAScompliance if json's mismatch
@@ -1301,12 +1266,10 @@ function woocommerce_checkout_create_order( $order)
 
 		// saving token to notify EAS during order status change
 		$order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1349,8 +1312,7 @@ function woocommerce_checkout_order_created( $order) {
 
 		if ($notify_status == '200') {
 			$order->add_order_note("Notify Order number $order_id successful");
-		}
-		else {
+		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
 		}
 
@@ -1358,12 +1320,10 @@ function woocommerce_checkout_order_created( $order) {
 		$order->save();
 
 		logger()->info("Notify Order number $order_id successful");
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		$order->add_order_note("Notify Order number $order_id failed: " . $ex->getMessage());
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1377,7 +1337,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	try {
 		set_error_handler('error_handler');
 
-		if (!(($status_to == 'completed' or $status_to == 'processing') && !($order->get_meta('_easproj_payment_processed')=='yes'))) {
+		if ( !( ( $status_to == 'completed' or $status_to == 'processing' ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
             return;
         }
 
@@ -1408,8 +1368,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 
 		if ($payment_status == '200') {
 			$order->add_order_note("Order status changed from $status_from to $status_to .  EAS API payment notified");
-		}
-		else {
+		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $payment_body);
 		}
 
@@ -1417,12 +1376,10 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		$order->save();
 
 		logger()->info("Notify Order $order_id status change successful");
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		$order->add_order_note('Order status change notification failed: ' . $ex->getMessage());
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 
@@ -1430,11 +1387,11 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 
 
 //// Settings
-function EAScompliance_settings(){
+function EAScompliance_settings() {
 
 	// shipping methods
 	$shipping_methods = array();
-	foreach(WC_Shipping::instance()->get_shipping_methods() as $id => $shipping_method) {
+	foreach (WC_Shipping::instance()->get_shipping_methods() as $id => $shipping_method) {
 		$shipping_methods[$id] = $shipping_method->get_method_title();
 	}
 
@@ -1451,7 +1408,7 @@ function EAScompliance_settings(){
 		, 'easproj_originating_country'=>'(add new) - easproj_originating_country'
 	);
 
-	foreach(wc_get_attribute_taxonomy_labels() as $slug=>$att_label) {
+	foreach (wc_get_attribute_taxonomy_labels() as $slug=>$att_label) {
 		$attributes[$slug] = $att_label . ' - ' . $slug;
 	}
 
@@ -1592,12 +1549,10 @@ function woocommerce_settings_start() {
 		if (array_diff($shipping_methods_latest, $shipping_methods_saved)) {
 			WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update EAS EU compliance plugin setting.');
 		}
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1611,12 +1566,10 @@ function woocommerce_settings_tabs_array( $settings_tabs ) {
 
 		$settings_tabs['settings_tab_compliance'] = 'EAS EU compliance';
 		return $settings_tabs;
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 };
@@ -1629,12 +1582,10 @@ function woocommerce_settings_tabs_settings_tab_compliance() {
 		set_error_handler('error_handler');
 
 		woocommerce_admin_fields(EAScompliance_settings());
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 };
@@ -1677,7 +1628,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 
 		//create attributes that did not exist
 		$slug = woocommerce_settings_get_option_sql('easproj_hs6p_received');
-		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+		if ( !array_key_exists($slug, wc_get_attribute_taxonomy_labels()) ) {
 			$attr = array(
 				'id' => $slug
 				, 'name' => 'HSCODE'
@@ -1729,7 +1680,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 		}
 
 		$slug = woocommerce_settings_get_option_sql('easproj_seller_reg_country');
-		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
 				'id' => $slug
 				, 'name' => 'Seller registration country'
@@ -1759,15 +1710,14 @@ function woocommerce_update_options_settings_tab_compliance() {
 			);
 
 			$countries = WC()->countries->countries;
-			foreach ($countries as $country_code => $country)
-			{
+			foreach ($countries as $country_code => $country) {
 				$taxonomy = wc_attribute_taxonomy_name($slug);
 				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
 		}
 
 		$slug = woocommerce_settings_get_option_sql('easproj_originating_country');
-		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
 				'id' => $slug
 				, 'name' => 'Originating Country'
@@ -1797,15 +1747,14 @@ function woocommerce_update_options_settings_tab_compliance() {
 			);
 
 			$countries = WC()->countries->countries;
-			foreach ($countries as $country_code => $country)
-			{
+			foreach ($countries as $country_code => $country) {
 				$taxonomy = wc_attribute_taxonomy_name($slug);
 				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
 		}
 
 		$slug = woocommerce_settings_get_option_sql('easproj_warehouse_country');
-		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
 			   'id' => $slug
 			, 'name' => 'Warehouse country'
@@ -1835,8 +1784,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 			);
 
 			$countries = WC()->countries->countries;
-			foreach ($countries as $country_code => $country)
-			{
+			foreach ($countries as $country_code => $country) {
 				$taxonomy = wc_attribute_taxonomy_name($slug);
 				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
@@ -1853,7 +1801,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 			", ARRAY_A);
 
 			$txt = implode("\t", array_keys($res[0])) . "\n";
-			foreach($res as $row) {
+			foreach ($res as $row) {
 				$txt .= implode("\t", array_values($row)) . "\n";
 			}
 			return $txt;
@@ -1861,7 +1809,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 		};
 
 		$slug = woocommerce_settings_get_option_sql('easproj_reduced_vat_group');
-		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())){
+		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
 				  'id' => $slug
 				, 'name' => 'Reduced VAT for TBE'
@@ -1898,8 +1846,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 
 
 		// check EAS API connection / tax rates and deactivate plugin on failure
-		if (woocommerce_settings_get_option('easproj_active') == 'yes')
-		{
+		if (woocommerce_settings_get_option('easproj_active') == 'yes') {
 			try {
 				get_oauth_token();
 
@@ -1926,12 +1873,10 @@ function woocommerce_update_options_settings_tab_compliance() {
 		}
 
 		logger()->info('Plugin activated');
-	}
-	catch (Exception $ex) {
+	} catch (Exception $ex) {
 		log_exception($ex);
 		WC_Admin_Settings::add_error($ex->getMessage());
-	}
-	finally {
+	} finally {
 		restore_error_handler();
 	}
 }
@@ -1949,8 +1894,7 @@ function format( $string, $vars) {
 function array_get( $arr, $key, $default = null) {
 	if (array_key_exists($key, $arr)) {
 		return $arr[$key];
-	}
-	else {
+	} else {
 		return $default;
 	}
 }
