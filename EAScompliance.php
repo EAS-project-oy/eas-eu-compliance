@@ -67,7 +67,7 @@ function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
 	$res =  $wpdb->get_results($wpdb->prepare("
 		    SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
-		",$option), ARRAY_A);
+		", $option), ARRAY_A);
 	if (count($res) == 0) {
 		return null;
 	}
@@ -248,8 +248,7 @@ function get_oauth_token() {
 }
 
 
-function make_eas_api_request_json()
-{
+function make_eas_api_request_json() {
 	$jdebug = array();
 
 
@@ -305,7 +304,7 @@ function make_eas_api_request_json()
 		$checkout = array();
 		$query = $jreq['form_data'];
 		foreach (explode('&', $query) as $chunk) {
-			$param = explode("=", $chunk);
+			$param = explode('=', $chunk);
 
 			$checkout[urldecode($param[0])] = urldecode($param[1]);
 		}
@@ -331,7 +330,7 @@ function make_eas_api_request_json()
 
 	// substitute billing address to shipping address  if checkbox 'Ship to a different address?' was empty
 	$ship_to_different_address = array_get($checkout, 'ship_to_different_address', false);
-	if ( !($ship_to_different_address === 'true' or $ship_to_different_address === '1') ) {
+	if ( !($ship_to_different_address === 'true' || $ship_to_different_address === '1') ) {
 		$checkout['shipping_country'] = $checkout['billing_country'];
 		$checkout['shipping_state'] = $checkout['billing_state'];
 		$checkout['shipping_company'] = $checkout['billing_company'];
@@ -689,7 +688,7 @@ function EAScompliance_redirect_confirm() {
 		//DEBUG SAMPLE: return WC()->cart->get_cart();
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it.
 
-		logger()->info("redirect_confirm successful");
+		logger()->info('redirect_confirm successful');
 		logger()->debug(print_r($jres, true));
 	} catch (Exception $ex) {
 		$jres['status'] = 'error';
@@ -709,8 +708,7 @@ function EAScompliance_redirect_confirm() {
 	exit();
 };
 
-function EAScompliance_is_set()
-{
+function EAScompliance_is_set() {
 	try {
 		set_error_handler('error_handler');
 
@@ -734,8 +732,7 @@ function EAScompliance_is_set()
 	}
 }
 
-function EAScompliance_needs_recalculate()
-{
+function EAScompliance_needs_recalculate() {
 	try {
 		set_error_handler('error_handler');
 
@@ -841,8 +838,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 if (is_active()) {
 	add_filter('woocommerce_cart_get_taxes', 'woocommerce_cart_get_taxes', 10);
 }
-function woocommerce_cart_get_taxes( $total_taxes)
-{
+function woocommerce_cart_get_taxes( $total_taxes) {
 	try {
 		set_error_handler('error_handler');
 
@@ -878,8 +874,7 @@ function woocommerce_cart_get_taxes( $total_taxes)
 if (is_active()) {
 	add_filter('woocommerce_cart_item_subtotal', 'woocommerce_cart_item_subtotal', 10, 3);
 }
-function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key )
-{
+function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
 	try {
 		set_error_handler('error_handler');
 
@@ -901,8 +896,7 @@ function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key
 if (is_active()) {
 	add_filter('woocommerce_cart_subtotal', 'woocommerce_cart_subtotal', 10, 3);
 }
-function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart )
-{
+function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1021,8 +1015,7 @@ function EAScompliance_Klarna_settings_fix( $kp_settings) {
 if (is_active()) {
 	add_filter('woocommerce_cart_totals_get_item_tax_rates', 'woocommerce_cart_totals_get_item_tax_rates', 10, 3);
 }
-function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart)
-{
+function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1054,8 +1047,7 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 if (is_active()) {
 	add_filter('kp_wc_api_order_lines', 'kp_wc_api_order_lines', 10, 3);
 }
-function kp_wc_api_order_lines( $klarna_order_lines, $order_id)
-{
+function kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1183,9 +1175,9 @@ function woocommerce_shipping_packages( $packages) {
 			$cart_item0 = $p['contents'][array_key_first($p['contents'])];
 
 			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
-				 if (array_key_exists($shm, $packages[$px]['rates'])) {
+				if (array_key_exists($shm, $packages[$px]['rates'])) {
 					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
-				 }
+				}
 
 				 //update $calc_jreq_saved with new delivery_cost
 				 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
@@ -1210,8 +1202,7 @@ function woocommerce_shipping_packages( $packages) {
 if (is_active()) {
 	add_action('woocommerce_checkout_create_order', 'woocommerce_checkout_create_order');
 }
-function woocommerce_checkout_create_order( $order)
-{
+function woocommerce_checkout_create_order( $order) {
 	try {
 		set_error_handler('error_handler');
 
@@ -1219,7 +1210,7 @@ function woocommerce_checkout_create_order( $order)
 
 		$delivery_country = array_get($_POST, 'shipping_country', $_POST['billing_country']);
 		$ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
-		if ( !($ship_to_different_address === 'true' or $ship_to_different_address === '1') ) {
+		if ( !($ship_to_different_address === 'true' || $ship_to_different_address === '1') ) {
 			$delivery_country = $_POST['billing_country'];
 		}
 		if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
@@ -1262,7 +1253,7 @@ function woocommerce_checkout_create_order( $order)
 
 		//save payload in order metadata
 		$payload = $item['EASPROJ API PAYLOAD'];
-		$order->add_meta_data("easproj_payload", $payload , true);
+		$order->add_meta_data('easproj_payload', $payload , true);
 
 		// saving token to notify EAS during order status change
 		$order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
@@ -1332,12 +1323,11 @@ function woocommerce_checkout_order_created( $order) {
 if (is_active()) {
 	add_action('woocommerce_order_status_changed', 'woocommerce_order_status_changed', 10, 4);
 }
-function woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order)
-{
+function woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order) {
 	try {
 		set_error_handler('error_handler');
 
-		if ( !( ( $status_to == 'completed' or $status_to == 'processing' ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
+		if ( !( ( $status_to == 'completed' || $status_to == 'processing' ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
 			return;
 		}
 
@@ -1397,7 +1387,7 @@ function EAScompliance_settings() {
 
 
 	global $wpdb;
-	$res =   $wpdb->get_results("SELECT * FROM wplm_woocommerce_attribute_taxonomies att", ARRAY_A);
+	$res =   $wpdb->get_results('SELECT * FROM wplm_woocommerce_attribute_taxonomies att', ARRAY_A);
 
 	$attributes = array(
 		  'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
@@ -1605,7 +1595,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 		// add tax rate
 		global $wpdb;
 		$tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance'", ARRAY_A );
-		$tax_rate_id = array_get($tax_rates,0, array('tax_rate_id'=>null))['tax_rate_id'];
+		$tax_rate_id = array_get($tax_rates, 0, array('tax_rate_id'=>null))['tax_rate_id'];
 
 		if (!$tax_rate_id) {
 			$tax_rate    = array(
@@ -1638,7 +1628,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 				, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
-			if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+			if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
+            }
 		};
 
 		$slug = woocommerce_settings_get_option_sql('easproj_disclosed_agent');
@@ -1690,7 +1682,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 				, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
-			if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+			if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
+            }
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
 				$taxonomy,
@@ -1727,7 +1721,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 				, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
-			if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+			if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
+            }
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
 				$taxonomy,
@@ -1764,7 +1760,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 			, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
-			if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+			if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
+            }
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
 				$taxonomy,
@@ -1822,7 +1820,9 @@ function woocommerce_update_options_settings_tab_compliance() {
 			WC_Cache_Helper::incr_cache_prefix( 'woocommerce-attributes' );
 
 			$attr_id = wc_create_attribute($attr);
-			if (is_wp_error($attr_id)) {throw new Exception($attr_id->get_error_message());}
+			if (is_wp_error($attr_id)) {
+                throw new Exception($attr_id->get_error_message());
+            }
 
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
