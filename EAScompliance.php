@@ -33,7 +33,7 @@ const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE',
 function logger() {
 
 	static $l = null;
-	if ($l !== null) {
+	if (null !== $l) {
 		return $l;
 	}
 
@@ -54,8 +54,8 @@ function log_exception( Exception $ex) {
 		$txt .= "\n" . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
 
 		$ex = $ex->getPrevious();
-		if ($ex == null) {
-		    break;
+		if (null == $ex) {
+	  break;
 		}
 	}
 	$txt = ltrim($txt, "\n");
@@ -66,7 +66,7 @@ function log_exception( Exception $ex) {
 function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
 	$res =  $wpdb->get_results($wpdb->prepare("
-		    SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
+	  SELECT option_value FROM {$wpdb->prefix}options WHERE option_name = %s
 		", $option), ARRAY_A);
 	if (count($res) == 0) {
 		return null;
@@ -123,20 +123,20 @@ if (is_active()) {
 }
 function woocommerce_review_order_before_payment() {
 	$template = '
-				<div class="form-row EAScompliance">
-				<button type="button" class="button alt button_calc">$button_name</button>
-				<p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
-				'
-				.
-				( ( is_debug() && DEVELOP )?'
-					<h3>EAScompliance Debug</h3>
-					<p class="EAScompliance_debug">
-					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
-					<button type="button" class="button EAScompliance_debug_button">eval</button>
-					<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea> 
-				</p>':'' )
-				.
-				'</div>';
+	<div class="form-row EAScompliance">
+	<button type="button" class="button alt button_calc">$button_name</button>
+	<p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
+	'
+	.
+	( ( is_debug() && DEVELOP )?'
+		<h3>EAScompliance Debug</h3>
+		<p class="EAScompliance_debug">
+		<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
+		<button type="button" class="button EAScompliance_debug_button">eval</button>
+		<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea> 
+	</p>':'' )
+	.
+	'</div>';
 
 
 	//// checkout form data saved during /calculate step
@@ -149,7 +149,7 @@ function woocommerce_review_order_before_payment() {
 	}
 	echo format($template,
 		[
-			  'button_name' => esc_html__('Calculate Taxes and Duties', 'woocommerce')
+	 'button_name' => esc_html__('Calculate Taxes and Duties', 'woocommerce')
 			, 'ordered_total' => WC()->cart->get_cart_contents_total()
 			, 'status' => EAScompliance_is_set() ? 'present' : 'not present'
 			, 'needs_recalculate' => EAScompliance_needs_recalculate() ? 'yes' : 'no'
@@ -212,7 +212,7 @@ function get_oauth_token() {
 	error_reporting(E_ALL);
 
 	// request failed
-	if ($auth_response === false) {
+	if (false === $auth_response) {
 		if (is_debug()) {
 			//check php configuration
 			ob_start () ;
@@ -227,13 +227,13 @@ function get_oauth_token() {
 	$auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 	// response not OK
-	if ($auth_response_status != '200') {
+	if ('200' != $auth_response_status) {
 		logger()->debug('auth response: ' . $auth_response);
 		throw new Exception("Authentication failed with response status $auth_response_status");
 	}
 
 	// response OK, but authentication failed with code 200 and empty response for any reason
-	if ($auth_response==='') {
+	if ( '' === $auth_response ) {
 		throw new Exception('Invalid Credentials provided. Please check EAS client ID and EAS client secret.');
 	}
 
@@ -254,41 +254,41 @@ function make_eas_api_request_json() {
 
 	$jdebug['step'] = 'default json request sample, works alright';
 	$calc_jreq = json_decode('{
-			  "external_order_id": "api_order_001",
-			  "delivery_method": "postal",
-			  "delivery_cost": 10,
-			  "payment_currency": "EUR",
-			  "is_delivery_to_person": true,
-			  "recipient_title": "Mr.",
-			  "recipient_first_name": "Recipient first name",
-			  "recipient_last_name": "Recipient last name",
-			  "recipient_company_name": "Recipient company name",
-			  "recipient_company_vat": "Recipient company VAT number",
-			  "delivery_address_line_1": "45, Dow Street",
-			  "delivery_address_line_2": "Grassy meadows",
-			  "delivery_city": "Green City",
-			  "delivery_state_province": "Central",
-			  "delivery_postal_code": "330100",
-			  "delivery_country": "FI",
-			  "delivery_phone": "041 123 7654",
-			  "delivery_email": "firstname@email.fi",
-			  "order_breakdown": [
-				{
-				  "short_description": "First Item",
-				  "long_description": "Handmade goods item",
-				  "id_provided_by_em": "1004020",
-				  "quantity": 1,
-				  "cost_provided_by_em": 100,
-				  "weight": 1,
-				  "hs6p_received": "0707 00 1245",
-				  "location_warehouse_country": "FI",
-				  "type_of_goods": "GOODS",
-				  "reduced_tbe_vat_group": true,
-				  "act_as_disclosed_agent": true,
-				  "seller_registration_country": "FI",
-				  "originating_country": "FI"
-				}
-			  ]
+	 "external_order_id": "api_order_001",
+	 "delivery_method": "postal",
+	 "delivery_cost": 10,
+	 "payment_currency": "EUR",
+	 "is_delivery_to_person": true,
+	 "recipient_title": "Mr.",
+	 "recipient_first_name": "Recipient first name",
+	 "recipient_last_name": "Recipient last name",
+	 "recipient_company_name": "Recipient company name",
+	 "recipient_company_vat": "Recipient company VAT number",
+	 "delivery_address_line_1": "45, Dow Street",
+	 "delivery_address_line_2": "Grassy meadows",
+	 "delivery_city": "Green City",
+	 "delivery_state_province": "Central",
+	 "delivery_postal_code": "330100",
+	 "delivery_country": "FI",
+	 "delivery_phone": "041 123 7654",
+	 "delivery_email": "firstname@email.fi",
+	 "order_breakdown": [
+	{
+	  "short_description": "First Item",
+	  "long_description": "Handmade goods item",
+	  "id_provided_by_em": "1004020",
+	  "quantity": 1,
+	  "cost_provided_by_em": 100,
+	  "weight": 1,
+	  "hs6p_received": "0707 00 1245",
+	  "location_warehouse_country": "FI",
+	  "type_of_goods": "GOODS",
+	  "reduced_tbe_vat_group": true,
+	  "act_as_disclosed_agent": true,
+	  "seller_registration_country": "FI",
+	  "originating_country": "FI"
+	}
+	 ]
 			}', true);
 
 	$jdebug['step'] = 'Fill json request with checkout data';
@@ -305,8 +305,7 @@ function make_eas_api_request_json() {
 		$query = $jreq['form_data'];
 		foreach (explode('&', $query) as $chunk) {
 			$param = explode('=', $chunk);
-
-			$checkout[urldecode($param[0])] = urldecode($param[1]);
+	$checkout[urldecode($param[0])] = urldecode($param[1]);
 		}
 
 		$jdebug['step'] = 'save checkout form data into cart';
@@ -330,7 +329,7 @@ function make_eas_api_request_json() {
 
 	// substitute billing address to shipping address  if checkbox 'Ship to a different address?' was empty
 	$ship_to_different_address = array_get($checkout, 'ship_to_different_address', false);
-	if ( !($ship_to_different_address === 'true' || $ship_to_different_address === '1') ) {
+	if ( !( 'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
 		$checkout['shipping_country'] = $checkout['billing_country'];
 		$checkout['shipping_state'] = $checkout['billing_state'];
 		$checkout['shipping_company'] = $checkout['billing_company'];
@@ -359,7 +358,7 @@ function make_eas_api_request_json() {
 	$calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
 	$calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'];
 	$calc_jreq['delivery_city'] = $checkout['shipping_city'];
-	$calc_jreq['delivery_state_province'] = $delivery_state_province =='' ? 'Central' : $delivery_state_province;
+	$calc_jreq['delivery_state_province'] = '' == $delivery_state_province ? 'Central' : $delivery_state_province;
 	$calc_jreq['delivery_postal_code'] = $checkout['shipping_postcode'];
 	$calc_jreq['delivery_country'] = $checkout['shipping_country'];
 	$calc_jreq['delivery_phone'] = $checkout['shipping_phone'];
@@ -389,13 +388,12 @@ function make_eas_api_request_json() {
 			//$cart[array_key_first($cart)]['product_id'];
 			//$product = wc_get_product($cart[array_key_first($cart)]['product_id']);
 			//return $product->get_attribute(woocommerce_settings_get_option('easproj_warehouse_country'));
-
-			, 'location_warehouse_country' => $location_warehouse_country == '' ? wc_get_base_location()['country'] : $location_warehouse_country // Country of the store. Should be filled by EM in the store for each Item
+			, 'location_warehouse_country' => '' == $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country // Country of the store. Should be filled by EM in the store for each Item
 			, 'type_of_goods' => $product->is_virtual() ? 'TBE' : 'GOODS'
 			, 'reduced_tbe_vat_group' => $product->get_attribute(woocommerce_settings_get_option_sql('easproj_reduced_vat_group')) === 'yes'
 			, 'act_as_disclosed_agent' => '' . $product->get_attribute(woocommerce_settings_get_option_sql('easproj_disclosed_agent')) == 'yes' ? true: false
-			, 'seller_registration_country' => $seller_registration_country == '' ? wc_get_base_location()['country'] : $seller_registration_country
-			, 'originating_country' => $originating_country == '' ? wc_get_base_location()['country'] : $originating_country // Country of manufacturing of goods
+			, 'seller_registration_country' => '' == $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country
+			, 'originating_country' => '' == $originating_country ? wc_get_base_location()['country'] : $originating_country // Country of manufacturing of goods
 		];
 	}
 	$calc_jreq['order_breakdown'] = $items;
@@ -426,23 +424,23 @@ function EAScompliance_ajaxhandler() {
 		//DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);
 
 		$confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR));
-		$redirect_uri = admin_url('admin-ajax.php') . '?action=EAScompliance_redirect_confirm' . '&confirm_hash=' . $confirm_hash;
+		$redirect_uri = admin_url('admin-ajax.php') . '?action=EAScompliance_redirect_confirm&confirm_hash=' . $confirm_hash;
 		$jdebug['redirect_uri'] = $redirect_uri;
 
 		$jdebug['step'] = 'prepare EAS API /calculate request';
 		$options = array(
 			'http' => array(
-				'method'  => 'POST'
-			  , 'header'  => 'Content-type: application/json' . "\r\n"
-					. 'Authorization: Bearer ' . $auth_token . "\r\n"
-					. 'x-redirect-uri: ' . $redirect_uri . "\r\n"
-			  , 'content' => json_encode($calc_jreq, JSON_THROW_ON_ERROR)
-			  , 'ignore_errors' => true
+	'method'  => 'POST'
+	 , 'header'  => 'Content-type: application/json' . "\r\n"
+		. 'Authorization: Bearer ' . $auth_token . "\r\n"
+		. 'x-redirect-uri: ' . $redirect_uri . "\r\n"
+	 , 'content' => json_encode($calc_jreq, JSON_THROW_ON_ERROR)
+	 , 'ignore_errors' => true
 			)
 			, 'ssl' => array(
-					'verify_peer' => false
-				, 'verify_peer_name' => false
-				)
+		'verify_peer' => false
+	, 'verify_peer_name' => false
+	)
 		);
 
 		$context = stream_context_create($options);
@@ -454,14 +452,11 @@ function EAScompliance_ajaxhandler() {
 
 		$calc_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
-		if ($calc_status != '200') {
+		if ( '200' != $calc_status ) {
 			$jdebug['CALC response headers'] = $http_response_header;
 			$jdebug['CALC response status'] = $calc_status;
-
-			$error_message = $http_response_header[0];
-
-
-			//// parse error json and extract detailed error message
+	$error_message = $http_response_header[0];
+		//// parse error json and extract detailed error message
 			//$sample_calc_error = '
 			// {
 			//  "message": "Cannot determine originating country for goods item",
@@ -480,26 +475,20 @@ function EAScompliance_ajaxhandler() {
 			//    delivery_email: The \'delivery_email\' field must not be empty.
 			//  }
 			// }';
-
-			$calc_error = json_decode($calc_body, true);
-
-			if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
-				$error_message = $calc_error['code'] . ' ' . $calc_error['type'];
+	$calc_error = json_decode($calc_body, true);
+	if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
+	$error_message = $calc_error['code'] . ' ' . $calc_error['type'];
 			}
-
-			if (array_key_exists('data', $calc_error) && array_key_exists('message', $calc_error['data'])) {
-				$error_message = $calc_error['data']['message'];
+	if (array_key_exists('data', $calc_error) && array_key_exists('message', $calc_error['data'])) {
+	$error_message = $calc_error['data']['message'];
 			}
-
-			if (array_key_exists('message', $calc_error)) {
-				$error_message = $calc_error['message'];
+	if (array_key_exists('message', $calc_error)) {
+	$error_message = $calc_error['message'];
 			}
-
-			if (array_key_exists('errors', $calc_error)) {
-				$error_message = join(' ', array_values($calc_error['errors']));
+	if (array_key_exists('errors', $calc_error)) {
+	$error_message = join(' ', array_values($calc_error['errors']));
 			}
-
-			$jdebug['CALC response error'] = $error_message;
+	$jdebug['CALC response error'] = $error_message;
 			throw new Exception($error_message);
 		}
 
@@ -560,13 +549,11 @@ function EAScompliance_redirect_confirm() {
 
 		if (!array_key_exists('eas_checkout_token', $_GET)) {
 			$jdebug['step'] = 'confirmation was declined';
-
-			$k = array_key_first ($cart->get_cart());
+	$k = array_key_first ($cart->get_cart());
 			//pass by reference is required here
 			$item = &$woocommerce->cart->cart_contents[$k];
 			$item['EAScompliance SET'] = false;
-
-			//redirect back to checkout
+	//redirect back to checkout
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit();
 		}
@@ -579,23 +566,21 @@ function EAScompliance_redirect_confirm() {
 		$jwt_key_url = woocommerce_settings_get_option('easproj_eas_api_url') . '/auth/keys';
 		$options = array(
 			'http' => array(
-				'method'  => 'GET'
+	'method'  => 'GET'
 			)
 			, 'ssl' => array(
-					'verify_peer' => false
-				, 'verify_peer_name' => false
-				)
+		'verify_peer' => false
+	, 'verify_peer_name' => false
+	)
 		);
 		$jwt_key_response = file_get_contents($jwt_key_url, false, stream_context_create($options));
-		if ($jwt_key_response === false) {
+		if (false === $jwt_key_response) {
 			$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
 			throw new Exception(error_get_last()['message']);
 		}
 		$jwt_key_j = json_decode($jwt_key_response, true);
 		$jwt_key = $jwt_key_j['default'];
 		$jdebug['jwt_key'] = $jwt_key;  // -----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM1HywEFXH0TPxSso0qw69WQbA24VYLL\ng2NG0w9QSYKLVf9tC4LWJkYzrA0KpS5ypO8DREq+AD3XCVqsrdWlzwUCAwEAAQ==\n-----END PUBLIC KEY-----
-
-
 		$jdebug['step'] = 'Decode EAS API token from redirect_uri';
 		/// Sample URI: https://thenewstore.eu/wp/wp-admin/admin-ajax.php?action=EAScompliance_redirect_confirm&eas_checkout_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImRlZmF1bHQifQ.eyJlYXNfZmVlIjoxLjg2LCJtZXJjaGFuZGlzZV9jb3N0IjoxOCwiZGVsaXZlcnlfY2hhcmdlIjowLCJvcmRlcl9pZCI6IjFhMWYxMThkZTQxYjE1MzZkOTE0NTY4YmU5ZmI5NDkwIiwidGF4ZXNfYW5kX2R1dGllcyI6MS45ODYsImlkIjozMjQsImlhdCI6MTYxNjU2OTMzMSwiZXhwIjoxNjE2NjU1NzMxLCJhdWQiOiJjaGVja291dF8yNiIsImlzcyI6IkBlYXMvYXV0aCIsInN1YiI6ImNoZWNrb3V0IiwianRpIjoiYTlhYTQ5NzUtNWM4OS00YjJmLTgxZGMtNDQzMjU4ODFmN2RkIn0.pf-h25U6nSb2F-yjQH6TRWVlbOJj59fvsKPitiXsK_g8izYOwjVfvahbJTPQgq7D4KHnEgbWivb9G7haYpNxYw
 		$arr = preg_split('/[.]/', $eas_checkout_token, 3);
@@ -608,11 +593,9 @@ function EAScompliance_redirect_confirm() {
 		//// Validate JWT token signed with key
 		$jdebug['step'] = 'validate token signed with key';
 		$verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
-		if ( !($verified===1) ) {
+		if ( !( 1 === $verified ) ) {
 			throw new Exception('JWT verification failed: ' . $verified);
 		}
-
-
 		$jdebug['step'] = 'decode payload json';
 		$payload_j = json_decode($jwt_payload, true);
 		$jdebug['$payload_j'] = $payload_j;
@@ -659,14 +642,12 @@ function EAScompliance_redirect_confirm() {
 		$payload_item_k = 0;
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 			$payload_item = $payload_items[$payload_item_k];
-
-			$tax_rates = WC_Tax::get_rates();
+	$tax_rates = WC_Tax::get_rates();
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
-
-			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
+	$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost'];
 			$item['EAScompliance ITEM'] = $payload_item;
-			$payload_item_k += 1;
+			++$payload_item_k;
 		}
 
 //        throw new Exception('debug');
@@ -714,15 +695,15 @@ function EAScompliance_is_set() {
 
 		$cart = WC()->cart;
 		$k = array_key_first ($cart->get_cart());
-		if ($k === null) {
-		    return false;
+		if ( null === $k ) {
+	  return false;
 		}
 
 		$item = $cart->get_cart_contents()[$k];
 		if (!array_key_exists('EAScompliance SET', $item)) {
 			return false;
 		}
-		return ( $item['EAScompliance SET'] === true );
+		return ( true === $item['EAScompliance SET'] );
 
 	} catch (Exception $ex) {
 		log_exception($ex);
@@ -742,7 +723,7 @@ function EAScompliance_needs_recalculate() {
 		if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $item)) {
 			return false;
 		}
-		return ( $item['EAScompliance NEEDS RECALCULATE'] === true );
+		return ( true === $item['EAScompliance NEEDS RECALCULATE'] );
 	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
@@ -772,11 +753,7 @@ function EAScompliance_needs_recalculate_ajax() {
 		restore_error_handler();
 	}
 };
-
-
-
-
-//// Replace order_item taxes with EAScompliance during order creation
+	//// Replace order_item taxes with EAScompliance during order creation
 if (is_active()) {
 	add_filter('woocommerce_checkout_create_order_tax_item', 'woocommerce_checkout_create_order_tax_item', 10, 3);
 }
@@ -791,38 +768,34 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 
 		if ($tax_rate_id == $tax_rate_id0 && EAScompliance_is_set()) {
 			$cart_items = array_values(WC()->cart->get_cart_contents());
-
-			$ix = 0;
+	$ix = 0;
 			$total = 0;
 			foreach ($order->get_items() as $k=>$item) {
-				$cart_item = $cart_items[$ix];
-				$item_amount = $cart_item['EAScompliance AMOUNT'];
-				$total += $item_amount;
-				$item->add_meta_data('Customs duties', $item_amount);
-				$item->set_taxes(array(
-					'total'    => array($tax_rate_id0=>$item_amount),
-					'subtotal' => array($tax_rate_id0=>$item_amount),
-				));
-
-				$ix += 1;
+	$cart_item = $cart_items[$ix];
+	$item_amount = $cart_item['EAScompliance AMOUNT'];
+	$total += $item_amount;
+	$item->add_meta_data('Customs duties', $item_amount);
+	$item->set_taxes(array(
+		'total'    => array($tax_rate_id0=>$item_amount),
+		'subtotal' => array($tax_rate_id0=>$item_amount),
+	));
+		++$ix;
 			}
 			$order_item_tax->save();
 			$order->update_taxes();
-
-			//Calculate Order Total
+	//Calculate Order Total
 			$total = 0;
 			$cart_items = array_values(WC()->cart->get_cart_contents());
 			$first = true;
 			foreach ($cart_items as $cart_item) {
-				if ($first) {
-					//replace cart total with one from $payload_j['merchandise_cost']
-					$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
-					$first = false;
-				}
-				$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+	if ($first) {
+		//replace cart total with one from $payload_j['merchandise_cost']
+		$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
+		$first = false;
+	}
+	$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
 			}
-
-			//Set Order Total
+	//Set Order Total
 			$order->set_total($total);
 		}
 		return $order_item_tax;
@@ -931,16 +904,15 @@ function woocommerce_cart_totals_order_total_html2( $value) {
 		$total = WC()->cart->get_total('edit');
 
 		if (EAScompliance_is_set()) {
-
-			$cart_items = array_values(WC()->cart->get_cart_contents());
+	$cart_items = array_values(WC()->cart->get_cart_contents());
 			$first = true;
 			foreach ($cart_items as $cart_item) {
-				if ($first) {
-					//replace cart total with one from $payload_j['merchandise_cost']
-					$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
-					$first = false;
-				}
-				$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+	if ($first) {
+		//replace cart total with one from $payload_j['merchandise_cost']
+		$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
+		$first = false;
+	}
+	$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
 			}
 		}
 		return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
@@ -990,7 +962,7 @@ function EAScompliance_Klarna_settings_fix( $kp_settings) {
 			return $kp_settings;
 		}
 		$country = $customer->get_billing_country();
-		if ($country != 'FI') {
+		if ( 'FI' != $country ) {
 			foreach (array('test_merchant_id_', 'test_shared_secret_', 'merchant_id_', 'shared_secret_') as $s) {
 				if (!array_key_exists($s . strtolower( $country ), $kp_settings)) {
 					$kp_settings[$s . strtolower( $country )] = -1;
@@ -1058,42 +1030,39 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 		if (! $order_id) {
 			$ix = 0;
 			foreach (WC()->cart->cart_contents as $k=>$cart_item) {
-				$klarna_item = array(
-					'reference'             => $cart_item['data']->get_sku(),
-					'name'                  => $cart_item['data']->get_name(),
-					'quantity'              => $cart_item['quantity'],
-					'unit_price'            => round(100.0 * $cart_item['line_total'] / $cart_item['quantity']),
-					'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total']-$cart_item['line_tax']) ),
-					'total_amount'          => round(100.0 * $cart_item['line_total'] ),
-					'total_tax_amount'      => round(100.0 * $cart_item['line_tax']),
-					'total_discount_amount' => 0,
-				);
-
-				$klarna_order_lines[$ix] = $klarna_item;
-				$ix += 1;
+	$klarna_item = array(
+		'reference'             => $cart_item['data']->get_sku(),
+		'name'                  => $cart_item['data']->get_name(),
+		'quantity'              => $cart_item['quantity'],
+		'unit_price'            => round(100.0 * $cart_item['line_total'] / $cart_item['quantity']),
+		'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total']-$cart_item['line_tax']) ),
+		'total_amount'          => round(100.0 * $cart_item['line_total'] ),
+		'total_tax_amount'      => round(100.0 * $cart_item['line_tax']),
+		'total_discount_amount' => 0,
+	);
+		$klarna_order_lines[$ix] = $klarna_item;
+	++$ix;
 			}
 		} else {
 			$order = wc_get_order($order_id);
 			$ix = 0;
 			foreach ($order->get_data()['line_items'] as $order_item) {
-				$product = wc_get_product($order_item->get_product_id());
-				$klarna_item = array(
-					'reference'             => $product->get_sku(),
-					'name'                  => $product->get_name(),
-					'quantity'              => $order_item->get_quantity(),
-					'unit_price'            => round(100.0 * ( $order_item->get_subtotal() + $order_item->get_subtotal_tax() ) / $order_item->get_quantity()),
-					'tax_rate'            => -1,
-					'total_amount'          => round(100.0 * ($order_item->get_total()+$order_item->get_total_tax())),
-					'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
-					'total_discount_amount' => 0,
-				);
-				$klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount']-$klarna_item['total_tax_amount']) );
-
-				$klarna_order_lines[$ix] =$klarna_item;
-				$ix += 1;
+	$product = wc_get_product($order_item->get_product_id());
+	$klarna_item = array(
+		'reference'             => $product->get_sku(),
+		'name'                  => $product->get_name(),
+		'quantity'              => $order_item->get_quantity(),
+		'unit_price'            => round(100.0 * ( $order_item->get_subtotal() + $order_item->get_subtotal_tax() ) / $order_item->get_quantity()),
+		'tax_rate'            => -1,
+		'total_amount'          => round(100.0 * ($order_item->get_total()+$order_item->get_total_tax())),
+		'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
+		'total_discount_amount' => 0,
+	);
+	$klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount']-$klarna_item['total_tax_amount']) );
+		$klarna_order_lines[$ix] =$klarna_item;
+	++$ix;
 			}
-
-			logger()->info('Klarna order_id ' . print_r($order_id, true));
+	logger()->info('Klarna order_id ' . print_r($order_id, true));
 			logger()->info('Klarna $order_lines after ' . print_r($klarna_order_lines, true));
 			return $klarna_order_lines;
 		}
@@ -1173,16 +1142,14 @@ function woocommerce_shipping_packages( $packages) {
 
 		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first($p['contents'])];
-
-			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
-				if (array_key_exists($shm, $packages[$px]['rates'])) {
-					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
-				}
-
-				 //update $calc_jreq_saved with new delivery_cost
-				 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
-				 $calc_jreq_saved['delivery_cost'] = (int) $cart_item0['EAScompliance DELIVERY CHARGE'];
-				 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
+	foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
+	if (array_key_exists($shm, $packages[$px]['rates'])) {
+		 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+	}
+		 //update $calc_jreq_saved with new delivery_cost
+	 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+	 $calc_jreq_saved['delivery_cost'] = (int) $cart_item0['EAScompliance DELIVERY CHARGE'];
+	 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
 			}
 
 		}
@@ -1210,7 +1177,7 @@ function woocommerce_checkout_create_order( $order) {
 
 		$delivery_country = array_get($_POST, 'shipping_country', $_POST['billing_country']);
 		$ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
-		if ( !($ship_to_different_address === 'true' || $ship_to_different_address === '1') ) {
+		if ( !( 'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
 			$delivery_country = $_POST['billing_country'];
 		}
 		if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
@@ -1249,9 +1216,7 @@ function woocommerce_checkout_create_order( $order) {
 			$woocommerce->cart->set_session();
 			throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
 		}
-
-
-		//save payload in order metadata
+	//save payload in order metadata
 		$payload = $item['EASPROJ API PAYLOAD'];
 		$order->add_meta_data('easproj_payload', $payload , true);
 
@@ -1284,14 +1249,14 @@ function woocommerce_checkout_order_created( $order) {
 		$options = array(
 			'http' => array(
 				'method'  => 'POST'
-			, 'header'  => "Content-type: application/json\r\n"
+				, 'header'  => "Content-type: application/json\r\n"
 					. 'Authorization: Bearer ' . $auth_token . "\r\n"
-			, 'content' => json_encode($jreq, JSON_THROW_ON_ERROR)
-			, 'ignore_errors' => true
+				, 'content' => json_encode($jreq, JSON_THROW_ON_ERROR)
+				, 'ignore_errors' => true
 			)
-		, 'ssl' => array(
+			, 'ssl' => array(
 				'verify_peer' => false
-			, 'verify_peer_name' => false
+				, 'verify_peer_name' => false
 			)
 		);
 		$context = stream_context_create($options);
@@ -1301,7 +1266,7 @@ function woocommerce_checkout_order_created( $order) {
 
 		$notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
-		if ($notify_status == '200') {
+		if ( '200' == $notify_status ) {
 			$order->add_order_note("Notify Order number $order_id successful");
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
@@ -1327,7 +1292,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	try {
 		set_error_handler('error_handler');
 
-		if ( !( ( $status_to == 'completed' || $status_to == 'processing' ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
+		if ( !( ( 'completed' == $status_to || 'processing' == $status_to ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
 			return;
 		}
 
@@ -1339,14 +1304,14 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		$options = array(
 			'http' => array(
 				'method'  => 'POST'
-			, 'header'  => "Content-type: application/json\r\n"
+				, 'header'  => "Content-type: application/json\r\n"
 					. 'Authorization: Bearer ' . $auth_token . "\r\n"
-			, 'content' => json_encode($payment_jreq, JSON_THROW_ON_ERROR)
-			, 'ignore_errors' => true
+				, 'content' => json_encode($payment_jreq, JSON_THROW_ON_ERROR)
+				, 'ignore_errors' => true
 			)
-		, 'ssl' => array(
+			, 'ssl' => array(
 				'verify_peer' => false
-			, 'verify_peer_name' => false
+				, 'verify_peer_name' => false
 			)
 		);
 		$context = stream_context_create($options);
@@ -1356,7 +1321,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 
 		$payment_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
-		if ($payment_status == '200') {
+		if ( '200' == $payment_status ) {
 			$order->add_order_note("Order status changed from $status_from to $status_to .  EAS API payment notified");
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $payment_body);
@@ -1390,7 +1355,7 @@ function EAScompliance_settings() {
 	$res =   $wpdb->get_results('SELECT * FROM wplm_woocommerce_attribute_taxonomies att', ARRAY_A);
 
 	$attributes = array(
-		  'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
+	'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
 		, 'easproj_warehouse_country'=>'(add new) - easproj_warehouse_country'
 		, 'easproj_reduced_vat_group'=>'(add new) - easproj_reduced_vat_group'
 		, 'easproj_disclosed_agent'=>'(add new) - easproj_disclosed_agent'
@@ -1403,27 +1368,27 @@ function EAScompliance_settings() {
 	}
 
 	return array(
-	   'section_title' => array(
-				  'name'     => 'Settings'
-				, 'type'     => 'title'
-				, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
+	'section_title' => array(
+	  'name'     => 'Settings'
+	, 'type'     => 'title'
+	, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
 			)
 	, 'active' => array(
-		  'name' => 'Enable/Disable'
+	'name' => 'Enable/Disable'
 		, 'type' => 'checkbox'
 		, 'desc' => 'Enable EAS EU Compliance'
 		, 'id'   => 'easproj_active'
 		, 'default' => 'no'
 		)
 	, 'debug' => array(
-		  'name' => 'Debug'
+	'name' => 'Debug'
 		, 'type' => 'checkbox'
 		, 'desc' => 'Log debug messages'
 		, 'id'   => 'easproj_debug'
 		, 'default' => 'no'
 		)
 	, 'EAS_API_URL' => array(
-		  'name' => 'EAS API Base URL'
+	'name' => 'EAS API Base URL'
 		, 'type' => 'text'
 		, 'desc' => 'API URL'
 		, 'id'   => 'easproj_eas_api_url'
@@ -1431,21 +1396,21 @@ function EAScompliance_settings() {
 
 		)
 	, 'AUTH_client_id' => array(
-		  'name' => 'EAS client ID'
+	'name' => 'EAS client ID'
 		, 'type' => 'text'
 		, 'desc' => 'Use the client ID you received from EAS Project.'
 		, 'id'   => 'easproj_auth_client_id'
 
 		)
 	, 'AUTH_client_secret' => array(
-		  'name' => 'EAS client secret'
+	'name' => 'EAS client secret'
 		, 'type' => 'password'
 		, 'desc' => 'Use the client ID you received from EAS Project.<br>Please request your API Key here: <a href="https://easproject.com/about-us/#contactus">https://easproject.com/about-us/#contactus</a>'
 		, 'id'   => 'easproj_auth_client_secret'
 
 		)
 	, 'language' => array(
-		  'name' => 'Language'
+	'name' => 'Language'
 		, 'type' => 'select'
 		, 'desc' => 'Choose language for user interface of EAS EU compliance'
 		, 'id'   => 'easproj_language'
@@ -1453,7 +1418,7 @@ function EAScompliance_settings() {
 		, 'options' => array('EN', 'RU')
 		)
 	, 'shipping_methods_postal' => array(
-		  'name' => 'Shipping methods by post'
+	'name' => 'Shipping methods by post'
 		, 'type' => 'multiselect'
 		, 'class' => 'wc-enhanced-select'
 		, 'desc' => 'Select shipping methods for delivery by post'
@@ -1461,7 +1426,7 @@ function EAScompliance_settings() {
 		, 'options' => $shipping_methods
 		)
 	, 'shipping_methods_latest' => array(
-		  'name' => ''
+	'name' => ''
 		, 'type' => 'multiselect'
 		, 'desc' => ''
 		, 'id'   => 'easproj_shipping_methods_latest'
@@ -1471,7 +1436,7 @@ function EAScompliance_settings() {
 		, 'value' => array_keys($shipping_methods)
 		)
 	, 'HSCode_field' => array(
-		  'name' => 'HSCODE'
+	'name' => 'HSCODE'
 		, 'type' => 'select'
 		, 'desc' => 'HSCode attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_hs6p_received'
@@ -1479,7 +1444,7 @@ function EAScompliance_settings() {
 		, 'options' => $attributes
 		)
 	, 'Warehouse_country' => array(
-		  'name' => 'Warehouse country'
+	'name' => 'Warehouse country'
 		, 'type' => 'select'
 		, 'desc' => 'Location warehouse country attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_warehouse_country'
@@ -1487,7 +1452,7 @@ function EAScompliance_settings() {
 		, 'options' => $attributes
 		)
 	, 'Reduced_tbe_vat_group' => array(
-		  'name' => 'Reduced VAT for TBE'
+	'name' => 'Reduced VAT for TBE'
 		, 'type' => 'select'
 		, 'desc' => 'Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_reduced_vat_group'
@@ -1495,7 +1460,7 @@ function EAScompliance_settings() {
 		, 'options' => $attributes
 		)
 	, 'Disclosed_agent' => array(
-		  'name' => 'Act as Disclosed Agent'
+	'name' => 'Act as Disclosed Agent'
 		, 'type' => 'select'
 		, 'desc' => 'Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_disclosed_agent'
@@ -1503,7 +1468,7 @@ function EAScompliance_settings() {
 		, 'options' => $attributes
 		)
 	, 'Seller_country' => array(
-		  'name' => 'Seller registration country'
+	'name' => 'Seller registration country'
 		, 'type' => 'select'
 		, 'desc' => 'Seller registration country attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_seller_reg_country'
@@ -1511,7 +1476,7 @@ function EAScompliance_settings() {
 		, 'options' => $attributes
 		)
 	, 'Originating_country' => array(
-		  'name' => 'Originating Country'
+	'name' => 'Originating Country'
 		, 'type' => 'select'
 		, 'desc' => 'Originating Country attribute slug. Attribute will be created if does not exist.'
 		, 'id'   => 'easproj_originating_country'
@@ -1587,9 +1552,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 		set_error_handler('error_handler');
 
 		woocommerce_update_options( EAScompliance_settings() );
-
-
-		// taxes must be enabled to see taxes at order
+	// taxes must be enabled to see taxes at order
 		update_option( 'woocommerce_calc_taxes', 'yes' );
 
 		// add tax rate
@@ -1599,74 +1562,70 @@ function woocommerce_update_options_settings_tab_compliance() {
 
 		if (!$tax_rate_id) {
 			$tax_rate    = array(
-				'tax_rate_country'  => '',
-				'tax_rate_state'    => '',
-				'tax_rate'          => '0.0000',
-				'tax_rate_name'     => 'EAScompliance',
-				'tax_rate_priority' => '1',
-				'tax_rate_compound' => '0',
-				'tax_rate_shipping' => '1',
-				'tax_rate_order'    => '1',
-				'tax_rate_class'    => '',
+	'tax_rate_country'  => '',
+	'tax_rate_state'    => '',
+	'tax_rate'          => '0.0000',
+	'tax_rate_name'     => 'EAScompliance',
+	'tax_rate_priority' => '1',
+	'tax_rate_compound' => '0',
+	'tax_rate_shipping' => '1',
+	'tax_rate_order'    => '1',
+	'tax_rate_class'    => '',
 			);
 			$tax_rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
 	//            update_option( 'woocommerce_calc_taxes', 'yes' );
 	//            update_option( 'woocommerce_default_customer_address', 'base' );
 	//            update_option( 'woocommerce_tax_based_on', 'base' );
 		}
-
-
-		//create attributes that did not exist
+	//create attributes that did not exist
 		$slug = woocommerce_settings_get_option_sql('easproj_hs6p_received');
 		if ( !array_key_exists($slug, wc_get_attribute_taxonomy_labels()) ) {
 			$attr = array(
-				'id' => $slug
-				, 'name' => 'HSCODE'
-				, 'slug' => $slug
-				, 'type' => 'text'
-				, 'order_by' => 'name'
-				, 'has_archives' => false
+	'id' => $slug
+	, 'name' => 'HSCODE'
+	, 'slug' => $slug
+	, 'type' => 'text'
+	, 'order_by' => 'name'
+	, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-                throw new Exception($attr_id->get_error_message());
-            }
+	throw new Exception($attr_id->get_error_message());
+			}
 		};
 
 		$slug = woocommerce_settings_get_option_sql('easproj_disclosed_agent');
 		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
-				'id' => $slug
-				, 'name' => 'Act as Disclosed Agent'
-				, 'slug' => $slug
-				, 'type' => 'text'
-				, 'order_by' => 'name'
-				, 'has_archives' => false
+	'id' => $slug
+	, 'name' => 'Act as Disclosed Agent'
+	, 'slug' => $slug
+	, 'type' => 'text'
+	, 'order_by' => 'name'
+	, 'has_archives' => false
 			);
 			delete_transient('wc_attribute_taxonomies');
 			WC_Cache_Helper::incr_cache_prefix('woocommerce-attributes');
-
-			$attr_id = wc_create_attribute($attr);
+	$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-				throw new Exception($attr_id->get_error_message());
+	throw new Exception($attr_id->get_error_message());
 			}
-
-			$taxonomy = wc_attribute_taxonomy_name($slug);
+	$taxonomy = wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
-				$taxonomy,
-				apply_filters('woocommerce_taxonomy_objects_' . $taxonomy, array('product')),
-				apply_filters(
-					'woocommerce_taxonomy_args_' . $taxonomy,
-					array(
-						'labels' => array(
-							'name' => $slug,
-						),
-						'hierarchical' => false,
-						'show_ui' => false,
-						'query_var' => true,
-						'rewrite' => false,
-					)
-				)
+	$taxonomy,
+	apply_filters('woocommerce_taxonomy_objects_' . $taxonomy, array('product')),
+	apply_filters(
+		'woocommerce_taxonomy_args_' . $taxonomy,
+		array(
+			'labels' => array(
+				'name' => $slug,
+			),
+			'hierarchical' => false,
+			'show_ui' => false,
+			'query_var' => true,
+			'rewrite' => false,
+		)
+	)
 			);
 			wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
 		}
@@ -1674,85 +1633,83 @@ function woocommerce_update_options_settings_tab_compliance() {
 		$slug = woocommerce_settings_get_option_sql('easproj_seller_reg_country');
 		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
-				'id' => $slug
-				, 'name' => 'Seller registration country'
-				, 'slug' => $slug
-				, 'type' => 'select'
-				, 'order_by' => 'name'
-				, 'has_archives' => false
+	'id' => $slug
+	, 'name' => 'Seller registration country'
+	, 'slug' => $slug
+	, 'type' => 'select'
+	, 'order_by' => 'name'
+	, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-                throw new Exception($attr_id->get_error_message());
-            }
+	throw new Exception($attr_id->get_error_message());
+			}
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
-				$taxonomy,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-				apply_filters(
-					'woocommerce_taxonomy_args_' . $taxonomy,
-					array(
-						'labels'       => array(
-							'name' => $slug,
-						),
-						'hierarchical' => false,
-						'show_ui'      => false,
-						'query_var'    => true,
-						'rewrite'      => false,
-					)
-				)
+	$taxonomy,
+	apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+	apply_filters(
+		'woocommerce_taxonomy_args_' . $taxonomy,
+		array(
+			'labels'       => array(
+				'name' => $slug,
+			),
+			'hierarchical' => false,
+			'show_ui'      => false,
+			'query_var'    => true,
+			'rewrite'      => false,
+		)
+	)
 			);
-
-			$countries = WC()->countries->countries;
+	$countries = WC()->countries->countries;
 			foreach ($countries as $country_code => $country) {
-				$taxonomy = wc_attribute_taxonomy_name($slug);
-				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+	$taxonomy = wc_attribute_taxonomy_name($slug);
+	wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
 		}
 
 		$slug = woocommerce_settings_get_option_sql('easproj_originating_country');
 		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
-				'id' => $slug
-				, 'name' => 'Originating Country'
-				, 'slug' => $slug
-				, 'type' => 'select'
-				, 'order_by' => 'name'
-				, 'has_archives' => false
+	'id' => $slug
+	, 'name' => 'Originating Country'
+	, 'slug' => $slug
+	, 'type' => 'select'
+	, 'order_by' => 'name'
+	, 'has_archives' => false
 			);
 			$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-                throw new Exception($attr_id->get_error_message());
-            }
+	throw new Exception($attr_id->get_error_message());
+			}
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
-				$taxonomy,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-				apply_filters(
-					'woocommerce_taxonomy_args_' . $taxonomy,
-					array(
-						'labels'       => array(
-							'name' => $slug,
-						),
-						'hierarchical' => false,
-						'show_ui'      => false,
-						'query_var'    => true,
-						'rewrite'      => false,
-					)
-				)
+	$taxonomy,
+	apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+	apply_filters(
+		'woocommerce_taxonomy_args_' . $taxonomy,
+		array(
+			'labels'       => array(
+				'name' => $slug,
+			),
+			'hierarchical' => false,
+			'show_ui'      => false,
+			'query_var'    => true,
+			'rewrite'      => false,
+		)
+	)
 			);
-
-			$countries = WC()->countries->countries;
+	$countries = WC()->countries->countries;
 			foreach ($countries as $country_code => $country) {
-				$taxonomy = wc_attribute_taxonomy_name($slug);
-				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+	$taxonomy = wc_attribute_taxonomy_name($slug);
+	wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
 		}
 
 		$slug = woocommerce_settings_get_option_sql('easproj_warehouse_country');
 		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
-			   'id' => $slug
+	  'id' => $slug
 			, 'name' => 'Warehouse country'
 			, 'slug' => $slug
 			, 'type' => 'select'
@@ -1761,46 +1718,43 @@ function woocommerce_update_options_settings_tab_compliance() {
 			);
 			$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-                throw new Exception($attr_id->get_error_message());
-            }
+	throw new Exception($attr_id->get_error_message());
+			}
 			$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
-				$taxonomy,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-				apply_filters(
-					'woocommerce_taxonomy_args_' . $taxonomy,
-					array(
-						'labels'       => array(
-							'name' => $slug,
-						),
-						'hierarchical' => false,
-						'show_ui'      => false,
-						'query_var'    => true,
-						'rewrite'      => false,
-					)
-				)
+	$taxonomy,
+	apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+	apply_filters(
+		'woocommerce_taxonomy_args_' . $taxonomy,
+		array(
+			'labels'       => array(
+				'name' => $slug,
+			),
+			'hierarchical' => false,
+			'show_ui'      => false,
+			'query_var'    => true,
+			'rewrite'      => false,
+		)
+	)
 			);
-
-			$countries = WC()->countries->countries;
+	$countries = WC()->countries->countries;
 			foreach ($countries as $country_code => $country) {
-				$taxonomy = wc_attribute_taxonomy_name($slug);
-				wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
+	$taxonomy = wc_attribute_taxonomy_name($slug);
+	wp_insert_term($country, $taxonomy, array('slug' => 'easproj_country_' . $country_code, 'description'=>$country));
 			}
-
-			/*
+	/*
 			// DEBUG SAMPLE that lists country attributes
 			global $wpdb;
 			$res =  $wpdb->get_results("
-				SELECT att.attribute_name, tt.taxonomy, t.name
-				FROM wplm_terms t
-				JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
-				JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
-				WHERE att.attribute_name = 'country'
+	SELECT att.attribute_name, tt.taxonomy, t.name
+	FROM wplm_terms t
+	JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
+	JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
+	WHERE att.attribute_name = 'country'
 			", ARRAY_A);
-
-			$txt = implode("\t", array_keys($res[0])) . "\n";
+	$txt = implode("\t", array_keys($res[0])) . "\n";
 			foreach ($res as $row) {
-				$txt .= implode("\t", array_values($row)) . "\n";
+	$txt .= implode("\t", array_values($row)) . "\n";
 			}
 			return $txt;
 			*/
@@ -1809,66 +1763,60 @@ function woocommerce_update_options_settings_tab_compliance() {
 		$slug = woocommerce_settings_get_option_sql('easproj_reduced_vat_group');
 		if (!array_key_exists($slug, wc_get_attribute_taxonomy_labels())) {
 			$attr = array(
-				  'id' => $slug
-				, 'name' => 'Reduced VAT for TBE'
-				, 'slug' => $slug
-				, 'type' => 'text'
-				, 'order_by' => 'name'
-				, 'has_archives' => false
+	  'id' => $slug
+	, 'name' => 'Reduced VAT for TBE'
+	, 'slug' => $slug
+	, 'type' => 'text'
+	, 'order_by' => 'name'
+	, 'has_archives' => false
 			);
 			delete_transient( 'wc_attribute_taxonomies' );
 			WC_Cache_Helper::incr_cache_prefix( 'woocommerce-attributes' );
-
-			$attr_id = wc_create_attribute($attr);
+	$attr_id = wc_create_attribute($attr);
 			if (is_wp_error($attr_id)) {
-                throw new Exception($attr_id->get_error_message());
-            }
-
-			$taxonomy=wc_attribute_taxonomy_name($slug);
+	throw new Exception($attr_id->get_error_message());
+			}
+	$taxonomy=wc_attribute_taxonomy_name($slug);
 			register_taxonomy(
-				$taxonomy,
-				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
-				apply_filters(
-					'woocommerce_taxonomy_args_' . $taxonomy,
-					array(
-						'labels'       => array(
-							'name' => $slug,
-						),
-						'hierarchical' => false,
-						'show_ui'      => false,
-						'query_var'    => true,
-						'rewrite'      => false,
-					)
-				)
+	$taxonomy,
+	apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
+	apply_filters(
+		'woocommerce_taxonomy_args_' . $taxonomy,
+		array(
+			'labels'       => array(
+				'name' => $slug,
+			),
+			'hierarchical' => false,
+			'show_ui'      => false,
+			'query_var'    => true,
+			'rewrite'      => false,
+		)
+	)
 			);
 			wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
 		}
-
-
-		// check EAS API connection / tax rates and deactivate plugin on failure
+	// check EAS API connection / tax rates and deactivate plugin on failure
 		if (woocommerce_settings_get_option('easproj_active') == 'yes') {
 			try {
-				get_oauth_token();
-
-				// there must be no EU tax rates except for EAScompliance
-				foreach (EUROPEAN_COUNTRIES as $c) {
-					foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
-						if ($tax_rate['label'] != 'EAScompliance') {
-							throw new Exception("There must be only EAScompliance tax rate for country $c");
-						}
-					}
-				}
-
-			} catch (Exception $ex) {
-				WC_Admin_Settings::save_fields(array(
-					'active' => array(
-						'name' => 'Active'
-					, 'type' => 'checkbox'
-					, 'desc' => 'Active'
-					, 'id'   => 'easproj_active'
-					, 'default' => 'yes')
-				), array('easproj_active' => 'no') );
-				throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
+	get_oauth_token();
+		// there must be no EU tax rates except for EAScompliance
+	foreach (EUROPEAN_COUNTRIES as $c) {
+		foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
+			if ('EAScompliance' != $tax_rate['label']) {
+				throw new Exception("There must be only EAScompliance tax rate for country $c");
+			}
+		}
+	}
+	} catch (Exception $ex) {
+	WC_Admin_Settings::save_fields(array(
+		'active' => array(
+			'name' => 'Active'
+		, 'type' => 'checkbox'
+		, 'desc' => 'Active'
+		, 'id'   => 'easproj_active'
+		, 'default' => 'yes')
+	), array('easproj_active' => 'no') );
+	throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
 			}
 		}
 
@@ -1898,5 +1846,22 @@ function array_get( $arr, $key, $default = null) {
 		return $default;
 	}
 }
+
+
+//The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier
+if (!defined('JSON_THROW_ON_ERROR')) {
+	define('JSON_THROW_ON_ERROR', 4194304);
+}
+
+//The function array_key_first() is not present in PHP version 7.2 or earlier
+if (!function_exists('array_key_first')) {
+	function array_key_first(array $arr) {
+		foreach($arr as $key => $unused) {
+			return $key;
+		}
+		return NULL;
+	}
+}
+
 
 restore_error_handler();
