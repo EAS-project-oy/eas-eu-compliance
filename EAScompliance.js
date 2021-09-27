@@ -39,7 +39,7 @@ jQuery(document).ready(function($) {
 
             $.post({
                 url: plugin_ajax_object.ajax_url
-                , data: {'action': 'EAScompliance_ajaxhandler', 'request': JSON.stringify(request)}
+                , data: {'action': 'EAScompliance_ajaxhandler', 'request': JSON.stringify(request), 'EAScompliance_nonce_calc': $('#EAScompliance_nonce_calc').val()}
                 , dataType: 'json'
                 , success: function (j) {
                     unblock($('.EAScompliance'));
@@ -69,7 +69,7 @@ jQuery(document).ready(function($) {
     $('.EAScompliance_debug_button').on('click', function (ev) {
         $.post({
             url: plugin_ajax_object.ajax_url
-            , data: {'action': 'EAScompliance_debug', 'debug_input': $('.EAScompliance_debug_input').val()}
+            , data: {'action': 'EAScompliance_debug', 'debug_input': $('.EAScompliance_debug_input').val(), 'EAScompliance_nonce_debug': $('#EAScompliance_nonce_debug').val()}
             , dataType: 'json'
             , success: function (j) {
                 $('.EAScompliance_debug_output').val(j.eval_result)

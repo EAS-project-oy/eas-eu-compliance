@@ -122,22 +122,6 @@ if (is_active()) {
 	add_action( 'woocommerce_review_order_before_payment', 'woocommerce_review_order_before_payment');
 }
 function woocommerce_review_order_before_payment() {
-	$template = '
-	<div class="form-row EAScompliance">
-	<button type="button" class="button alt button_calc">$button_name</button>
-	<p class="EAScompliance_status" checkout-form-data="$checkout_form_data" needs-recalculate="$needs_recalculate">$status</p>
-	'
-	.
-	( ( is_debug() && DEVELOP )?'
-		<h3>EAScompliance Debug</h3>
-		<p class="EAScompliance_debug">
-		<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
-		<button type="button" class="button EAScompliance_debug_button">eval</button>
-		<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea> 
-	</p>':'' )
-	.
-	'</div>';
-
 
 	//// checkout form data saved during /calculate step
 	$checkout_form_data = null;
@@ -147,14 +131,32 @@ function woocommerce_review_order_before_payment() {
 		$item = $cart->get_cart_contents()[$k];
 		$checkout_form_data = array_get($item, 'CHECKOUT FORM DATA', '');
 	}
-	echo format($template,  // phpcs:ignore All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found 'format'.
-		[
-			'button_name' => esc_html__('Calculate Taxes and Duties', 'woocommerce')
-			, 'ordered_total' => WC()->cart->get_cart_contents_total()
-			, 'status' => EAScompliance_is_set() ? 'present' : 'not present'
-			, 'needs_recalculate' => EAScompliance_needs_recalculate() ? 'yes' : 'no'
-			, 'checkout_form_data' => $checkout_form_data
-		]);
+
+	// prevent processing form data without nonce verification.
+	$nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
+	$nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
+
+	$button_name = esc_html__('Calculate Taxes and Duties', 'woocommerce');
+	$status = esc_attr__(EAScompliance_is_set() ? 'present' : 'not present');
+	$needs_recalculate =esc_attr__(EAScompliance_needs_recalculate() ? 'yes' : 'no');
+
+	echo "<div class=\"form-row EAScompliance\">
+		<button type=\"button\" class=\"button alt button_calc\">$button_name</button>
+		<input type=\"hidden\" id=\"EAScompliance_nonce_calc\" name=\"EAScompliance_nonce_calc\" value=\"$nonce_calc\" /></input>
+		<p class=\"EAScompliance_status\" checkout-form-data=\"$checkout_form_data\" needs-recalculate=\"$needs_recalculate\">$status</p>
+		"
+		.
+		( ( is_debug() && DEVELOP ) ? "
+			<h3>EAScompliance Debug</h3>
+			<p class=\"EAScompliance_debug\">
+			<textarea type=\"text\" class=\"EAScompliance_debug_input\" style=\"font-family:monospace\" placeholder=\"input\"></textarea>
+			<button type=\"button\" class=\"button EAScompliance_debug_button\">eval</button>
+			<input type=\"hidden\" id=\"EAScompliance_nonce_debug\" name=\"EAScompliance_nonce_debug\" value=\"$nonce_debug\" /></input>
+			<textarea class=\"EAScompliance_debug_output\" style=\"font-family:monospace\" placeholder=\"output\"></textarea> 
+			</p>":''
+		)
+		.
+		'</div>';
 }
 
 //// Debug Console
@@ -163,16 +165,23 @@ if (is_debug() && DEVELOP) {
 	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
 };
 function EAScompliance_debug() {
-	$debug_input = stripslashes(array_get($_POST, 'debug_input', '')); // phpcs:ignore WordPress.Security.NonceVerification.Missing,  Detected usage of a non-sanitized input variable: $_POST['debug_input']
+
 	try {
+		if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_debug']), 'EAScompliance_nonce_debug' )) {
+			throw new Exception('Security check');
+		}
+
+		$debug_input = stripslashes(array_get($_POST, 'debug_input', ''));
+
 		set_error_handler('error_handler');
-		$jres = print_r(eval($debug_input), true); // phpcs:ignore eval() is a security risk so not allowed.
+//		$jres = print_r(eval($debug_input), true);
+		$jres = 'eval() disabled';
 	} catch (Exception $ex) {
 		$jres = 'Error: ' . $ex->getMessage();
 	} finally {
 		restore_error_handler();
+		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
 	}
-	wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
 
 };
 
@@ -292,21 +301,24 @@ function make_eas_api_request_json() {
 			}', true);
 
 	$jdebug['step'] = 'Fill json request with checkout data';
-	$checkout = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+	if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_calc']), 'EAScompliance_nonce_calc' )) {
+		throw new Exception('Security check');
+	};
+	$checkout = $_POST;
 	$cart = WC()->cart;
 
-
-	if (array_key_exists('request', $_POST)) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	if (array_key_exists('request', $_POST)) {
 		$jdebug['step'] = 'take checkout data from request form_data instead of WC()->checkout';
 
-		$request = $_POST['request']; // phpcs:ignore WordPress.Security.NonceVerification.Missing, Detected usage of a non-sanitized input variable
+		$request = strval($_POST['request']);
 
 		$jreq = json_decode(stripslashes($request), true);
 		$checkout = array();
 		$query = $jreq['form_data'];
 		foreach (explode('&', $query) as $chunk) {
 			$param = explode('=', $chunk);
-	$checkout[urldecode($param[0])] = urldecode($param[1]);
+			$checkout[urldecode($param[0])] = urldecode($param[1]);
 		}
 
 		$jdebug['step'] = 'save checkout form data into cart';
@@ -424,7 +436,8 @@ function EAScompliance_ajaxhandler() {
 		$jdebug['CALC request'] = $calc_jreq;
 		//DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);
 
-		$confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash()), JSON_THROW_ON_ERROR2));
+		$confirm_hash = base64_encode(json_encode(array('cart_hash'=>WC()->cart->get_cart_hash(), 'EAScompliance_nonce_api'=>wp_create_nonce('EAScompliance_nonce_api')), JSON_THROW_ON_ERROR2));
+
 		$redirect_uri = admin_url('admin-ajax.php') . '?action=EAScompliance_redirect_confirm&confirm_hash=' . $confirm_hash;
 		$jdebug['redirect_uri'] = $redirect_uri;
 
@@ -548,6 +561,11 @@ function EAScompliance_redirect_confirm() {
 		global $woocommerce;
 		$cart = WC()->cart;
 
+		$confirm_hash = json_decode(base64_decode(strval($_GET['confirm_hash'])), true, 512, JSON_THROW_ON_ERROR2);
+		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
+			throw new Exception('Security check');
+		};
+
 		if (!array_key_exists('eas_checkout_token', $_GET)) {
 			$jdebug['step'] = 'confirmation was declined';
 			$k = array_key_first2 ($cart->get_cart());
@@ -560,7 +578,7 @@ function EAScompliance_redirect_confirm() {
 		}
 
 		$jdebug['step'] = 'receive checkout token';
-		$eas_checkout_token = $_GET['eas_checkout_token']; // phpcs:ignore Detected usage of a non-sanitized input variable
+		$eas_checkout_token = strval($_GET['eas_checkout_token']);
 		$jdebug['JWT token'] = $eas_checkout_token;
 
 		//// request validation key
@@ -1173,12 +1191,15 @@ function woocommerce_checkout_create_order( $order) {
 	try {
 		set_error_handler('error_handler');
 
-		//only work for European countries
+		if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_calc']), 'EAScompliance_nonce_calc' )) {
+			throw new Exception('Security check');
+		};
 
-		$delivery_country = array_get($_POST, 'shipping_country', array_get($_POST, 'billing_country', 'XX')); // phpcs:ignore WordPress.Security.NonceVerification.Missing, Detected usage of a non-sanitized input variable
-		$ship_to_different_address = array_get($_POST, 'ship_to_different_address', false); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		//only work for European countries
+		$delivery_country = array_get($_POST, 'shipping_country', array_get($_POST, 'billing_country', 'XX'));
+		$ship_to_different_address = array_get($_POST, 'ship_to_different_address', false);
 		if ( !( 'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
-			$delivery_country = array_get($_POST, 'billing_country', 'XX'); // phpcs:ignore WordPress.Security.NonceVerification.Missing, Detected usage of a non-sanitized input variable
+			$delivery_country = array_get($_POST, 'billing_country', 'XX');
 		}
 		if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
 			return;
@@ -1215,7 +1236,7 @@ function woocommerce_checkout_create_order( $order) {
 			$woocommerce->cart->set_session();
 			throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
 		}
-	//save payload in order metadata
+		//save payload in order metadata
 		$payload = $item['EASPROJ API PAYLOAD'];
 		$order->add_meta_data('easproj_payload', $payload , true);
 
