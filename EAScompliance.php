@@ -140,23 +140,26 @@ function woocommerce_review_order_before_payment() {
 	$status = esc_attr__(EAScompliance_is_set() ? 'present' : 'not present');
 	$needs_recalculate =esc_attr__(EAScompliance_needs_recalculate() ? 'yes' : 'no');
 
-	echo "<div class=\"form-row EAScompliance\">
-		<button type=\"button\" class=\"button alt button_calc\">$button_name</button>
-		<input type=\"hidden\" id=\"EAScompliance_nonce_calc\" name=\"EAScompliance_nonce_calc\" value=\"$nonce_calc\" /></input>
-		<p class=\"EAScompliance_status\" checkout-form-data=\"$checkout_form_data\" needs-recalculate=\"$needs_recalculate\">$status</p>
-		"
-		.
-		( ( is_debug() && DEVELOP ) ? "
-			<h3>EAScompliance Debug</h3>
-			<p class=\"EAScompliance_debug\">
-			<textarea type=\"text\" class=\"EAScompliance_debug_input\" style=\"font-family:monospace\" placeholder=\"input\"></textarea>
-			<button type=\"button\" class=\"button EAScompliance_debug_button\">eval</button>
-			<input type=\"hidden\" id=\"EAScompliance_nonce_debug\" name=\"EAScompliance_nonce_debug\" value=\"$nonce_debug\" /></input>
-			<textarea class=\"EAScompliance_debug_output\" style=\"font-family:monospace\" placeholder=\"output\"></textarea> 
-			</p>":''
-		)
-		.
-		'</div>';
+	?>
+		<div class="form-row EAScompliance">
+		<button type="button" class="button alt button_calc"><?=$button_name?></button>
+		<input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?=esc_attr($nonce_calc)?>" /></input>
+		<p class="EAScompliance_status" checkout-form-data="<?=esc_attr($checkout_form_data)?>" needs-recalculate="<?=$needs_recalculate?>"><?=esc_attr($status)?></p>
+		<?php
+			if ( is_debug() && DEVELOP ) {
+				?>
+				<h3>EAScompliance Debug</h3>
+				<p class="EAScompliance_debug">
+					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
+					<button type="button" class="button EAScompliance_debug_button">eval</button>
+					<input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?=esc_attr($nonce_debug)?>" /></input>
+					<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea>
+				</p>
+				<?php
+			}
+		?>
+		</div>
+	<?php
 }
 
 //// Debug Console
@@ -167,7 +170,7 @@ if (is_debug() && DEVELOP) {
 function EAScompliance_debug() {
 
 	try {
-		if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_debug']), 'EAScompliance_nonce_debug' )) {
+		if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
 			throw new Exception('Security check');
 		}
 
@@ -302,7 +305,7 @@ function make_eas_api_request_json() {
 
 	$jdebug['step'] = 'Fill json request with checkout data';
 
-	if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_calc']), 'EAScompliance_nonce_calc' )) {
+	if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
 		throw new Exception('Security check');
 	};
 	$checkout = $_POST;
@@ -311,7 +314,7 @@ function make_eas_api_request_json() {
 	if (array_key_exists('request', $_POST)) {
 		$jdebug['step'] = 'take checkout data from request form_data instead of WC()->checkout';
 
-		$request = strval($_POST['request']);
+		$request = strval(array_get($_POST, 'request', ''));
 
 		$jreq = json_decode(stripslashes($request), true);
 		$checkout = array();
@@ -561,7 +564,7 @@ function EAScompliance_redirect_confirm() {
 		global $woocommerce;
 		$cart = WC()->cart;
 
-		$confirm_hash = json_decode(base64_decode(strval($_GET['confirm_hash'])), true, 512, JSON_THROW_ON_ERROR2);
+		$confirm_hash = json_decode(base64_decode(strval(array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
 		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
 			throw new Exception('Security check');
 		};
@@ -578,7 +581,7 @@ function EAScompliance_redirect_confirm() {
 		}
 
 		$jdebug['step'] = 'receive checkout token';
-		$eas_checkout_token = strval($_GET['eas_checkout_token']);
+		$eas_checkout_token = strval(array_get($_GET, 'eas_checkout_token', ''));
 		$jdebug['JWT token'] = $eas_checkout_token;
 
 		//// request validation key
@@ -1191,7 +1194,7 @@ function woocommerce_checkout_create_order( $order) {
 	try {
 		set_error_handler('error_handler');
 
-		if (!wp_verify_nonce( strval($_POST['EAScompliance_nonce_calc']), 'EAScompliance_nonce_calc' )) {
+		if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
 			throw new Exception('Security check');
 		};
 
