@@ -142,17 +142,17 @@ function woocommerce_review_order_before_payment() {
 
 	?>
 		<div class="form-row EAScompliance">
-		<button type="button" class="button alt button_calc"><?php echo esc_html($button_name) ?></button>
-		<input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?php echo esc_attr($nonce_calc) ?>" /></input>
-		<p class="EAScompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data) ?>" needs-recalculate="<?php echo esc_attr__($needs_recalculate) ?>"><?php echo esc_attr($status) ?></p>
+		<button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
+		<input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?php echo esc_attr($nonce_calc); ?>" /></input>
+		<p class="EAScompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>" needs-recalculate="<?php echo esc_attr__($needs_recalculate); ?>"><?php echo esc_attr($status); ?></p>
 		<?php
 		if ( is_debug() && DEVELOP ) {
-		?>
+			?>
 				<h3>EAScompliance Debug</h3>
 				<p class="EAScompliance_debug">
 					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
 					<button type="button" class="button EAScompliance_debug_button">eval</button>
-					<input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?php echo esc_attr($nonce_debug) ?>" /></input>
+					<input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?php echo esc_attr($nonce_debug); ?>" /></input>
 					<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea>
 				</p>
 				<?php
