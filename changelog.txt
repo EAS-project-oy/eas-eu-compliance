@@ -1,5 +1,6 @@
-Plugin Version 1.0.5 29th Sep 2021
-Improved the performance of the plugin on the pages.
-Code reviewed according to Worpress code standards.
+*** EAS EU compiance plugin Changelog ***
+2021-09-29 - version 1.0.5
+* Code review according to Woocommerce stadard requirements
 
-Plugin First Release 10th September 2021
+2021-09-10 - version 1.0.0
+* Initial release
