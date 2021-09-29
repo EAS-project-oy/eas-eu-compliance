@@ -1,0 +1,5 @@
+Plugin Version 1.0.5 29th Sep 2021
+Improved the performance of the plugin on the pages.
+Code reviewed according to Worpress code standards.
+
+Plugin First Release 10th September 2021
