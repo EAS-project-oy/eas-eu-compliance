@@ -35,10 +35,35 @@ jQuery(document).ready(function($) {
     $('.button_calc').on('click', function (ev) {
 
         //validate fields before sending Calculate request
-        if ($('#billing_email').val() === '') {
-            show_error('Please check email field');
+        if (
+               $('#billing_first_name').val() === ''
+            || $('#billing_last_name').val() === ''
+            || $('#billing_country').val() === ''
+            || $('#billing_address_1').val() === ''
+            || $('#billing_postcode').val() === ''
+            || $('#billing_city').val() === ''
+            || $('#billing_phone').val() === ''
+            || $('#billing_email').val() === ''
+        ) {
+            show_error('Please check for required billing details');
             return;
         }
+
+        if ($('#ship-to-different-address-checkbox').prop('checked') === true) {
+            if (
+                   $('#shipping_first_name').val() === ''
+                || $('#shipping_last_name').val() === ''
+                || $('#shipping_country').val() === ''
+                || $('#shipping_address_1').val() === ''
+                || $('#shipping_postcode').val() === ''
+                || $('#shipping_city').val() === ''
+            ) {
+                show_error('Please check for required shipping details');
+                return;
+            }
+        }
+
+
 
         block($('.EAScompliance'));
         $('.button_calc').text('Calculating taxes and duties ...');
