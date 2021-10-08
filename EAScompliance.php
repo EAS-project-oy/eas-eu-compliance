@@ -494,7 +494,7 @@ function EAScompliance_ajaxhandler() {
 			// }';
 			$calc_error = json_decode($calc_body, true);
 			if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
-				$error_message = $calc_error['code'] . ' ' . $calc_error['type'];
+				$error_message = $calc_error['code'];
 			}
 			if (array_key_exists('data', $calc_error) && array_key_exists('message', $calc_error['data'])) {
 				$error_message = $calc_error['data']['message'];
@@ -503,6 +503,12 @@ function EAScompliance_ajaxhandler() {
 				$error_message = $calc_error['message'];
 			}
 			if (array_key_exists('errors', $calc_error)) {
+				$error_message = join(' ', array_values($calc_error['errors']));
+			}
+
+			// any field can be metioned in {errors} response
+			if ('422' == $calc_status) {
+				unset($calc_error['errors']['type']);
 				$error_message = join(' ', array_values($calc_error['errors']));
 			}
 			$jdebug['CALC response error'] = $error_message;

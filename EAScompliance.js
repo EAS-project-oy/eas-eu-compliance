@@ -22,9 +22,23 @@ jQuery(document).ready(function($) {
         }
     };
 
+    var show_error = function( error_message ) {
+        $el = $('<div class="woocommerce-error">').text(error_message);
+        $('.woocommerce-notices-wrapper:first').prepend($el);
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $('.woocommerce-notices-wrapper:first').offset().top-50
+        }, 2000);
+    }
+
 
     //// send order information to EAS API and redirect to confirmation page
     $('.button_calc').on('click', function (ev) {
+
+        //validate fields before sending Calculate request
+        if ($('#billing_email').val() === '') {
+            show_error('Please check email field');
+            return;
+        }
 
         block($('.EAScompliance'));
         $('.button_calc').text('Calculating taxes and duties ...');
@@ -52,11 +66,7 @@ jQuery(document).ready(function($) {
                     if (j.status === 'ok') {
                         window.open(j['CALC response'], '_self');
                     } else {
-                        $el = $('<div class="woocommerce-error">').text(j['message']);
-                        $('.woocommerce-notices-wrapper:first').prepend($el);
-                        $([document.documentElement, document.body]).animate({
-                            scrollTop: $('.woocommerce-notices-wrapper:first').offset().top-50
-                        }, 2000);
+                        show_error(j['message']);
                         $('.button_calc').text("Sorry, didn't work, please try again")
                     }
                 }
