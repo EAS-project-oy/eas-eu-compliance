@@ -45,7 +45,7 @@ jQuery(document).ready(function($) {
             || $('#billing_phone').val() === ''
             || $('#billing_email').val() === ''
         ) {
-            show_error('Please check for required billing details');
+            show_error('Please check for required billing details. All fields marked as required should be filled.');
             return;
         }
 
@@ -58,7 +58,7 @@ jQuery(document).ready(function($) {
                 || $('#shipping_postcode').val() === ''
                 || $('#shipping_city').val() === ''
             ) {
-                show_error('Please check for required shipping details');
+                show_error('Please check for required shipping details. All fields marked as required should be filled.');
                 return;
             }
         }
