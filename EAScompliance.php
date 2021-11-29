@@ -628,37 +628,76 @@ function EAScompliance_redirect_confirm() {
 		$payload_j = json_decode($jwt_payload, true);
 		$jdebug['$payload_j'] = $payload_j;
 
-		// Sample $payload_j:
-		//  {
-		//      "eas_fee": 3.65,
-		//      "merchandise_cost": 91, // sum of items cost without VAT AND eas_fee
-		//      "delivery_charge": 5, // delivery charge without VAT
-		//      "order_id": "67c8825a612a586fa82f5c8c08bba662",
-		//      "items": [
-		//        {
-		//          "item_id": "28",
-		//          "unit_cost": 18,
-		//          "quantity": 2,
-		//          "vat_rate": 24,
-		//          "item_duties_and_taxes": 10.9
-		//        },
-		//        {
-		//          "item_id": "29",
-		//          "unit_cost": 55,
-		//          "quantity": 1,
-		//          "vat_rate": 24,
-		//          "item_duties_and_taxes": 16.66
-		//        }
-		//      ],
-		//      "taxes_and_duties": 23.91,
-		//      "id": 478,
-		//      "iat": 1620819174,
-		//      "exp": 1620905574,
-		//      "aud": "checkout_26",
-		//      "iss": "@eas\/auth",
-		//      "sub": "checkout",
-		//      "jti": "6dd3ea10-b288-44eb-9623-14c1af91b01e"
+		// Sample $payload_j json:
+		//{
+		//  "delivery_charge_vat": 27.36,
+		//  "merchandise_cost_vat_excl": 3100,
+		//  "merchandise_cost": 3100,  // sum of items cost without VAT AND eas_fee
+		//  "delivery_charge": 100,  // delivery charge without VAT
+		//  "delivery_charge_vat_excl": 100,
+		//  "delivery_country": "FI",
+		//  "payment_currency": "EUR",
+		//  "merchandise_vat": 754.08,
+		//  "eas_fee_vat": 13.34,
+		//  "total_order_amount": 4106.38,
+		//  "total_customs_duties": 61.6,
+		//  "eas_fee": 50,  // EAS Fee + DPO Fee
+		//  "delivery_address": null,
+		//  "order_id": "TOEKN TEST2",
+		//  "items": [
+		//    {
+		//      "item_id": "3",
+		//      "quantity": 2,
+		//      "unit_cost": 1200,
+		//      "unit_cost_excl_vat": 1200,
+		//      "item_delivery_charge": 0,
+		//      "item_delivery_charge_vat_excl": 0,
+		//      "item_delivery_charge_vat": 0,
+		//      "item_customs_duties": 0,
+		//      "item_eas_fee": 0,
+		//      "item_eas_fee_vat": 0,
+		//      "vat_rate": 24,
+		//      "item_duties_and_taxes": 576
+		//    },
+		//    {
+		//      "item_id": "9",
+		//      "quantity": 1,
+		//      "unit_cost": 400,
+		//      "unit_cost_excl_vat": 400,
+		//      "item_delivery_charge": 0,
+		//      "item_delivery_charge_vat_excl": 0,
+		//      "item_delivery_charge_vat": 0,
+		//      "item_customs_duties": 0,
+		//      "item_eas_fee": 0,
+		//      "item_eas_fee_vat": 0,
+		//      "vat_rate": 24,
+		//      "item_duties_and_taxes": 96
+		//    },
+		//    {
+		//      "item_id": "sHO",
+		//      "quantity": 2,
+		//      "unit_cost": 150,
+		//      "unit_cost_excl_vat": 150,
+		//      "item_delivery_charge": 0,
+		//      "item_delivery_charge_vat_excl": 100,
+		//      "item_delivery_charge_vat": 27.36,
+		//      "item_customs_duties": 61.6,
+		//      "item_eas_fee": 50,
+		//      "item_eas_fee_vat": 13.34,
+		//      "vat_rate": 24,
+		//      "item_duties_and_taxes": 245.33
 		//    }
+		//  ],
+		//  "taxes_and_duties": 856.38,
+		//  "id": 3541,
+		//  "timestamp_year": 2021,
+		//  "iat": 1637848021,
+		//  "exp": 4762050421,
+		//  "aud": "checkout_239",
+		//  "iss": "@eas/auth",
+		//  "sub": "checkout",
+		//  "jti": "d9896d02-4f50-4862-9aac-9387a16d98e1"
+		//}
 
 		$payload_items = $payload_j['items'];
 
@@ -670,10 +709,10 @@ function EAScompliance_redirect_confirm() {
 		$payload_item_k = 0;
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 			$payload_item = $payload_items[$payload_item_k];
-	$tax_rates = WC_Tax::get_rates();
+			$tax_rates = WC_Tax::get_rates();
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
-	$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
-			$item['EAScompliance unit_cost'] = $payload_item['unit_cost'];
+			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
+			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
 			++$payload_item_k;
 		}
@@ -691,8 +730,9 @@ function EAScompliance_redirect_confirm() {
 		$item['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
 		$item['EAScompliance SET'] = true;
 		$item['EAScompliance NEEDS RECALCULATE'] = false;
-		$item['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge'];
+		$item['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
 		$item['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
+		$item['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
 
 		//DEBUG SAMPLE: return WC()->cart->get_cart();
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it.
@@ -812,17 +852,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 			$order_item_tax->save();
 			$order->update_taxes();
 			//Calculate Order Total
-			$total = 0;
-			$cart_items = array_values(WC()->cart->get_cart_contents());
-			$first = true;
-			foreach ($cart_items as $cart_item) {
-				if ($first) {
-					//replace cart total with one from $payload_j['merchandise_cost']
-					$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
-					$first = false;
-				}
-				$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
-			}
+			$total = cart_total();
 			//Set Order Total
 			$order->set_total($total);
 		}
@@ -833,6 +863,35 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 	} finally {
 		restore_error_handler();
 	}
+}
+
+
+function cart_total() {
+	$total = WC()->cart->get_total('edit');
+	if (EAScompliance_is_set()) {
+		$payload_total_order_amount = -1;
+
+		$cart_items = array_values(WC()->cart->get_cart_contents());
+		$first = true;
+		foreach ($cart_items as $cart_item) {
+			if ($first) {
+				//replace cart total with one from $payload_j['merchandise_cost']
+				$total = $cart_item['EAScompliance DELIVERY CHARGE'];
+				$first = false;
+				$payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
+				$payload = $cart_item['EASPROJ API PAYLOAD'];
+			}
+			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance unit_cost', 0);
+		}
+
+		// check that payload total_order_amount equals Order total
+		if ( $payload_total_order_amount != $total ) {
+			log_exception(new Exception(format('payload total_order_amount $a not equal order total $b'
+				, array('a'=>$payload_total_order_amount, 'b'=>$total)) ));
+			logger()->debug(print_r($payload, true));
+		}
+	}
+	return $total;
 }
 
 // Order review Tax field
@@ -929,20 +988,8 @@ function woocommerce_cart_totals_order_total_html2( $value) {
 	try {
 		set_error_handler('error_handler');
 
-		$total = WC()->cart->get_total('edit');
+		$total = cart_total();
 
-		if (EAScompliance_is_set()) {
-			$cart_items = array_values(WC()->cart->get_cart_contents());
-			$first = true;
-			foreach ($cart_items as $cart_item) {
-				if ($first) {
-					//replace cart total with one from $payload_j['merchandise_cost']
-					$total = $cart_item['EAScompliance MERCHANDISE COST'] + $cart_item['EAScompliance DELIVERY CHARGE'];
-					$first = false;
-				}
-				$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
-			}
-		}
 		return '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
 	} catch (Exception $ex) {
 		log_exception($ex);
