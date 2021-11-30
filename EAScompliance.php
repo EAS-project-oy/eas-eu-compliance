@@ -713,6 +713,7 @@ function EAScompliance_redirect_confirm() {
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
 			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
+			$item['EAScompliance VAT'] =  $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
 			++$payload_item_k;
 		}
@@ -731,6 +732,7 @@ function EAScompliance_redirect_confirm() {
 		$item['EAScompliance SET'] = true;
 		$item['EAScompliance NEEDS RECALCULATE'] = false;
 		$item['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
+		$item['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
 		$item['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
 		$item['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
 
@@ -843,11 +845,16 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 				$item_amount = $cart_item['EAScompliance AMOUNT'];
 				$total += $item_amount;
 				$item->add_meta_data('Customs duties', $item_amount);
+				$item->add_meta_data('VAT Amount', $cart_item['EAScompliance VAT']);
+				$item->add_meta_data('VAT Rate', $cart_item['EAScompliance ITEM']['vat_rate']);
+				$item->add_meta_data('EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee']);
+				$item->add_meta_data('VAT on EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee_vat']);
+
 				$item->set_taxes(array(
 					'total'    => array($tax_rate_id0=>$item_amount),
 					'subtotal' => array($tax_rate_id0=>$item_amount),
 				));
-					++$ix;
+				++$ix;
 			}
 			$order_item_tax->save();
 			$order->update_taxes();
@@ -1220,6 +1227,7 @@ function woocommerce_shipping_packages( $packages) {
 			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
 				if (array_key_exists($shm, $packages[$px]['rates'])) {
 					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
+					 $packages[$px]['rates'][$shm]->add_meta_data('VAT Amount', $cart_item0['EAScompliance DELIVERY CHARGE VAT']);
 				}
 				 //update $calc_jreq_saved with new delivery_cost
 				 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
@@ -1416,6 +1424,69 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 
 }
 
+
+//// Display Order Totals in Order Admin Page
+if (is_active()) {
+	add_action('woocommerce_admin_order_totals_after_total', 'woocommerce_admin_order_totals_after_total');
+}
+function woocommerce_admin_order_totals_after_total($order_id) {
+	$order = wc_get_order($order_id);
+
+	$payload_j = $order->get_meta('easproj_payload');
+
+	if ( empty($payload_j) ) {
+		return;
+	}
+
+	?>
+	<tr>
+		<td class="label" style="padding-right:20px;">
+			Including:
+		</td>
+		<td width="1%"></td>
+		<td class="total">
+		</td>
+	</tr>
+	<tr>
+		<td class="label ">
+			Total customs duties
+		</td>
+		<td width="1%"></td>
+		<td class="total">
+			<?php echo  wc_price( $payload_j['total_customs_duties'], array( 'currency' => $order->get_currency() ) ); ?>
+		</td>
+	</tr>
+	<tr>
+		<td class="label ">
+			Total VAT
+		</td>
+		<td width="1%"></td>
+		<td class="total">
+			<?php echo  wc_price( $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'] , array( 'currency' => $order->get_currency() ) ); ?>
+		</td>
+	</tr>
+	<tr>
+		<td class="label ">
+			Total EAS fee
+		</td>
+		<td width="1%"></td>
+		<td class="total">
+			<?php echo  wc_price( $payload_j['eas_fee'] , array( 'currency' => $order->get_currency() ) ); ?>
+		</td>
+	</tr>
+	<tr>
+		<td class="label ">
+			Total EAS fee VAT
+		</td>
+		<td width="1%"></td>
+		<td class="total">
+			<?php echo  wc_price( $payload_j['eas_fee_vat'] , array( 'currency' => $order->get_currency() ) ); ?>
+		</td>
+	</tr>
+
+	<?php
+
+}
 
 //// Settings
 function EAScompliance_settings() {
