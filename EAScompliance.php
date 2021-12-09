@@ -712,6 +712,7 @@ function EAScompliance_redirect_confirm() {
 			$tax_rates = WC_Tax::get_rates();
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
 			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
+			$item['EAScompliance quantity'] = $payload_item['quantity'];
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
 			$item['EAScompliance VAT'] =  $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
@@ -888,7 +889,7 @@ function cart_total() {
 				$payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
 				$payload = $cart_item['EASPROJ API PAYLOAD'];
 			}
-			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance unit_cost', 0);
+			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance unit_cost', 0) * array_get($cart_item, 'EAScompliance quantity', 0);
 		}
 
 		// check that payload total_order_amount equals Order total
