@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Plugin Name: EAS EU compliance
- * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
+ * Plugin Name: Taxes & Duties
+ * Description: Taxes & Duties plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
@@ -14,6 +14,9 @@
 
 
 const DEVELOP = false;
+
+const PLUGIN_NAME = 'Taxes & Duties';
+
 
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
@@ -1524,7 +1527,7 @@ function EAScompliance_settings() {
 	, 'active' => array(
 	'name' => 'Enable/Disable'
 		, 'type' => 'checkbox'
-		, 'desc' => 'Enable EAS EU Compliance'
+		, 'desc' => 'Enable ' . PLUGIN_NAME
 		, 'id'   => 'easproj_active'
 		, 'default' => 'no'
 		)
@@ -1560,7 +1563,7 @@ function EAScompliance_settings() {
 	, 'language' => array(
 	'name' => 'Language'
 		, 'type' => 'select'
-		, 'desc' => 'Choose language for user interface of EAS EU compliance'
+		, 'desc' => 'Choose language for user interface of ' . PLUGIN_NAME
 		, 'id'   => 'easproj_language'
 		, 'default' => 'EN'
 		, 'options' => array('EN', 'RU')
@@ -1650,7 +1653,7 @@ function woocommerce_settings_start() {
 		$shipping_methods_saved = $shipping_methods_saved ? $shipping_methods_saved : array();
 
 		if (array_diff($shipping_methods_latest, $shipping_methods_saved)) {
-			WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update EAS EU compliance plugin setting.');
+			WC_Admin_Settings::add_message('New delivery method created. If it is postal delivery please update ' . PLUGIN_NAME . ' plugin setting.');
 		}
 	} catch (Exception $ex) {
 		log_exception($ex);
@@ -1667,7 +1670,7 @@ function woocommerce_settings_tabs_array( $settings_tabs ) {
 	try {
 		set_error_handler('error_handler');
 
-		$settings_tabs['settings_tab_compliance'] = 'EAS EU compliance';
+		$settings_tabs['settings_tab_compliance'] = PLUGIN_NAME;
 		return $settings_tabs;
 	} catch (Exception $ex) {
 		log_exception($ex);
