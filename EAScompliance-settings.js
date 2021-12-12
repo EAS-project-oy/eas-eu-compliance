@@ -1,4 +1,4 @@
-const PLUGIN_NAME = 'Taxes & Duties';
+const PLUGIN_NAME = 'EAS EU compliance';
 
 jQuery(document).ready(function($) {
 

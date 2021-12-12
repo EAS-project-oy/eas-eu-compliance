@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Plugin Name: Taxes & Duties
- * Description: Taxes & Duties plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
+ * Plugin Name: EAS EU compliance
+ * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
@@ -13,11 +13,11 @@
  */
 
 
+const PLUGIN_NAME = 'EAS EU compliance';
+
+const TAX_RATE_NAME = 'Taxes & Duties';
+
 const DEVELOP = false;
-
-const PLUGIN_NAME = 'Taxes & Duties';
-
-
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
 if ( ! defined( 'ABSPATH' ) ) {
@@ -835,9 +835,8 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 	try {
 		set_error_handler('error_handler');
 		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
-		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A );
+		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A );
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		if ($tax_rate_id == $tax_rate_id0 && EAScompliance_is_set()) {
@@ -917,9 +916,8 @@ function woocommerce_cart_get_taxes( $total_taxes) {
 			return $total_taxes;
 		}
 
-		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		$total = 0;
@@ -1081,9 +1079,8 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 			return $item_tax_rates;
 		}
 
-		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
 		$tax_rate_id0 = intval($tax_rates[0]['tax_rate_id']);
 
 		$cart_items = $cart->get_cart();
@@ -1171,9 +1168,8 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 	try {
 		set_error_handler('error_handler');
 		// Recalculate process must set taxes from order_item meta-data 'Customs duties'
-		$tax_rate_name = 'EAScompliance';
 		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", $tax_rate_name), ARRAY_A);
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
 
 		$amount = $order_item->get_meta('Customs duties');
@@ -1708,7 +1704,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 
 		// add tax rate
 		global $wpdb;
-		$tax_rates = $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance'", ARRAY_A );
+		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A );
 		$tax_rate_id = array_get($tax_rates, 0, array('tax_rate_id'=>null))['tax_rate_id'];
 
 		if (!$tax_rate_id) {
@@ -1716,7 +1712,7 @@ function woocommerce_update_options_settings_tab_compliance() {
 				'tax_rate_country'  => '',
 				'tax_rate_state'    => '',
 				'tax_rate'          => '0.0000',
-				'tax_rate_name'     => 'EAScompliance',
+				'tax_rate_name'     => TAX_RATE_NAME,
 				'tax_rate_priority' => '1',
 				'tax_rate_compound' => '0',
 				'tax_rate_shipping' => '1',
@@ -1950,11 +1946,11 @@ function woocommerce_update_options_settings_tab_compliance() {
 		if (woocommerce_settings_get_option('easproj_active') == 'yes') {
 			try {
 				get_oauth_token();
-				// there must be no EU tax rates except for EAScompliance
+				// there must be no EU tax rates except for TAX_RATE_NAME
 				foreach (EUROPEAN_COUNTRIES as $c) {
 					foreach (WC_Tax::find_rates(array('country'=>$c)) as $tax_rate) {
-						if ('EAScompliance' != $tax_rate['label']) {
-							throw new Exception("There must be only EAScompliance tax rate for country $c");
+						if (TAX_RATE_NAME != $tax_rate['label']) {
+							throw new Exception(format('There must be only $t tax rate for country $c', array('t'=>TAX_RATE_NAME,'c'=>$c)));
 						}
 					}
 				}
