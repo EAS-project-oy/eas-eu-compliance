@@ -848,7 +848,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 				$cart_item = $cart_items[$ix];
 				$item_amount = $cart_item['EAScompliance AMOUNT'];
 				$total += $item_amount;
-				$item->add_meta_data('Customs duties', $item_amount);
+				$item->add_meta_data('Customs duties', $cart_item['EAScompliance ITEM']['item_customs_duties']);
 				$item->add_meta_data('VAT Amount', $cart_item['EAScompliance VAT']);
 				$item->add_meta_data('VAT Rate', $cart_item['EAScompliance ITEM']['vat_rate']);
 				$item->add_meta_data('EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee']);
