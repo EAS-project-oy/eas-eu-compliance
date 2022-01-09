@@ -45,7 +45,7 @@ jQuery(document).ready(function($) {
             || $('#billing_phone').val() === ''
             || $('#billing_email').val() === ''
         ) {
-            show_error('Please check for required billing details. All fields marked as required should be filled.');
+            show_error(plugin_dictionary.error_required_billing_details);
             return;
         }
 
@@ -58,7 +58,7 @@ jQuery(document).ready(function($) {
                 || $('#shipping_postcode').val() === ''
                 || $('#shipping_city').val() === ''
             ) {
-                show_error('Please check for required shipping details. All fields marked as required should be filled.');
+                show_error(plugin_dictionary.error_required_shipping_details);
                 return;
             }
         }
@@ -66,7 +66,7 @@ jQuery(document).ready(function($) {
 
 
         block($('.EAScompliance'));
-        $('.button_calc').text('Calculating taxes and duties ...');
+        $('.button_calc').text(plugin_dictionary.calculating_taxes);
 
         $(document.body).trigger("update_checkout");
 
@@ -82,8 +82,8 @@ jQuery(document).ready(function($) {
                 , dataType: 'json'
                 , success: function (j) {
                     unblock($('.EAScompliance'));
-                    $('.button_calc').text('Customs taxes and duties added...')
-                    $('.EAScompliance_status').html('Waiting for Customs Duties Calculation and <a href="'+j['CALC response']+'" target="_self">confirmation</a> for confirmation details')
+                    $('.button_calc').text(plugin_dictionary.taxes_added)
+                    $('.EAScompliance_status').text( plugin_dictionary.waiting_for_confirmation )
 
                     $('.EAScompliance_debug_output').val(JSON.stringify(j, null,' '))
                     console.log(j)
@@ -92,7 +92,7 @@ jQuery(document).ready(function($) {
                         window.open(j['CALC response'], '_self');
                     } else {
                         show_error(j['message']);
-                        $('.button_calc').text("Sorry, didn't work, please try again")
+                        $('.button_calc').text(plugin_dictionary.sorry_didnt_work)
                     }
                 }
             });
@@ -119,7 +119,7 @@ jQuery(document).ready(function($) {
         if ($('.EAScompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
 
-            $('.button_calc').text('Recalculate Taxes and Duties');
+            $('.button_calc').text(plugin_dictionary.recalculate_taxes);
 
             form_data = atob($(".EAScompliance_status").attr('checkout-form-data'));
 
@@ -181,9 +181,13 @@ jQuery(document).ready(function($) {
         }
     });
 
+    //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
+    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color background-color border cursor z-index text-transform'.split(' ')
+    for (i=0; i < button_styles.length; i++ )
+    {
+        $('.button_calc').css(button_styles[i],$('#place_order').css(button_styles[i]));
+    }
 
-
-    //$(document.body).trigger('updated_checkout');
 
 
 })

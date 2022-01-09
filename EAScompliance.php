@@ -15,9 +15,33 @@
 
 const PLUGIN_NAME = 'EAS EU compliance';
 
+const PLUGIN_DOMAIN = 'eascompliance';
+
 const TAX_RATE_NAME = 'Taxes & Duties';
 
 const DEVELOP = false;
+
+
+//// translation
+function set_locale(bool $reset = false) {
+    static $current_locale = '';
+    if ($current_locale == '') {
+        $current_locale = get_locale();
+    };
+
+    $plugin_lang = woocommerce_settings_get_option_sql('easproj_language');
+    if ($reset) {
+        switch_to_locale($current_locale);
+    }
+    else if ($plugin_lang == 'EN') {
+        switch_to_locale('en_US');
+    }
+    else if ($plugin_lang == 'FI') {
+        switch_to_locale('fi');
+    }
+    load_plugin_textdomain( PLUGIN_DOMAIN, false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+}
+
 
 // Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,7 +66,7 @@ function logger() {
 
 	class EASLogHandler extends WC_Log_Handler_File {
 		public function handle( $timestamp, $level, $message, $context ) {
-			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>'eascompliance'));
+			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>PLUGIN_DOMAIN));
 		}
 	}
 	$handlers = array(new EASLogHandler());
@@ -102,8 +126,21 @@ function EAScompliance_javascript() {
 	// include javascript
 	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance.js', __FILE__ ), array('jquery'), filemtime(dirname(__FILE__ ) . '/EAScompliance.js'));
 
+    set_locale();
+    wp_localize_script( 'EAScompliance', 'plugin_dictionary', array(
+              'error_required_billing_details' => __( 'Please check for required billing details. All fields marked as required should be filled.', PLUGIN_DOMAIN )
+            , 'error_required_shipping_details' => __( 'Please check for required shipping details. All fields marked as required should be filled.', PLUGIN_DOMAIN )
+            , 'calculating_taxes' => __( 'Calculating taxes and duties ...', PLUGIN_DOMAIN )
+            , 'taxes_added' => __( 'Customs taxes and duties added...', PLUGIN_DOMAIN )
+            , 'waiting_for_confirmation' => __( 'Waiting for Customs Duties Calculation and confirmation details', PLUGIN_DOMAIN )
+            , 'confirmation' => __( 'confirmation', PLUGIN_DOMAIN )
+            , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", PLUGIN_DOMAIN )
+            , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', PLUGIN_DOMAIN )
+    ) );
+
 	// Pass ajax_url to javascript
 	wp_localize_script( 'EAScompliance', 'plugin_ajax_object', array( 'ajax_url' => admin_url('admin-ajax.php') ));
+    set_locale(true);
 };
 
 //// adding custom javascript file
@@ -125,44 +162,52 @@ if (is_active()) {
 	add_action( 'woocommerce_review_order_before_payment', 'woocommerce_review_order_before_payment');
 }
 function woocommerce_review_order_before_payment() {
+    try {
+        set_locale();
+        //// checkout form data saved during /calculate step
+        $checkout_form_data = null;
+        if (EAScompliance_is_set()) {
+            $cart = WC()->cart;
+            $k = array_key_first2 ($cart->get_cart());
+            $item = $cart->get_cart_contents()[$k];
+            $checkout_form_data = array_get($item, 'CHECKOUT FORM DATA', '');
+        }
 
-	//// checkout form data saved during /calculate step
-	$checkout_form_data = null;
-	if (EAScompliance_is_set()) {
-		$cart = WC()->cart;
-		$k = array_key_first2 ($cart->get_cart());
-		$item = $cart->get_cart_contents()[$k];
-		$checkout_form_data = array_get($item, 'CHECKOUT FORM DATA', '');
-	}
+        // prevent processing form data without nonce verification.
+        $nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
+        $nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
 
-	// prevent processing form data without nonce verification.
-	$nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
-	$nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
 
-	$button_name = esc_html__('Calculate Taxes and Duties', 'woocommerce');
-	$status = esc_attr__(EAScompliance_is_set() ? 'present' : 'not present');
-	$needs_recalculate = EAScompliance_needs_recalculate() ? 'yes' : 'no';
+        $button_name = __('Calculate Taxes and Duties', PLUGIN_DOMAIN);
 
-	?>
-		<div class="form-row EAScompliance">
-		<button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
-		<input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?php echo esc_attr($nonce_calc); ?>" /></input>
-		<p class="EAScompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>" needs-recalculate="<?php echo esc_attr__($needs_recalculate); ?>"><?php echo esc_attr($status); ?></p>
-		<?php
-		if ( is_debug() && DEVELOP ) {
-			?>
-				<h3>EAScompliance Debug</h3>
-				<p class="EAScompliance_debug">
-					<textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
-					<button type="button" class="button EAScompliance_debug_button">eval</button>
-					<input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?php echo esc_attr($nonce_debug); ?>" /></input>
-					<textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea>
-				</p>
-				<?php
-		}
-		?>
-		</div>
-	<?php
+
+        $status = EAScompliance_is_set() ? 'present' : 'not present';
+        $needs_recalculate = EAScompliance_needs_recalculate() ? 'yes' : 'no';
+
+        ?>
+            <div class="form-row EAScompliance">
+            <button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
+            <input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?php echo esc_attr($nonce_calc); ?>" /></input>
+            <p class="EAScompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>" needs-recalculate="<?php echo esc_attr($needs_recalculate); ?>"><?php echo esc_attr($status); ?></p>
+            <?php
+            if ( is_debug() && DEVELOP ) {
+                ?>
+                    <h3>EAScompliance Debug</h3>
+                    <p class="EAScompliance_debug">
+                        <textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
+                        <button type="button" class="button EAScompliance_debug_button">eval</button>
+                        <input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?php echo esc_attr($nonce_debug); ?>" /></input>
+                        <textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea>
+                    </p>
+                    <?php
+            }
+            ?>
+            </div>
+        <?php
+    }
+    finally {
+        set_locale(true);
+    }
 }
 
 //// Debug Console
@@ -244,12 +289,12 @@ function get_oauth_token() {
 	// response not OK
 	if ('200' != $auth_response_status) {
 		logger()->debug('auth response: ' . $auth_response);
-		throw new Exception("Authentication failed with response status $auth_response_status");
+		throw new Exception( format( __('Authentication failed with response status $auth_response_status', PLUGIN_DOMAIN), array('auth_response_status'=>$auth_response_status) ) );
 	}
 
 	// response OK, but authentication failed with code 200 and empty response for any reason
 	if ( '' === $auth_response ) {
-		throw new Exception('Invalid Credentials provided. Please check EAS client ID and EAS client secret.');
+		throw new Exception( __('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', PLUGIN_DOMAIN) );
 	}
 
 	$jdebug['step'] = 'decode AUTH token';
@@ -309,7 +354,7 @@ function make_eas_api_request_json() {
 	$jdebug['step'] = 'Fill json request with checkout data';
 
 	if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
-		throw new Exception('Security check');
+		throw new Exception( __('Security check', PLUGIN_DOMAIN) );
 	};
 	$checkout = $_POST;
 	$cart = WC()->cart;
@@ -575,7 +620,7 @@ function EAScompliance_redirect_confirm() {
 
 		$confirm_hash = json_decode(base64_decode(strval(array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
 		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
-			throw new Exception('Security check');
+			throw new Exception(__( 'Security check', PLUGIN_DOMAIN));
 		};
 
 		if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -896,7 +941,7 @@ function cart_total() {
 
 		// check that payload total_order_amount equals Order total
 		if ( $payload_total_order_amount != $total ) {
-			log_exception(new Exception(format('payload total_order_amount $a not equal order total $b'
+			log_exception(new Exception(format(__( 'payload total_order_amount $a not equal order total $b', PLUGIN_DOMAIN)
 				, array('a'=>$payload_total_order_amount, 'b'=>$total)) ));
 			logger()->debug(print_r($payload, true));
 		}
@@ -1254,6 +1299,7 @@ if (is_active()) {
 function woocommerce_checkout_create_order( $order) {
 	try {
 		set_error_handler('error_handler');
+        set_locale();
 
 		if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
 			throw new Exception('Security check');
@@ -1271,7 +1317,7 @@ function woocommerce_checkout_create_order( $order) {
 
 		//disable order if customs duties are missing
 		if (!EAScompliance_is_set()) {
-			throw new Exception('CUSTOMS DUTIES MISSING');
+			throw new Exception( __('CUSTOMS DUTIES MISSING', PLUGIN_DOMAIN) );
 		}
 
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed
@@ -1298,7 +1344,7 @@ function woocommerce_checkout_create_order( $order) {
 			// reset calculate of cart since calculate may have changed previous values
 			$item['EAScompliance SET'] = false;
 			$woocommerce->cart->set_session();
-			throw new Exception('PLEASE RE-CALCULATE CUSTOMS DUTIES');
+			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', PLUGIN_DOMAIN));
 		}
 		//save payload in order metadata
 		$payload = $item['EASPROJ API PAYLOAD'];
@@ -1310,6 +1356,7 @@ function woocommerce_checkout_create_order( $order) {
 		log_exception($ex);
 		throw $ex;
 	} finally {
+        set_locale(true);
 		restore_error_handler();
 	}
 }
@@ -1320,10 +1367,10 @@ if (is_active()) {
 }
 function woocommerce_checkout_order_created( $order) {
 	//notify EAS API on Order number
-
 	$order_id = $order->get_id();
 	try {
 		set_error_handler('error_handler');
+        set_locale();
 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
@@ -1351,7 +1398,7 @@ function woocommerce_checkout_order_created( $order) {
 		$notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 		if ( '200' == $notify_status ) {
-			$order->add_order_note("Notify Order number $order_id successful");
+			$order->add_order_note(format( __('Notify Order number $order_id successful', PLUGIN_DOMAIN) , array('order_id'=>$order_id)  ) );
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
 		}
@@ -1362,8 +1409,9 @@ function woocommerce_checkout_order_created( $order) {
 		logger()->info("Notify Order number $order_id successful");
 	} catch (Exception $ex) {
 		log_exception($ex);
-		$order->add_order_note("Notify Order number $order_id failed: " . $ex->getMessage());
+		$order->add_order_note(format( __('Notify Order number $order_id failed: ') , array('order_id'=>$order_id) ) . $ex->getMessage());
 	} finally {
+        set_locale(true);
 		restore_error_handler();
 	}
 }
@@ -1375,6 +1423,7 @@ if (is_active()) {
 function woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order) {
 	try {
 		set_error_handler('error_handler');
+        set_locale();
 
 		if ( !( ( 'completed' == $status_to || 'processing' == $status_to ) && !( $order->get_meta('_easproj_payment_processed')=='yes' ) ) ) {
 			return;
@@ -1406,7 +1455,7 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		$payment_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 		if ( '200' == $payment_status ) {
-			$order->add_order_note("Order status changed from $status_from to $status_to .  EAS API payment notified");
+			$order->add_order_note(format( __('Order status changed from $status_from to $status_to .  EAS API payment notified') , array('status_from'=>$status_from, 'status_to'=>$status_to)  ));
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $payment_body);
 		}
@@ -1417,8 +1466,9 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 		logger()->info("Notify Order $order_id status change successful");
 	} catch (Exception $ex) {
 		log_exception($ex);
-		$order->add_order_note('Order status change notification failed: ' . $ex->getMessage());
+		$order->add_order_note(__('Order status change notification failed: ', PLUGIN_DOMAIN) . $ex->getMessage());
 	} finally {
+        set_locale(true);
 		restore_error_handler();
 	}
 
@@ -1561,8 +1611,8 @@ function EAScompliance_settings() {
 		, 'type' => 'select'
 		, 'desc' => 'Choose language for user interface of ' . PLUGIN_NAME
 		, 'id'   => 'easproj_language'
-		, 'default' => 'EN'
-		, 'options' => array('EN', 'RU')
+		, 'default' => 'Default'
+		, 'options' => array('Default'=>'Store Default', 'EN'=>'English', 'FI'=>'Finnish')
 		)
 	, 'shipping_methods_postal' => array(
 	'name' => 'Shipping methods by post'

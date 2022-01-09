@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: EAScompliance\n"
+"POT-Creation-Date: 2022-01-09 23:30+0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: info@easproject.com\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;"
+"_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
+"esc_html_e;esc_html_x:1,2c\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0\n"
+"X-Poedit-SearchPath-0: EAScompliance.php\n"
+
+#: EAScompliance.php:131
+msgid ""
+"Please check for required billing details. All fields marked as required "
+"should be filled."
+msgstr ""
+"Please check for required billing details. All fields marked as required "
+"should be filled."
+
+#: EAScompliance.php:132
+msgid ""
+"Please check for required shipping details. All fields marked as required "
+"should be filled."
+msgstr ""
+"Please check for required shipping details. All fields marked as required "
+"should be filled."
+
+#: EAScompliance.php:133
+msgid "Calculating taxes and duties ..."
+msgstr "Laskinta verot ..."
+
+#: EAScompliance.php:134
+msgid "Customs taxes and duties added..."
+msgstr "Customs taxes and duties added..."
+
+#: EAScompliance.php:135
+msgid "Waiting for Customs Duties Calculation and confirmation details"
+msgstr "Waiting for Customs Duties Calculation and confirmation details"
+
+#: EAScompliance.php:136
+msgid "confirmation"
+msgstr "confirmation"
+
+#: EAScompliance.php:137
+msgid "Sorry, didn't work, please try again"
+msgstr "Sorry, didn't work, please try again"
+
+#: EAScompliance.php:138
+msgid "Recalculate Taxes and Duties"
+msgstr "FI Recalculate Taxes and Duties"
+
+#: EAScompliance.php:181
+msgid "Calculate Taxes and Duties"
+msgstr "Laskinta Verot"
+
+#: EAScompliance.php:292
+msgid "Authentication failed with response status $auth_response_status"
+msgstr "Authentication failed with response status $auth_response_status"
+
+#: EAScompliance.php:297
+msgid ""
+"Invalid Credentials provided. Please check EAS client ID and EAS client "
+"secret."
+msgstr ""
+"Invalid Credentials provided. Please check EAS client ID and EAS client "
+"secret."
+
+#: EAScompliance.php:357 EAScompliance.php:623
+msgid "Security check"
+msgstr "Security check"
+
+#: EAScompliance.php:944
+msgid "payload total_order_amount $a not equal order total $b"
+msgstr "payload total_order_amount $a not equal order total $b"
+
+#: EAScompliance.php:1320
+msgid "CUSTOMS DUTIES MISSING"
+msgstr "CUSTOMS DUTIES MISSING"
+
+#: EAScompliance.php:1347
+msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
+msgstr "PLEASE RE-CALCULATE CUSTOMS DUTIES"
+
+#: EAScompliance.php:1401
+msgid "Notify Order number $order_id successful"
+msgstr "FI Notify Order number $order_id successful"
+
+#: EAScompliance.php:1412
+msgid "Notify Order number $order_id failed: "
+msgstr "FI Notify Order number $order_id failed: "
+
+#: EAScompliance.php:1458
+msgid ""
+"Order status changed from $status_from to $status_to .  EAS API payment "
+"notified"
+msgstr ""
+"Order status changed from $status_from to $status_to .  EAS API payment "
+"notified"
+
+#: EAScompliance.php:1469
+msgid "Order status change notification failed: "
+msgstr "Order status change notification failed: "

@@ -1,0 +1,106 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: EAScompliance\n"
+"POT-Creation-Date: 2022-01-09 17:28+0200\n"
+"Language-Team: info@easproject.com\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;"
+"_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;"
+"esc_html__;esc_html_e;esc_html_x:1,2c\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"X-Poedit-SearchPath-0: EAScompliance.php\n"
+
+#: EAScompliance.php:110
+msgid ""
+"Please check for required billing details. All fields marked as "
+"required should be filled."
+msgstr ""
+
+#: EAScompliance.php:111
+msgid ""
+"Please check for required shipping details. All fields marked as "
+"required should be filled."
+msgstr ""
+
+#: EAScompliance.php:112
+msgid "Calculating taxes and duties ..."
+msgstr ""
+
+#: EAScompliance.php:113
+msgid "Customs taxes and duties added..."
+msgstr ""
+
+#: EAScompliance.php:114
+msgid ""
+"Waiting for Customs Duties Calculation and confirmation details"
+msgstr ""
+
+#: EAScompliance.php:115
+msgid "confirmation"
+msgstr ""
+
+#: EAScompliance.php:116
+msgid "Sorry, didn't work, please try again"
+msgstr ""
+
+#: EAScompliance.php:117
+msgid "Recalculate Taxes and Duties"
+msgstr ""
+
+#: EAScompliance.php:165
+msgid "Calculate Taxes and Duties"
+msgstr ""
+
+#: EAScompliance.php:270
+msgid ""
+"Authentication failed with response status $auth_response_status"
+msgstr ""
+
+#: EAScompliance.php:275
+msgid ""
+"Invalid Credentials provided. Please check EAS client ID and EAS "
+"client secret."
+msgstr ""
+
+#: EAScompliance.php:335 EAScompliance.php:601
+msgid "Security check"
+msgstr ""
+
+#: EAScompliance.php:922
+msgid "payload total_order_amount $a not equal order total $b"
+msgstr ""
+
+#: EAScompliance.php:1297
+msgid "CUSTOMS DUTIES MISSING"
+msgstr ""
+
+#: EAScompliance.php:1324
+msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
+msgstr ""
+
+#: EAScompliance.php:1377
+msgid "Notify Order number $order_id successful"
+msgstr ""
+
+#: EAScompliance.php:1388
+msgid "Notify Order number $order_id failed: "
+msgstr ""
+
+#: EAScompliance.php:1432
+msgid ""
+"Order status changed from $status_from to $status_to .  EAS API "
+"payment notified"
+msgstr ""
+
+#: EAScompliance.php:1443
+msgid "Order status change notification failed: "
+msgstr ""
