@@ -182,7 +182,7 @@ jQuery(document).ready(function($) {
     });
 
     //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
-    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color background-color border cursor z-index text-transform'.split(' ')
+    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (i=0; i < button_styles.length; i++ )
     {
         $('.button_calc').css(button_styles[i],$('#place_order').css(button_styles[i]));
