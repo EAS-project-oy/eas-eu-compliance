@@ -23,89 +23,86 @@ msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
 msgstr ""
-"Please check for required billing details. All fields marked as required "
-"should be filled."
+"Tarkista vaaditut tiedot. Kaikki pakolliset kentät tulee olla täytettynä."
 
 #: EAScompliance.php:132
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
 msgstr ""
-"Please check for required shipping details. All fields marked as required "
-"should be filled."
+"Tarkista vaaditut toimitustiedot. Kaikki pakolliset kentät tulee olla "
+"täytettynä."
 
 #: EAScompliance.php:133
 msgid "Calculating taxes and duties ..."
-msgstr "Laskinta verot ..."
+msgstr "Laskee veroja ..."
 
 #: EAScompliance.php:134
 msgid "Customs taxes and duties added..."
-msgstr "Customs taxes and duties added..."
+msgstr "Verot lisätty..."
 
 #: EAScompliance.php:135
 msgid "Waiting for Customs Duties Calculation and confirmation details"
-msgstr "Waiting for Customs Duties Calculation and confirmation details"
+msgstr "Odottaa vero ja tullilaskelmaa"
 
 #: EAScompliance.php:136
 msgid "confirmation"
-msgstr "confirmation"
+msgstr "Vahvistus"
 
 #: EAScompliance.php:137
 msgid "Sorry, didn't work, please try again"
-msgstr "Sorry, didn't work, please try again"
+msgstr "Yritä uudelleen"
 
 #: EAScompliance.php:138
 msgid "Recalculate Taxes and Duties"
-msgstr "FI Recalculate Taxes and Duties"
+msgstr "Laske verot uudelleen"
 
 #: EAScompliance.php:181
 msgid "Calculate Taxes and Duties"
-msgstr "Laskinta Verot"
+msgstr "Laske verot"
 
 #: EAScompliance.php:292
 msgid "Authentication failed with response status $auth_response_status"
-msgstr "Authentication failed with response status $auth_response_status"
+msgstr "Vahvistus epäonnistui: $auth_response_status"
 
 #: EAScompliance.php:297
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
-msgstr ""
-"Invalid Credentials provided. Please check EAS client ID and EAS client "
-"secret."
+msgstr "Tarkista EAS Client ID ja EAS client secret."
 
 #: EAScompliance.php:357 EAScompliance.php:623
 msgid "Security check"
-msgstr "Security check"
+msgstr "Turvallisuustarkistus"
 
 #: EAScompliance.php:944
 msgid "payload total_order_amount $a not equal order total $b"
-msgstr "payload total_order_amount $a not equal order total $b"
+msgstr "Laskettu total_order_amount $a ei vastaa ostoskorin summaa $b"
 
 #: EAScompliance.php:1320
 msgid "CUSTOMS DUTIES MISSING"
-msgstr "CUSTOMS DUTIES MISSING"
+msgstr "TULLIMAKSUT PUUTTUVAT"
 
 #: EAScompliance.php:1347
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
-msgstr "PLEASE RE-CALCULATE CUSTOMS DUTIES"
+msgstr "LASKE TULLIMAKSUT UUDELLEEN"
 
 #: EAScompliance.php:1401
 msgid "Notify Order number $order_id successful"
-msgstr "FI Notify Order number $order_id successful"
+msgstr "Tilausnumero $order_id onnistui"
 
 #: EAScompliance.php:1412
 msgid "Notify Order number $order_id failed: "
-msgstr "FI Notify Order number $order_id failed: "
+msgstr "Tilanusnumero $order_id epäonnistui:"
 
 #: EAScompliance.php:1458
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
 msgstr ""
-"Order status changed from $status_from to $status_to .  EAS API payment "
-"notified"
+"Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
+"payment ilmoitettu"
 
 #: EAScompliance.php:1469
 msgid "Order status change notification failed: "
-msgstr "Order status change notification failed: "
+msgstr "Tilauksen muutosilmoitus epäonnistui:"
