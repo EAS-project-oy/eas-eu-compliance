@@ -59,7 +59,7 @@ msgstr "Laske verot uudelleen"
 
 #: EAScompliance.php:181
 msgid "Calculate Taxes and Duties"
-msgstr "Laske verot"
+msgstr "Klikkaa jatkaaksesi tilausta"
 
 #: EAScompliance.php:292
 msgid "Authentication failed with response status $auth_response_status"
