@@ -177,7 +177,13 @@ function woocommerce_review_order_before_payment() {
         $nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
         $nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
 
-
+        $translation_file = dirname( __FILE__ ) . '/languages/' . PLUGIN_DOMAIN . '-' . get_locale() . '.po';
+        logger()->debug(format('Locale: $locale, Plugin language: $plugin, Textdomain file: $file, Exist: $exist', array(
+                'locale'=>get_locale(),
+                'plugin'=>woocommerce_settings_get_option_sql('easproj_language'),
+                'file'=>$translation_file,
+                'exist'=>file_exists($translation_file) ? 'yes' : 'no'
+        )));
         $button_name = __('Calculate Taxes and Duties', PLUGIN_DOMAIN);
 
 
