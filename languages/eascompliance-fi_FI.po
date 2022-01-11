@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EAScompliance\n"
-"POT-Creation-Date: 2022-01-09 23:30+0200\n"
+"POT-Creation-Date: 2022-01-11 15:04+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -18,14 +18,22 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
-#: EAScompliance.php:131
+#: EAScompliance.php:21
+msgid "Taxes & Duties"
+msgstr "Verot"
+
+#: EAScompliance.php:97
+msgid "No tax rate found, please check plugin settings"
+msgstr ""
+
+#: EAScompliance.php:142
 msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
 msgstr ""
 "Tarkista vaaditut tiedot. Kaikki pakolliset kentät tulee olla täytettynä."
 
-#: EAScompliance.php:132
+#: EAScompliance.php:143
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
@@ -33,69 +41,69 @@ msgstr ""
 "Tarkista vaaditut toimitustiedot. Kaikki pakolliset kentät tulee olla "
 "täytettynä."
 
-#: EAScompliance.php:133
+#: EAScompliance.php:144
 msgid "Calculating taxes and duties ..."
 msgstr "Laskee veroja ..."
 
-#: EAScompliance.php:134
+#: EAScompliance.php:145
 msgid "Customs taxes and duties added..."
 msgstr "Verot lisätty..."
 
-#: EAScompliance.php:135
+#: EAScompliance.php:146
 msgid "Waiting for Customs Duties Calculation and confirmation details"
 msgstr "Odottaa vero ja tullilaskelmaa"
 
-#: EAScompliance.php:136
+#: EAScompliance.php:147
 msgid "confirmation"
 msgstr "Vahvistus"
 
-#: EAScompliance.php:137
+#: EAScompliance.php:148
 msgid "Sorry, didn't work, please try again"
 msgstr "Yritä uudelleen"
 
-#: EAScompliance.php:138
+#: EAScompliance.php:149
 msgid "Recalculate Taxes and Duties"
 msgstr "Laske verot uudelleen"
 
-#: EAScompliance.php:181
+#: EAScompliance.php:199
 msgid "Calculate Taxes and Duties"
 msgstr "Klikkaa jatkaaksesi tilausta"
 
-#: EAScompliance.php:292
+#: EAScompliance.php:310
 msgid "Authentication failed with response status $auth_response_status"
 msgstr "Vahvistus epäonnistui: $auth_response_status"
 
-#: EAScompliance.php:297
+#: EAScompliance.php:315
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
 msgstr "Tarkista EAS Client ID ja EAS client secret."
 
-#: EAScompliance.php:357 EAScompliance.php:623
+#: EAScompliance.php:375 EAScompliance.php:641
 msgid "Security check"
 msgstr "Turvallisuustarkistus"
 
-#: EAScompliance.php:944
+#: EAScompliance.php:960
 msgid "payload total_order_amount $a not equal order total $b"
 msgstr "Laskettu total_order_amount $a ei vastaa ostoskorin summaa $b"
 
-#: EAScompliance.php:1320
+#: EAScompliance.php:1330
 msgid "CUSTOMS DUTIES MISSING"
 msgstr "TULLIMAKSUT PUUTTUVAT"
 
-#: EAScompliance.php:1347
+#: EAScompliance.php:1357
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "LASKE TULLIMAKSUT UUDELLEEN"
 
-#: EAScompliance.php:1401
+#: EAScompliance.php:1411
 msgid "Notify Order number $order_id successful"
 msgstr "Tilausnumero $order_id onnistui"
 
-#: EAScompliance.php:1412
+#: EAScompliance.php:1422
 msgid "Notify Order number $order_id failed: "
 msgstr "Tilanusnumero $order_id epäonnistui:"
 
-#: EAScompliance.php:1458
+#: EAScompliance.php:1468
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -103,6 +111,6 @@ msgstr ""
 "Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
 "payment ilmoitettu"
 
-#: EAScompliance.php:1469
+#: EAScompliance.php:1479
 msgid "Order status change notification failed: "
 msgstr "Tilauksen muutosilmoitus epäonnistui:"

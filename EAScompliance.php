@@ -89,6 +89,72 @@ function log_exception( Exception $ex) {
 	logger()->error($txt);
 }
 
+function tax_rate_id() {
+		global $wpdb;
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
+        if (count($tax_rates) == 0) {
+            throw new Exception( __('No tax rate found, please check plugin settings', PLUGIN_DOMAIN) );
+        }
+		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+        return $tax_rate_id0;
+}
+
+if (is_active()) {
+    add_filter('woocommerce_cart_tax_totals', 'woocommerce_cart_tax_totals', 10, 2 );
+}
+function woocommerce_cart_tax_totals($tax_totals, $order) {
+    try {
+        set_error_handler('error_handler');
+        set_locale();
+
+        $tax_rate_id0 = tax_rate_id();
+        foreach ($tax_totals as $code=>&$tax) {
+            if ($tax->tax_rate_id == $tax_rate_id0) {
+                $tax->label = __('Taxes & Duties', PLUGIN_DOMAIN);
+            }
+        }
+
+        return $tax_totals;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        set_locale(true);
+        restore_error_handler();
+    }
+}
+
+
+if (is_active()) {
+    add_filter('woocommerce_order_get_tax_totals', 'woocommerce_order_get_tax_totals', 10, 2);
+}
+function woocommerce_order_get_tax_totals ( $tax_totals, $order) {
+    try {
+        set_error_handler('error_handler');
+        set_locale();
+
+        $tax_rate_id0 = tax_rate_id();
+        foreach ($tax_totals as $code=>&$tax) {
+            if ($tax->rate_id == $tax_rate_id0) {
+                $tax->label = __('Taxes & Duties', PLUGIN_DOMAIN);
+            }
+        }
+
+        return $tax_totals;
+    }
+    catch (Exception $ex) {
+        log_exception($ex);
+        throw $ex;
+    }
+    finally {
+        set_locale(true);
+        restore_error_handler();
+    }
+}
+
+
 // gets woocommerce settings when woocommerce_settings_get_option is undefined
 function woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
@@ -886,9 +952,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 	try {
 		set_error_handler('error_handler');
 		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
-		global $wpdb;
-		$tax_rates = $wpdb->get_results( $wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A );
-		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+		$tax_rate_id0 = tax_rate_id();
 
 		if ($tax_rate_id == $tax_rate_id0 && EAScompliance_is_set()) {
 			$cart_items = array_values(WC()->cart->get_cart_contents());
@@ -967,9 +1031,7 @@ function woocommerce_cart_get_taxes( $total_taxes) {
 			return $total_taxes;
 		}
 
-		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
-		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+		$tax_rate_id0 = tax_rate_id();
 
 		$total = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
@@ -1130,9 +1192,7 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 			return $item_tax_rates;
 		}
 
-		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
-		$tax_rate_id0 = intval($tax_rates[0]['tax_rate_id']);
+		$tax_rate_id0 = tax_rate_id();
 
 		$cart_items = $cart->get_cart();
 		$item_tax = $cart_items[$item->key]['EAScompliance AMOUNT'];
@@ -1219,9 +1279,7 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 	try {
 		set_error_handler('error_handler');
 		// Recalculate process must set taxes from order_item meta-data 'Customs duties'
-		global $wpdb;
-		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", TAX_RATE_NAME), ARRAY_A);
-		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
+        $tax_rate_id0 = tax_rate_id();
 
 		$amount = $order_item->get_meta('Customs duties');
 		$order_item->set_taxes(array(
@@ -1236,29 +1294,6 @@ function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_t
 	}
 }
 
-/////WIP replace Tax label
-//if (is_active()) {
-//    add_filter('woocommerce_order_get_tax_totals', 'woocommerce_order_get_tax_totals', 10, 2);
-//}
-//function woocommerce_order_get_tax_totals ( $tax_totals, $order) {
-//    try {
-//        set_error_handler('error_handler');
-//
-//        foreach ($tax_totals as $code=>$tax) {
-//            logger()->debug('$tax ' . print_r($tax, true));
-//            if ($tax->label == 'VAT') {
-//                $tax->label = 'VAT, fees and duties';
-//            }
-//        }
-//    }
-//    catch (Exception $ex) {
-//        log_exception($ex);
-//        throw $ex;
-//    }
-//    finally {
-//        restore_error_handler();
-//    }
-//}
 
 
 //Replace chosen shipping method cost with $payload_j['delivery_charge']
