@@ -836,6 +836,7 @@ function EAScompliance_redirect_confirm() {
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
 			$item['EAScompliance VAT'] =  $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
+            $item['EAScompliance SET'] = true;
 			++$payload_item_k;
 		}
 
@@ -850,7 +851,6 @@ function EAScompliance_redirect_confirm() {
 		$item['EASPROJ API JWT KEY'] = $jwt_key;
 		$item['EAScompliance HEAD'] = $payload_j['eas_fee']+$payload_j['taxes_and_duties'];
 		$item['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
-		$item['EAScompliance SET'] = true;
 		$item['EAScompliance NEEDS RECALCULATE'] = false;
 		$item['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
 		$item['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
@@ -887,14 +887,20 @@ function EAScompliance_is_set() {
 		$cart = WC()->cart;
 		$k = array_key_first2 ($cart->get_cart());
 		if ( null === $k ) {
-	  return false;
+            return false;
 		}
 
-		$item = $cart->get_cart_contents()[$k];
-		if (!array_key_exists('EAScompliance SET', $item)) {
-			return false;
-		}
-		return ( true === $item['EAScompliance SET'] );
+        // check if 'EAScompliance SET' is set for every item in cart
+        foreach ($cart->get_cart_contents() as $k=>$item) {
+            if ( ! array_key_exists('EAScompliance SET', $item)) {
+                return false;
+            }
+            if (true !== $item['EAScompliance SET']) {
+                return false;
+            }
+        }
+
+        return true;
 
 	} catch (Exception $ex) {
 		log_exception($ex);
