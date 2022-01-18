@@ -1599,7 +1599,7 @@ function EAScompliance_settings() {
 	$res =   $wpdb->get_results('SELECT * FROM wplm_woocommerce_attribute_taxonomies att', ARRAY_A);
 
 	$attributes = array(
-	'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
+	    'easproj_hs6p_received'=>'(add new) - easproj_hs6p_received'
 		, 'easproj_warehouse_country'=>'(add new) - easproj_warehouse_country'
 		, 'easproj_reduced_vat_group'=>'(add new) - easproj_reduced_vat_group'
 		, 'easproj_disclosed_agent'=>'(add new) - easproj_disclosed_agent'
@@ -1613,64 +1613,67 @@ function EAScompliance_settings() {
 
 	return array(
 	'section_title' => array(
-	  'name'     => 'Settings'
+	  'name'     => __('Settings', PLUGIN_DOMAIN)
 	, 'type'     => 'title'
 	, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
 			)
 	, 'active' => array(
-	'name' => 'Enable/Disable'
+	      'name' => __('Enable/Disable', PLUGIN_DOMAIN)
 		, 'type' => 'checkbox'
 		, 'desc' => 'Enable ' . PLUGIN_NAME
 		, 'id'   => 'easproj_active'
 		, 'default' => 'no'
 		)
 	, 'debug' => array(
-	'name' => 'Debug'
+          'name' => __('Debug', PLUGIN_DOMAIN)
 		, 'type' => 'checkbox'
 		, 'desc' => 'Log debug messages'
 		, 'id'   => 'easproj_debug'
 		, 'default' => 'no'
 		)
 	, 'EAS_API_URL' => array(
-	'name' => 'EAS API Base URL'
+	    'name' => __('EAS API Base URL', PLUGIN_DOMAIN)
 		, 'type' => 'text'
-		, 'desc' => 'API URL'
+		, 'desc' => __('API URL', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_eas_api_url'
 		, 'default' => 'https://manager.easproject.com/api'
 
 		)
 	, 'AUTH_client_id' => array(
-	'name' => 'EAS client ID'
+	    'name' => __('EAS client ID', PLUGIN_DOMAIN)
 		, 'type' => 'text'
-		, 'desc' => 'Use the client ID you received from EAS Project.'
+		, 'desc' => __('Use the client ID you received from EAS Project', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_auth_client_id'
 
 		)
 	, 'AUTH_client_secret' => array(
-	'name' => 'EAS client secret'
+	    'name' => __('EAS client secret', PLUGIN_DOMAIN)
 		, 'type' => 'password'
-		, 'desc' => 'Use the client ID you received from EAS Project.<br>Please request your API Key here: <a href="https://easproject.com/about-us/#contactus">https://easproject.com/about-us/#contactus</a>'
+		, 'desc' => __('Use the secret you received from EAS Project', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_auth_client_secret'
 
 		)
 	, 'language' => array(
-	'name' => 'Language'
+	    'name' => __('Language', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'Choose language for user interface of ' . PLUGIN_NAME
+		, 'desc' => __('Choose language for user interface of plugin', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_language'
-		, 'default' => 'Default'
-		, 'options' => array('Default'=>'Store Default', 'EN'=>'English', 'FI'=>'Finnish')
+		, 'default' => __('Default', PLUGIN_DOMAIN)
+		, 'options' => array(
+                'Default'=> __('Store Default', PLUGIN_DOMAIN)
+                , 'EN'=>__('English', PLUGIN_DOMAIN)
+                , 'FI'=>__('Finnish', PLUGIN_DOMAIN))
 		)
 	, 'shipping_methods_postal' => array(
-	'name' => 'Shipping methods by post'
+	    'name' => __('Shipping methods by post', PLUGIN_DOMAIN)
 		, 'type' => 'multiselect'
 		, 'class' => 'wc-enhanced-select'
-		, 'desc' => 'Select shipping methods for delivery by post'
+		, 'desc' => __('Select shipping methods for delivery by post', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_shipping_method_postal'
 		, 'options' => $shipping_methods
 		)
 	, 'shipping_methods_latest' => array(
-	'name' => ''
+	    'name' => ''
 		, 'type' => 'multiselect'
 		, 'desc' => ''
 		, 'id'   => 'easproj_shipping_methods_latest'
@@ -1680,49 +1683,49 @@ function EAScompliance_settings() {
 		, 'value' => array_keys($shipping_methods)
 		)
 	, 'HSCode_field' => array(
-	'name' => 'HSCODE'
+	    'name' => __('HSCODE', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'HSCode attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('HSCode attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_hs6p_received'
 		, 'default' => 'easproj_hs6p_received'
 		, 'options' => $attributes
 		)
 	, 'Warehouse_country' => array(
-	'name' => 'Warehouse country'
+	    'name' => 'Warehouse country'
 		, 'type' => 'select'
-		, 'desc' => 'Location warehouse country attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('Location warehouse country attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_warehouse_country'
 		, 'default' => 'easproj_warehouse_country'
 		, 'options' => $attributes
 		)
 	, 'Reduced_tbe_vat_group' => array(
-	'name' => 'Reduced VAT for TBE'
+	    'name' => __('Reduced VAT for TBE', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_reduced_vat_group'
 		, 'default' => 'easproj_reduced_vat_group'
 		, 'options' => $attributes
 		)
 	, 'Disclosed_agent' => array(
-	'name' => 'Act as Disclosed Agent'
+	    'name' => __('Act as Disclosed Agent', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_disclosed_agent'
 		, 'default' => 'easproj_disclosed_agent'
 		, 'options' => $attributes
 		)
 	, 'Seller_country' => array(
-	'name' => 'Seller registration country'
+	    'name' => __('Seller registration country', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'Seller registration country attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('Seller registration country attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_seller_reg_country'
 		, 'default' => 'easproj_seller_reg_country'
 		, 'options' => $attributes
 		)
 	, 'Originating_country' => array(
-	'name' => 'Originating Country'
+	    'name' => __('Originating Country', PLUGIN_DOMAIN)
 		, 'type' => 'select'
-		, 'desc' => 'Originating Country attribute slug. Attribute will be created if does not exist.'
+		, 'desc' => __('Originating Country attribute slug. Attribute will be created if does not exist.', PLUGIN_DOMAIN)
 		, 'id'   => 'easproj_originating_country'
 		, 'default' => 'easproj_originating_country'
 		, 'options' => $attributes
@@ -1779,12 +1782,14 @@ add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'woocommerce_se
 function woocommerce_settings_tabs_settings_tab_compliance() {
 	try {
 		set_error_handler('error_handler');
+        set_locale();
 
 		woocommerce_admin_fields(EAScompliance_settings());
 	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
 	} finally {
+        set_locale(true);
 		restore_error_handler();
 	}
 };
