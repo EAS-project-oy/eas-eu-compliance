@@ -56,7 +56,7 @@ msgstr ""
 
 #: EAScompliance.php:203
 msgid "Sorry, didn't work, please try again"
-msgstr ""
+msgstr "Sorry, something went wrong, please try again"
 
 #: EAScompliance.php:204
 msgid "Recalculate Taxes and Duties"
@@ -156,7 +156,7 @@ msgstr ""
 
 #: EAScompliance.php:1659
 msgid "Choose language for user interface of plugin"
-msgstr "Choose language for user interface of EAS EU Compliance"
+msgstr "Choose user interface language of \"EAS EU Compliance\" plugin"
 
 #: EAScompliance.php:1661
 msgid "Default"
@@ -176,7 +176,7 @@ msgstr ""
 
 #: EAScompliance.php:1668
 msgid "Shipping methods by post"
-msgstr ""
+msgstr "Shipping methods carried out by postal operators"
 
 #: EAScompliance.php:1671
 msgid "Select shipping methods for delivery by post"
@@ -189,12 +189,16 @@ msgstr ""
 #: EAScompliance.php:1688
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr ""
+"Location warehouse country attribute holder. Attribute will be created if "
+"does not exist."
 
 #: EAScompliance.php:1696
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
 msgstr ""
+"Location warehouse country attribute holder. Attribute will be created if "
+"does not exist."
 
 #: EAScompliance.php:1702
 msgid "Reduced VAT for TBE"
@@ -205,6 +209,8 @@ msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
+"Act as Disclosed Agent attribute holder. Attribute will be created if does "
+"not exist."
 
 #: EAScompliance.php:1710
 msgid "Act as Disclosed Agent"
@@ -215,6 +221,8 @@ msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
 msgstr ""
+"Act as Disclosed Agent attribute holder. Attribute will be created if does "
+"not exist."
 
 #: EAScompliance.php:1718
 msgid "Seller registration country"
@@ -225,6 +233,8 @@ msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
+"Seller registration country attribute holder. Attribute will be created if "
+"does not exist."
 
 #: EAScompliance.php:1726
 msgid "Originating Country"
@@ -235,3 +245,5 @@ msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr ""
+"Originating Country attribute holder. Attribute will be created if does not "
+"exist."

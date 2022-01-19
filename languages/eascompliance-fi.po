@@ -20,7 +20,7 @@ msgstr ""
 
 #: EAScompliance.php:96
 msgid "No tax rate found, please check plugin settings"
-msgstr ""
+msgstr "Verokantaa ei löytynyt, tarkista plugin asetukset"
 
 #: EAScompliance.php:113 EAScompliance.php:141
 msgid "Taxes & Duties"
@@ -117,27 +117,27 @@ msgstr "Tilauksen muutosilmoitus epäonnistui:"
 
 #: EAScompliance.php:1616
 msgid "Settings"
-msgstr ""
+msgstr "Asetukset"
 
 #: EAScompliance.php:1621
 msgid "Enable/Disable"
-msgstr ""
+msgstr "Ota käyttöön / poista käytöstä"
 
 #: EAScompliance.php:1628
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: EAScompliance.php:1635
 msgid "EAS API Base URL"
-msgstr ""
+msgstr "EAS API Base URL"
 
 #: EAScompliance.php:1637
 msgid "API URL"
-msgstr ""
+msgstr "API URL"
 
 #: EAScompliance.php:1643
 msgid "EAS client ID"
-msgstr ""
+msgstr "EAS client ID"
 
 #: EAScompliance.php:1645
 msgid "Use the client ID you received from EAS Project"
@@ -147,7 +147,7 @@ msgstr ""
 
 #: EAScompliance.php:1650
 msgid "EAS client secret"
-msgstr ""
+msgstr "EAS client secret"
 
 #: EAScompliance.php:1652
 msgid "Use the secret you received from EAS Project"
@@ -161,19 +161,19 @@ msgstr "Kieli"
 
 #: EAScompliance.php:1659
 msgid "Choose language for user interface of plugin"
-msgstr ""
+msgstr "Valitse plugin kieli"
 
 #: EAScompliance.php:1661
 msgid "Default"
-msgstr ""
+msgstr "Vakio"
 
 #: EAScompliance.php:1663
 msgid "Store Default"
-msgstr ""
+msgstr "Kaupan vakioasetus"
 
 #: EAScompliance.php:1664
 msgid "English"
-msgstr ""
+msgstr "Englanti"
 
 #: EAScompliance.php:1665
 msgid "Finnish"
@@ -181,62 +181,64 @@ msgstr "Suomi"
 
 #: EAScompliance.php:1668
 msgid "Shipping methods by post"
-msgstr ""
+msgstr "Postitusvaihtoehdot"
 
 #: EAScompliance.php:1671
 msgid "Select shipping methods for delivery by post"
-msgstr ""
+msgstr "Valitse postitusvaihtoehdot"
 
 #: EAScompliance.php:1686
 msgid "HSCODE"
-msgstr ""
+msgstr "HS-koodi"
 
 #: EAScompliance.php:1688
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
-msgstr ""
+msgstr "HS-koodi tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:1696
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
-msgstr ""
+msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole"
 
 #: EAScompliance.php:1702
 msgid "Reduced VAT for TBE"
-msgstr ""
+msgstr "Alennettu verokanta elektroniselle tuotteelle"
 
 #: EAScompliance.php:1704
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
+"Alennettu verokanta elektroniselle tuotteelle tunniste. Atribuutti luodaan "
+"jos sitä ei ole"
 
 #: EAScompliance.php:1710
 msgid "Act as Disclosed Agent"
-msgstr ""
+msgstr "Toimi vapaana agenttina (Disclosed Agent)"
 
 #: EAScompliance.php:1712
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
-msgstr ""
+msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole"
 
 #: EAScompliance.php:1718
 msgid "Seller registration country"
-msgstr ""
+msgstr "Maa johon myyjä on rekisteröitynyt"
 
 #: EAScompliance.php:1720
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
-msgstr ""
+msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole"
 
 #: EAScompliance.php:1726
 msgid "Originating Country"
-msgstr ""
+msgstr "Tuotteen alkuperämaa"
 
 #: EAScompliance.php:1728
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
-msgstr ""
+msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole"
