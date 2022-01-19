@@ -209,8 +209,8 @@ msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
-"Act as Disclosed Agent attribute holder. Attribute will be created if does "
-"not exist."
+"Reduced VAT for TBE attribute holder. Attribute will be created if does not "
+"exist."
 
 #: EAScompliance.php:1710
 msgid "Act as Disclosed Agent"
