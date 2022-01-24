@@ -1314,6 +1314,11 @@ function woocommerce_shipping_packages( $packages) {
 			return $packages;
 		}
 
+        // Sometimes we get here when chosen_shipping_methods are empty. This is error, throw exception here
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
+        if ( !is_array($chosen_shipping_methods) ) {
+            throw new Exception(__('Chosen shipping method must not be empty!', PLUGIN_DOMAIN));
+        }
 		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first2($p['contents'])];
 			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
