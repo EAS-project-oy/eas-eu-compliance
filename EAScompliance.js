@@ -89,7 +89,18 @@ jQuery(document).ready(function($) {
                     console.log(j)
 
                     if (j.status === 'ok') {
-                        window.open(j['CALC response'], '_self');
+                        // 'CALC response' should be quoted link to confirmation page or STANDARD_CHECKOUT
+                        if (j['CALC response'] === 'STANDARD_CHECKOUT') {
+                            show_error(j['message']);
+                            $('.button_calc').text(plugin_dictionary.standard_checkout)
+                            $('.EAScompliance_status').text('standard_checkout');
+
+                            $('.button_calc').hide()
+                            $('#place_order').show();
+                        }
+                        else {
+                            window.open(j['CALC response'], '_self');
+                        }
                     } else {
                         show_error(j['message']);
                         $('.button_calc').text(plugin_dictionary.sorry_didnt_work)
@@ -170,6 +181,10 @@ jQuery(document).ready(function($) {
             (
                 $('.EAScompliance_status').text() == 'present'
                 && needs_recalculate === false
+            )
+            ||
+            (
+                $('.EAScompliance_status').text() == 'standard_checkout'
             )
         ) {
             $('.button_calc').hide();

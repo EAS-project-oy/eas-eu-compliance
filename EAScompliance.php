@@ -103,6 +103,8 @@ if (is_active()) {
     add_filter('woocommerce_cart_tax_totals', 'woocommerce_cart_tax_totals', 10, 2 );
 }
 function woocommerce_cart_tax_totals($tax_totals, $order) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
     try {
         set_error_handler('error_handler');
         set_locale();
@@ -131,6 +133,8 @@ if (is_active()) {
     add_filter('woocommerce_order_get_tax_totals', 'woocommerce_order_get_tax_totals', 10, 2);
 }
 function woocommerce_order_get_tax_totals ( $tax_totals, $order) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
     try {
         set_error_handler('error_handler');
         set_locale();
@@ -186,6 +190,8 @@ if (is_active()) {
 	add_action('wp_enqueue_scripts', 'EAScompliance_javascript');
 }
 function EAScompliance_javascript() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	// include css
 	wp_enqueue_style( 'EAScompliance-css', plugins_url( '/EAScompliance.css', __FILE__ ), array(), filemtime(dirname(__FILE__ ) . '/EAScompliance.css'));
 
@@ -202,6 +208,7 @@ function EAScompliance_javascript() {
             , 'confirmation' => __( 'confirmation', PLUGIN_DOMAIN )
             , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", PLUGIN_DOMAIN )
             , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', PLUGIN_DOMAIN )
+            , 'standard_checkout' => __( 'Standard Checkout', PLUGIN_DOMAIN )
     ) );
 
 	// Pass ajax_url to javascript
@@ -214,6 +221,8 @@ if (is_active()) {
 	add_action('admin_enqueue_scripts', 'EAScompliance_settings_scripts');
 }
 function EAScompliance_settings_scripts() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	// include css
 	wp_enqueue_style( 'EAScompliance', plugins_url( '/EAScompliance-settings.css', __FILE__ ), array(), filemtime(dirname(__FILE__ ) . '/EAScompliance-settings.css'));
 
@@ -228,6 +237,8 @@ if (is_active()) {
 	add_action( 'woocommerce_review_order_before_payment', 'woocommerce_review_order_before_payment');
 }
 function woocommerce_review_order_before_payment() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
     try {
         set_locale();
         //// checkout form data saved during /calculate step
@@ -256,17 +267,21 @@ function woocommerce_review_order_before_payment() {
         $status = EAScompliance_is_set() ? 'present' : 'not present';
         $needs_recalculate = EAScompliance_needs_recalculate() ? 'yes' : 'no';
 
+        if (EAScompliance_is_STANDARD_CHECKOUT()) {
+            $status = 'standard_checkout';
+        }
+
         ?>
             <div class="form-row EAScompliance">
             <button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
             <input type="hidden" id="EAScompliance_nonce_calc" name="EAScompliance_nonce_calc" value="<?php echo esc_attr($nonce_calc); ?>" /></input>
             <p class="EAScompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>" needs-recalculate="<?php echo esc_attr($needs_recalculate); ?>"><?php echo esc_attr($status); ?></p>
             <?php
-            if ( is_debug() && DEVELOP ) {
+            if ( DEVELOP ) {
                 ?>
                     <h3>EAScompliance Debug</h3>
                     <p class="EAScompliance_debug">
-                        <textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"></textarea>
+                        <textarea type="text" class="EAScompliance_debug_input" style="font-family:monospace" placeholder="input"><?php echo esc_html('return WC()->cart->get_cart();'); ?></textarea>
                         <button type="button" class="button EAScompliance_debug_button">eval</button>
                         <input type="hidden" id="EAScompliance_nonce_debug" name="EAScompliance_nonce_debug" value="<?php echo esc_attr($nonce_debug); ?>" /></input>
                         <textarea class="EAScompliance_debug_output" style="font-family:monospace" placeholder="output"></textarea>
@@ -288,6 +303,7 @@ if (is_debug() && DEVELOP) {
 	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
 };
 function EAScompliance_debug() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
 
 	try {
 		if (!wp_verify_nonce( strval(array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
@@ -297,8 +313,9 @@ function EAScompliance_debug() {
 		$debug_input = stripslashes(array_get($_POST, 'debug_input', ''));
 
 		set_error_handler('error_handler');
-//		$jres = print_r(eval($debug_input), true);
 		$jres = 'eval() disabled';
+        //eval must be commented
+        //$jres = print_r(eval($debug_input), true);
 	} catch (Exception $ex) {
 		$jres = 'Error: ' . $ex->getMessage();
 	} finally {
@@ -538,11 +555,16 @@ function make_eas_api_request_json() {
 }
 
 //// Customs Duties Calculation
+/// This handler is called when user clicks 'Calculate Taxes button on Checkout page'
+/// It makes request to EAS server with checkout details and redirects user to EAS Confirmation Page
+///  unless STANDARD_CHECKOUT is returned. In which case Checkout proceeds without confirmation
 if (is_active()) {
 	add_action('wp_ajax_EAScompliance_ajaxhandler', 'EAScompliance_ajaxhandler');
 	add_action('wp_ajax_nopriv_EAScompliance_ajaxhandler', 'EAScompliance_ajaxhandler');
 }
 function EAScompliance_ajaxhandler() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 		$jdebug = array();
@@ -589,6 +611,9 @@ function EAScompliance_ajaxhandler() {
 
 		$calc_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
+        class StandardCheckoutException extends Exception { };
+		$jres = array('status'=>'unknown', 'message'=>'no message');
+
 		if ( '200' != $calc_status ) {
 			$jdebug['CALC response headers'] = $http_response_header;
 			$jdebug['CALC response status'] = $calc_status;
@@ -614,6 +639,17 @@ function EAScompliance_ajaxhandler() {
 			// }';
 			$calc_error = json_decode($calc_body, true);
 			if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
+
+                // STANDARD_CHECKOUT
+                if ($calc_error['type'] == 'STANDARD_CHECKOUT') {
+                    logger()->info('STANDARD_CHECKOUT');
+
+                    global $woocommerce;
+					foreach ($woocommerce->cart->cart_contents as $k => &$item) {
+						$item['EAScompliance STANDARD_CHECKOUT'] = true;
+					}
+                    throw new StandardCheckoutException($calc_error['message']);
+                }
 				$error_message = $calc_error['code'];
 			}
 			if (array_key_exists('data', $calc_error) && array_key_exists('message', $calc_error['data'])) {
@@ -632,7 +668,7 @@ function EAScompliance_ajaxhandler() {
 				$error_message = join(' ', array_values($calc_error['errors']));
 			}
 			$jdebug['CALC response error'] = $error_message;
-				throw new Exception($error_message);
+            throw new Exception($error_message);
 		}
 
 		$jdebug['step'] = 'parse /calculate response';
@@ -647,25 +683,30 @@ function EAScompliance_ajaxhandler() {
 		logger()->info('/calculate request successful, $calc_response ' . $calc_response);
 //        throw new Exception('debug');
 
-	} catch (Exception $ex) {
+		$jres['status'] = 'ok';
+		$jres['message'] = 'CALC response successful';
+		$jres['CALC response'] = $calc_response;
+	}
+    catch (StandardCheckoutException $ex) {
+		$jres['status'] = 'ok';
+        $jres['message'] = $ex->getMessage();
+        $jres['CALC response'] = 'STANDARD_CHECKOUT';
+
+        //this line saves cart here, but does not save before StandardCheckoutException thrown. Why?
+		WC()->cart->set_session();
+    }
+    catch (Exception $ex) {
 
 		//// build json reply
 		$jres['status'] = 'error';
 		$jres['message'] = $ex->getMessage();
 		log_exception($ex);
 		logger()->debug(print_r($jdebug, true));
-		if (is_debug()) {
-			$jres['debug'] = $jdebug;
-		}
-		wp_send_json($jres);
 	} finally {
 		restore_error_handler();
 	}
 
-	//// build json reply
-	$jres['status'] = 'ok';
-	$jres['message'] = 'CALC response successful';
-	$jres['CALC response'] = $calc_response;
+	//// send json reply
 	if (is_debug()) {
 		$jres['debug'] = $jdebug;
 	}
@@ -680,6 +721,7 @@ if (is_active()) {
 	add_action('wp_ajax_nopriv_EAScompliance_redirect_confirm', 'EAScompliance_redirect_confirm');
 }
 function EAScompliance_redirect_confirm() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
 
 	$jres = array('status'=>'ok');
 	$jdebug = array();
@@ -910,6 +952,35 @@ function EAScompliance_is_set() {
 	}
 }
 
+function EAScompliance_is_STANDARD_CHECKOUT() {
+	try {
+		set_error_handler('error_handler');
+
+		$cart = WC()->cart;
+		$k = array_key_first2 ($cart->get_cart());
+		if ( null === $k ) {
+            return false;
+		}
+        global $woocommerce;
+        foreach ($woocommerce->cart->cart_contents as $k=>&$item) {
+            if ( ! array_key_exists('EAScompliance STANDARD_CHECKOUT', $item)) {
+                return false;
+            }
+            if (true !== $item['EAScompliance STANDARD_CHECKOUT']) {
+                return false;
+            }
+        }
+
+        return true;
+
+	} catch (Exception $ex) {
+		log_exception($ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
 function EAScompliance_needs_recalculate() {
 	try {
 		set_error_handler('error_handler');
@@ -937,6 +1008,8 @@ if (is_active()) {
 	add_action('wp_ajax_nopriv_EAScompliance_needs_recalculate_ajax', 'EAScompliance_needs_recalculate_ajax');
 };
 function EAScompliance_needs_recalculate_ajax() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -950,11 +1023,14 @@ function EAScompliance_needs_recalculate_ajax() {
 		restore_error_handler();
 	}
 };
-	//// Replace order_item taxes with EAScompliance during order creation
+
+//// Replace order_item taxes with EAScompliance during order creation
 if (is_active()) {
 	add_filter('woocommerce_checkout_create_order_tax_item', 'woocommerce_checkout_create_order_tax_item', 10, 3);
 }
 function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data
@@ -1030,6 +1106,8 @@ if (is_active()) {
 	add_filter('woocommerce_cart_get_taxes', 'woocommerce_cart_get_taxes', 10);
 }
 function woocommerce_cart_get_taxes( $total_taxes) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1063,6 +1141,8 @@ if (is_active()) {
 	add_filter('woocommerce_cart_item_subtotal', 'woocommerce_cart_item_subtotal', 10, 3);
 }
 function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1085,6 +1165,8 @@ if (is_active()) {
 	add_filter('woocommerce_cart_subtotal', 'woocommerce_cart_subtotal', 10, 3);
 }
 function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1113,6 +1195,8 @@ if (is_active()) {
 	add_filter('woocommerce_cart_totals_order_total_html', 'woocommerce_cart_totals_order_total_html2', 10, 1);
 }
 function woocommerce_cart_totals_order_total_html2( $value) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1132,6 +1216,8 @@ if (is_active()) {
 	add_action('woocommerce_checkout_create_order_line_item', 'woocommerce_checkout_create_order_line_item', 10, 4);
 };
 function woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1157,6 +1243,8 @@ if (is_active()) {
 	add_filter('option_woocommerce_klarna_payments_settings', 'EAScompliance_Klarna_settings_fix');
 }
 function EAScompliance_Klarna_settings_fix( $kp_settings) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1191,6 +1279,8 @@ if (is_active()) {
 	add_filter('woocommerce_cart_totals_get_item_tax_rates', 'woocommerce_cart_totals_get_item_tax_rates', 10, 3);
 }
 function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1199,7 +1289,6 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 		}
 
 		$tax_rate_id0 = tax_rate_id();
-
 		$cart_items = $cart->get_cart();
 		$item_tax = $cart_items[$item->key]['EAScompliance AMOUNT'];
 		$item_total = $cart_items[$item->key]['line_total'];
@@ -1220,6 +1309,8 @@ if (is_active()) {
 	add_filter('kp_wc_api_order_lines', 'kp_wc_api_order_lines', 10, 3);
 }
 function kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1282,6 +1373,8 @@ if (is_active()) {
 	add_filter('woocommerce_order_item_after_calculate_taxes', 'woocommerce_order_item_after_calculate_taxes', 10, 2);
 }
 function woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 		// Recalculate process must set taxes from order_item meta-data 'Customs duties'
@@ -1307,6 +1400,8 @@ if (is_active()) {
 	add_filter('woocommerce_shipping_packages', 'woocommerce_shipping_packages', 10, 1);
 }
 function woocommerce_shipping_packages( $packages) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1321,7 +1416,7 @@ function woocommerce_shipping_packages( $packages) {
         }
 		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first2($p['contents'])];
-			foreach (WC()->session->get( 'chosen_shipping_methods' ) as $sx=>$shm) {
+			foreach ($chosen_shipping_methods as $sx=>$shm) {
 				if (array_key_exists($shm, $packages[$px]['rates'])) {
 					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
 					 $packages[$px]['rates'][$shm]->add_meta_data('VAT Amount', $cart_item0['EAScompliance DELIVERY CHARGE VAT']);
@@ -1349,6 +1444,8 @@ if (is_active()) {
 	add_action('woocommerce_checkout_create_order', 'woocommerce_checkout_create_order');
 }
 function woocommerce_checkout_create_order( $order) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
         set_locale();
@@ -1367,6 +1464,11 @@ function woocommerce_checkout_create_order( $order) {
 			return;
 		}
 
+        if (EAScompliance_is_STANDARD_CHECKOUT()) {
+            logger()->info('STANDARD_CHECKOUT ORDER');
+            return;
+        }
+
 		//disable order if customs duties are missing
 		if (!EAScompliance_is_set()) {
 			throw new Exception( __('CUSTOMS DUTIES MISSING', PLUGIN_DOMAIN) );
@@ -1384,26 +1486,26 @@ function woocommerce_checkout_create_order( $order) {
 		//save new request in first item
 		global $woocommerce;
 		$cart = WC()->cart;
-		$k = array_key_first2 ($cart->get_cart());
-		$item = &$woocommerce->cart->cart_contents[$k];
-		$item['EAScompliance NEEDS RECALCULATE'] = false;
+		$k0 = array_key_first2 ($cart->get_cart());
+		$item0 = &$woocommerce->cart->cart_contents[$k0];
+		$item0['EAScompliance NEEDS RECALCULATE'] = false;
 		$woocommerce->cart->set_session();
 
 		if ( json_encode($calc_jreq_saved, JSON_THROW_ON_ERROR2) != json_encode($calc_jreq_new, JSON_THROW_ON_ERROR2) ) {
 			logger()->debug('$calc_jreq_saved ' . print_r($calc_jreq_saved, true) . '  $calc_jreq_new  ' . print_r($calc_jreq_new, true));
 			// reset EAScompliance if json's mismatch
-			$item['EAScompliance NEEDS RECALCULATE'] = true;
+			$item0['EAScompliance NEEDS RECALCULATE'] = true;
 			// reset calculate of cart since calculate may have changed previous values
-			$item['EAScompliance SET'] = false;
+			$item0['EAScompliance SET'] = false;
 			$woocommerce->cart->set_session();
 			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', PLUGIN_DOMAIN));
 		}
 		//save payload in order metadata
-		$payload = $item['EASPROJ API PAYLOAD'];
+		$payload = $item0['EASPROJ API PAYLOAD'];
 		$order->add_meta_data('easproj_payload', $payload , true);
 
 		// saving token to notify EAS during order status change
-		$order->add_meta_data('_easproj_token', $item['EASPROJ API CONFIRMATION TOKEN']);
+		$order->add_meta_data('_easproj_token', $item0['EASPROJ API CONFIRMATION TOKEN']);
 	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
@@ -1418,6 +1520,8 @@ if (is_active()) {
 	add_action('woocommerce_checkout_order_created', 'woocommerce_checkout_order_created');
 }
 function woocommerce_checkout_order_created( $order) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	//notify EAS API on Order number
 	$order_id = $order->get_id();
 	try {
@@ -1426,6 +1530,10 @@ function woocommerce_checkout_order_created( $order) {
 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
+		//JWT token is not present during STANDARD_CHECKOUT
+		if ($confirmation_token == '') {
+			return;
+		}
 
 		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' =>'order_' . $order_id);
 
@@ -1473,6 +1581,8 @@ if (is_active()) {
 	add_action('woocommerce_order_status_changed', 'woocommerce_order_status_changed', 10, 4);
 }
 function woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
         set_locale();
@@ -1483,6 +1593,10 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 
 		$auth_token =             get_oauth_token();
 		$confirmation_token = $order->get_meta('_easproj_token');
+		//JWT token is not present during STANDARD_CHECKOUT
+		if ($confirmation_token == '') {
+			return;
+		}
 
 		$payment_jreq = array('token'=>$confirmation_token, 'checkout_payment_id' =>'order_' . $order_id);
 
@@ -1532,6 +1646,8 @@ if (is_active()) {
 	add_action('woocommerce_admin_order_totals_after_total', 'woocommerce_admin_order_totals_after_total');
 }
 function woocommerce_admin_order_totals_after_total($order_id) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	$order = wc_get_order($order_id);
 
 	$payload_j = $order->get_meta('easproj_payload');
@@ -1745,6 +1861,8 @@ function EAScompliance_settings() {
 //// Settings startup check
 add_filter( 'woocommerce_settings_start', 'woocommerce_settings_start');
 function woocommerce_settings_start() {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1768,6 +1886,8 @@ function woocommerce_settings_start() {
 //// Settings tab
 add_filter( 'woocommerce_settings_tabs_array', 'woocommerce_settings_tabs_array');
 function woocommerce_settings_tabs_array( $settings_tabs ) {
+	if (DEVELOP) {logger()->debug('Entered filter '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
@@ -1785,6 +1905,8 @@ function woocommerce_settings_tabs_array( $settings_tabs ) {
 //// Settings fields
 add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'woocommerce_settings_tabs_settings_tab_compliance' );
 function woocommerce_settings_tabs_settings_tab_compliance() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
         set_locale();
@@ -1802,6 +1924,8 @@ function woocommerce_settings_tabs_settings_tab_compliance() {
 //// Settings Save and Plugin Setup
 add_action( 'woocommerce_update_options_settings_tab_compliance', 'woocommerce_update_options_settings_tab_compliance' );
 function woocommerce_update_options_settings_tab_compliance() {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
 	try {
 		set_error_handler('error_handler');
 
