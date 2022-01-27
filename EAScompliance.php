@@ -1409,10 +1409,16 @@ function woocommerce_shipping_packages( $packages) {
 			return $packages;
 		}
 
-        // Sometimes we get here when chosen_shipping_methods are empty. This is error, throw exception here
+        // Sometimes we get here when chosen_shipping_methods are empty. If this happens, we reset calculation
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
         if ( !is_array($chosen_shipping_methods) ) {
-            throw new Exception(__('Chosen shipping method must not be empty!', PLUGIN_DOMAIN));
+            logger()->info('Chosen shipping method must not be empty! Resetting EASCompliance');
+            global $woocommerce;
+			foreach ($woocommerce->cart->cart_contents as $k => &$item) {
+				$item['EAScompliance SET'] = false;
+			}
+			$woocommerce->cart->set_session();
+			return $packages;
         }
 		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first2($p['contents'])];
