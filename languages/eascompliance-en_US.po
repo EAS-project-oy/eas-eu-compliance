@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EAScompliance\n"
-"POT-Creation-Date: 2022-01-25 06:38+0200\n"
+"POT-Creation-Date: 2022-02-13 14:56+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -70,139 +70,135 @@ msgstr ""
 msgid "Calculate Taxes and Duties"
 msgstr "Click to continue"
 
-#: EAScompliance.php:381
-msgid "Authentication failed with response status $auth_response_status"
+#: EAScompliance.php:374 EAScompliance.php:382
+msgid ""
+"EU tax calculation service temporary unavailable. Please try to place an "
+"order later."
 msgstr ""
 
-#: EAScompliance.php:386
+#: EAScompliance.php:387
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
 msgstr ""
 
-#: EAScompliance.php:446 EAScompliance.php:737
+#: EAScompliance.php:447 EAScompliance.php:738
 msgid "Security check"
 msgstr ""
 
-#: EAScompliance.php:1096
+#: EAScompliance.php:1097
 msgid "payload total_order_amount $a not equal order total $b"
 msgstr ""
 
-#: EAScompliance.php:1415
-#, fuzzy
-#| msgid "Shipping methods by post"
-msgid "Chosen shipping method must not be empty!"
-msgstr "Shipping methods carried out by postal operators"
-
-#: EAScompliance.php:1474
+#: EAScompliance.php:1500
 msgid "CUSTOMS DUTIES MISSING"
 msgstr ""
 
-#: EAScompliance.php:1501
+#: EAScompliance.php:1527
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr ""
 
-#: EAScompliance.php:1561
+#: EAScompliance.php:1587
 msgid "Notify Order number $order_id successful"
 msgstr ""
 
-#: EAScompliance.php:1572
+#: EAScompliance.php:1598
 msgid "Notify Order number $order_id failed: "
 msgstr ""
 
-#: EAScompliance.php:1624
+#: EAScompliance.php:1650
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
 msgstr ""
 
-#: EAScompliance.php:1635
+#: EAScompliance.php:1661
 msgid "Order status change notification failed: "
 msgstr ""
 
-#: EAScompliance.php:1737
+#: EAScompliance.php:1763
 msgid "Settings"
 msgstr ""
 
-#: EAScompliance.php:1742
+#: EAScompliance.php:1768
 msgid "Enable/Disable"
 msgstr ""
 
-#: EAScompliance.php:1749
+#: EAScompliance.php:1775
 msgid "Debug"
 msgstr ""
 
-#: EAScompliance.php:1756
+#: EAScompliance.php:1782
 msgid "EAS API Base URL"
 msgstr ""
 
-#: EAScompliance.php:1758
+#: EAScompliance.php:1784
 msgid "API URL"
 msgstr ""
 
-#: EAScompliance.php:1764
+#: EAScompliance.php:1790
 msgid "EAS client ID"
 msgstr ""
 
-#: EAScompliance.php:1766
+#: EAScompliance.php:1792
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Use the client ID you received from EAS Project Dashboard <a href=\"https://"
 "dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
 
-#: EAScompliance.php:1771
+#: EAScompliance.php:1797
 msgid "EAS client secret"
 msgstr ""
 
-#: EAScompliance.php:1773
+#: EAScompliance.php:1799
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Use the client secret you received from EAS Project Dashboard <a href="
 "\"https://dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
 
-#: EAScompliance.php:1778
+#: EAScompliance.php:1804
 msgid "Language"
 msgstr ""
 
-#: EAScompliance.php:1780
+#: EAScompliance.php:1806
 msgid "Choose language for user interface of plugin"
 msgstr "Choose user interface language of \"EAS EU Compliance\" plugin"
 
-#: EAScompliance.php:1782
+#: EAScompliance.php:1808
 msgid "Default"
 msgstr ""
 
-#: EAScompliance.php:1784
+#: EAScompliance.php:1810
 msgid "Store Default"
 msgstr ""
 
-#: EAScompliance.php:1785
+#: EAScompliance.php:1811
 msgid "English"
 msgstr ""
 
-#: EAScompliance.php:1786
+#: EAScompliance.php:1812
 msgid "Finnish"
 msgstr ""
 
-#: EAScompliance.php:1789
+#: EAScompliance.php:1815
 msgid "Shipping methods by post"
 msgstr "Shipping methods carried out by postal operators"
 
-#: EAScompliance.php:1792
+#: EAScompliance.php:1818
 msgid "Select shipping methods for delivery by post"
 msgstr ""
 
-#: EAScompliance.php:1807
+#: EAScompliance.php:1833
 msgid "HSCODE"
 msgstr ""
 
-#: EAScompliance.php:1809
+#: EAScompliance.php:1835
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr ""
 "Location warehouse country attribute holder. Attribute will be created if "
 "does not exist."
 
-#: EAScompliance.php:1817
+#: EAScompliance.php:1843
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
@@ -210,11 +206,11 @@ msgstr ""
 "Location warehouse country attribute holder. Attribute will be created if "
 "does not exist."
 
-#: EAScompliance.php:1823
+#: EAScompliance.php:1849
 msgid "Reduced VAT for TBE"
 msgstr ""
 
-#: EAScompliance.php:1825
+#: EAScompliance.php:1851
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
@@ -222,11 +218,11 @@ msgstr ""
 "Reduced VAT for TBE attribute holder. Attribute will be created if does not "
 "exist."
 
-#: EAScompliance.php:1831
+#: EAScompliance.php:1857
 msgid "Act as Disclosed Agent"
 msgstr ""
 
-#: EAScompliance.php:1833
+#: EAScompliance.php:1859
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
@@ -234,11 +230,11 @@ msgstr ""
 "Act as Disclosed Agent attribute holder. Attribute will be created if does "
 "not exist."
 
-#: EAScompliance.php:1839
+#: EAScompliance.php:1865
 msgid "Seller registration country"
 msgstr ""
 
-#: EAScompliance.php:1841
+#: EAScompliance.php:1867
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
@@ -246,14 +242,19 @@ msgstr ""
 "Seller registration country attribute holder. Attribute will be created if "
 "does not exist."
 
-#: EAScompliance.php:1847
+#: EAScompliance.php:1873
 msgid "Originating Country"
 msgstr ""
 
-#: EAScompliance.php:1849
+#: EAScompliance.php:1875
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr ""
 "Originating Country attribute holder. Attribute will be created if does not "
 "exist."
+
+#, fuzzy
+#~| msgid "Shipping methods by post"
+#~ msgid "Chosen shipping method must not be empty!"
+#~ msgstr "Shipping methods carried out by postal operators"

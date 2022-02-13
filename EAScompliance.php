@@ -328,72 +328,87 @@ function EAScompliance_debug() {
 
 
 function get_oauth_token() {
-	$jdebug = array();
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
 
-	$jdebug['step'] = 'parse json request';
+	try {
+		set_error_handler('error_handler');
 
-	$jdebug['step'] = 'OAUTH2 Authorise at EAS API server';
+		$jdebug = array();
 
-	//woocommerce_settings_get_option is undefined when called via Credit Card payment type
-	$auth_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/auth/open-id/connect';
-	$auth_data = array(
-		'client_id' => woocommerce_settings_get_option_sql('easproj_auth_client_id')
+		$jdebug['step'] = 'parse json request';
+
+		$jdebug['step'] = 'OAUTH2 Authorise at EAS API server';
+
+		//woocommerce_settings_get_option is undefined when called via Credit Card payment type
+		$auth_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/auth/open-id/connect';
+		$auth_data = array(
+			'client_id' => woocommerce_settings_get_option_sql('easproj_auth_client_id')
 		, 'client_secret' => woocommerce_settings_get_option_sql('easproj_auth_client_secret')
-		, 'grant_type'=> 'client_credentials'
-	);
+		, 'grant_type' => 'client_credentials'
+		);
 
-	$options = array(
-		'http' => array(
-			'method'  => 'POST'
-		, 'header'  => "Content-type: application/x-www-form-urlencoded\r\n"
-		, 'content' => http_build_query($auth_data)
-		, 'ignore_errors' => true
-		)
-	, 'ssl' => array(
-			'verify_peer' => false
-		, 'verify_peer_name' => false
-		)
-	);
+		$options = array(
+			'http' => array(
+				'method' => 'POST'
+			, 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
+			, 'content' => http_build_query($auth_data)
+			, 'ignore_errors' => true
+			)
+		, 'ssl' => array(
+				'verify_peer' => false
+			, 'verify_peer_name' => false
+			)
+		);
 
-	//prevent Warning: Cannot modify header information - headers already sent
-	error_reporting(E_ERROR);
-	$auth_response = file_get_contents($auth_url, false, stream_context_create($options));
-	error_reporting(E_ALL);
+		//prevent Warning: Cannot modify header information - headers already sent
+		error_reporting(E_ERROR);
+		$auth_response = file_get_contents($auth_url, false, stream_context_create($options));
+		error_reporting(E_ALL);
 
-	// request failed
-	if (false === $auth_response) {
-		if (is_debug()) {
-			//check php configuration
-			ob_start () ;
-			phpinfo (INFO_CONFIGURATION) ;
-			$jdebug['phpinfo'] = ob_get_contents ();
-			ob_end_clean () ;
-			$jdebug['allow_url_fopen'] = ini_get('allow_url_fopen');
+		// request failed
+		if (false === $auth_response) {
+			logger()->error('Auth request failed: ' . error_get_last()['message']);
+			if (is_debug()) {
+				//check php configuration
+				ob_start();
+				phpinfo(INFO_CONFIGURATION);
+				$jdebug['phpinfo'] = ob_get_contents();
+				ob_end_clean();
+				$jdebug['allow_url_fopen'] = ini_get('allow_url_fopen');
+			}
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', PLUGIN_DOMAIN));
 		}
-		throw new Exception('Auth request failed: ' . error_get_last()['message']);
+
+		$auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
+
+		// response not OK
+		if ('200' != $auth_response_status) {
+			logger()->error('Auth response not OK: ' . $auth_response);
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', PLUGIN_DOMAIN));
+		}
+
+		// response OK, but authentication failed with code 200 and empty response for any reason
+		if ('' === $auth_response) {
+			throw new Exception(__('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', PLUGIN_DOMAIN));
+		}
+
+		$jdebug['step'] = 'decode AUTH token';
+		$auth_j = json_decode($auth_response, true, 512, JSON_THROW_ON_ERROR2);
+		$jdebug['AUTH response'] = $auth_j;
+
+		$auth_token = $auth_j['access_token'];
+		logger()->info('OAUTH token request successful');
+		return $auth_token;
 	}
-
-	$auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
-
-	// response not OK
-	if ('200' != $auth_response_status) {
-		logger()->debug('auth response: ' . $auth_response);
-		throw new Exception( format( __('Authentication failed with response status $auth_response_status', PLUGIN_DOMAIN), array('auth_response_status'=>$auth_response_status) ) );
-	}
-
-	// response OK, but authentication failed with code 200 and empty response for any reason
-	if ( '' === $auth_response ) {
-		throw new Exception( __('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', PLUGIN_DOMAIN) );
-	}
-
-	$jdebug['step'] = 'decode AUTH token';
-	$auth_j = json_decode($auth_response, true, 512, JSON_THROW_ON_ERROR2);
-	$jdebug['AUTH response'] = $auth_j;
-
-	$auth_token = $auth_j['access_token'];
-	logger()->info('OAUTH token request successful');
-	return $auth_token;
-
+	catch (Exception $ex) {
+			log_exception($ex);
+            if (is_debug()) {
+                logger()->debug(print_r($jdebug, true));
+            }
+            throw $ex;
+    } finally {
+        restore_error_handler();
+    }
 }
 
 

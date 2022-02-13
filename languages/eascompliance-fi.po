@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: EAScompliance\n"
-"POT-Creation-Date: 2022-01-25 06:38+0200\n"
+"POT-Creation-Date: 2022-02-13 14:56+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -73,45 +73,43 @@ msgstr ""
 msgid "Calculate Taxes and Duties"
 msgstr "Klikkaa jatkaaksesi tilausta"
 
-#: EAScompliance.php:381
-msgid "Authentication failed with response status $auth_response_status"
-msgstr "Vahvistus epäonnistui: $auth_response_status"
+#: EAScompliance.php:374 EAScompliance.php:382
+msgid ""
+"EU tax calculation service temporary unavailable. Please try to place an "
+"order later."
+msgstr ""
 
-#: EAScompliance.php:386
+#: EAScompliance.php:387
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
 msgstr "Tarkista EAS Client ID ja EAS client secret."
 
-#: EAScompliance.php:446 EAScompliance.php:737
+#: EAScompliance.php:447 EAScompliance.php:738
 msgid "Security check"
 msgstr "Turvallisuustarkistus"
 
-#: EAScompliance.php:1096
+#: EAScompliance.php:1097
 msgid "payload total_order_amount $a not equal order total $b"
 msgstr "Laskettu total_order_amount $a ei vastaa ostoskorin summaa $b"
 
-#: EAScompliance.php:1415
-msgid "Chosen shipping method must not be empty!"
-msgstr ""
-
-#: EAScompliance.php:1474
+#: EAScompliance.php:1500
 msgid "CUSTOMS DUTIES MISSING"
 msgstr "TULLIMAKSUT PUUTTUVAT"
 
-#: EAScompliance.php:1501
+#: EAScompliance.php:1527
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "LASKE TULLIMAKSUT UUDELLEEN"
 
-#: EAScompliance.php:1561
+#: EAScompliance.php:1587
 msgid "Notify Order number $order_id successful"
 msgstr "Tilausnumero $order_id onnistui"
 
-#: EAScompliance.php:1572
+#: EAScompliance.php:1598
 msgid "Notify Order number $order_id failed: "
 msgstr "Tilanusnumero $order_id epäonnistui:"
 
-#: EAScompliance.php:1624
+#: EAScompliance.php:1650
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -119,101 +117,101 @@ msgstr ""
 "Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
 "payment ilmoitettu"
 
-#: EAScompliance.php:1635
+#: EAScompliance.php:1661
 msgid "Order status change notification failed: "
 msgstr "Tilauksen muutosilmoitus epäonnistui:"
 
-#: EAScompliance.php:1737
+#: EAScompliance.php:1763
 msgid "Settings"
 msgstr "Asetukset"
 
-#: EAScompliance.php:1742
+#: EAScompliance.php:1768
 msgid "Enable/Disable"
 msgstr "Ota käyttöön / poista käytöstä"
 
-#: EAScompliance.php:1749
+#: EAScompliance.php:1775
 msgid "Debug"
 msgstr "Debug"
 
-#: EAScompliance.php:1756
+#: EAScompliance.php:1782
 msgid "EAS API Base URL"
 msgstr "EAS API Base URL"
 
-#: EAScompliance.php:1758
+#: EAScompliance.php:1784
 msgid "API URL"
 msgstr "API URL"
 
-#: EAScompliance.php:1764
+#: EAScompliance.php:1790
 msgid "EAS client ID"
 msgstr "EAS client ID"
 
-#: EAScompliance.php:1766
+#: EAScompliance.php:1792
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
 "easpoject.com\">https://dashboard.easpoject.com</a>"
 
-#: EAScompliance.php:1771
+#: EAScompliance.php:1797
 msgid "EAS client secret"
 msgstr "EAS client secret"
 
-#: EAScompliance.php:1773
+#: EAScompliance.php:1799
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
 "easpoject.com\">https://dashboard.easpoject.com/</a>"
 
-#: EAScompliance.php:1778
+#: EAScompliance.php:1804
 msgid "Language"
 msgstr "Kieli"
 
-#: EAScompliance.php:1780
+#: EAScompliance.php:1806
 msgid "Choose language for user interface of plugin"
 msgstr "Valitse plugin kieli"
 
-#: EAScompliance.php:1782
+#: EAScompliance.php:1808
 msgid "Default"
 msgstr "Vakio"
 
-#: EAScompliance.php:1784
+#: EAScompliance.php:1810
 msgid "Store Default"
 msgstr "Kaupan vakioasetus"
 
-#: EAScompliance.php:1785
+#: EAScompliance.php:1811
 msgid "English"
 msgstr "Englanti"
 
-#: EAScompliance.php:1786
+#: EAScompliance.php:1812
 msgid "Finnish"
 msgstr "Suomi"
 
-#: EAScompliance.php:1789
+#: EAScompliance.php:1815
 msgid "Shipping methods by post"
 msgstr "Postitusvaihtoehdot"
 
-#: EAScompliance.php:1792
+#: EAScompliance.php:1818
 msgid "Select shipping methods for delivery by post"
 msgstr "Valitse postitusvaihtoehdot"
 
-#: EAScompliance.php:1807
+#: EAScompliance.php:1833
 msgid "HSCODE"
 msgstr "HS-koodi"
 
-#: EAScompliance.php:1809
+#: EAScompliance.php:1835
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr "HS-koodi tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:1817
+#: EAScompliance.php:1843
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
 msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole"
 
-#: EAScompliance.php:1823
+#: EAScompliance.php:1849
 msgid "Reduced VAT for TBE"
 msgstr "Alennettu verokanta elektroniselle tuotteelle"
 
-#: EAScompliance.php:1825
+#: EAScompliance.php:1851
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
@@ -221,32 +219,35 @@ msgstr ""
 "Alennettu verokanta elektroniselle tuotteelle tunniste. Atribuutti luodaan "
 "jos sitä ei ole"
 
-#: EAScompliance.php:1831
+#: EAScompliance.php:1857
 msgid "Act as Disclosed Agent"
 msgstr "Toimi vapaana agenttina (Disclosed Agent)"
 
-#: EAScompliance.php:1833
+#: EAScompliance.php:1859
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
 msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole"
 
-#: EAScompliance.php:1839
+#: EAScompliance.php:1865
 msgid "Seller registration country"
 msgstr "Maa johon myyjä on rekisteröitynyt"
 
-#: EAScompliance.php:1841
+#: EAScompliance.php:1867
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
 msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole"
 
-#: EAScompliance.php:1847
+#: EAScompliance.php:1873
 msgid "Originating Country"
 msgstr "Tuotteen alkuperämaa"
 
-#: EAScompliance.php:1849
+#: EAScompliance.php:1875
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole"
+
+#~ msgid "Authentication failed with response status $auth_response_status"
+#~ msgstr "Vahvistus epäonnistui: $auth_response_status"
