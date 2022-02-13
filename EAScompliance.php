@@ -1293,7 +1293,14 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 		$item_tax = $cart_items[$item->key]['EAScompliance AMOUNT'];
 		$item_total = $cart_items[$item->key]['line_total'];
 
-		$item_tax_rates[$tax_rate_id0]['rate'] = intval(floor(10000 * $item_tax / $item_total) / 10000);
+
+        //0-priced items should have 0 rate
+        if ( $item_total == 0) {
+			$item_tax_rates[$tax_rate_id0]['rate'] = 0;
+        } else {
+			$item_tax_rates[$tax_rate_id0]['rate'] = intval(floor(10000 * $item_tax / $item_total) / 10000);
+        }
+
 
 		return $item_tax_rates;
 	} catch (Exception $ex) {
@@ -1321,12 +1328,19 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 		if (! $order_id) {
 			$ix = 0;
 			foreach (WC()->cart->cart_contents as $k=>$cart_item) {
+
+                // 0-priced items should have 0 tax_rate
+                $tax_rate = 0;
+                if ( ($cart_item['line_total']-$cart_item['line_tax']) != 0 ) {
+                    $tax_rate = round(10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total']-$cart_item['line_tax'] ) );
+                }
+
 				$klarna_item = array(
 					'reference'             => $cart_item['data']->get_sku(),
 					'name'                  => $cart_item['data']->get_name(),
 					'quantity'              => $cart_item['quantity'],
 					'unit_price'            => round(100.0 * $cart_item['line_total'] / $cart_item['quantity']),
-					'tax_rate'              => round(10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total']-$cart_item['line_tax'] ) ),
+					'tax_rate'              => $tax_rate,
 					'total_amount'          => round(100.0 * $cart_item['line_total'] ),
 					'total_tax_amount'      => round(100.0 * $cart_item['line_tax']),
 					'total_discount_amount' => 0,
@@ -1349,7 +1363,12 @@ function kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 					'total_tax_amount'      => round(100.0 * $order_item->get_total_tax()),
 					'total_discount_amount' => 0,
 				);
-				$klarna_item['tax_rate']    = round(10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount']-$klarna_item['total_tax_amount'] ) );
+				// 0-priced items should have 0 tax_rate
+				$tax_rate = 0;
+				if ( ( $klarna_item['total_amount']-$klarna_item['total_tax_amount'] ) != 0 ) {
+					$tax_rate = round(10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount']-$klarna_item['total_tax_amount'] ) );
+				}
+				$klarna_item['tax_rate']    = $tax_rate;
 				$klarna_order_lines[$ix] =$klarna_item;
 				++$ix;
 			}
