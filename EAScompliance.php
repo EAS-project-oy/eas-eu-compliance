@@ -1572,6 +1572,11 @@ function woocommerce_checkout_create_order( $order) {
 		$payload = $item0['EASPROJ API PAYLOAD'];
 		$order->add_meta_data('easproj_payload', $payload , true);
 
+		//save order json in order metadata
+		$order_json = WC()->session->get('EAS API REQUEST JSON');
+		$order_json['external_order_id'] = ''.$order->get_id();
+		$order->add_meta_data('_easproj_order_json', json_encode($order_json, JSON_THROW_ON_ERROR2), true);
+
 		// saving token to notify EAS during order status change
 		$order->add_meta_data('_easproj_token', $item0['EASPROJ API CONFIRMATION TOKEN']);
 	} catch (Exception $ex) {
@@ -1603,7 +1608,7 @@ function woocommerce_checkout_order_created( $order) {
 			return;
 		}
 
-		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' => $order_id);
+		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' => ''.$order_id);
 
 		$options = array(
 			'http' => array(
@@ -1701,6 +1706,72 @@ function woocommerce_order_status_changed( $order_id, $status_from, $status_to, 
 	} catch (Exception $ex) {
 		log_exception($ex);
 		$order->add_order_note(__('Order status change notification failed: ', PLUGIN_DOMAIN) . $ex->getMessage());
+	} finally {
+        set_locale(true);
+		restore_error_handler();
+	}
+
+}
+
+//// Notify EAS on order refund
+if (is_active()) {
+	add_action('woocommerce_order_refunded', 'woocommerce_order_refunded', 10, 4);
+}
+function woocommerce_order_refunded( $order_id, $refund_id ) {
+	if (DEVELOP) {logger()->debug('Entered action '.__FUNCTION__.'()');}
+
+	$order = wc_get_order($order_id);
+
+	try {
+		set_error_handler('error_handler');
+        set_locale();
+
+		$auth_token =             get_oauth_token();
+
+
+		$confirmation_token = $order->get_meta('_easproj_token');
+		//JWT token is not present during STANDARD_CHECKOUT
+		if ($confirmation_token == '') {
+			return;
+		}
+
+		$order_json = json_decode($order->get_meta('_easproj_order_json'));
+
+		$options = array(
+			'http' => array(
+				'method'  => 'POST'
+				, 'header'  => "Content-type: application/json\r\n"
+					. 'Authorization: Bearer ' . $auth_token . "\r\n"
+				, 'content' => json_encode(array(
+                      'sale_date'=>strtotime( $order->get_date_created()->date( 'Y-m-d H:i:s' ) )
+					, 'order'=> $order_json
+                    , 's10_code'=>'', JSON_THROW_ON_ERROR2))
+				, 'ignore_errors' => true
+			)
+			, 'ssl' => array(
+				'verify_peer' => false
+				, 'verify_peer_name' => false
+			)
+		);
+		$context = stream_context_create($options);
+
+		$refund_url = woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/createpostsaleorder';
+		$refund_body = file_get_contents($refund_url, false, $context);
+
+		$refund_status = preg_split('/\s/', $http_response_header[0], 3)[1];
+
+		if ( '200' == $refund_status ) {
+			$order->add_order_note( __('Order refunded.  EAS API payment notified') );
+		} else {
+			throw new Exception($http_response_header[0] . '\n\n' . $refund_body);
+		}
+
+		$order->save();
+
+		logger()->info("Order $order_id refund notification successful");
+	} catch (Exception $ex) {
+		log_exception($ex);
+		$order->add_order_note(__('Order refund notification failed: ', PLUGIN_DOMAIN) . $ex->getMessage());
 	} finally {
         set_locale(true);
 		restore_error_handler();
