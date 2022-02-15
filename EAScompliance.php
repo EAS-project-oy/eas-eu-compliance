@@ -564,6 +564,18 @@ function make_eas_api_request_json() {
 			, 'originating_country' => '' == $originating_country ? wc_get_base_location()['country'] : $originating_country // Country of manufacturing of goods
 		];
 	}
+
+	// split cart discount proportionally between items
+	$discount = $cart->get_discount_total();
+	$total_price = 0;
+	foreach ($items as $item) {
+		$total_price += $item['quantity'] * $item['cost_provided_by_em'];
+	}
+	if ( $discount > 0 && $total_price > 0 ) {
+		foreach ($items as &$item) {
+			$item['cost_provided_by_em'] = $item['cost_provided_by_em'] - $discount * $item['quantity'] * $item['cost_provided_by_em'] / $total_price;
+		}
+	}
 	$calc_jreq['order_breakdown'] = $items;
 
 	return $calc_jreq;
@@ -592,6 +604,7 @@ function EAScompliance_ajaxhandler() {
 
 		//save request json into session
 		WC()->session->set('EAS API REQUEST JSON', $calc_jreq);
+		WC()->session->set('EAS CART DISCOUNT', WC()->cart->get_discount_total());
 
 		$jdebug['CALC request'] = $calc_jreq;
 		//DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);
@@ -883,6 +896,12 @@ function EAScompliance_redirect_confirm() {
 		global $woocommerce;
 		$cart = WC()->cart;
 
+        $discount = WC()->session->get('EAS CART DISCOUNT');
+        $total_price = 0;
+        foreach ($payload_items as $k=>$payload_item) {
+            $total_price += $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+        }
+
 		$payload_item_k = 0;
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 			$payload_item = $payload_items[$payload_item_k];
@@ -891,6 +910,12 @@ function EAScompliance_redirect_confirm() {
 			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
 			$item['EAScompliance quantity'] = $payload_item['quantity'];
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
+            $item['EAScompliance item price'] = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+			// add back discounted value to item price
+            if ( $discount > 0 && $total_price > 0 ) {
+                $item['EAScompliance item price'] += $discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price;
+            }
+
 			$item['EAScompliance VAT'] =  $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
             $item['EAScompliance SET'] = true;
@@ -1103,8 +1128,11 @@ function cart_total() {
 				$payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
 				$payload = $cart_item['EASPROJ API PAYLOAD'];
 			}
-			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance unit_cost', 0) * array_get($cart_item, 'EAScompliance quantity', 0);
+
+			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance item price', 0);
 		}
+		$discount = WC()->session->get('EAS CART DISCOUNT');
+        $total -= $discount;
 
 		// check that payload total_order_amount equals Order total
 		if ( $payload_total_order_amount != $total ) {
@@ -1165,7 +1193,7 @@ function woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key
 			return $price_html;
 		}
 
-		return wc_price($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
+		return wc_price($cart_item['EAScompliance item price']);
 	} catch (Exception $ex) {
 		log_exception($ex);
 		throw $ex;
@@ -1192,7 +1220,7 @@ function woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 		$subtotal = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
 		foreach ($cart_items as $cart_item) {
-			$subtotal += $cart_item['quantity'] * $cart_item['EAScompliance unit_cost'];
+			$subtotal += $cart_item['EAScompliance item price'];
 		}
 
 		return wc_price($subtotal);
@@ -1241,8 +1269,8 @@ function woocommerce_checkout_create_order_line_item( $order_item_product, $cart
 		}
 
 		$cart_item = WC()->cart->get_cart()[$cart_item_key];
-		$order_item_product->set_subtotal($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
-		$order_item_product->set_total($cart_item['quantity'] * $cart_item['EAScompliance unit_cost']);
+		$order_item_product->set_subtotal($cart_item['EAScompliance item price']);
+		$order_item_product->set_total($cart_item['EAScompliance item price']);
 
 	} catch (Exception $ex) {
 		log_exception($ex);
@@ -1575,7 +1603,7 @@ function woocommerce_checkout_order_created( $order) {
 			return;
 		}
 
-		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' =>'order_' . $order_id);
+		$jreq = array('order_token'=>$confirmation_token, 'external_order_id' => $order_id);
 
 		$options = array(
 			'http' => array(
