@@ -898,17 +898,38 @@ function EAScompliance_redirect_confirm() {
 		$cart = WC()->cart;
 
         $discount = WC()->session->get('EAS CART DISCOUNT');
+
+        // calculate $total_price and $most_expensive_item
         $total_price = 0;
-        foreach ($payload_items as $k=>$payload_item) {
+        $most_expensive_item = &$payload_items[0];
+        $total_item_duties_and_taxes = 0;
+        foreach ($payload_items as $k=>&$payload_item) {
             $total_price += $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+			$total_item_duties_and_taxes += $payload_item['item_duties_and_taxes'];
+
+            if ($payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] > $most_expensive_item['quantity'] * $most_expensive_item['unit_cost_excl_vat']) {
+				$most_expensive_item = &$payload_item;
+            }
         }
+        
+        // calculate cart_total that should later match cart_total()
+		// when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat 
+        $cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'] - $discount;
+		$margin = $cart_total - $payload_j['total_order_amount'];
+		if ( 0 < abs($margin) && abs($margin) < 0.10 ) {
+            logger()->info("adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin" );
+			$most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
+
+            $total_price -= $margin;
+		}
+
 
 		$payload_item_k = 0;
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 			$payload_item = $payload_items[$payload_item_k];
 			$tax_rates = WC_Tax::get_rates();
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
-			$item['EAScompliance AMOUNT'] = $payload_item['item_duties_and_taxes'];
+			$item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'];
 			$item['EAScompliance quantity'] = $payload_item['quantity'];
 			$item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
             $item['EAScompliance item price'] = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
@@ -1083,7 +1104,7 @@ function woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_
 			$total = 0;
 			foreach ($order->get_items() as $k=>$item) {
 				$cart_item = $cart_items[$ix];
-				$item_amount = $cart_item['EAScompliance AMOUNT'];
+				$item_amount = $cart_item['EAScompliance item_duties_and_taxes'];
 				$total += $item_amount;
 				$item->add_meta_data('Customs duties', $cart_item['EAScompliance ITEM']['item_customs_duties']);
 				$item->add_meta_data('VAT Amount', $cart_item['EAScompliance VAT']);
@@ -1130,7 +1151,7 @@ function cart_total() {
 				$payload = $cart_item['EASPROJ API PAYLOAD'];
 			}
 
-			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0) + array_get($cart_item, 'EAScompliance item price', 0);
+			$total += array_get($cart_item, 'EAScompliance item_duties_and_taxes', 0) + array_get($cart_item, 'EAScompliance item price', 0);
 		}
 		$discount = WC()->session->get('EAS CART DISCOUNT');
         $total -= $discount;
@@ -1164,7 +1185,7 @@ function woocommerce_cart_get_taxes( $total_taxes) {
 		$total = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
 		foreach ($cart_items as $cart_item) {
-			$total += array_get($cart_item, 'EAScompliance AMOUNT', 0);
+			$total += array_get($cart_item, 'EAScompliance item_duties_and_taxes', 0);
 		}
 
 		$total_taxes[$tax_rate_id0] += $total;
@@ -1334,7 +1355,7 @@ function woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $ca
 
 		$tax_rate_id0 = tax_rate_id();
 		$cart_items = $cart->get_cart();
-		$item_tax = $cart_items[$item->key]['EAScompliance AMOUNT'];
+		$item_tax = $cart_items[$item->key]['EAScompliance item_duties_and_taxes'];
 		$item_total = $cart_items[$item->key]['line_total'];
 
 
