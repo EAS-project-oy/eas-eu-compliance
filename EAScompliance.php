@@ -923,10 +923,14 @@ function EAScompliance_redirect_confirm() {
             $total_price -= $margin;
 		}
 
+        unset($payload_item);
 
-		$payload_item_k = 0;
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
-			$payload_item = $payload_items[$payload_item_k];
+            $payload_item = null;
+            foreach ($payload_items as &$payload_item) {
+                if ( $payload_item['item_id'] == $k) {break;}
+            }
+
 			$tax_rates = WC_Tax::get_rates();
 			$tax_rate_id =  array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'))];
 			$item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'];
@@ -941,7 +945,6 @@ function EAScompliance_redirect_confirm() {
 			$item['EAScompliance VAT'] =  $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance ITEM'] = $payload_item;
             $item['EAScompliance SET'] = true;
-			++$payload_item_k;
 		}
 
 //        throw new Exception('debug');
@@ -1493,19 +1496,30 @@ function woocommerce_shipping_packages( $packages) {
 			return $packages;
 		}
 
+		global $woocommerce;
+
         // Sometimes we get here when chosen_shipping_methods are empty. If this happens, we reset calculation
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
         if ( !is_array($chosen_shipping_methods) ) {
             logger()->info('Chosen shipping method must not be empty! Resetting EASCompliance');
-            global $woocommerce;
 			foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 				$item['EAScompliance SET'] = false;
 			}
 			$woocommerce->cart->set_session();
 			return $packages;
         }
+
 		foreach ($packages as $px=>&$p ) {
 			$cart_item0 = $p['contents'][array_key_first2($p['contents'])];
+
+			//Sometimes we get here when first item was removed. If this happens, we reset calculation
+			if ( array_get( $cart_item0, 'EAScompliance DELIVERY CHARGE', null ) === null ) {
+				foreach ($woocommerce->cart->cart_contents as $k => &$item) {
+					$item['EAScompliance SET'] = false;
+				}
+				$woocommerce->cart->set_session();
+				return $packages;
+			}
 			foreach ($chosen_shipping_methods as $sx=>$shm) {
 				if (array_key_exists($shm, $packages[$px]['rates'])) {
 					 $packages[$px]['rates'][$shm]->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']);
