@@ -7,7 +7,7 @@
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
  * Developer URI: https://easproject.com/about-us/
- * Version: 1.1.5
+ * Version: 1.1.6
  *
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
@@ -566,18 +566,31 @@ function make_eas_api_request_json() {
 		];
 	}
 
+    // logger()->debug('$items before discount '.print_r($items, true));
 	// split cart discount proportionally between items
-	$discount = $cart->get_discount_total();
-	$total_price = 0;
+    // making and solving equation to get new item price
+	$d = $cart->get_discount_total(); // discount d
+	$T = 0; // cart total  T = p1*q1 + p2*q2
+    $Q = 0; // total quantity Q = q1 + q2
 	foreach ($items as $item) {
-		$total_price += $item['quantity'] * $item['cost_provided_by_em'];
+		$T += $item['quantity'] * $item['cost_provided_by_em'];
+        $Q += $item['quantity'];
 	}
-	if ( $discount > 0 && $total_price > 0 ) {
+
+	if ( $d > 0 && $T > 0 ) { // only process if discount and total are positive
 		foreach ($items as &$item) {
-			$item['cost_provided_by_em'] = $item['cost_provided_by_em'] - $discount * $item['quantity'] * $item['cost_provided_by_em'] / $total_price;
+            $q1 = $item['quantity'];
+            $p1 = $item['cost_provided_by_em'];
+
+			//Equation: cart total is sum of price*qnty of each item, new price*qnty relates to original price*qnty same as p*q of first item relates to p*q of others
+			// p1 * q1 + p2 * q2 = T
+			// x1 * q1 + x2 * q2 = T - d
+			// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )
+			$item['cost_provided_by_em'] = ($T - $d) / ( $q1 + ($Q - $q1) * ( $T - $p1 * $q1 ) / ( $p1 * $q1 ) );
 		}
 	}
 	$calc_jreq['order_breakdown'] = $items;
+	// logger()->debug('$items after discount '.print_r($items, true));
 
 	return $calc_jreq;
 }
@@ -914,19 +927,17 @@ function EAScompliance_redirect_confirm() {
         
         // calculate cart_total that should later match cart_total()
 		// when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat 
-        $cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'] - $discount;
+        $cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'];
 		$margin = $cart_total - $payload_j['total_order_amount'];
-		if ( 0 < abs($margin) && abs($margin) < 0.10 ) {
+        // logger()->debug('$cart_total is '.$cart_total.'  payload total_order_amount '.$payload_j['total_order_amount']);
+		if ( 0 < abs($margin) && abs($margin) < 0.10 ) { //only process when there is margin and is small
             logger()->info("adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin" );
 			$most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
 
             $total_price -= $margin;
 		}
 
-        unset($payload_item);
-
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
-            $payload_item = null;
             foreach ($payload_items as &$payload_item) {
                 if ( $payload_item['item_id'] == $k) {break;}
             }
@@ -1161,7 +1172,7 @@ function cart_total() {
 
 		// check that payload total_order_amount equals Order total
 		if ( $payload_total_order_amount != $total ) {
-			log_exception(new Exception(format(__( 'payload total_order_amount $a not equal order total $b', PLUGIN_DOMAIN)
+			log_exception(new Exception(format(__( '$payload_total_order_amount $a not equal order total $b', PLUGIN_DOMAIN)
 				, array('a'=>$payload_total_order_amount, 'b'=>$total)) ));
 			logger()->debug(print_r($payload, true));
 		}
