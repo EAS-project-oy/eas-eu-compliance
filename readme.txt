@@ -2,9 +2,10 @@
 Contributors: eascompliance
 Tags: UE VAT comliance solution, VAT return management, EU VAT fiscal reporting, full landed cost calculation including VAT rates and Customs duties rates based on harmonized system codes retrieved via AI
 Requires at least: 4.8.0
-Requires PHP: 5.2.4
+Requires PHP: 5.6
 Tested up to: 5.9.1
 Stable tag: 1.2.0
+
 
 EAS solution automates the complicated EU VAT and customs compliance. With the full automation you can focus on the important - sales.
  

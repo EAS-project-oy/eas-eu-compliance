@@ -11,7 +11,8 @@
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
-  */
+ * Requires PHP: 5.6
+ */
 
 
 const PLUGIN_NAME = 'EAS EU compliance';
