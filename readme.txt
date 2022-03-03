@@ -1,6 +1,6 @@
 ===  EAS EU compliance  ===
 Contributors: eascompliance
-Tags: UE VAT comliance solution, VAT return management, EU VAT fiscal reporting, full landed cost calculation including VAT rates and Customs duties rates based on harmonized system codes retrieved via AI
+Tags: EU VAT comliance solution, VAT return management, EU VAT fiscal reporting, full landed cost calculation, Customs duties calculation, HS6 code AI assigning 
 Requires at least: 4.8.0
 Requires PHP: 5.6
 Tested up to: 5.9.1
