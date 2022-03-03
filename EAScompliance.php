@@ -15,16 +15,16 @@
  */
 
 
-const EASCOMPLIANCE_PLUGIN_NAME = 'EAS EU compliance';
+define('EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance');
 
-const EASCOMPLIANCE_PLUGIN_DOMAIN = 'eascompliance';
+define('EASCOMPLIANCE_PLUGIN_DOMAIN', 'eascompliance');
 
-const EASCOMPLIANCE_TAX_RATE_NAME = 'Taxes & Duties';
+define('EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties');
 
-const EASCOMPLIANCE_DEVELOP = false;
+define('EASCOMPLIANCE_DEVELOP', false);
 
 //The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier
-const JSON_THROW_ON_ERROR2 = 4194304;
+define('JSON_THROW_ON_ERROR2', 4194304);
 
 
 //// translation
@@ -658,7 +658,7 @@ function EAScompliance_ajaxhandler() {
 
 		$calc_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
-        class StandardCheckoutException extends Exception { };
+        class EAScomplianceStandardCheckoutException extends Exception { };
 		$jres = array('status'=>'unknown', 'message'=>'no message');
 
 		if ( '200' != $calc_status ) {
@@ -695,7 +695,7 @@ function EAScompliance_ajaxhandler() {
 					foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 						$item['EAScompliance STANDARD_CHECKOUT'] = true;
 					}
-                    throw new StandardCheckoutException($calc_error['message']);
+                    throw new EAScomplianceStandardCheckoutException($calc_error['message']);
                 }
 				$error_message = $calc_error['code'];
 			}
@@ -734,12 +734,12 @@ function EAScompliance_ajaxhandler() {
 		$jres['message'] = 'CALC response successful';
 		$jres['CALC response'] = $calc_response;
 	}
-    catch (StandardCheckoutException $ex) {
+    catch (EAScomplianceStandardCheckoutException $ex) {
 		$jres['status'] = 'ok';
         $jres['message'] = $ex->getMessage();
         $jres['CALC response'] = 'STANDARD_CHECKOUT';
 
-        //this line saves cart here, but does not save before StandardCheckoutException thrown. Why?
+        //this line saves cart here, but does not save before EAScomplianceStandardCheckoutException thrown. Why?
 		WC()->cart->set_session();
     }
     catch (Exception $ex) {
