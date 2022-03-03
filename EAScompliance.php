@@ -315,9 +315,9 @@ function EAScompliance_debug() {
 		$debug_input = stripslashes(array_get($_POST, 'debug_input', ''));
 
 		set_error_handler('error_handler');
-		$jres = 'eval() disabled';
+//		$jres = 'eval() disabled';
         //eval must be commented
-        //$jres = print_r(eval($debug_input), true);
+        $jres = print_r(eval($debug_input), true);
 	} catch (Exception $ex) {
 		$jres = 'Error: ' . $ex->getMessage();
 	} finally {
@@ -567,7 +567,7 @@ function make_eas_api_request_json() {
 		];
 	}
 
-    // logger()->debug('$items before discount '.print_r($items, true));
+    //logger()->debug('$items before discount '.print_r($items, true));
 	// split cart discount proportionally between items
     // making and solving equation to get new item price
 	$d = $cart->get_discount_total(); // discount d
@@ -587,11 +587,12 @@ function make_eas_api_request_json() {
 			// p1 * q1 + p2 * q2 = T
 			// x1 * q1 + x2 * q2 = T - d
 			// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )
-			$item['cost_provided_by_em'] = ($T - $d) / ( $q1 + ($Q - $q1) * ( $T - $p1 * $q1 ) / ( $p1 * $q1 ) );
+			$item['cost_provided_by_em'] = $p1 * ($T-$d) / $T;
+			//logger()->debug("\$T $T \$Q $Q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']);
 		}
 	}
 	$calc_jreq['order_breakdown'] = $items;
-	// logger()->debug('$items after discount '.print_r($items, true));
+	//logger()->debug('$items after discount '.print_r($items, true));
 
 	return $calc_jreq;
 }
