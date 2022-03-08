@@ -7,7 +7,7 @@
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
  * Developer URI: https://easproject.com/about-us/
- * Version: 1.2.0
+ * Version: 1.2.1
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
@@ -943,8 +943,11 @@ function EAScompliance_redirect_confirm() {
 		}
 
 		foreach ($woocommerce->cart->cart_contents as $k => &$item) {
+            $sku = wc_get_product($item['product_id'])->get_sku();
             foreach ($payload_items as &$payload_item) {
                 if ( $payload_item['item_id'] == $k) {break;}
+                // $payload_item['item_id'] is sku when it is available in product
+                if ( $payload_item['item_id'] == $sku) {break;}
             }
 
 			$tax_rates = WC_Tax::get_rates();
