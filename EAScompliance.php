@@ -7,7 +7,7 @@
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
  * Developer URI: https://easproject.com/about-us/
- * Version: 1.2.2
+ * Version: 1.2.3
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
@@ -302,33 +302,33 @@ function EAScompliance_woocommerce_review_order_before_payment() {
     }
 }
 
-//// Debug Console
-if (EAScompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
-	add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
-	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
-};
-function EAScompliance_debug() {
-	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
-
-	try {
-		if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
-			throw new Exception('Security check');
-		}
-
-		$debug_input = stripslashes(EAScompliance_array_get($_POST, 'debug_input', ''));
-
-		set_error_handler('EAScompliance_error_handler');
-//		$jres = 'eval() disabled';
-        //eval must be commented
-        $jres = print_r(eval($debug_input), true);
-	} catch (Exception $ex) {
-		$jres = 'Error: ' . $ex->getMessage();
-	} finally {
-		restore_error_handler();
-		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-	}
-
-};
+////// Debug Console
+//if (EAScompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
+//	add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
+//	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
+//};
+//function EAScompliance_debug() {
+//	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
+//
+//	try {
+//		if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
+//			throw new Exception('Security check');
+//		}
+//
+//		$debug_input = stripslashes(EAScompliance_array_get($_POST, 'debug_input', ''));
+//
+//		set_error_handler('EAScompliance_error_handler');
+//		//$jres = 'eval() disabled';
+//        //eval must be commented
+//        $jres = print_r(eval($debug_input), true);
+//	} catch (Exception $ex) {
+//		$jres = 'Error: ' . $ex->getMessage();
+//	} finally {
+//		restore_error_handler();
+//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+//	}
+//
+//};
 
 
 
