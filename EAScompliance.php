@@ -466,6 +466,14 @@ function EAScompliance_make_eas_api_request_json() {
 		throw new Exception( __('Security check', EASCOMPLIANCE_PLUGIN_DOMAIN) );
 	};
 	$checkout = $_POST;
+    // sanitize text fields
+    $sanitize_fields = preg_split('/\s/', 'shipping_country shipping_state shipping_company shipping_first_name shipping_last_name shipping_address_1 shipping_address_2 shipping_city shipping_postcode shipping_phone billing_country billing_state billing_company billing_first_name billing_last_name billing_address_1 billing_address_2 billing_city billing_postcode billing_phone');
+    foreach ($sanitize_fields as $sf) {
+        if (array_key_exists($sf, $checkout)) {
+            $checkout[$sf] = sanitize_text_field($checkout[$sf]);
+        }
+    }
+
 	$cart = WC()->cart;
 
 	if (array_key_exists('request', $_POST)) {
@@ -478,7 +486,9 @@ function EAScompliance_make_eas_api_request_json() {
 		$query = $jreq['form_data'];
 		foreach (explode('&', $query) as $chunk) {
 			$param = explode('=', $chunk);
-			$checkout[urldecode($param[0])] = urldecode($param[1]);
+            $k = sanitize_key(urldecode($param[0]));
+            $v= sanitize_text_field(urldecode($param[1]));
+			$checkout[$k] = $v;
 		}
 
 		$jdebug['step'] = 'save checkout form data into cart';
@@ -779,7 +789,7 @@ function EAScompliance_redirect_confirm() {
 		global $woocommerce;
 		$cart = WC()->cart;
 
-		$confirm_hash = json_decode(base64_decode(strval(EAScompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
+		$confirm_hash = json_decode(base64_decode(sanitize_mime_type(EAScompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
 		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
 			throw new Exception(__( 'Security check', EASCOMPLIANCE_PLUGIN_DOMAIN));
 		};
@@ -1578,8 +1588,8 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 		};
 
 		//only work for European countries
-		$delivery_country = EAScompliance_array_get($_POST, 'shipping_country', EAScompliance_array_get($_POST, 'billing_country', 'XX'));
-		$ship_to_different_address = EAScompliance_array_get($_POST, 'ship_to_different_address', false);
+		$delivery_country = sanitize_text_field(EAScompliance_array_get($_POST, 'shipping_country', sanitize_text_field(EAScompliance_array_get($_POST, 'billing_country', 'XX'))));
+		$ship_to_different_address = sanitize_text_field(EAScompliance_array_get($_POST, 'ship_to_different_address', ''));
 		if ( !( 'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
 			$delivery_country = EAScompliance_array_get($_POST, 'billing_country', 'XX');
 		}
