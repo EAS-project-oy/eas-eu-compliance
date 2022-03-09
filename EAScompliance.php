@@ -7,7 +7,7 @@
  * Author URI: https://easproject.com/about-us/
  * Developer: EAS project
  * Developer URI: https://easproject.com/about-us/
- * Version: 1.2.1
+ * Version: 1.2.2
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
