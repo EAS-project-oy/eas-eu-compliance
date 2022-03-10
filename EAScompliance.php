@@ -5,8 +5,7 @@
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
- * Developer: EAS project
- * Developer URI: https://easproject.com/about-us/
+ * Text Domain: eas-eu-compliance
  * Version: 1.2.4
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
