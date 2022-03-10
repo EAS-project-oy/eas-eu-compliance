@@ -1539,10 +1539,12 @@ function EAScompliance_woocommerce_shipping_packages( $packages) {
         }
 
 		foreach ($packages as $px=>&$p ) {
-			$cart_item0 = $p['contents'][EAScompliance_array_key_first2($p['contents'])];
+			$k0 = EAScompliance_array_key_first2 ($woocommerce->cart->cart_contents);
+			$cart_item0 = $woocommerce->cart->cart_contents[$k0];
 
 			//Sometimes we get here when first item was removed. If this happens, we reset calculation
 			if ( EAScompliance_array_get( $cart_item0, 'EAScompliance DELIVERY CHARGE', null ) === null ) {
+				EAScompliance_logger()->info('EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance');
 				foreach ($woocommerce->cart->cart_contents as $k => &$item) {
 					$item['EAScompliance SET'] = false;
 				}
