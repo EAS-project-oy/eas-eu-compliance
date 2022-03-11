@@ -1,5 +1,10 @@
 *** EAS EU compiance plugin Changelog ***
-2022-01-31 - version 1.2.0
+2022-03-10 - version 1.2.4
+* SKU identification issue fixed
+* Code review for sanitizing input and output values
+* Bug fexed with TBE management
+
+2022-02-20 - version 1.2.0
 * Refund functionality implemented
 * Cupons and points and rewards support implemented
 * Some minor issues were fixed

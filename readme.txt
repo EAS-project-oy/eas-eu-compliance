@@ -4,7 +4,7 @@ Tags: EU VAT comliance solution, VAT return management, EU VAT fiscal reporting,
 Requires at least: 4.8.0
 Requires PHP: 5.6
 Tested up to: 5.9.1
-Stable tag: 1.2.0
+Stable tag: 1.2.4
 
 
 EAS solution automates the complicated EU VAT and customs compliance. With the full automation you can focus on the important - sales.
@@ -50,27 +50,3 @@ Follow instuctions from our github repo https://github.com/EAS-project-oy/eas-eu
 
 
 
-== Changelog ==
-
-= 2022-03-08 - version 1.2.1 =
-* SKU identification issue fixed
-
-= 2022-02-20 - version 1.2.0 =
-* Refund functionality implemented
-* Cupons and points and rewards support implemented
-* Some minor issues were fixed
-* Rounding issue for total order amount fixed
-
-= 2022-01-31 - version 1.1.3 =
-* Multiligaul support inplemented
-* Suomi translation added
-* Delivery methods management enhanced
-* Some minor bugs were fixed
-* Fixed issue with custom theme support
-* Impelmeneted support of renaming buttons of plugin
-
-= 2021-09-29 - version 1.0.5 =
-* Code review according to Woocommerce stadard requirements
-
-= 2021-09-10 - version 1.0.0 =
-* Initial release

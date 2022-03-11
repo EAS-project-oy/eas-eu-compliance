@@ -1,6 +1,5 @@
 <?php
-
-/*
+/**
  * Plugin Name: EAS EU compliance
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
@@ -11,7 +10,7 @@
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
  * Requires PHP: 5.6
- */
+ **/
 
 
 define('EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance');
@@ -240,6 +239,8 @@ function EAScompliance_settings_scripts() {
 if (EAScompliance_is_active()) {
 	add_action( 'woocommerce_review_order_before_payment', 'EAScompliance_woocommerce_review_order_before_payment');
 }
+
+
 function EAScompliance_woocommerce_review_order_before_payment() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -300,35 +301,6 @@ function EAScompliance_woocommerce_review_order_before_payment() {
         EAScompliance_set_locale(true);
     }
 }
-
-////// Debug Console
-//if (EAScompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
-//	add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
-//	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
-//};
-//function EAScompliance_debug() {
-//	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
-//
-//	try {
-//		if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
-//			throw new Exception('Security check');
-//		}
-//
-//		$debug_input = stripslashes(EAScompliance_array_get($_POST, 'debug_input', ''));
-//
-//		set_error_handler('EAScompliance_error_handler');
-//		//$jres = 'eval() disabled';
-//        //eval must be commented
-//        $jres = print_r(eval($debug_input), true);
-//	} catch (Exception $ex) {
-//		$jres = 'Error: ' . $ex->getMessage();
-//	} finally {
-//		restore_error_handler();
-//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-//	}
-//
-//};
-
 
 
 function EAScompliance_get_oauth_token() {
