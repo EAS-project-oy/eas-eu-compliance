@@ -1,31 +1,33 @@
 <?php
-/**
+
+/*
  * Plugin Name: EAS EU compliance
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
- * Text Domain: eas-eu-compliance
+ * Developer: EAS project
+ * Developer URI: https://easproject.com/about-us/
  * Version: 1.2.4
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
  * Requires PHP: 5.6
- **/
+ */
 
 
 define('EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance');
-
-define('EASCOMPLIANCE_PLUGIN_DOMAIN', 'eascompliance');
 
 define('EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties');
 
 define('EASCOMPLIANCE_DEVELOP', false);
 
-//The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier
+//The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier.
 define('JSON_THROW_ON_ERROR2', 4194304);
 
 
-//// translation
+/**
+ * Sets and resets current locale for translation
+ * */
 function EAScompliance_set_locale(bool $reset = false) {
     static $current_locale = '';
     if ($current_locale == '') {
@@ -42,16 +44,20 @@ function EAScompliance_set_locale(bool $reset = false) {
     else if ($plugin_lang == 'FI') {
         switch_to_locale('fi');
     }
-    load_plugin_textdomain( EASCOMPLIANCE_PLUGIN_DOMAIN, false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+    load_plugin_textdomain( 'EASCOMPLIANCEPLUGINDOMAIN', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 }
 
 
-// Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
+/**
+ * Prevent Data Leaks: https://docs.woocommerce.com/document/create-a-plugin/
+ * */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-// change error messages into ErrorException for this script
+/**
+ * Change error messages into ErrorException
+ * */
 function EAScompliance_error_handler( $severity, $message, $file, $line) {
 	throw new ErrorException($message, 0, $severity, $file, $line);
 }
@@ -59,7 +65,9 @@ set_error_handler('EAScompliance_error_handler');
 
 const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE');
 
-//custom logger for Settings->WooCommerce->Status->Logs->eascompliance-* log files
+/**
+ * Custom logger for Settings->WooCommerce->Status->Logs->eascompliance-* log files
+ */
 function EAScompliance_logger() {
 
 	static $l = null;
@@ -69,7 +77,7 @@ function EAScompliance_logger() {
 
 	class EASLogHandler extends WC_Log_Handler_File {
 		public function handle( $timestamp, $level, $message, $context ) {
-			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>EASCOMPLIANCE_PLUGIN_DOMAIN));
+			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>'EASCOMPLIANCEPLUGINDOMAIN'));
 		}
 	}
 	$handlers = array(new EASLogHandler());
@@ -78,6 +86,9 @@ function EAScompliance_logger() {
 	return $l;
 }
 
+/**
+ * Log exception
+ */
 function EAScompliance_log_exception( Exception $ex) {
 	$txt = '';
 	while (true) {
@@ -92,11 +103,14 @@ function EAScompliance_log_exception( Exception $ex) {
 	EAScompliance_logger()->error($txt);
 }
 
+/**
+ * Get tax rate id
+ */
 function EAScompliance_tax_rate_id() {
 		global $wpdb;
 		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
         if (count($tax_rates) == 0) {
-            throw new Exception( __('No tax rate found, please check plugin settings', EASCOMPLIANCE_PLUGIN_DOMAIN) );
+            throw new Exception( __('No tax rate found, please check plugin settings', 'EASCOMPLIANCEPLUGINDOMAIN') );
         }
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
         return $tax_rate_id0;
@@ -105,6 +119,10 @@ function EAScompliance_tax_rate_id() {
 if (EAScompliance_is_active()) {
     add_filter('woocommerce_cart_tax_totals', 'EAScompliance_woocommerce_cart_tax_totals', 10, 2 );
 }
+
+/**
+ * Filter for woocommerce_cart_tax_totals
+ */
 function EAScompliance_woocommerce_cart_tax_totals($tax_totals, $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -115,7 +133,7 @@ function EAScompliance_woocommerce_cart_tax_totals($tax_totals, $order) {
         $tax_rate_id0 = EAScompliance_tax_rate_id();
         foreach ($tax_totals as $code=>&$tax) {
             if ($tax->tax_rate_id == $tax_rate_id0) {
-                $tax->label = __('Taxes & Duties', EASCOMPLIANCE_PLUGIN_DOMAIN);
+                $tax->label = __('Taxes & Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
             }
         }
 
@@ -135,6 +153,9 @@ function EAScompliance_woocommerce_cart_tax_totals($tax_totals, $order) {
 if (EAScompliance_is_active()) {
     add_filter('woocommerce_order_get_tax_totals', 'EAScompliance_woocommerce_order_get_tax_totals', 10, 2);
 }
+/**
+ * Filter for woocommerce_order_get_tax_totals
+ */
 function EAScompliance_woocommerce_order_get_tax_totals ( $tax_totals, $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -145,7 +166,7 @@ function EAScompliance_woocommerce_order_get_tax_totals ( $tax_totals, $order) {
         $tax_rate_id0 = EAScompliance_tax_rate_id();
         foreach ($tax_totals as $code=>&$tax) {
             if ($tax->rate_id == $tax_rate_id0) {
-                $tax->label = __('Taxes & Duties', EASCOMPLIANCE_PLUGIN_DOMAIN);
+                $tax->label = __('Taxes & Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
             }
         }
 
@@ -162,7 +183,9 @@ function EAScompliance_woocommerce_order_get_tax_totals ( $tax_totals, $order) {
 }
 
 
-// gets woocommerce settings when woocommerce_settings_get_option is undefined
+/**
+ * Get woocommerce settings when woocommerce_settings_get_option is undefined
+ */
 function EAScompliance_woocommerce_settings_get_option_sql( $option) {
 	global $wpdb;
 	$res =  $wpdb->get_results($wpdb->prepare("
@@ -174,10 +197,16 @@ function EAScompliance_woocommerce_settings_get_option_sql( $option) {
 	return $res[0]['option_value'];
 }
 
+/**
+ * Return debug setting
+ */
 function EAScompliance_is_debug() {
 	return EAScompliance_woocommerce_settings_get_option_sql('easproj_debug') === 'yes';
 }
 
+/**
+ * Return activa setting
+ */
 function EAScompliance_is_active() {
 	// deactivate if woocommerce is not enabled
 	if (!in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) )) {
@@ -192,6 +221,9 @@ function EAScompliance_is_active() {
 if (EAScompliance_is_active()) {
 	add_action('wp_enqueue_scripts', 'EAScompliance_javascript');
 }
+/**
+ * Browser client scripts
+ */
 function EAScompliance_javascript() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -203,15 +235,15 @@ function EAScompliance_javascript() {
 
     EAScompliance_set_locale();
     wp_localize_script( 'EAScompliance', 'plugin_dictionary', array(
-              'error_required_billing_details' => __( 'Please check for required billing details. All fields marked as required should be filled.', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'error_required_shipping_details' => __( 'Please check for required shipping details. All fields marked as required should be filled.', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'calculating_taxes' => __( 'Calculating taxes and duties ...', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'taxes_added' => __( 'Customs taxes and duties added...', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'waiting_for_confirmation' => __( 'Waiting for Customs Duties Calculation and confirmation details', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'confirmation' => __( 'confirmation', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', EASCOMPLIANCE_PLUGIN_DOMAIN )
-            , 'standard_checkout' => __( 'Standard Checkout', EASCOMPLIANCE_PLUGIN_DOMAIN )
+              'error_required_billing_details' => __( 'Please check for required billing details. All fields marked as required should be filled.', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'error_required_shipping_details' => __( 'Please check for required shipping details. All fields marked as required should be filled.', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'calculating_taxes' => __( 'Calculating taxes and duties ...', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'taxes_added' => __( 'Customs taxes and duties added...', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'waiting_for_confirmation' => __( 'Waiting for Customs Duties Calculation and confirmation details', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'confirmation' => __( 'confirmation', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', 'EASCOMPLIANCEPLUGINDOMAIN' )
+            , 'standard_checkout' => __( 'Standard Checkout', 'EASCOMPLIANCEPLUGINDOMAIN' )
     ) );
 
 	// Pass ajax_url to javascript
@@ -219,7 +251,9 @@ function EAScompliance_javascript() {
     EAScompliance_set_locale(true);
 };
 
-//// adding custom javascript file
+/**
+ * Browser admin client scripts
+ */
 if (EAScompliance_is_active()) {
 	add_action('admin_enqueue_scripts', 'EAScompliance_settings_scripts');
 }
@@ -235,12 +269,12 @@ function EAScompliance_settings_scripts() {
 
 
 
-//// Checkout -> Before 'Proceed Order' Hook
 if (EAScompliance_is_active()) {
 	add_action( 'woocommerce_review_order_before_payment', 'EAScompliance_woocommerce_review_order_before_payment');
 }
-
-
+/**
+ *  Checkout -> Before 'Proceed Order' Hook
+ */
 function EAScompliance_woocommerce_review_order_before_payment() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -259,14 +293,14 @@ function EAScompliance_woocommerce_review_order_before_payment() {
         $nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
         $nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
 
-        $translation_file = dirname( __FILE__ ) . '/languages/' . EASCOMPLIANCE_PLUGIN_DOMAIN . '-' . get_locale() . '.po';
+        $translation_file = dirname( __FILE__ ) . '/languages/' . 'EASCOMPLIANCEPLUGINDOMAIN' . '-' . get_locale() . '.po';
         EAScompliance_logger()->debug(EAScompliance_format('Locale: $locale, Plugin language: $plugin, Textdomain file: $file, Exist: $exist', array(
                 'locale'=>get_locale(),
                 'plugin'=>EAScompliance_woocommerce_settings_get_option_sql('easproj_language'),
                 'file'=>$translation_file,
                 'exist'=>file_exists($translation_file) ? 'yes' : 'no'
         )));
-        $button_name = __('Calculate Taxes and Duties', EASCOMPLIANCE_PLUGIN_DOMAIN);
+        $button_name = __('Calculate Taxes and Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
 
 
         $status = EAScompliance_is_set() ? 'present' : 'not present';
@@ -302,7 +336,42 @@ function EAScompliance_woocommerce_review_order_before_payment() {
     }
 }
 
+/*
 
+//// Debug Console
+if (EAScompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
+	add_action('wp_ajax_EAScompliance_debug', 'EAScompliance_debug');
+	add_action('wp_ajax_nopriv_EAScompliance_debug', 'EAScompliance_debug');
+};
+function EAScompliance_debug() {
+	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
+
+	try {
+		if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_debug', '')), 'EAScompliance_nonce_debug' )) {
+			throw new Exception('Security check');
+		}
+
+		$debug_input = stripslashes(EAScompliance_array_get($_POST, 'debug_input', ''));
+
+		set_error_handler('EAScompliance_error_handler');
+		//$jres = 'eval() disabled';
+        //eval must be commented
+        $jres = print_r(eval($debug_input), true);
+	} catch (Exception $ex) {
+		$jres = 'Error: ' . $ex->getMessage();
+	} finally {
+		restore_error_handler();
+		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+	}
+
+};
+
+*/
+
+
+/**
+ * Get OAUTH token
+ */
 function EAScompliance_get_oauth_token() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -352,7 +421,7 @@ function EAScompliance_get_oauth_token() {
 				ob_end_clean();
 				$jdebug['allow_url_fopen'] = ini_get('allow_url_fopen');
 			}
-			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', EASCOMPLIANCE_PLUGIN_DOMAIN));
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'EASCOMPLIANCEPLUGINDOMAIN'));
 		}
 
 		$auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
@@ -360,12 +429,12 @@ function EAScompliance_get_oauth_token() {
 		// response not OK
 		if ('200' != $auth_response_status) {
 			EAScompliance_logger()->error('Auth response not OK: ' . $auth_response);
-			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', EASCOMPLIANCE_PLUGIN_DOMAIN));
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'EASCOMPLIANCEPLUGINDOMAIN'));
 		}
 
 		// response OK, but authentication failed with code 200 and empty response for any reason
 		if ('' === $auth_response) {
-			throw new Exception(__('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', EASCOMPLIANCE_PLUGIN_DOMAIN));
+			throw new Exception(__('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', 'EASCOMPLIANCEPLUGINDOMAIN'));
 		}
 
 		$jdebug['step'] = 'decode AUTH token';
@@ -387,7 +456,9 @@ function EAScompliance_get_oauth_token() {
     }
 }
 
-
+/**
+ * Make JSON for API /calculate request
+ */
 function EAScompliance_make_eas_api_request_json() {
 	$jdebug = array();
 
@@ -434,7 +505,7 @@ function EAScompliance_make_eas_api_request_json() {
 	$jdebug['step'] = 'Fill json request with checkout data';
 
 	if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
-		throw new Exception( __('Security check', EASCOMPLIANCE_PLUGIN_DOMAIN) );
+		throw new Exception( __('Security check', 'EASCOMPLIANCEPLUGINDOMAIN') );
 	};
 	$checkout = $_POST;
     // sanitize text fields
@@ -581,14 +652,17 @@ function EAScompliance_make_eas_api_request_json() {
 	return $calc_jreq;
 }
 
-//// Customs Duties Calculation
-/// This handler is called when user clicks 'Calculate Taxes button on Checkout page'
-/// It makes request to EAS server with checkout details and redirects user to EAS Confirmation Page
-///  unless STANDARD_CHECKOUT is returned. In which case Checkout proceeds without confirmation
+
 if (EAScompliance_is_active()) {
 	add_action('wp_ajax_EAScompliance_ajaxhandler', 'EAScompliance_ajaxhandler');
 	add_action('wp_ajax_nopriv_EAScompliance_ajaxhandler', 'EAScompliance_ajaxhandler');
 }
+/**
+ * Customs Duties Calculation
+ * This handler is called when user clicks 'Calculate Taxes button on Checkout page'
+ * It makes request to EAS server with checkout details and redirects user to EAS Confirmation Page
+ * unless STANDARD_CHECKOUT is returned. In which case Checkout proceeds without confirmation
+ */
 function EAScompliance_ajaxhandler() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -646,25 +720,25 @@ function EAScompliance_ajaxhandler() {
 			$jdebug['CALC response headers'] = $http_response_header;
 			$jdebug['CALC response status'] = $calc_status;
 			$error_message = $http_response_header[0];
-			//// parse error json and extract detailed error message
-			//$sample_calc_error = '
-			// {
-			//  "message": "Cannot determine originating country for goods item",
-			//  "code": 400,
-			//  "type": "ERR_INCOMPLETE_DATA",
-			//  "data": {
-			//    "field": "originating_country",
-			//    "message": "Valid originating country is required for goods item"
-			//  },
-			//  "retryable": false,
-			//  "nodeID": "eas-calculation-949969dd4-j7qfr-17"
-			// }';
-			//$sample_calc_error = '
-			// {
-			//  errors: {
-			//    delivery_email: The \'delivery_email\' field must not be empty.
-			//  }
-			// }';
+			/* parse error json and extract detailed error message
+                $sample_calc_error = '
+                 {
+                  "message": "Cannot determine originating country for goods item",
+                  "code": 400,
+                  "type": "ERR_INCOMPLETE_DATA",
+                  "data": {
+                    "field": "originating_country",
+                    "message": "Valid originating country is required for goods item"
+                  },
+                  "retryable": false,
+                  "nodeID": "eas-calculation-949969dd4-j7qfr-17"
+                 }';
+                $sample_calc_error = '
+                 {
+                  errors: {
+                    delivery_email: The \'delivery_email\' field must not be empty.
+                  }
+                 }';*/
 			$calc_error = json_decode($calc_body, true);
 			if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
 
@@ -743,11 +817,13 @@ function EAScompliance_ajaxhandler() {
 };
 
 
-//// Handle redirect URI confirmation
 if (EAScompliance_is_active()) {
 	add_action('wp_ajax_EAScompliance_redirect_confirm', 'EAScompliance_redirect_confirm');
 	add_action('wp_ajax_nopriv_EAScompliance_redirect_confirm', 'EAScompliance_redirect_confirm');
 }
+/**
+ * Handle redirect URI confirmation
+ */
 function EAScompliance_redirect_confirm() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -762,7 +838,7 @@ function EAScompliance_redirect_confirm() {
 
 		$confirm_hash = json_decode(base64_decode(sanitize_mime_type(EAScompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
 		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
-			throw new Exception(__( 'Security check', EASCOMPLIANCE_PLUGIN_DOMAIN));
+			throw new Exception(__( 'Security check', 'EASCOMPLIANCEPLUGINDOMAIN'));
 		};
 
 		if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -817,77 +893,78 @@ function EAScompliance_redirect_confirm() {
 		$jdebug['step'] = 'decode payload json';
 		$payload_j = json_decode($jwt_payload, true);
 		$jdebug['$payload_j'] = $payload_j;
-
-		// Sample $payload_j json:
-		//{
-		//  "delivery_charge_vat": 27.36,
-		//  "merchandise_cost_vat_excl": 3100,
-		//  "merchandise_cost": 3100,  // sum of items cost without VAT AND eas_fee
-		//  "delivery_charge": 100,  // delivery charge without VAT
-		//  "delivery_charge_vat_excl": 100,
-		//  "delivery_country": "FI",
-		//  "payment_currency": "EUR",
-		//  "merchandise_vat": 754.08,
-		//  "eas_fee_vat": 13.34,
-		//  "total_order_amount": 4106.38,
-		//  "total_customs_duties": 61.6,
-		//  "eas_fee": 50,  // EAS Fee + DPO Fee
-		//  "delivery_address": null,
-		//  "order_id": "TOEKN TEST2",
-		//  "items": [
-		//    {
-		//      "item_id": "3",
-		//      "quantity": 2,
-		//      "unit_cost": 1200,
-		//      "unit_cost_excl_vat": 1200,
-		//      "item_delivery_charge": 0,
-		//      "item_delivery_charge_vat_excl": 0,
-		//      "item_delivery_charge_vat": 0,
-		//      "item_customs_duties": 0,
-		//      "item_eas_fee": 0,
-		//      "item_eas_fee_vat": 0,
-		//      "vat_rate": 24,
-		//      "item_duties_and_taxes": 576
-		//    },
-		//    {
-		//      "item_id": "9",
-		//      "quantity": 1,
-		//      "unit_cost": 400,
-		//      "unit_cost_excl_vat": 400,
-		//      "item_delivery_charge": 0,
-		//      "item_delivery_charge_vat_excl": 0,
-		//      "item_delivery_charge_vat": 0,
-		//      "item_customs_duties": 0,
-		//      "item_eas_fee": 0,
-		//      "item_eas_fee_vat": 0,
-		//      "vat_rate": 24,
-		//      "item_duties_and_taxes": 96
-		//    },
-		//    {
-		//      "item_id": "sHO",
-		//      "quantity": 2,
-		//      "unit_cost": 150,
-		//      "unit_cost_excl_vat": 150,
-		//      "item_delivery_charge": 0,
-		//      "item_delivery_charge_vat_excl": 100,
-		//      "item_delivery_charge_vat": 27.36,
-		//      "item_customs_duties": 61.6,
-		//      "item_eas_fee": 50,
-		//      "item_eas_fee_vat": 13.34,
-		//      "vat_rate": 24,
-		//      "item_duties_and_taxes": 245.33
-		//    }
-		//  ],
-		//  "taxes_and_duties": 856.38,
-		//  "id": 3541,
-		//  "timestamp_year": 2021,
-		//  "iat": 1637848021,
-		//  "exp": 4762050421,
-		//  "aud": "checkout_239",
-		//  "iss": "@eas/auth",
-		//  "sub": "checkout",
-		//  "jti": "d9896d02-4f50-4862-9aac-9387a16d98e1"
-		//}
+        
+        /* Sample $payload_j json:
+		{
+		  "delivery_charge_vat": 27.36,
+		  "merchandise_cost_vat_excl": 3100,
+		  "merchandise_cost": 3100,  // sum of items cost without VAT AND eas_fee
+		  "delivery_charge": 100,  // delivery charge without VAT
+		  "delivery_charge_vat_excl": 100,
+		  "delivery_country": "FI",
+		  "payment_currency": "EUR",
+		  "merchandise_vat": 754.08,
+		  "eas_fee_vat": 13.34,
+		  "total_order_amount": 4106.38,
+		  "total_customs_duties": 61.6,
+		  "eas_fee": 50,  // EAS Fee + DPO Fee
+		  "delivery_address": null,
+		  "order_id": "TOEKN TEST2",
+		  "items": [
+		    {
+		      "item_id": "3",
+		      "quantity": 2,
+		      "unit_cost": 1200,
+		      "unit_cost_excl_vat": 1200,
+		      "item_delivery_charge": 0,
+		      "item_delivery_charge_vat_excl": 0,
+		      "item_delivery_charge_vat": 0,
+		      "item_customs_duties": 0,
+		      "item_eas_fee": 0,
+		      "item_eas_fee_vat": 0,
+		      "vat_rate": 24,
+		      "item_duties_and_taxes": 576
+		    },
+		    {
+		      "item_id": "9",
+		      "quantity": 1,
+		      "unit_cost": 400,
+		      "unit_cost_excl_vat": 400,
+		      "item_delivery_charge": 0,
+		      "item_delivery_charge_vat_excl": 0,
+		      "item_delivery_charge_vat": 0,
+		      "item_customs_duties": 0,
+		      "item_eas_fee": 0,
+		      "item_eas_fee_vat": 0,
+		      "vat_rate": 24,
+		      "item_duties_and_taxes": 96
+		    },
+		    {
+		      "item_id": "sHO",
+		      "quantity": 2,
+		      "unit_cost": 150,
+		      "unit_cost_excl_vat": 150,
+		      "item_delivery_charge": 0,
+		      "item_delivery_charge_vat_excl": 100,
+		      "item_delivery_charge_vat": 27.36,
+		      "item_customs_duties": 61.6,
+		      "item_eas_fee": 50,
+		      "item_eas_fee_vat": 13.34,
+		      "vat_rate": 24,
+		      "item_duties_and_taxes": 245.33
+		    }
+		  ],
+		  "taxes_and_duties": 856.38,
+		  "id": 3541,
+		  "timestamp_year": 2021,
+		  "iat": 1637848021,
+		  "exp": 4762050421,
+		  "aud": "checkout_239",
+		  "iss": "@eas/auth",
+		  "sub": "checkout",
+		  "jti": "d9896d02-4f50-4862-9aac-9387a16d98e1"
+		}
+        */
 
 		$payload_items = $payload_j['items'];
 
@@ -986,7 +1063,9 @@ function EAScompliance_redirect_confirm() {
 	wp_safe_redirect( wc_get_checkout_url() );
 	exit();
 };
-
+/**
+ * Check if EAScompliance is set for every item in cart
+ */
 function EAScompliance_is_set() {
 	try {
 		set_error_handler('EAScompliance_error_handler');
@@ -1017,6 +1096,9 @@ function EAScompliance_is_set() {
 	}
 }
 
+/**
+ * Check if it is Standard Checkout scenario
+ */
 function EAScompliance_is_STANDARD_CHECKOUT() {
 	try {
 		set_error_handler('EAScompliance_error_handler');
@@ -1046,6 +1128,9 @@ function EAScompliance_is_STANDARD_CHECKOUT() {
 	}
 }
 
+/**
+ * CHeck if EAScompliance needs to  recalculate
+ */
 function EAScompliance_needs_recalculate() {
 	try {
 		set_error_handler('EAScompliance_error_handler');
@@ -1067,11 +1152,13 @@ function EAScompliance_needs_recalculate() {
 
 
 
-//// check needs_recalculate via ajax
 if (EAScompliance_is_active()) {
 	add_action('wp_ajax_EAScompliance_needs_recalculate_ajax', 'EAScompliance_needs_recalculate_ajax');
 	add_action('wp_ajax_nopriv_EAScompliance_needs_recalculate_ajax', 'EAScompliance_needs_recalculate_ajax');
-};
+}
+/**
+ * Check needs_recalculate via ajax
+ */
 function EAScompliance_needs_recalculate_ajax() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1089,10 +1176,12 @@ function EAScompliance_needs_recalculate_ajax() {
 	}
 };
 
-//// Replace order_item taxes with EAScompliance during order creation
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_checkout_create_order_tax_item', 'EAScompliance_woocommerce_checkout_create_order_tax_item', 10, 3);
 }
+/**
+ * Replace order_item taxes with EAScompliance during order creation
+ */
 function EAScompliance_woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1137,7 +1226,9 @@ function EAScompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 	}
 }
 
-
+/**
+ * Calculate cart total
+ */
 function EAScompliance_cart_total() {
 	$total = WC()->cart->get_total('edit');
 	if (EAScompliance_is_set()) {
@@ -1161,7 +1252,7 @@ function EAScompliance_cart_total() {
 
 		// check that payload total_order_amount equals Order total
 		if ( $payload_total_order_amount != $total ) {
-			EAScompliance_log_exception(new Exception(EAScompliance_format(__( '$payload_total_order_amount $a not equal order total $b', EASCOMPLIANCE_PLUGIN_DOMAIN)
+			EAScompliance_log_exception(new Exception(EAScompliance_format(__( '$payload_total_order_amount $a not equal order total $b', 'EASCOMPLIANCEPLUGINDOMAIN')
 				, array('a'=>$payload_total_order_amount, 'b'=>$total)) ));
 			EAScompliance_logger()->debug(print_r($payload, true));
 		}
@@ -1169,10 +1260,12 @@ function EAScompliance_cart_total() {
 	return $total;
 }
 
-// Order review Tax field
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_cart_get_taxes', 'EAScompliance_woocommerce_cart_get_taxes', 10);
 }
+/**
+ * Order review Tax field
+ */
 function EAScompliance_woocommerce_cart_get_taxes( $total_taxes) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1204,10 +1297,12 @@ function EAScompliance_woocommerce_cart_get_taxes( $total_taxes) {
 
 
 
-// Checkout Order review Item Subtotal
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_cart_item_subtotal', 'EAScompliance_woocommerce_cart_item_subtotal', 10, 3);
 }
+/**
+ * Checkout Order review Item Subtotal
+ */
 function EAScompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1228,10 +1323,12 @@ function EAScompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 }
 
 
-// Checkout Order review Cart Subtotal
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_cart_subtotal', 'EAScompliance_woocommerce_cart_subtotal', 10, 3);
 }
+/**
+ * Checkout Order review Cart Subtotal
+ */
 function EAScompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1258,10 +1355,12 @@ function EAScompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $ca
 }
 
 
-// Checkout Order review Total field
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_cart_totals_order_total_html', 'EAScompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
 }
+/**
+ * Checkout Order review Total field
+ */
 function EAScompliance_woocommerce_cart_totals_order_total_html2( $value) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1279,10 +1378,12 @@ function EAScompliance_woocommerce_cart_totals_order_total_html2( $value) {
 	}
 }
 
-//// Order Items
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_checkout_create_order_line_item', 'EAScompliance_woocommerce_checkout_create_order_line_item', 10, 4);
-};
+}
+/**
+ * Order Items creation wrapper
+ */
 function EAScompliance_woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1306,10 +1407,12 @@ function EAScompliance_woocommerce_checkout_create_order_line_item( $order_item_
 };
 
 
-// Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
 if (EAScompliance_is_active()) {
 	add_filter('option_woocommerce_klarna_payments_settings', 'EAScompliance_Klarna_settings_fix');
 }
+/**
+ * Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
+ */
 function EAScompliance_Klarna_settings_fix( $kp_settings) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1340,12 +1443,15 @@ function EAScompliance_Klarna_settings_fix( $kp_settings) {
 }
 
 
-// Fix tax_rate for Klarna plugin:
-// klarna-payments-for-woocommerce/classes/requests/helpers/class-kp-order-lines.php:158
-//  'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
+
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_cart_totals_get_item_tax_rates', 'EAScompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
 }
+/**
+ *  Fix tax_rate for Klarna plugin:
+ *  klarna-payments-for-woocommerceclassesrequestshelpersclass-kp-order-lines.php:158
+ *   'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
+ */
 function EAScompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1379,10 +1485,13 @@ function EAScompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rat
 	}
 }
 
-//Klarna plugin hook to calculate lines submitted
+
 if (EAScompliance_is_active()) {
 	add_filter('kp_wc_api_order_lines', 'EAScompliance_kp_wc_api_order_lines', 10, 3);
 }
+/**
+ * Klarna plugin hook to calculate lines submitted
+ */
 function EAScompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1455,10 +1564,12 @@ function EAScompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id) {
 }
 
 
-// Replace order_item taxes with customs duties during Recalculate
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_order_item_after_calculate_taxes', 'EAScompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
 }
+/**
+ * Replace order_item taxes with customs duties during Recalculate
+ */
 function EAScompliance_woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1481,11 +1592,12 @@ function EAScompliance_woocommerce_order_item_after_calculate_taxes( $order_item
 }
 
 
-
-//Replace chosen shipping method cost with $payload_j['delivery_charge']
 if (EAScompliance_is_active()) {
 	add_filter('woocommerce_shipping_packages', 'EAScompliance_woocommerce_shipping_packages', 10, 1);
 }
+/**
+ * Replace chosen shipping method cost with $payload_j['delivery_charge']
+ */
 function EAScompliance_woocommerce_shipping_packages( $packages) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -1544,11 +1656,12 @@ function EAScompliance_woocommerce_shipping_packages( $packages) {
 }
 
 
-
-//// Checkout -> Order Hook (before Order created)
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_checkout_create_order', 'EAScompliance_woocommerce_checkout_create_order');
 }
+/**
+ * Checkout -> Order Hook (before Order created)
+ */
 function EAScompliance_woocommerce_checkout_create_order( $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1577,7 +1690,7 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 
 		//disable order if customs duties are missing
 		if (!EAScompliance_is_set()) {
-			throw new Exception( __('CUSTOMS DUTIES MISSING', EASCOMPLIANCE_PLUGIN_DOMAIN) );
+			throw new Exception( __('CUSTOMS DUTIES MISSING', 'EASCOMPLIANCEPLUGINDOMAIN') );
 		}
 
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed
@@ -1604,7 +1717,7 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 			// reset calculate of cart since calculate may have changed previous values
 			$item0['EAScompliance SET'] = false;
 			$woocommerce->cart->set_session();
-			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', EASCOMPLIANCE_PLUGIN_DOMAIN));
+			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', 'EASCOMPLIANCEPLUGINDOMAIN'));
 		}
 		//save payload in order metadata
 		$payload = $item0['EASPROJ API PAYLOAD'];
@@ -1626,10 +1739,12 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 	}
 }
 
-//// After Order has been created
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_checkout_order_created', 'EAScompliance_woocommerce_checkout_order_created');
 }
+/**
+ *  After Order has been created
+ */
 function EAScompliance_woocommerce_checkout_order_created( $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1669,7 +1784,7 @@ function EAScompliance_woocommerce_checkout_order_created( $order) {
 		$notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 		if ( '200' == $notify_status ) {
-			$order->add_order_note(EAScompliance_format( __('Notify Order number $order_id successful', EASCOMPLIANCE_PLUGIN_DOMAIN) , array('order_id'=>$order_id)  ) );
+			$order->add_order_note(EAScompliance_format( __('Notify Order number $order_id successful', 'EASCOMPLIANCEPLUGINDOMAIN') , array('order_id'=>$order_id)  ) );
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
 		}
@@ -1687,10 +1802,12 @@ function EAScompliance_woocommerce_checkout_order_created( $order) {
 	}
 }
 
-//// When Order status changes from Pending to Processing, send payment verification
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_order_status_changed', 'EAScompliance_woocommerce_order_status_changed', 10, 4);
 }
+/**
+ * When Order status changes from Pending to Processing, send payment verification
+ */
 function EAScompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1743,7 +1860,7 @@ function EAScompliance_woocommerce_order_status_changed( $order_id, $status_from
 		EAScompliance_logger()->info("Notify Order $order_id status change successful");
 	} catch (Exception $ex) {
 		EAScompliance_log_exception($ex);
-		$order->add_order_note(__('Order status change notification failed: ', EASCOMPLIANCE_PLUGIN_DOMAIN) . $ex->getMessage());
+		$order->add_order_note(__('Order status change notification failed: ', 'EASCOMPLIANCEPLUGINDOMAIN') . $ex->getMessage());
 	} finally {
         EAScompliance_set_locale(true);
 		restore_error_handler();
@@ -1751,10 +1868,12 @@ function EAScompliance_woocommerce_order_status_changed( $order_id, $status_from
 
 }
 
-//// Notify EAS on order refund
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_order_refunded', 'EAScompliance_woocommerce_order_refunded', 10, 4);
 }
+/**
+ * Notify EAS on order refund
+ */
 function EAScompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1809,7 +1928,7 @@ function EAScompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 		EAScompliance_logger()->info("Order $order_id refund notification successful");
 	} catch (Exception $ex) {
 		EAScompliance_log_exception($ex);
-		$order->add_order_note(__('Order refund notification failed: ', EASCOMPLIANCE_PLUGIN_DOMAIN) . $ex->getMessage());
+		$order->add_order_note(__('Order refund notification failed: ', 'EASCOMPLIANCEPLUGINDOMAIN') . $ex->getMessage());
 	} finally {
         EAScompliance_set_locale(true);
 		restore_error_handler();
@@ -1818,10 +1937,12 @@ function EAScompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 }
 
 
-//// Display Order Totals in Order Admin Page
 if (EAScompliance_is_active()) {
 	add_action('woocommerce_admin_order_totals_after_total', 'EAScompliance_woocommerce_admin_order_totals_after_total');
 }
+/**
+ * Display Order Totals in Order Admin Page
+ */
 function EAScompliance_woocommerce_admin_order_totals_after_total($order_id) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -1883,7 +2004,9 @@ function EAScompliance_woocommerce_admin_order_totals_after_total($order_id) {
 
 }
 
-//// Settings
+/**
+ * Settings
+ */
 function EAScompliance_settings() {
 
 	// shipping methods
@@ -1911,62 +2034,62 @@ function EAScompliance_settings() {
 
 	return array(
 	'section_title' => array(
-	  'name'     => __('Settings', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	  'name'     => __('Settings', 'EASCOMPLIANCEPLUGINDOMAIN')
 	, 'type'     => 'title'
 	, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
 			)
 	, 'active' => array(
-	      'name' => __('Enable/Disable', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	      'name' => __('Enable/Disable', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'checkbox'
 		, 'desc' => 'Enable ' . EASCOMPLIANCE_PLUGIN_NAME
 		, 'id'   => 'easproj_active'
 		, 'default' => 'no'
 		)
 	, 'debug' => array(
-          'name' => __('Debug', EASCOMPLIANCE_PLUGIN_DOMAIN)
+          'name' => __('Debug', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'checkbox'
 		, 'desc' => 'Log debug messages'
 		, 'id'   => 'easproj_debug'
 		, 'default' => 'no'
 		)
 	, 'EAS_API_URL' => array(
-	    'name' => __('EAS API Base URL', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('EAS API Base URL', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'text'
-		, 'desc' => __('API URL', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('API URL', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_eas_api_url'
 		, 'default' => 'https://manager.easproject.com/api'
 
 		)
 	, 'AUTH_client_id' => array(
-	    'name' => __('EAS client ID', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('EAS client ID', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'text'
-		, 'desc' => __('Use the client ID you received from EAS Project', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Use the client ID you received from EAS Project', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_auth_client_id'
 
 		)
 	, 'AUTH_client_secret' => array(
-	    'name' => __('EAS client secret', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('EAS client secret', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'password'
-		, 'desc' => __('Use the secret you received from EAS Project', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Use the secret you received from EAS Project', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_auth_client_secret'
 
 		)
 	, 'language' => array(
-	    'name' => __('Language', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Language', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('Choose language for user interface of plugin', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Choose language for user interface of plugin', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_language'
-		, 'default' => __('Default', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'default' => __('Default', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'options' => array(
-                'Default'=> __('Store Default', EASCOMPLIANCE_PLUGIN_DOMAIN)
-                , 'EN'=>__('English', EASCOMPLIANCE_PLUGIN_DOMAIN)
-                , 'FI'=>__('Finnish', EASCOMPLIANCE_PLUGIN_DOMAIN))
+                'Default'=> __('Store Default', 'EASCOMPLIANCEPLUGINDOMAIN')
+                , 'EN'=>__('English', 'EASCOMPLIANCEPLUGINDOMAIN')
+                , 'FI'=>__('Finnish', 'EASCOMPLIANCEPLUGINDOMAIN'))
 		)
 	, 'shipping_methods_postal' => array(
-	    'name' => __('Shipping methods by post', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Shipping methods by post', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'multiselect'
 		, 'class' => 'wc-enhanced-select'
-		, 'desc' => __('Select shipping methods for delivery by post', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Select shipping methods for delivery by post', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_shipping_method_postal'
 		, 'options' => $shipping_methods
 		)
@@ -1981,9 +2104,9 @@ function EAScompliance_settings() {
 		, 'value' => array_keys($shipping_methods)
 		)
 	, 'HSCode_field' => array(
-	    'name' => __('HSCODE', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('HSCODE', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('HSCode attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('HSCode attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_hs6p_received'
 		, 'default' => 'easproj_hs6p_received'
 		, 'options' => $attributes
@@ -1991,39 +2114,39 @@ function EAScompliance_settings() {
 	, 'Warehouse_country' => array(
 	    'name' => 'Warehouse country'
 		, 'type' => 'select'
-		, 'desc' => __('Location warehouse country attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Location warehouse country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_warehouse_country'
 		, 'default' => 'easproj_warehouse_country'
 		, 'options' => $attributes
 		)
 	, 'Reduced_tbe_vat_group' => array(
-	    'name' => __('Reduced VAT for TBE', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Reduced VAT for TBE', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_reduced_vat_group'
 		, 'default' => 'easproj_reduced_vat_group'
 		, 'options' => $attributes
 		)
 	, 'Disclosed_agent' => array(
-	    'name' => __('Act as Disclosed Agent', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Act as Disclosed Agent', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_disclosed_agent'
 		, 'default' => 'easproj_disclosed_agent'
 		, 'options' => $attributes
 		)
 	, 'Seller_country' => array(
-	    'name' => __('Seller registration country', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Seller registration country', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('Seller registration country attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Seller registration country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_seller_reg_country'
 		, 'default' => 'easproj_seller_reg_country'
 		, 'options' => $attributes
 		)
 	, 'Originating_country' => array(
-	    'name' => __('Originating Country', EASCOMPLIANCE_PLUGIN_DOMAIN)
+	    'name' => __('Originating Country', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'type' => 'select'
-		, 'desc' => __('Originating Country attribute slug. Attribute will be created if does not exist.', EASCOMPLIANCE_PLUGIN_DOMAIN)
+		, 'desc' => __('Originating Country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
 		, 'id'   => 'easproj_originating_country'
 		, 'default' => 'easproj_originating_country'
 		, 'options' => $attributes
@@ -2035,8 +2158,10 @@ function EAScompliance_settings() {
 };
 
 
-//// Settings startup check
 add_filter( 'woocommerce_settings_start', 'EAScompliance_woocommerce_settings_start');
+/**
+ * Settings startup check
+ */
 function EAScompliance_woocommerce_settings_start() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -2060,8 +2185,10 @@ function EAScompliance_woocommerce_settings_start() {
 }
 
 
-//// Settings tab
 add_filter( 'woocommerce_settings_tabs_array', 'EAScompliance_woocommerce_settings_tabs_array');
+/**
+ * Settings tab
+ */
 function EAScompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered filter '.__FUNCTION__.'()');}
 
@@ -2079,8 +2206,10 @@ function EAScompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 };
 
 
-//// Settings fields
 add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'EAScompliance_woocommerce_settings_tabs_settings_tab_compliance' );
+/**
+ * Settings fields
+ */
 function EAScompliance_woocommerce_settings_tabs_settings_tab_compliance() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -2098,8 +2227,10 @@ function EAScompliance_woocommerce_settings_tabs_settings_tab_compliance() {
 	}
 };
 
-//// Settings Save and Plugin Setup
 add_action( 'woocommerce_update_options_settings_tab_compliance', 'EAScompliance_woocommerce_update_options_settings_tab_compliance' );
+/**
+ * Settings Save and Plugin Setup
+ */
 function EAScompliance_woocommerce_update_options_settings_tab_compliance() {
 	if (EASCOMPLIANCE_DEVELOP) {EAScompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
 
@@ -2384,7 +2515,9 @@ function EAScompliance_woocommerce_update_options_settings_tab_compliance() {
 	}
 }
 
-//// utility funtion to format strings
+/**
+ * Utility function to format strings
+ */
 function EAScompliance_format( $string, $vars) {
 	$patterns = array_keys($vars);
 	$replacements = array_values($vars);
@@ -2393,7 +2526,10 @@ function EAScompliance_format( $string, $vars) {
 	}
 	return preg_replace($patterns, $replacements, $string);
 };
-// to avoid undefined index in arrays
+
+/**
+ * Function to avoid undefined index in arrays
+ */
 function EAScompliance_array_get( $arr, $key, $default = null) {
 	if (array_key_exists($key, $arr)) {
 		return $arr[$key];
@@ -2403,8 +2539,9 @@ function EAScompliance_array_get( $arr, $key, $default = null) {
 }
 
 
-
-//The function array_key_first() is not present in PHP version 7.2 or earlier
+/**
+ * The function array_key_first() is not present in PHP version 7.2 or earlier
+ */
 function EAScompliance_array_key_first2( array $arr ) {
 	foreach ( $arr as $key => $unused ) {
 		return $key;
