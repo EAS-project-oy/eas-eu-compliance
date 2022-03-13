@@ -1,19 +1,17 @@
 <?php
 
-/*
+/**
  * Plugin Name: EAS EU compliance
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
- * Developer: EAS project
- * Developer URI: https://easproject.com/about-us/
+ * Text Domain: eas-eu-compliance
  * Version: 1.2.4
  * Tested up to 5.9.1
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
  * Requires PHP: 5.6
- */
-
+ **/
 
 define('EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance');
 
@@ -44,7 +42,10 @@ function EAScompliance_set_locale(bool $reset = false) {
     else if ($plugin_lang == 'FI') {
         switch_to_locale('fi');
     }
-    load_plugin_textdomain( 'EASCOMPLIANCEPLUGINDOMAIN', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+    $res = load_plugin_textdomain( 'eascompliance', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+    if ( !$res ) {
+		EAScompliance_logger()->error('load_plugin_textdomain() failed');
+    }
 }
 
 
@@ -77,7 +78,7 @@ function EAScompliance_logger() {
 
 	class EASLogHandler extends WC_Log_Handler_File {
 		public function handle( $timestamp, $level, $message, $context ) {
-			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>'EASCOMPLIANCEPLUGINDOMAIN'));
+			WC_Log_Handler_File::handle($timestamp, $level, $message, array('source'=>'eascompliance'));
 		}
 	}
 	$handlers = array(new EASLogHandler());
@@ -110,7 +111,7 @@ function EAScompliance_tax_rate_id() {
 		global $wpdb;
 		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
         if (count($tax_rates) == 0) {
-            throw new Exception( __('No tax rate found, please check plugin settings', 'EASCOMPLIANCEPLUGINDOMAIN') );
+            throw new Exception( __('No tax rate found, please check plugin settings', 'eascompliance') );
         }
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
         return $tax_rate_id0;
@@ -133,7 +134,7 @@ function EAScompliance_woocommerce_cart_tax_totals($tax_totals, $order) {
         $tax_rate_id0 = EAScompliance_tax_rate_id();
         foreach ($tax_totals as $code=>&$tax) {
             if ($tax->tax_rate_id == $tax_rate_id0) {
-                $tax->label = __('Taxes & Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
+                $tax->label = __('Taxes & Duties', 'eascompliance');
             }
         }
 
@@ -166,7 +167,7 @@ function EAScompliance_woocommerce_order_get_tax_totals ( $tax_totals, $order) {
         $tax_rate_id0 = EAScompliance_tax_rate_id();
         foreach ($tax_totals as $code=>&$tax) {
             if ($tax->rate_id == $tax_rate_id0) {
-                $tax->label = __('Taxes & Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
+                $tax->label = __('Taxes & Duties', 'eascompliance');
             }
         }
 
@@ -235,15 +236,15 @@ function EAScompliance_javascript() {
 
     EAScompliance_set_locale();
     wp_localize_script( 'EAScompliance', 'plugin_dictionary', array(
-              'error_required_billing_details' => __( 'Please check for required billing details. All fields marked as required should be filled.', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'error_required_shipping_details' => __( 'Please check for required shipping details. All fields marked as required should be filled.', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'calculating_taxes' => __( 'Calculating taxes and duties ...', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'taxes_added' => __( 'Customs taxes and duties added...', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'waiting_for_confirmation' => __( 'Waiting for Customs Duties Calculation and confirmation details', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'confirmation' => __( 'confirmation', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', 'EASCOMPLIANCEPLUGINDOMAIN' )
-            , 'standard_checkout' => __( 'Standard Checkout', 'EASCOMPLIANCEPLUGINDOMAIN' )
+              'error_required_billing_details' => __( 'Please check for required billing details. All fields marked as required should be filled.', 'eascompliance' )
+            , 'error_required_shipping_details' => __( 'Please check for required shipping details. All fields marked as required should be filled.', 'eascompliance' )
+            , 'calculating_taxes' => __( 'Calculating taxes and duties ...', 'eascompliance' )
+            , 'taxes_added' => __( 'Customs taxes and duties added...', 'eascompliance' )
+            , 'waiting_for_confirmation' => __( 'Waiting for Customs Duties Calculation and confirmation details', 'eascompliance' )
+            , 'confirmation' => __( 'confirmation', 'eascompliance' )
+            , 'sorry_didnt_work' => __( "Sorry, didn't work, please try again", 'eascompliance' )
+            , 'recalculate_taxes' => __( 'Recalculate Taxes and Duties', 'eascompliance' )
+            , 'standard_checkout' => __( 'Standard Checkout', 'eascompliance' )
     ) );
 
 	// Pass ajax_url to javascript
@@ -293,14 +294,14 @@ function EAScompliance_woocommerce_review_order_before_payment() {
         $nonce_calc =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_calc' ));
         $nonce_debug =  esc_attr(wp_create_nonce( 'EAScompliance_nonce_debug' ));
 
-        $translation_file = dirname( __FILE__ ) . '/languages/' . 'EASCOMPLIANCEPLUGINDOMAIN' . '-' . get_locale() . '.po';
+        $translation_file = dirname( __FILE__ ) . '/languages/' . 'eascompliance-' . get_locale() . '.po';
         EAScompliance_logger()->debug(EAScompliance_format('Locale: $locale, Plugin language: $plugin, Textdomain file: $file, Exist: $exist', array(
                 'locale'=>get_locale(),
                 'plugin'=>EAScompliance_woocommerce_settings_get_option_sql('easproj_language'),
                 'file'=>$translation_file,
                 'exist'=>file_exists($translation_file) ? 'yes' : 'no'
         )));
-        $button_name = __('Calculate Taxes and Duties', 'EASCOMPLIANCEPLUGINDOMAIN');
+        $button_name = __('Calculate Taxes and Duties', 'eascompliance');
 
 
         $status = EAScompliance_is_set() ? 'present' : 'not present';
@@ -421,7 +422,7 @@ function EAScompliance_get_oauth_token() {
 				ob_end_clean();
 				$jdebug['allow_url_fopen'] = ini_get('allow_url_fopen');
 			}
-			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'EASCOMPLIANCEPLUGINDOMAIN'));
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'eascompliance'));
 		}
 
 		$auth_response_status = preg_split('/\s/', $http_response_header[0], 3)[1];
@@ -429,12 +430,12 @@ function EAScompliance_get_oauth_token() {
 		// response not OK
 		if ('200' != $auth_response_status) {
 			EAScompliance_logger()->error('Auth response not OK: ' . $auth_response);
-			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'EASCOMPLIANCEPLUGINDOMAIN'));
+			throw new Exception(__('EU tax calculation service temporary unavailable. Please try to place an order later.', 'eascompliance'));
 		}
 
 		// response OK, but authentication failed with code 200 and empty response for any reason
 		if ('' === $auth_response) {
-			throw new Exception(__('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', 'EASCOMPLIANCEPLUGINDOMAIN'));
+			throw new Exception(__('Invalid Credentials provided. Please check EAS client ID and EAS client secret.', 'eascompliance'));
 		}
 
 		$jdebug['step'] = 'decode AUTH token';
@@ -505,7 +506,7 @@ function EAScompliance_make_eas_api_request_json() {
 	$jdebug['step'] = 'Fill json request with checkout data';
 
 	if (!wp_verify_nonce( strval(EAScompliance_array_get($_POST, 'EAScompliance_nonce_calc', '')), 'EAScompliance_nonce_calc' )) {
-		throw new Exception( __('Security check', 'EASCOMPLIANCEPLUGINDOMAIN') );
+		throw new Exception( __('Security check', 'eascompliance') );
 	};
 	$checkout = $_POST;
     // sanitize text fields
@@ -838,7 +839,7 @@ function EAScompliance_redirect_confirm() {
 
 		$confirm_hash = json_decode(base64_decode(sanitize_mime_type(EAScompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, JSON_THROW_ON_ERROR2);
 		if (!wp_verify_nonce( $confirm_hash['EAScompliance_nonce_api'], 'EAScompliance_nonce_api' )) {
-			throw new Exception(__( 'Security check', 'EASCOMPLIANCEPLUGINDOMAIN'));
+			throw new Exception(__( 'Security check', 'eascompliance'));
 		};
 
 		if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -1252,7 +1253,7 @@ function EAScompliance_cart_total() {
 
 		// check that payload total_order_amount equals Order total
 		if ( $payload_total_order_amount != $total ) {
-			EAScompliance_log_exception(new Exception(EAScompliance_format(__( '$payload_total_order_amount $a not equal order total $b', 'EASCOMPLIANCEPLUGINDOMAIN')
+			EAScompliance_log_exception(new Exception(EAScompliance_format(__( '$payload_total_order_amount $a not equal order total $b', 'eascompliance')
 				, array('a'=>$payload_total_order_amount, 'b'=>$total)) ));
 			EAScompliance_logger()->debug(print_r($payload, true));
 		}
@@ -1690,7 +1691,7 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 
 		//disable order if customs duties are missing
 		if (!EAScompliance_is_set()) {
-			throw new Exception( __('CUSTOMS DUTIES MISSING', 'EASCOMPLIANCEPLUGINDOMAIN') );
+			throw new Exception( __('CUSTOMS DUTIES MISSING', 'eascompliance') );
 		}
 
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed
@@ -1717,7 +1718,7 @@ function EAScompliance_woocommerce_checkout_create_order( $order) {
 			// reset calculate of cart since calculate may have changed previous values
 			$item0['EAScompliance SET'] = false;
 			$woocommerce->cart->set_session();
-			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', 'EASCOMPLIANCEPLUGINDOMAIN'));
+			throw new Exception(__('PLEASE RE-CALCULATE CUSTOMS DUTIES', 'eascompliance'));
 		}
 		//save payload in order metadata
 		$payload = $item0['EASPROJ API PAYLOAD'];
@@ -1784,7 +1785,7 @@ function EAScompliance_woocommerce_checkout_order_created( $order) {
 		$notify_status = preg_split('/\s/', $http_response_header[0], 3)[1];
 
 		if ( '200' == $notify_status ) {
-			$order->add_order_note(EAScompliance_format( __('Notify Order number $order_id successful', 'EASCOMPLIANCEPLUGINDOMAIN') , array('order_id'=>$order_id)  ) );
+			$order->add_order_note(EAScompliance_format( __('Notify Order number $order_id successful', 'eascompliance') , array('order_id'=>$order_id)  ) );
 		} else {
 			throw new Exception($http_response_header[0] . '\n\n' . $notify_body);
 		}
@@ -1860,7 +1861,7 @@ function EAScompliance_woocommerce_order_status_changed( $order_id, $status_from
 		EAScompliance_logger()->info("Notify Order $order_id status change successful");
 	} catch (Exception $ex) {
 		EAScompliance_log_exception($ex);
-		$order->add_order_note(__('Order status change notification failed: ', 'EASCOMPLIANCEPLUGINDOMAIN') . $ex->getMessage());
+		$order->add_order_note(__('Order status change notification failed: ', 'eascompliance') . $ex->getMessage());
 	} finally {
         EAScompliance_set_locale(true);
 		restore_error_handler();
@@ -1928,7 +1929,7 @@ function EAScompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 		EAScompliance_logger()->info("Order $order_id refund notification successful");
 	} catch (Exception $ex) {
 		EAScompliance_log_exception($ex);
-		$order->add_order_note(__('Order refund notification failed: ', 'EASCOMPLIANCEPLUGINDOMAIN') . $ex->getMessage());
+		$order->add_order_note(__('Order refund notification failed: ', 'eascompliance') . $ex->getMessage());
 	} finally {
         EAScompliance_set_locale(true);
 		restore_error_handler();
@@ -2034,62 +2035,62 @@ function EAScompliance_settings() {
 
 	return array(
 	'section_title' => array(
-	  'name'     => __('Settings', 'EASCOMPLIANCEPLUGINDOMAIN')
+	  'name'     => __('Settings', 'eascompliance')
 	, 'type'     => 'title'
 	, 'desc'     => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">'
 			)
 	, 'active' => array(
-	      'name' => __('Enable/Disable', 'EASCOMPLIANCEPLUGINDOMAIN')
+	      'name' => __('Enable/Disable', 'eascompliance')
 		, 'type' => 'checkbox'
 		, 'desc' => 'Enable ' . EASCOMPLIANCE_PLUGIN_NAME
 		, 'id'   => 'easproj_active'
 		, 'default' => 'no'
 		)
 	, 'debug' => array(
-          'name' => __('Debug', 'EASCOMPLIANCEPLUGINDOMAIN')
+          'name' => __('Debug', 'eascompliance')
 		, 'type' => 'checkbox'
 		, 'desc' => 'Log debug messages'
 		, 'id'   => 'easproj_debug'
 		, 'default' => 'no'
 		)
 	, 'EAS_API_URL' => array(
-	    'name' => __('EAS API Base URL', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('EAS API Base URL', 'eascompliance')
 		, 'type' => 'text'
-		, 'desc' => __('API URL', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('API URL', 'eascompliance')
 		, 'id'   => 'easproj_eas_api_url'
 		, 'default' => 'https://manager.easproject.com/api'
 
 		)
 	, 'AUTH_client_id' => array(
-	    'name' => __('EAS client ID', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('EAS client ID', 'eascompliance')
 		, 'type' => 'text'
-		, 'desc' => __('Use the client ID you received from EAS Project', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Use the client ID you received from EAS Project', 'eascompliance')
 		, 'id'   => 'easproj_auth_client_id'
 
 		)
 	, 'AUTH_client_secret' => array(
-	    'name' => __('EAS client secret', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('EAS client secret', 'eascompliance')
 		, 'type' => 'password'
-		, 'desc' => __('Use the secret you received from EAS Project', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Use the secret you received from EAS Project', 'eascompliance')
 		, 'id'   => 'easproj_auth_client_secret'
 
 		)
 	, 'language' => array(
-	    'name' => __('Language', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Language', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('Choose language for user interface of plugin', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Choose language for user interface of plugin', 'eascompliance')
 		, 'id'   => 'easproj_language'
-		, 'default' => __('Default', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'default' => __('Default', 'eascompliance')
 		, 'options' => array(
-                'Default'=> __('Store Default', 'EASCOMPLIANCEPLUGINDOMAIN')
-                , 'EN'=>__('English', 'EASCOMPLIANCEPLUGINDOMAIN')
-                , 'FI'=>__('Finnish', 'EASCOMPLIANCEPLUGINDOMAIN'))
+                'Default'=> __('Store Default', 'eascompliance')
+                , 'EN'=>__('English', 'eascompliance')
+                , 'FI'=>__('Finnish', 'eascompliance'))
 		)
 	, 'shipping_methods_postal' => array(
-	    'name' => __('Shipping methods by post', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Shipping methods by post', 'eascompliance')
 		, 'type' => 'multiselect'
 		, 'class' => 'wc-enhanced-select'
-		, 'desc' => __('Select shipping methods for delivery by post', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Select shipping methods for delivery by post', 'eascompliance')
 		, 'id'   => 'easproj_shipping_method_postal'
 		, 'options' => $shipping_methods
 		)
@@ -2104,9 +2105,9 @@ function EAScompliance_settings() {
 		, 'value' => array_keys($shipping_methods)
 		)
 	, 'HSCode_field' => array(
-	    'name' => __('HSCODE', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('HSCODE', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('HSCode attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('HSCode attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_hs6p_received'
 		, 'default' => 'easproj_hs6p_received'
 		, 'options' => $attributes
@@ -2114,39 +2115,39 @@ function EAScompliance_settings() {
 	, 'Warehouse_country' => array(
 	    'name' => 'Warehouse country'
 		, 'type' => 'select'
-		, 'desc' => __('Location warehouse country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Location warehouse country attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_warehouse_country'
 		, 'default' => 'easproj_warehouse_country'
 		, 'options' => $attributes
 		)
 	, 'Reduced_tbe_vat_group' => array(
-	    'name' => __('Reduced VAT for TBE', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Reduced VAT for TBE', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_reduced_vat_group'
 		, 'default' => 'easproj_reduced_vat_group'
 		, 'options' => $attributes
 		)
 	, 'Disclosed_agent' => array(
-	    'name' => __('Act as Disclosed Agent', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Act as Disclosed Agent', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_disclosed_agent'
 		, 'default' => 'easproj_disclosed_agent'
 		, 'options' => $attributes
 		)
 	, 'Seller_country' => array(
-	    'name' => __('Seller registration country', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Seller registration country', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('Seller registration country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Seller registration country attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_seller_reg_country'
 		, 'default' => 'easproj_seller_reg_country'
 		, 'options' => $attributes
 		)
 	, 'Originating_country' => array(
-	    'name' => __('Originating Country', 'EASCOMPLIANCEPLUGINDOMAIN')
+	    'name' => __('Originating Country', 'eascompliance')
 		, 'type' => 'select'
-		, 'desc' => __('Originating Country attribute slug. Attribute will be created if does not exist.', 'EASCOMPLIANCEPLUGINDOMAIN')
+		, 'desc' => __('Originating Country attribute slug. Attribute will be created if does not exist.', 'eascompliance')
 		, 'id'   => 'easproj_originating_country'
 		, 'default' => 'easproj_originating_country'
 		, 'options' => $attributes
