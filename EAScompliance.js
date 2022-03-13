@@ -78,14 +78,14 @@ jQuery(document).ready(function($) {
 
             $.post({
                 url: plugin_ajax_object.ajax_url
-                , data: {'action': 'EAScompliance_ajaxhandler', 'request': JSON.stringify(request), 'EAScompliance_nonce_calc': $('#EAScompliance_nonce_calc').val()}
+                , data: {'action': 'eascompliance_ajaxhandler', 'request': JSON.stringify(request), 'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val()}
                 , dataType: 'json'
                 , success: function (j) {
                     unblock($('.EAScompliance'));
                     $('.button_calc').text(plugin_dictionary.taxes_added)
-                    $('.EAScompliance_status').text( plugin_dictionary.waiting_for_confirmation )
+                    $('.eascompliance_status').text( plugin_dictionary.waiting_for_confirmation )
 
-                    $('.EAScompliance_debug_output').val(JSON.stringify(j, null,' '))
+                    $('.eascompliance_debug_output').val(JSON.stringify(j, null,' '))
                     console.log(j)
 
                     if (j.status === 'ok') {
@@ -93,7 +93,7 @@ jQuery(document).ready(function($) {
                         if (j['CALC response'] === 'STANDARD_CHECKOUT') {
                             show_error(j['message']);
                             $('.button_calc').text(plugin_dictionary.standard_checkout)
-                            $('.EAScompliance_status').text('standard_checkout');
+                            $('.eascompliance_status').text('standard_checkout');
 
                             $('.button_calc').hide()
                             $('#place_order').show();
@@ -112,13 +112,13 @@ jQuery(document).ready(function($) {
     })
 
     //// debug button
-    $('.EAScompliance_debug_button').on('click', function (ev) {
+    $('.eascompliance_debug_button').on('click', function (ev) {
         $.post({
             url: plugin_ajax_object.ajax_url
-            , data: {'action': 'EAScompliance_debug', 'debug_input': $('.EAScompliance_debug_input').val(), 'EAScompliance_nonce_debug': $('#EAScompliance_nonce_debug').val()}
+            , data: {'action': 'eascompliance_debug', 'debug_input': $('.eascompliance_debug_input').val(), 'eascompliance_nonce_debug': $('#eascompliance_nonce_debug').val()}
             , dataType: 'json'
             , success: function (j) {
-                $('.EAScompliance_debug_output').val(j.eval_result)
+                $('.eascompliance_debug_output').val(j.eval_result)
                 console.log(j)
             }
         });
@@ -127,12 +127,12 @@ jQuery(document).ready(function($) {
 
     // handle return from confirmation page
     $(document.body).one("updated_checkout", async function () {
-        if ($('.EAScompliance_status').text() == 'present') {
+        if ($('.eascompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
 
             $('.button_calc').text(plugin_dictionary.recalculate_taxes);
 
-            form_data = atob($(".EAScompliance_status").attr('checkout-form-data'));
+            form_data = atob($(".eascompliance_status").attr('checkout-form-data'));
 
             //restore form elements from form_data
             chunks = form_data.split('&');
@@ -167,7 +167,7 @@ jQuery(document).ready(function($) {
         //take needs-recalculate from server because it may change without checkout page reloading
         needs_recalculate = (await new Promise ( function(resolve) {$.post({
             url: plugin_ajax_object.ajax_url
-            , data: {'action': 'EAScompliance_needs_recalculate_ajax'}
+            , data: {'action': 'eascompliance_needs_recalculate_ajax'}
             , dataType: 'json'
             , success: function (j) {
                 resolve(j);
@@ -179,12 +179,12 @@ jQuery(document).ready(function($) {
             european_countries.indexOf(delivery_country) < 0
             ||
             (
-                $('.EAScompliance_status').text() == 'present'
+                $('.eascompliance_status').text() == 'present'
                 && needs_recalculate === false
             )
             ||
             (
-                $('.EAScompliance_status').text() == 'standard_checkout'
+                $('.eascompliance_status').text() == 'standard_checkout'
             )
         ) {
             $('.button_calc').hide();
