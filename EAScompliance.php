@@ -56,6 +56,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Change error messages into ErrorException
+ * @param $severity
+ * @param $message
+ * @param $file
+ * @param $line
  * */
 function eascompliance_error_handler( $severity, $message, $file, $line ) {
 	throw new ErrorException( $message, 0, $severity, $file, $line );
@@ -74,7 +78,17 @@ function eascompliance_logger() {
 		return $l;
 	}
 
+	/**
+	 * EASLogHandler class
+	 */
 	class EASLogHandler extends WC_Log_Handler_File {
+		/**
+         * log handler
+		 * @param $timestamp
+		 * @param $level
+		 * @param $message
+		 * @param $context
+		 */
 		public function handle( $timestamp, $level, $message, $context ) {
 			WC_Log_Handler_File::handle( $timestamp, $level, $message, array( 'source' => 'eascompliance' ) );
 		}
@@ -87,6 +101,7 @@ function eascompliance_logger() {
 
 /**
  * Log exception
+ * @param Exception $ex
  */
 function eascompliance_log_exception( Exception $ex ) {
 	$txt = '';
@@ -121,6 +136,8 @@ if ( eascompliance_is_active() ) {
 
 /**
  * Filter for woocommerce_cart_tax_totals
+ * @param $tax_totals
+ * @param $order
  */
 function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -153,6 +170,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Filter for woocommerce_order_get_tax_totals
+ * @param $tax_totals
+ * @param $order
  */
 function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -182,6 +201,7 @@ function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
 
 /**
  * Get woocommerce settings when woocommerce_settings_get_option is undefined
+ * @param $option
  */
 function eascompliance_woocommerce_settings_get_option_sql( $option ) {
 	global $wpdb;
@@ -259,12 +279,12 @@ function eascompliance_javascript() {
 	eascompliance_set_locale( true );
 };
 
-/**
- * Browser admin client scripts
- */
 if ( eascompliance_is_active() ) {
 	add_action( 'admin_enqueue_scripts', 'eascompliance_settings_scripts' );
 }
+/**
+ * Browser admin client scripts
+ */
 function eascompliance_settings_scripts() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
@@ -736,6 +756,9 @@ function eascompliance_ajaxhandler() {
 
 		$calc_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
 
+		/**
+		 * EAScomplianceStandardCheckoutException class
+		 */
 		class EAScomplianceStandardCheckoutException extends Exception { };
 		$jres = array(
 			'status'  => 'unknown',
@@ -1210,6 +1233,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace order_item taxes with EAScompliance during order creation
+ * @param $order_item_tax
+ * @param $tax_rate_id
+ * @param $order
  */
 function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1306,6 +1332,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Order review Tax field
+ * @param $total_taxes
  */
 function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1344,6 +1371,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Item Subtotal
+ * @param $price_html
+ * @param $cart_item
+ * @param $cart_item_key
  */
 function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1371,6 +1401,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Cart Subtotal
+ * @param $cart_subtotal
+ * @param $compound
+ * @param $cart
  */
 function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1404,6 +1437,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Total field
+ * @param $value
  */
 function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1428,6 +1462,10 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Order Items creation wrapper
+ * @param $order_item_product
+ * @param $cart_item_key
+ * @param $values
+ * @param $order
  */
 function eascompliance_woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1458,6 +1496,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
+ * @param $kp_settings
  */
 function eascompliance_Klarna_settings_fix( $kp_settings ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1497,6 +1536,9 @@ if ( eascompliance_is_active() ) {
  *  Fix tax_rate for Klarna plugin:
  *  klarna-payments-for-woocommerceclassesrequestshelpersclass-kp-order-lines.php:158
  *   'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
+ * @param $item_tax_rates
+ * @param $item
+ * @param $cart
  */
 function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1536,6 +1578,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Klarna plugin hook to calculate lines submitted
+ * @param $klarna_order_lines
+ * @param $order_id
  */
 function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1615,6 +1659,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace order_item taxes with customs duties during Recalculate
+ * @param $order_item
+ * @param $calculate_tax_for
  */
 function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1646,6 +1692,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace chosen shipping method cost with $payload_j['delivery_charge']
+ * @param $packages
  */
 function eascompliance_woocommerce_shipping_packages( $packages ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1711,6 +1758,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout -> Order Hook (before Order created)
+ * @param $order
  */
 function eascompliance_woocommerce_checkout_create_order( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1795,6 +1843,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  *  After Order has been created
+ * @param $order
  */
 function eascompliance_woocommerce_checkout_order_created( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1862,6 +1911,10 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * When Order status changes from Pending to Processing, send payment verification
+ * @param $order_id
+ * @param $status_from
+ * @param $status_to
+ * @param $order
  */
 function eascompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1940,6 +1993,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Notify EAS on order refund
+ * @param $order_id
+ * @param $refund_id
  */
 function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2013,6 +2068,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Display Order Totals in Order Admin Page
+ * @param $order_id
  */
 function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2262,6 +2318,7 @@ function eascompliance_woocommerce_settings_start() {
 add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settings_tabs_array' );
 /**
  * Settings tab
+ * @param $settings_tabs
  */
 function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2627,6 +2684,8 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 
 /**
  * Utility function to format strings
+ * @param $string
+ * @param $vars
  */
 function eascompliance_format( $string, $vars ) {
 	$patterns     = array_keys( $vars );
@@ -2639,6 +2698,9 @@ function eascompliance_format( $string, $vars ) {
 
 /**
  * Function to avoid undefined index in arrays
+ * @param $arr
+ * @param $key
+ * @param $default
  */
 function eascompliance_array_get( $arr, $key, $default = null ) {
 	if ( array_key_exists( $key, $arr ) ) {
