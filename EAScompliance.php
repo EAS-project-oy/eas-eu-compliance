@@ -571,7 +571,7 @@ function eascompliance_make_eas_api_request_json() {
 	$delivery_state_province = eascompliance_array_get($checkout, 'shipping_state', '') == '' ? '' : '' . WC()->countries->states[$checkout['shipping_country']][$checkout['shipping_state']];
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method'] = $delivery_method;
-	$calc_jreq['delivery_cost'] = (int) ( $cart->get_shipping_total() );
+	$calc_jreq['delivery_cost'] = round( (float) ( $cart->get_shipping_total() ), 2);
 	$calc_jreq['payment_currency'] = get_woocommerce_currency();
 
 	$calc_jreq['is_delivery_to_person'] = eascompliance_array_get($checkout, 'shipping_company', '') == '';
@@ -1641,7 +1641,7 @@ function eascompliance_woocommerce_shipping_packages( $packages) {
 				}
 				 // update $calc_jreq_saved with new delivery_cost
 				 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
-				 $calc_jreq_saved['delivery_cost'] = (int) $cart_item0['EAScompliance DELIVERY CHARGE'];
+				 $calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2);
 				 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
 			}
 		}
