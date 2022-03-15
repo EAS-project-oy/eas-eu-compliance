@@ -25,6 +25,8 @@ define( 'JSON_THROW_ON_ERROR2', 4194304 );
 
 /**
  * Sets and resets current locale for translation
+ *
+ * @param bool $reset reset
  * */
 function eascompliance_set_locale( bool $reset = false ) {
 	static $current_locale = '';
@@ -56,10 +58,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Change error messages into ErrorException
- * @param $severity - severity
- * @param $message - message
- * @param $file - file
- * @param $line - line
+ *
+ * @param int $severity severity
+ * @param string $message message
+ * @param string $file file
+ * @param int $line line
  * @throws Exception
  */
 function eascompliance_error_handler( $severity, $message, $file, $line ) {
@@ -84,11 +87,12 @@ function eascompliance_logger() {
 	 */
 	class EASLogHandler extends WC_Log_Handler_File {
 		/**
-         * log handler
-		 * @param $timestamp - timestamp
-		 * @param $level - level
-		 * @param $message - message
-		 * @param $context - context
+         * Log handler
+         *
+		 * @param int $timestamp timestamp
+		 * @param string $level level
+		 * @param string $message message
+		 * @param array $context context
 		 */
 		public function handle( $timestamp, $level, $message, $context ) {
 			WC_Log_Handler_File::handle( $timestamp, $level, $message, array( 'source' => 'eascompliance' ) );
@@ -102,6 +106,7 @@ function eascompliance_logger() {
 
 /**
  * Log exception
+ *
  * @param Exception $ex ex
  */
 function eascompliance_log_exception( Exception $ex ) {
@@ -120,6 +125,7 @@ function eascompliance_log_exception( Exception $ex ) {
 
 /**
  * Get tax rate id
+ *
  * @throws Exception
  */
 function eascompliance_tax_rate_id() {
@@ -138,8 +144,9 @@ if ( eascompliance_is_active() ) {
 
 /**
  * Filter for woocommerce_cart_tax_totals
- * @param $tax_totals - tax_totals
- * @param $order - order
+ *
+ * @param array $tax_totals tax_totals
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
@@ -173,8 +180,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Filter for woocommerce_order_get_tax_totals
- * @param $tax_totals - tax_totals
- * @param $order - order
+ *
+ * @param array $tax_totals tax_totals
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
@@ -205,7 +213,8 @@ function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
 
 /**
  * Get woocommerce settings when woocommerce_settings_get_option is undefined
- * @param $option - option
+ *
+ * @param string $option option
  */
 function eascompliance_woocommerce_settings_get_option_sql( $option ) {
 	global $wpdb;
@@ -407,6 +416,7 @@ function eascompliance_debug() {
 
 /**
  * Get OAUTH token
+ *
  * @throws Exception
  */
 function eascompliance_get_oauth_token() {
@@ -495,6 +505,7 @@ function eascompliance_get_oauth_token() {
 
 /**
  * Make JSON for API /calculate request
+ *
  * @throws Exception
  */
 function eascompliance_make_eas_api_request_json() {
@@ -702,6 +713,7 @@ if ( eascompliance_is_active() ) {
  * This handler is called when user clicks 'Calculate Taxes button on Checkout page'
  * It makes request to EAS server with checkout details and redirects user to EAS Confirmation Page
  * unless STANDARD_CHECKOUT is returned. In which case Checkout proceeds without confirmation
+ *
  * @throws Exception
  */
 function eascompliance_ajaxhandler() {
@@ -881,6 +893,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Handle redirect URI confirmation
+ *
  * @throws Exception
  */
 function eascompliance_redirect_confirm() {
@@ -1127,6 +1140,7 @@ function eascompliance_redirect_confirm() {
 };
 /**
  * Check if EAScompliance is set for every item in cart
+ *
  * @throws Exception
  */
 function eascompliance_is_set() {
@@ -1161,6 +1175,7 @@ function eascompliance_is_set() {
 
 /**
  * Check if it is Standard Checkout scenario
+ *
  * @throws Exception
  */
 function eascompliance_is_standard_checkout() {
@@ -1194,6 +1209,7 @@ function eascompliance_is_standard_checkout() {
 
 /**
  * CHeck if EAScompliance needs to  recalculate
+ *
  * @throws Exception
  */
 function eascompliance_needs_recalculate() {
@@ -1223,6 +1239,7 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Check needs_recalculate via ajax
+ *
  * @throws Exception
  */
 function eascompliance_needs_recalculate_ajax() {
@@ -1248,9 +1265,10 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace order_item taxes with EAScompliance during order creation
- * @param $order_item_tax - order_item_tax
- * @param $tax_rate_id - tax_rate_id
- * @param $order - order
+ *
+ * @param object $order_item_tax order_item_tax
+ * @param int $tax_rate_id tax_rate_id
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order ) {
@@ -1348,7 +1366,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Order review Tax field
- * @param $total_taxes - total_taxes
+ *
+ * @param array $total_taxes total_taxes
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
@@ -1388,9 +1407,10 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Item Subtotal
- * @param $price_html - price_html
- * @param $cart_item - cart_item
- * @param $cart_item_key - cart_item_key
+ *
+ * @param string $price_html price_html
+ * @param object $cart_item cart_item
+ * @param string $cart_item_key cart_item_key
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
@@ -1419,9 +1439,10 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Cart Subtotal
- * @param $cart_subtotal - cart_subtotal
- * @param $compound - compound
- * @param $cart - cart
+ *
+ * @param string $cart_subtotal cart_subtotal
+ * @param bool $compound compound
+ * @param object $cart cart
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
@@ -1456,7 +1477,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout Order review Total field
- * @param $value - value
+ *
+ * @param float $value value
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
@@ -1482,10 +1504,11 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Order Items creation wrapper
- * @param $order_item_product - order_item_product
- * @param $cart_item_key - cart_item_key
- * @param $values - values
- * @param $order - order
+ *
+ * @param object $order_item_product order_item_product
+ * @param string $cart_item_key cart_item_key
+ * @param array $values values
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order ) {
@@ -1517,7 +1540,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
- * @param $kp_settings - kp_settings
+ *
+ * @param array $kp_settings kp_settings
  * @throws Exception
  */
 function eascompliance_klarna_settings_fix( $kp_settings ) {
@@ -1558,9 +1582,10 @@ if ( eascompliance_is_active() ) {
  *  Fix tax_rate for Klarna plugin:
  *  klarna-payments-for-woocommerceclassesrequestshelpersclass-kp-order-lines.php:158
  *   'tax_rate'              => $this->get_item_tax_rate( $cart_item, $product )
- * @param $item_tax_rates - item_tax_rates
- * @param $item - item
- * @param $cart - cart
+ *
+ * @param array $item_tax_rates item_tax_rates
+ * @param object $item item
+ * @param object $cart cart
  * @throws Exception
  */
 function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart ) {
@@ -1601,8 +1626,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Klarna plugin hook to calculate lines submitted
- * @param $klarna_order_lines - klarna_order_lines
- * @param $order_id - order_id
+ *
+ * @param array $klarna_order_lines klarna_order_lines
+ * @param int $order_id order_id
  * @throws Exception
  */
 function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
@@ -1683,8 +1709,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace order_item taxes with customs duties during Recalculate
- * @param $order_item - order_item
- * @param $calculate_tax_for - calculate_tax_for
+ *
+ * @param object $order_item order_item
+ * @param array $calculate_tax_for calculate_tax_for
  * @throws Exception
  */
 function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for ) {
@@ -1717,7 +1744,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Replace chosen shipping method cost with $payload_j['delivery_charge']
- * @param $packages - packages
+ *
+ * @param array $packages packages
  * @throws Exception
  */
 function eascompliance_woocommerce_shipping_packages( $packages ) {
@@ -1784,7 +1812,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Checkout -> Order Hook (before Order created)
- * @param $order - order
+ *
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_checkout_create_order( $order ) {
@@ -1870,7 +1899,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  *  After Order has been created
- * @param $order - order
+ *
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_checkout_order_created( $order ) {
@@ -1939,10 +1969,11 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * When Order status changes from Pending to Processing, send payment verification
- * @param $order_id - order_id
- * @param $status_from - status_from
- * @param $status_to - status_to
- * @param $order - order
+ *
+ * @param int $order_id order_id
+ * @param string $status_from status_from
+ * @param string $status_to status_to
+ * @param object $order order
  * @throws Exception
  */
 function eascompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order ) {
@@ -2022,8 +2053,9 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Notify EAS on order refund
- * @param $order_id - order_id
- * @param $refund_id - refund_id
+ *
+ * @param int $order_id order_id
+ * @param int $refund_id refund_id
  * @throws Exception
  */
 function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
@@ -2098,7 +2130,8 @@ if ( eascompliance_is_active() ) {
 }
 /**
  * Display Order Totals in Order Admin Page
- * @param $order_id - order_id
+ *
+ * @param int $order_id order_id
  */
 function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2320,6 +2353,7 @@ function eascompliance_settings() {
 add_filter( 'woocommerce_settings_start', 'eascompliance_woocommerce_settings_start' );
 /**
  * Settings startup check
+ *
  * @throws Exception
  */
 function eascompliance_woocommerce_settings_start() {
@@ -2349,7 +2383,8 @@ function eascompliance_woocommerce_settings_start() {
 add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settings_tabs_array' );
 /**
  * Settings tab
- * @param $settings_tabs - settings_tabs
+ *
+ * @param array $settings_tabs settings_tabs
  * @throws Exception
  */
 function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
@@ -2373,6 +2408,7 @@ function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'eascompliance_woocommerce_settings_tabs_settings_tab_compliance' );
 /**
  * Settings fields
+ *
  * @throws Exception
  */
 function eascompliance_woocommerce_settings_tabs_settings_tab_compliance() {
@@ -2396,6 +2432,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance() {
 add_action( 'woocommerce_update_options_settings_tab_compliance', 'eascompliance_woocommerce_update_options_settings_tab_compliance' );
 /**
  * Settings Save and Plugin Setup
+ *
  * @throws Exception
  */
 function eascompliance_woocommerce_update_options_settings_tab_compliance() {
@@ -2719,8 +2756,9 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 
 /**
  * Utility function to format strings
- * @param $string - string
- * @param $vars - vars
+ *
+ * @param string $string string
+ * @param array $vars vars
  */
 function eascompliance_format( $string, $vars ) {
 	$patterns     = array_keys( $vars );
@@ -2733,9 +2771,10 @@ function eascompliance_format( $string, $vars ) {
 
 /**
  * Function to avoid undefined index in arrays
- * @param $arr - arr
- * @param $key - key
- * @param $default - default
+ *
+ * @param array $arr arr
+ * @param string $key key
+ * @param object $default default
  */
 function eascompliance_array_get( $arr, $key, $default = null ) {
 	if ( array_key_exists( $key, $arr ) ) {
@@ -2748,6 +2787,8 @@ function eascompliance_array_get( $arr, $key, $default = null ) {
 
 /**
  * The function array_key_first() is not present in PHP version 7.2 or earlier
+ *
+ * @param array $arr array
  */
 function eascompliance_array_key_first2( array $arr ) {
 	foreach ( $arr as $key => $unused ) {
