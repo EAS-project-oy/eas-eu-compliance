@@ -2127,7 +2127,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 		</td>
 		<td width="1%"></td>
 		<td class="total">
-			<?php echo esc_html( wc_price( $payload_j['total_customs_duties'], array( 'currency' => $order->get_currency() ) ) ); ?>
+			<?php echo wc_price( $payload_j['total_customs_duties'], array( 'currency' => $order->get_currency() ) ); ?>
 		</td>
 	</tr>
 	<tr>
@@ -2136,7 +2136,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 		</td>
 		<td width="1%"></td>
 		<td class="total">
-			<?php echo esc_html( wc_price( $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], array( 'currency' => $order->get_currency() ) ) ); ?>
+			<?php echo wc_price( $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], array( 'currency' => $order->get_currency() ) ); ?>
 		</td>
 	</tr>
 	<tr>
@@ -2145,7 +2145,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 		</td>
 		<td width="1%"></td>
 		<td class="total">
-			<?php echo esc_html( wc_price( $payload_j['eas_fee'], array( 'currency' => $order->get_currency() ) ) ); ?>
+			<?php echo wc_price( $payload_j['eas_fee'], array( 'currency' => $order->get_currency() ) ); ?>
 		</td>
 	</tr>
 	<tr>
@@ -2154,7 +2154,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 		</td>
 		<td width="1%"></td>
 		<td class="total">
-			<?php echo esc_html( wc_price( $payload_j['eas_fee_vat'], array( 'currency' => $order->get_currency() ) ) ); ?>
+			<?php echo wc_price( $payload_j['eas_fee_vat'], array( 'currency' => $order->get_currency() ) ); ?>
 		</td>
 	</tr>
 
