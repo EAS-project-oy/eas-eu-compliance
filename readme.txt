@@ -31,11 +31,11 @@ Monthly costs per country you sell - no more! Sell anywhere in EU at a simple, l
 1. Upload the plugin files to the `/wp-content/plugins` directory and unzip, or install the plugin through the WordPress plugins screen directly.
 2. Activate  EAS EU compliance plugin
 3. Go to WooCommerce → Settings → EAS EU compliance tab
-4. Iput the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api. Sign up with EAS Project to obtain authorization key via the EAS self-registration system:  https://registration.easproject.com
+4. Input the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api. Sign up with EAS Project to obtain authorization key via the EAS self-registration system:  https://registration.easproject.com
 5. If you already registered, then obtain authorization keys in Merchant Dashboard https://dashboard.easproject.com.
 6. Set the language interface for the Plugin (EN for English is set by Default).
-7. Tick the box “Enable EAS EU compliance” and press ‘Save changes’ to test connection with API and create necessary EAS system attributes.
-8. If wrong credentials are input Plugin won’t activate and an error message will be displayed.
+7. Tick the box "Enable EAS EU compliance" and press "Save changes" to test connection with API and create necessary EAS system attributes.
+8. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
 9. Setup delivery option
 10. Setup additional product attributes
 11. Detailed instructions available at
