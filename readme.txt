@@ -3,7 +3,7 @@ Contributors: eascompliance
 Tags: EU VAT comliance solution, VAT return management, EU VAT fiscal reporting, full landed cost calculation, Customs duties calculation, HS6 code AI assigning 
 Requires at least: 4.8.0
 Requires PHP: 5.6
-Tested up to: 5.9.1
+Tested up to: 5.9.2
 Stable tag: 1.2.4
 
 
