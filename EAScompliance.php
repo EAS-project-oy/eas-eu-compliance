@@ -6,9 +6,9 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Version: 1.2.4
- * Tested up to 5.9.1
+ * Tested up to 5.9.2
  * WC requires at least: 4.8.0
- * WC tested up to: 6.2.1
+ * WC tested up to: 6.2.2
  * Requires PHP: 5.6
  *
  * @package eascompliance
