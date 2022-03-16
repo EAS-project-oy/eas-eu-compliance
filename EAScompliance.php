@@ -10,6 +10,7 @@
  * WC requires at least: 4.8.0
  * WC tested up to: 6.2.1
  * Requires PHP: 5.6
+ *
  * @package eascompliance
  **/
 
@@ -63,7 +64,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $message message.
  * @param string $file file.
  * @param int    $line line.
- * @throws ErrorException may throw exception.
+ * @throws ErrorException May throw exception.
  */
 function eascompliance_error_handler( $severity, $message, $file, $line ) {
 	throw new ErrorException( $message, 0, $severity, $file, $line );
@@ -126,7 +127,7 @@ function eascompliance_log_exception( Exception $ex ) {
 /**
  * Get tax rate id
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_tax_rate_id() {
 		global $wpdb;
@@ -147,7 +148,7 @@ if ( eascompliance_is_active() ) {
  *
  * @param array  $tax_totals tax_totals.
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -183,7 +184,7 @@ if ( eascompliance_is_active() ) {
  *
  * @param array  $tax_totals tax_totals.
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -417,7 +418,7 @@ function eascompliance_debug() {
 /**
  * Get OAUTH token
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_get_oauth_token() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -506,7 +507,7 @@ function eascompliance_get_oauth_token() {
 /**
  * Make JSON for API /calculate request
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_make_eas_api_request_json() {
 	$jdebug = array();
@@ -718,8 +719,8 @@ if ( eascompliance_is_active() ) {
  * It makes request to EAS server with checkout details and redirects user to EAS Confirmation Page
  * unless STANDARD_CHECKOUT is returned. In which case Checkout proceeds without confirmation
  *
- * @throws Exception may throw exception.
- * @throws EAScomplianceStandardCheckoutException may throw exception.
+ * @throws Exception May throw exception.
+ * @throws EAScomplianceStandardCheckoutException May throw exception.
  */
 function eascompliance_ajaxhandler() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -895,7 +896,7 @@ if ( eascompliance_is_active() ) {
 /**
  * Handle redirect URI confirmation
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_redirect_confirm() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -969,7 +970,7 @@ function eascompliance_redirect_confirm() {
 		$jdebug['$payload_j'] = $payload_j;
 
 		/*
-		 Sample $payload_j json:
+		Sample $payload_j json:
 		{
 			"delivery_charge_vat": 27.36,
 			"merchandise_cost_vat_excl": 3100,
@@ -1142,7 +1143,7 @@ function eascompliance_redirect_confirm() {
 /**
  * Check if EAScompliance is set for every item in cart
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_is_set() {
 	try {
@@ -1177,7 +1178,7 @@ function eascompliance_is_set() {
 /**
  * Check if it is Standard Checkout scenario
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_is_standard_checkout() {
 	try {
@@ -1211,7 +1212,7 @@ function eascompliance_is_standard_checkout() {
 /**
  * CHeck if EAScompliance needs to  recalculate
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_needs_recalculate() {
 	try {
@@ -1241,7 +1242,7 @@ if ( eascompliance_is_active() ) {
 /**
  * Check needs_recalculate via ajax
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_needs_recalculate_ajax() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1270,7 +1271,7 @@ if ( eascompliance_is_active() ) {
  * @param object $order_item_tax order_item_tax.
  * @param int    $tax_rate_id tax_rate_id.
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1369,7 +1370,7 @@ if ( eascompliance_is_active() ) {
  * Order review Tax field
  *
  * @param array $total_taxes total_taxes.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1412,7 +1413,7 @@ if ( eascompliance_is_active() ) {
  * @param string $price_html price_html.
  * @param object $cart_item cart_item.
  * @param string $cart_item_key cart_item_key.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1444,7 +1445,7 @@ if ( eascompliance_is_active() ) {
  * @param string $cart_subtotal cart_subtotal.
  * @param bool   $compound compound.
  * @param object $cart cart.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1480,7 +1481,7 @@ if ( eascompliance_is_active() ) {
  * Checkout Order review Total field
  *
  * @param float $value value.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1510,7 +1511,7 @@ if ( eascompliance_is_active() ) {
  * @param string $cart_item_key cart_item_key.
  * @param array  $values values.
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1543,7 +1544,7 @@ if ( eascompliance_is_active() ) {
  * Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
  *
  * @param array $kp_settings kp_settings.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_klarna_settings_fix( $kp_settings ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1587,7 +1588,7 @@ if ( eascompliance_is_active() ) {
  * @param array  $item_tax_rates item_tax_rates.
  * @param object $item item.
  * @param object $cart cart.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1630,7 +1631,7 @@ if ( eascompliance_is_active() ) {
  *
  * @param array $klarna_order_lines klarna_order_lines.
  * @param int   $order_id order_id.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1713,7 +1714,7 @@ if ( eascompliance_is_active() ) {
  *
  * @param object $order_item order_item.
  * @param array  $calculate_tax_for calculate_tax_for.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1747,7 +1748,7 @@ if ( eascompliance_is_active() ) {
  * Replace chosen shipping method cost with $payload_j['delivery_charge']
  *
  * @param array $packages packages.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_shipping_packages( $packages ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1815,7 +1816,7 @@ if ( eascompliance_is_active() ) {
  * Checkout -> Order Hook (before Order created)
  *
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1902,7 +1903,7 @@ if ( eascompliance_is_active() ) {
  *  After Order has been created
  *
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_order_created( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -1975,7 +1976,7 @@ if ( eascompliance_is_active() ) {
  * @param string $status_from status_from.
  * @param string $status_to status_to.
  * @param object $order order.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2057,7 +2058,7 @@ if ( eascompliance_is_active() ) {
  *
  * @param int $order_id order_id.
  * @param int $refund_id refund_id.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2355,7 +2356,7 @@ add_filter( 'woocommerce_settings_start', 'eascompliance_woocommerce_settings_st
 /**
  * Settings startup check
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_start() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2386,7 +2387,7 @@ add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settin
  * Settings tab
  *
  * @param array $settings_tabs settings_tabs.
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2410,7 +2411,7 @@ add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'eascompliance_
 /**
  * Settings fields
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_tabs_settings_tab_compliance() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2434,7 +2435,7 @@ add_action( 'woocommerce_update_options_settings_tab_compliance', 'eascompliance
 /**
  * Settings Save and Plugin Setup
  *
- * @throws Exception may throw exception.
+ * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 	if ( EASCOMPLIANCE_DEVELOP ) {
@@ -2503,6 +2504,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 				throw new Exception( $attr_id->get_error_message() );
 			}
 			$taxonomy = wc_attribute_taxonomy_name( $slug );
+			// register taxonomy //.
 			register_taxonomy(
 				$taxonomy,
 				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
@@ -2537,6 +2539,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 				throw new Exception( $attr_id->get_error_message() );
 			}
 			$taxonomy = wc_attribute_taxonomy_name( $slug );
+			// register taxonomy //.
 			register_taxonomy(
 				$taxonomy,
 				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
@@ -2582,6 +2585,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 				throw new Exception( $attr_id->get_error_message() );
 			}
 			$taxonomy = wc_attribute_taxonomy_name( $slug );
+			// register taxonomy //.
 			register_taxonomy(
 				$taxonomy,
 				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
@@ -2627,6 +2631,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 				throw new Exception( $attr_id->get_error_message() );
 			}
 			$taxonomy = wc_attribute_taxonomy_name( $slug );
+			// register taxonomy //.
 			register_taxonomy(
 				$taxonomy,
 				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
@@ -2657,22 +2662,22 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 			}
 
 			/*
-					// DEBUG SAMPLE that lists country attributes
-					global $wpdb;
-					$res =  $wpdb->get_results("
-			SELECT att.attribute_name, tt.taxonomy, t.name
-			FROM wplm_terms t
-			JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
-			JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
-			WHERE att.attribute_name = 'country'
-					", ARRAY_A);
-			$txt = implode("\t", array_keys($res[0])) . "\n";
-					foreach ($res as $row) {
-			$txt .= implode("\t", array_values($row)) . "\n";
-					}
-					return $txt;
-					*/
-		};
+			// DEBUG SAMPLE that lists country attributes
+			global $wpdb;
+			$res =  $wpdb->get_results("
+				SELECT att.attribute_name, tt.taxonomy, t.name
+				FROM wplm_terms t
+				JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
+				JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
+				WHERE att.attribute_name = 'country'
+						", ARRAY_A);
+				$txt = implode("\t", array_keys($res[0])) . "\n";
+						foreach ($res as $row) {
+				$txt .= implode("\t", array_values($row)) . "\n";
+			}
+			return $txt;
+			*/
+	};
 
 		$slug = eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' );
 		if ( ! array_key_exists( $slug, wc_get_attribute_taxonomy_labels() ) ) {
@@ -2691,6 +2696,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 				throw new Exception( $attr_id->get_error_message() );
 			}
 			$taxonomy = wc_attribute_taxonomy_name( $slug );
+			// register taxonomy //.
 			register_taxonomy(
 				$taxonomy,
 				apply_filters( 'woocommerce_taxonomy_objects_' . $taxonomy, array( 'product' ) ),
