@@ -2677,7 +2677,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 			}
 			return $txt;
 			*/
-	};
+		};
 
 		$slug = eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' );
 		if ( ! array_key_exists( $slug, wc_get_attribute_taxonomy_labels() ) ) {
