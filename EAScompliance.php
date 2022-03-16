@@ -132,11 +132,11 @@ function eascompliance_log_exception( Exception $ex ) {
 function eascompliance_tax_rate_id() {
 		global $wpdb;
 		$tax_rates = $wpdb->get_results( $wpdb->prepare( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME ), ARRAY_A );
-	if ( count( $tax_rates ) === 0 ) {
-		throw new Exception( __( 'No tax rate found, please check plugin settings', 'eascompliance' ) );
-	}
+		if ( count( $tax_rates ) === 0 ) {
+			throw new Exception( __( 'No tax rate found, please check plugin settings', 'eascompliance' ) );
+		}
 		$tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
-		return $tax_rate_id0;
+		return (int) $tax_rate_id0;
 }
 
 if ( eascompliance_is_active() ) {
