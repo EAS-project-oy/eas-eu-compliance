@@ -383,7 +383,7 @@ function eascompliance_woocommerce_review_order_before_payment() {
 	}
 }
 
-/*
+
 // Debug Console //.
 if (eascompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
 	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
@@ -412,7 +412,7 @@ function eascompliance_debug() {
 
 };
 
-*/
+
 
 
 /**
@@ -2049,6 +2049,224 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 	}
 
 }
+
+
+
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2 );
+}
+/**
+ * EAS Refund return creation
+ *
+ * @param object $refund refund.
+ * @param array $args args.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_create_refund( $refund, $args ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+    $order_id = $args['order_id'];
+
+	$order = wc_get_order( $order_id );
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+		eascompliance_set_locale();
+
+		$auth_token = eascompliance_get_oauth_token();
+
+		$confirmation_token = $order->get_meta( '_easproj_token' );
+		// JWT token is not present during STANDARD_CHECKOUT //.
+		if ( '' === $confirmation_token ) {
+			return;
+		}
+
+		$payload_j = $order->get_meta( 'easproj_payload' );
+
+        $return_breakdown = array();
+
+        foreach ($refund->items as $item) {
+
+            // can only refund non-zero quantity
+			if ($item->get_quantity() === 0) {
+				continue;
+			}
+
+            // get item_id or refund item from easproj_payload //.
+            $px = 0;
+            $item_id = '';
+            foreach($order->get_items() as $k=>$order_item) {
+                if ($order_item['product_id'] === $item['product_id']) {
+                    $item_id = $payload_j['items'][$px]['item_id'];
+                }
+				$px += 1;
+            }
+
+
+            $refund_item = array('id_provided_by_em'=>$item_id, 'quantity'=> -$item->get_quantity());
+
+            $return_breakdown[] = $refund_item;
+        }
+
+        // eascompliance_logger()->debug('$return_breakdown '.print_r($return_breakdown, true)); //.
+
+		$options = array(
+			'http' => array(
+				'method'        => 'POST',
+				'header'        => "Content-type: application/json\r\n"
+											. 'Authorization: Bearer ' . $auth_token . "\r\n",
+				'content'       => json_encode(
+					array(
+						'token' => $confirmation_token,
+						'return_breakdown'     => $return_breakdown,
+						JSON_THROW_ON_ERROR2,
+					)
+				),
+				'ignore_errors' => true,
+			),
+			'ssl'  => array(
+				'verify_peer'      => false,
+				'verify_peer_name' => false,
+			),
+		);
+		$context = stream_context_create( $options );
+
+		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return';
+		$refund_body = file_get_contents( $refund_url, false, $context );
+
+		$refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+
+		if ( '200' === $refund_status ) {
+
+			$arr         = preg_split( '/[.]/', $refund_body, 3 );
+			$refund_payload = json_decode(base64_decode( $arr[1], false ), true);
+
+            /*
+                // sample response
+                {
+                  "timestamp_year": 2022,
+                  "order_id": 38210,
+                  "total_return_amount": 505.97,
+                  "return_id": "15",
+                  "external_order_id": "test1",
+                  "return_items": [
+                    {
+                      "timestamp_year": 2022,
+                      "id_provided_by_em": "FC_Rep_1",
+                      "return_item_quantity": 1,
+                      "return_item_amount": 403.23,
+                      "return_delivery_cost": 5,
+                      "return_eas_fee": 0,
+                      "return_vat_value": 96.77,
+                      "return_vat_on_delivery_charge": 0.97,
+                      "return_vat_on_eas_fee": 0,
+                      "return_id": "15"
+                    }
+                  ],
+                  "iat": 1646508905,
+                  "exp": 4770711305,
+                  "aud": "returns_205",
+                  "iss": "@eas/auth",
+                  "sub": "returns",
+                  "jti": "592119df-70fb-46ed-b145-97cd5a18236b"
+                }
+
+            */
+
+            $refund->add_meta_data('_easproj_refund_payload', $refund_payload);
+
+            // modify refund taxes from $refund_payload  //.
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+            foreach($refund->get_items() as $item) {
+
+				// get item_id or refund item from easproj_payload //.
+				$px = 0;
+				$item_id = '';
+				foreach($order->get_items() as $k=>$order_item) {
+					if ($order_item['product_id'] === $item['product_id']) {
+						$item_id = $payload_j['items'][$px]['item_id'];
+					}
+					$px += 1;
+				}
+
+                $return_item = null;
+                foreach($refund_payload['return_items'] as $ri) {
+                    if ($ri['id_provided_by_em'] == $item_id) {
+						$return_item = $ri;
+                    }
+                }
+
+                $return_item_tax = $return_item['return_vat_value'] + $return_item['return_vat_on_delivery_charge'] + $return_item['return_vat_on_eas_fee'] + $return_item['return_eas_fee'];
+				$item->set_taxes(
+					array(
+						'total'    => array($tax_rate_id0 =>$return_item_tax),
+						'subtotal' => array($tax_rate_id0 =>$return_item_tax),
+					)
+				);
+            }
+            $refund->save();
+
+			$order->add_order_note( __( 'Refund return created.  ', 'eascompliance') );
+			eascompliance_logger()->info( 'Refund return created.  ' . print_r($refund_payload, true) );
+		} else {
+            /*
+
+            Примеры ошибок
+            {
+            "message": "Insufficient remaining quantity: 1 of item: FC_Rep_2 to support returned quantity",
+            "code": 400,
+            "retryable": false,
+            "nodeID": "eas-returns-6bb44b5cd-zbz2b-18"
+            }
+            {
+            "message": "Invalid Item ID: FC_Rep_21",
+            "code": 400,
+            "retryable": false,
+            "nodeID": "eas-returns-6bb44b5cd-zbz2b-18"
+            }
+            Следующую ошибку надо обрабатывать так "Order not found in EAS dashboard".
+            {
+            "message": "invalid token",
+            "name": "JsonWebTokenError",
+            "nodeID": "eas-auth-7f5764647c-9m59d-18"
+            }
+
+             */
+
+			$refund_error = json_decode( $refund_body, true );
+            eascompliance_logger()->error('Refund return error. '.print_r($refund_error, true));
+
+			$error_message = '';
+			if ( array_key_exists( 'message', $refund_error ) ) {
+				$error_message = $refund_error['message'];
+			}
+
+            if ($error_message === 'invalid token') {
+				$error_message = ' Order not found in EAS dashboard';
+            }
+
+			if ( array_key_exists( 'code', $refund_error ) ) {
+				$error_message = $error_message . ' Code ' . $refund_error['code'];
+			}
+
+			$order->add_order_note(  'Refund return failed.  '. $error_message );
+			throw new Exception( $error_message );
+		}
+
+		$order->save();
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		$order->add_order_note( __( 'Refund create failed: ', 'eascompliance' ) . $ex->getMessage() );
+	} finally {
+		eascompliance_set_locale( true );
+		restore_error_handler();
+	}
+
+}
+
 
 if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_order_refunded', 'eascompliance_woocommerce_order_refunded', 10, 4 );
