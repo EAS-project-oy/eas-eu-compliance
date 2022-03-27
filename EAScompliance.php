@@ -385,32 +385,30 @@ function eascompliance_woocommerce_review_order_before_payment() {
 
 
 // Debug Console //.
-if (eascompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
-	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
-	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
-};
-function eascompliance_debug() {
-	if (EASCOMPLIANCE_DEVELOP) {eascompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
-
-	try {
-		if (!wp_verify_nonce( strval(eascompliance_array_get($_POST, 'eascompliance_nonce_debug', '')), 'eascompliance_nonce_debug' )) {
-			throw new Exception('Security check');
-		}
-
-		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
-
-		set_error_handler('eascompliance_error_handler');
-		// $jres = 'eval() disabled';
-		// eval must be commented
-		$jres = print_r(eval($debug_input), true);
-	} catch (Exception $ex) {
-		$jres = 'Error: ' . $ex->getMessage();
-	} finally {
-		restore_error_handler();
-		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-	}
-
-};
+//if (eascompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
+//	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
+//	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
+//};
+//function eascompliance_debug() {
+//	if (EASCOMPLIANCE_DEVELOP) {eascompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
+//
+//	try {
+//		if (!wp_verify_nonce( strval(eascompliance_array_get($_POST, 'eascompliance_nonce_debug', '')), 'eascompliance_nonce_debug' )) {
+//			throw new Exception('Security check');
+//		}
+//
+//		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
+//
+//		set_error_handler('eascompliance_error_handler');
+//		$jres = print_r(eval($debug_input), true);
+//	} catch (Exception $ex) {
+//		$jres = 'Error: ' . $ex->getMessage();
+//	} finally {
+//		restore_error_handler();
+//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+//	}
+//
+//};
 
 
 
@@ -2177,9 +2175,14 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             $refund->add_meta_data('_easproj_refund_payload', $refund_payload);
 
+			$refund_total = 0;
+            $return_delivery_cost = 0;
+            $total_return_item_tax = 0;
             // modify refund taxes from $refund_payload  //.
 			$tax_rate_id0 = eascompliance_tax_rate_id();
             foreach($refund->get_items() as $item) {
+
+                $refund_total += $item->get_total();
 
 				// get item_id or refund item from easproj_payload //.
 				$px = 0;
@@ -2198,18 +2201,46 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
                     }
                 }
 
+                if ( is_null( $return_item) ) { continue; }
+
+                $return_delivery_cost += $return_item['return_delivery_cost'] * $return_item['return_item_quantity'];
+
                 $return_item_tax = $return_item['return_vat_value'] + $return_item['return_vat_on_delivery_charge'] + $return_item['return_vat_on_eas_fee'] + $return_item['return_eas_fee'];
+				$refund_total += -$return_item_tax;
 				$item->set_taxes(
 					array(
-						'total'    => array($tax_rate_id0 =>$return_item_tax),
-						'subtotal' => array($tax_rate_id0 =>$return_item_tax),
+						'total'    => array($tax_rate_id0 => -$return_item_tax),
+						'subtotal' => array($tax_rate_id0 => -$return_item_tax),
 					)
 				);
             }
+
+			// set return_delivery_cost for first found shipping //.
+            foreach ($refund->get_items('shipping') as $shipping_item) {
+				$refund_total += $shipping_item->get_total();
+
+                $refund_total += -$return_delivery_cost;
+
+				$shipping_item->set_taxes (
+					array(
+						'total'    => array($tax_rate_id0 => -$return_delivery_cost),
+						'subtotal' => array($tax_rate_id0 => -$return_delivery_cost),
+					));
+
+                break;
+            }
+			$refund->set_shipping_total( -$return_delivery_cost);
+
+            // refund total is negative value //.
+			$refund->set_total( $refund_total);
+
+            // refund amount is positive value, rendered at admin order view //.
+			$refund->set_amount( -$refund_total);
+
             $refund->save();
 
-			$order->add_order_note( __( 'Refund return created.  ', 'eascompliance') );
-			eascompliance_logger()->info( 'Refund return created.  ' . print_r($refund_payload, true) );
+			$order->add_order_note( eascompliance_format( __( 'Refund return created. Refund id $refund_id ', 'eascompliance'), array('refund_id'=>$refund->get_id()) ) );
+			eascompliance_logger()->info( eascompliance_format('Refund return created. Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) . print_r($refund_payload, true) );
 		} else {
             /*
 
