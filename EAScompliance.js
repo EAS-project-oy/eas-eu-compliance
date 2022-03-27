@@ -65,7 +65,7 @@ jQuery(document).ready(function($) {
 
 
 
-        block($('.EAScompliance'));
+        block($('.woocommerce-checkout'));
         $('.button_calc').text(plugin_dictionary.calculating_taxes);
 
         $(document.body).trigger("update_checkout");
@@ -81,7 +81,7 @@ jQuery(document).ready(function($) {
                 , data: {'action': 'eascompliance_ajaxhandler', 'request': JSON.stringify(request), 'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val()}
                 , dataType: 'json'
                 , success: function (j) {
-                    unblock($('.EAScompliance'));
+                    unblock($('.woocommerce-checkout'));
                     $('.button_calc').text(plugin_dictionary.taxes_added)
                     $('.eascompliance_status').text( plugin_dictionary.waiting_for_confirmation )
 
