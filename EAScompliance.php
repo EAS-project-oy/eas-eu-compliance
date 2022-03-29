@@ -2241,7 +2241,12 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 			$order->add_order_note( eascompliance_format( __( 'Refund return created. Refund id $refund_id ', 'eascompliance'), array('refund_id'=>$refund->get_id()) ) );
 			eascompliance_logger()->info( eascompliance_format('Refund return created. Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) . print_r($refund_payload, true) );
-		} else {
+		}
+		// Refund return failed. Insufficient remaining quantity //.
+        elseif ( '400' === $refund_status ) {
+			$refund->add_meta_data('_easproj_refund_invalid', '1');
+		}
+		else {
             /*
 
             Примеры ошибок
@@ -2314,6 +2319,16 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
 
 	$order = wc_get_order( $order_id );
+
+    $refund = wc_get_order ($refund_id);
+
+	// Delete refund that is invalid due to  insufficient remaining quantity //.
+    if ( '1' === $refund->get_meta('_easproj_refund_invalid') ) {
+		wp_delete_post( $refund_id, true );
+		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ', 'eascompliance'), array('refund_id'=>$refund_id) ));
+		return;
+    }
+
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
