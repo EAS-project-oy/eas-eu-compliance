@@ -2326,68 +2326,7 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
     if ( '1' === $refund->get_meta('_easproj_refund_invalid') ) {
 		wp_delete_post( $refund_id, true );
 		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ', 'eascompliance'), array('refund_id'=>$refund_id) ));
-		return;
     }
-
-
-	try {
-		set_error_handler( 'eascompliance_error_handler' );
-		eascompliance_set_locale();
-
-		$auth_token = eascompliance_get_oauth_token();
-
-		$confirmation_token = $order->get_meta( '_easproj_token' );
-		// JWT token is not present during STANDARD_CHECKOUT //.
-		if ( '' === $confirmation_token ) {
-			return;
-		}
-
-		$order_json = json_decode( $order->get_meta( '_easproj_order_json' ) );
-
-		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode(
-					array(
-						'sale_date' => strtotime( $order->get_date_created()->date( 'Y-m-d H:i:s' ) ),
-						'order'     => $order_json,
-						's10_code'  => '',
-						JSON_THROW_ON_ERROR2,
-					)
-				),
-				'ignore_errors' => true,
-			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
-		);
-		$context = stream_context_create( $options );
-
-		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
-		$refund_body = file_get_contents( $refund_url, false, $context );
-
-		$refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
-
-		if ( '200' === $refund_status ) {
-			$order->add_order_note( __( 'Order refunded.  EAS API payment notified' ) );
-		} else {
-			throw new Exception( $http_response_header[0] . '\n\n' . $refund_body );
-		}
-
-		$order->save();
-
-		eascompliance_logger()->info( "Order $order_id refund notification successful" );
-	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
-		$order->add_order_note( __( 'Order refund notification failed: ', 'eascompliance' ) . $ex->getMessage() );
-	} finally {
-		eascompliance_set_locale( true );
-		restore_error_handler();
-	}
-
 }
 
 
