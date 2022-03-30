@@ -29,4 +29,18 @@ jQuery(document).ready(function($) {
 
     window.woocommerce_admin_meta_boxes.i18n_do_refund = "Calculation of refund amount can\'t be undo (refund amount will be included into VAT report), please check that you selected all goods to be returned. Confirm to proceed";
 
+    // admin Order view Recalculate button
+    $('.eascompliance-recalculate').on('click', async function () {
+        // TODO
+        res = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })})).status;
+
+    } )
+
     })

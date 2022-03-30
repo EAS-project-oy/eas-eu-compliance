@@ -308,6 +308,10 @@ function eascompliance_settings_scripts() {
 
 	// include javascript //.
 	wp_enqueue_script( 'EAScompliance', plugins_url( '/EAScompliance-settings.js', __FILE__ ), array( 'jquery' ), filemtime( dirname( __FILE__ ) . '/EAScompliance-settings.js' ), true );
+
+	// Pass ajax_url to javascript //.
+	wp_localize_script( 'EAScompliance', 'plugin_ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+
 };
 
 
@@ -648,6 +652,12 @@ function eascompliance_make_eas_api_request_json() {
 		$originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
 		$seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
 
+        $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+        $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
+        if ( in_array($product->get_type(), $giftcard_product_types, true) ){
+		    $type_of_goods = 'GIFTCARD';
+		}
+
 		$items[] = array(
 			'short_description'           => $product->get_name(),
 			'long_description'            => $product->get_name(),
@@ -662,9 +672,9 @@ function eascompliance_make_eas_api_request_json() {
 			// $product = wc_get_product($cart[eascompliance_array_key_first2($cart)]['product_id']);
 			// return $product->get_attribute(woocommerce_settings_get_option('easproj_warehouse_country')); //.
 
-		'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
+		    'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
 
-			'type_of_goods'               => $product->is_virtual() ? 'TBE' : 'GOODS',
+			'type_of_goods'               => $type_of_goods,
 			'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
 			'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
 			'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
@@ -672,7 +682,7 @@ function eascompliance_make_eas_api_request_json() {
 		);
 	}
 
-	// eascompliance_logger()->debug('$items before discount '.print_r($items, true));
+	eascompliance_logger()->debug('$items before discount '.print_r($items, true));
 	// split cart discount proportionally between items
 	// making and solving equation to get new item price //.
 	$d = $cart->get_discount_total(); // discount d    //.
@@ -1258,7 +1268,41 @@ function eascompliance_needs_recalculate_ajax() {
 	} finally {
 		restore_error_handler();
 	}
-};
+}
+
+if ( eascompliance_is_active() ) {
+	add_action( 'wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax' );
+}
+/**
+ * Admin Order method to recalculate EAS fees
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_recalculate_ajax() {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json( array( 'status' => 'no permission' ) ) ;
+		}
+
+		$order_id = absint( $_POST['order_id'] );
+
+		set_error_handler( 'eascompliance_error_handler' );
+
+
+
+		wp_send_json( array( 'status' => 'ok' ) );
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
 
 if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3 );
@@ -2095,13 +2139,22 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             // get item_id or refund item from easproj_payload //.
             $px = 0;
             $item_id = '';
+			$payload_item = null;
+			$request_json =  json_decode( $order->get_meta('_easproj_order_json'), true );
             foreach($order->get_items() as $k=>$order_item) {
                 if ($order_item['product_id'] === $item['product_id']) {
                     $item_id = $payload_j['items'][$px]['item_id'];
+					$payload_item = $request_json['order_breakdown'][$px];
                 }
 				$px += 1;
             }
 
+			// Giftcards cannot be refunded
+			if ( $payload_item['type_of_goods'] === 'GIFTCARD' ) {
+				$refund->add_meta_data('_easproj_refund_invalid', '2', true);
+				$refund->save();
+                return;
+			}
 
             $refund_item = array('id_provided_by_em'=>$item_id, 'quantity'=> -$item->get_quantity());
 
@@ -2173,7 +2226,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             */
 
-            $refund->add_meta_data('_easproj_refund_payload', $refund_payload);
+            $refund->add_meta_data('_easproj_refund_payload', $refund_payload, true);
 
 			$refund_total = 0;
             $return_delivery_cost = 0;
@@ -2244,7 +2297,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 		}
 		// Refund return failed. Insufficient remaining quantity //.
         elseif ( '400' === $refund_status ) {
-			$refund->add_meta_data('_easproj_refund_invalid', '1');
+			$refund->add_meta_data('_easproj_refund_invalid', '1', true);
 		}
 		else {
             /*
@@ -2326,6 +2379,36 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
     if ( '1' === $refund->get_meta('_easproj_refund_invalid') ) {
 		wp_delete_post( $refund_id, true );
 		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ', 'eascompliance'), array('refund_id'=>$refund_id) ));
+    }
+
+
+	// Delete refund with refunded giftcards  //.
+    if ( '2' === $refund->get_meta('_easproj_refund_invalid') ) {
+		wp_delete_post( $refund_id, true );
+		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due containing Giftcard. ', 'eascompliance'), array('refund_id'=>$refund_id) ));
+    }
+}
+
+
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_order_item_add_action_buttons', 'eascompliance_woocommerce_order_item_add_action_buttons', 10, 1 );
+}
+/**
+ * EAS recalculate button in admin Order view
+ *
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_order_item_add_action_buttons( $order ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	if ( $order->is_editable() )
+	{
+        ?>
+        <button type="button" class="button button-primary eascompliance-recalculate"><?php esc_html_e( 'Calculate Taxes & Duties EAS', 'woocommerce' ); ?></button>
+        <?php
     }
 }
 
@@ -2409,6 +2492,12 @@ function eascompliance_settings() {
 	$shipping_methods = array();
 	foreach ( WC_Shipping::instance()->get_shipping_methods() as $id => $shipping_method ) {
 		$shipping_methods[ $id ] = $shipping_method->get_method_title();
+	}
+
+	// product types //.
+    $product_types = array();
+	foreach ( wc_get_product_types() as $id => $label ) {
+		$product_types[ $id ] = $label;
 	}
 
 	global $wpdb;
@@ -2548,6 +2637,14 @@ function eascompliance_settings() {
 			'default' => 'easproj_originating_country',
 			'options' => $attributes,
 		),
+		'giftcard_product_types' => array(
+			'name'    => __( 'Giftcard product types', 'eascompliance' ),
+			'type'    => 'multiselect',
+			'class'   => 'wc-enhanced-select',
+			'desc'    => __( 'Product type(s) used for Gift cards management', 'eascompliance' ),
+			'id'      => 'easproj_giftcard_product_types',
+			'options' => $product_types,
+		),
 		'section_end'             => array(
 			'type' => 'sectionend',
 		),
@@ -2576,6 +2673,16 @@ function eascompliance_woocommerce_settings_start() {
 		if ( array_diff( $shipping_methods_latest, $shipping_methods_saved ) ) {
 			WC_Admin_Settings::add_message( 'New delivery method created. If it is postal delivery please update ' . EASCOMPLIANCE_PLUGIN_NAME . ' plugin setting.' );
 		}
+
+
+        // if product types have Gift or Card in its name and not listed in easproj_giftcard_product_types option, then inform admin
+		$gift_product_types_saved  = woocommerce_settings_get_option( 'easproj_giftcard_product_types' );
+		$gift_product_types_saved  = $gift_product_types_saved ? $gift_product_types_saved : array();
+        $giftcard_product_types = array_keys(preg_grep("/(Gift|Card)/i", wc_get_product_types() ));
+        if ( array_diff( $giftcard_product_types, $gift_product_types_saved ) ) {
+			WC_Admin_Settings::add_message( __('Attention! EAS plugin detected gift card Product type(s),  please if you are selling Gift cards please enter Product type(s) in relevant configuration settings', 'eascompliance' ));
+        }
+
 	} catch ( Exception $ex ) {
 		eascompliance_log_exception( $ex );
 		throw $ex;
