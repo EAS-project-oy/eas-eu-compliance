@@ -2127,6 +2127,18 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 		$payload_j = $order->get_meta( 'easproj_payload' );
 
+        // if Order has shipping and Refund has not, then add shipping refund here so that return_delivery_cost can be applied to refund
+        if ( $order->get_items('shipping') && ! $refund->get_items('shipping') ) {
+            $order_shipping_item = array_values($order->get_items('shipping'))[0];
+
+            $shipping_item = new WC_Order_Item_Shipping();
+			$shipping_item->set_name($order_shipping_item->get_name());
+			$shipping_item->add_meta_data( 'VAT Amount', $order_shipping_item->get_meta('VAT Amount') );
+			$shipping_item->add_meta_data( 'Items', $order_shipping_item->get_meta('Items') );
+            $shipping_item->add_meta_data('_refunded_item_id', $order_shipping_item->get_id());
+            $refund->add_item( $shipping_item );
+        }
+
         $return_breakdown = array();
 
         foreach ($refund->items as $item) {
@@ -2270,15 +2282,15 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 			// set return_delivery_cost for first found shipping //.
             foreach ($refund->get_items('shipping') as $shipping_item) {
-				$refund_total += $shipping_item->get_total();
-
                 $refund_total += -$return_delivery_cost;
 
 				$shipping_item->set_taxes (
 					array(
-						'total'    => array($tax_rate_id0 => -$return_delivery_cost),
-						'subtotal' => array($tax_rate_id0 => -$return_delivery_cost),
+						'total'    => array($tax_rate_id0 => -0),
+						'subtotal' => array($tax_rate_id0 => -0),
 					));
+
+                $shipping_item->set_total(-$return_delivery_cost);
 
                 break;
             }
