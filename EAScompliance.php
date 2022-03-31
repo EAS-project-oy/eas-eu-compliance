@@ -31,6 +31,7 @@ define( 'JSON_THROW_ON_ERROR2', 4194304 );
  * */
 function eascompliance_set_locale( bool $reset = false ) {
 	static $current_locale = '';
+    static $error_reported = false;
 	if ( '' === $current_locale ) {
 		$current_locale = get_locale();
 	};
@@ -43,9 +44,14 @@ function eascompliance_set_locale( bool $reset = false ) {
 	} elseif ( 'FI' === $plugin_lang ) {
 		switch_to_locale( 'fi' );
 	}
-	$res = load_plugin_textdomain( 'eascompliance', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+
+	$plugin_rel_path = plugin_basename( dirname( __FILE__ ) ) . '/languages';
+	$res = load_plugin_textdomain( 'eascompliance', false, $plugin_rel_path );
 	if ( ! $res ) {
-		eascompliance_logger()->error( 'load_plugin_textdomain() failed' );
+        if (! $error_reported ) {
+			eascompliance_logger()->error('load_plugin_textdomain() failed, $plugin_rel_path is ' . $plugin_rel_path);
+			$error_reported = true;
+		}
 	}
 }
 
@@ -613,10 +619,10 @@ function eascompliance_make_eas_api_request_json() {
 		$checkout['shipping_first_name'] = $checkout['billing_first_name'];
 		$checkout['shipping_last_name']  = $checkout['billing_last_name'];
 		$checkout['shipping_address_1']  = $checkout['billing_address_1'];
-		$checkout['shipping_address_2']  = $checkout['billing_address_2'];
+		$checkout['shipping_address_2']  = eascompliance_array_get($checkout, 'billing_address_2', '' );
 		$checkout['shipping_city']       = $checkout['billing_city'];
 		$checkout['shipping_postcode']   = $checkout['billing_postcode'];
-		$checkout['shipping_phone']      = $checkout['billing_phone'];
+		$checkout['shipping_phone']      = eascompliance_array_get($checkout, 'billing_phone', '');
 	}
 
 	$delivery_state_province        = eascompliance_array_get( $checkout, 'shipping_state', '' ) === '' ? '' : '' . WC()->countries->states[ $checkout['shipping_country'] ][ $checkout['shipping_state'] ];
@@ -1387,7 +1393,7 @@ function eascompliance_cart_total() {
 		$total   -= $discount;
 
 		// check that payload total_order_amount equals Order total //.
-		if ( $payload_total_order_amount !== $total ) {
+		if ( (float) $payload_total_order_amount !== (float) $total ) {
 			eascompliance_log_exception(
 				new Exception(
 					eascompliance_format(
