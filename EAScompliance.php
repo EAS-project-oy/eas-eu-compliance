@@ -2274,7 +2274,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
                 if ( is_null( $return_item) ) { continue; }
 
-                $return_delivery_cost += $return_item['return_delivery_cost'] * $return_item['return_item_quantity'];
+                $return_delivery_cost += $return_item['return_delivery_cost'];
 
                 $return_item_tax = $return_item['return_vat_value'] + $return_item['return_vat_on_delivery_charge'] + $return_item['return_vat_on_eas_fee'] + $return_item['return_eas_fee'];
 				$refund_total += -$return_item_tax;
