@@ -1,0 +1,247 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: eascompliance\n"
+"POT-Creation-Date: 2022-03-14 01:25+0200\n"
+"PO-Revision-Date: \n"
+"Language-Team: info@easproject.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;"
+"_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
+"esc_html_e;esc_html_x:1,2c\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Poedit 3.0\n"
+"Last-Translator: \n"
+"Language: de\n"
+"X-Poedit-SearchPath-0: ./EAScompliance.php\n"
+
+#: EAScompliance.php:116
+msgid "No tax rate found, please check plugin settings"
+msgstr ""
+
+#: EAScompliance.php:139 EAScompliance.php:172
+msgid "Taxes & Duties"
+msgstr ""
+
+#: EAScompliance.php:241
+msgid ""
+"Please check for required billing details. All fields marked as required "
+"should be filled."
+msgstr ""
+
+#: EAScompliance.php:242
+msgid ""
+"Please check for required shipping details. All fields marked as required "
+"should be filled."
+msgstr ""
+
+#: EAScompliance.php:243
+msgid "Calculating taxes and duties ..."
+msgstr ""
+
+#: EAScompliance.php:244
+msgid "Customs taxes and duties added..."
+msgstr ""
+
+#: EAScompliance.php:245
+msgid "Waiting for Customs Duties Calculation and confirmation details"
+msgstr ""
+
+#: EAScompliance.php:246
+msgid "confirmation"
+msgstr ""
+
+#: EAScompliance.php:247
+msgid "Sorry, didn't work, please try again"
+msgstr ""
+
+#: EAScompliance.php:248
+msgid "Recalculate Taxes and Duties"
+msgstr ""
+
+#: EAScompliance.php:249
+msgid "Standard Checkout"
+msgstr ""
+
+#: EAScompliance.php:306
+msgid "Calculate Taxes and Duties"
+msgstr ""
+
+#: EAScompliance.php:427 EAScompliance.php:435
+msgid ""
+"EU tax calculation service temporary unavailable. Please try to place an "
+"order later."
+msgstr ""
+
+#: EAScompliance.php:440
+msgid ""
+"Invalid Credentials provided. Please check EAS client ID and EAS client "
+"secret."
+msgstr ""
+
+#: EAScompliance.php:511 EAScompliance.php:844
+msgid "Security check"
+msgstr ""
+
+#: EAScompliance.php:1258
+msgid "$payload_total_order_amount $a not equal order total $b"
+msgstr ""
+
+#: EAScompliance.php:1696
+msgid "CUSTOMS DUTIES MISSING"
+msgstr ""
+
+#: EAScompliance.php:1723
+msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
+msgstr ""
+
+#: EAScompliance.php:1790
+msgid "Notify Order number $order_id successful"
+msgstr ""
+
+#: EAScompliance.php:1801
+msgid "Notify Order number $order_id failed: "
+msgstr ""
+
+#: EAScompliance.php:1855
+msgid ""
+"Order status changed from $status_from to $status_to .  EAS API payment "
+"notified"
+msgstr ""
+
+#: EAScompliance.php:1866
+msgid "Order status change notification failed: "
+msgstr ""
+
+#: EAScompliance.php:1924
+msgid "Order refunded.  EAS API payment notified"
+msgstr ""
+
+#: EAScompliance.php:1934
+msgid "Order refund notification failed: "
+msgstr ""
+
+#: EAScompliance.php:2040
+msgid "Settings"
+msgstr ""
+
+#: EAScompliance.php:2045
+msgid "Enable/Disable"
+msgstr ""
+
+#: EAScompliance.php:2052
+msgid "Debug"
+msgstr ""
+
+#: EAScompliance.php:2059
+msgid "EAS API Base URL"
+msgstr ""
+
+#: EAScompliance.php:2061
+msgid "API URL"
+msgstr ""
+
+#: EAScompliance.php:2067
+msgid "EAS client ID"
+msgstr ""
+
+#: EAScompliance.php:2069
+msgid "Use the client ID you received from EAS Project"
+msgstr ""
+
+#: EAScompliance.php:2074
+msgid "EAS client secret"
+msgstr ""
+
+#: EAScompliance.php:2076
+msgid "Use the secret you received from EAS Project"
+msgstr ""
+
+#: EAScompliance.php:2081
+msgid "Language"
+msgstr ""
+
+#: EAScompliance.php:2083
+msgid "Choose language for user interface of plugin"
+msgstr ""
+
+#: EAScompliance.php:2085
+msgid "Default"
+msgstr ""
+
+#: EAScompliance.php:2087
+msgid "Store Default"
+msgstr ""
+
+#: EAScompliance.php:2088
+msgid "English"
+msgstr ""
+
+#: EAScompliance.php:2089
+msgid "Finnish"
+msgstr ""
+
+#: EAScompliance.php:2092
+msgid "Shipping methods by post"
+msgstr ""
+
+#: EAScompliance.php:2095
+msgid "Select shipping methods for delivery by post"
+msgstr ""
+
+#: EAScompliance.php:2110
+msgid "HSCODE"
+msgstr ""
+
+#: EAScompliance.php:2112
+msgid "HSCode attribute slug. Attribute will be created if does not exist."
+msgstr ""
+
+#: EAScompliance.php:2120
+msgid ""
+"Location warehouse country attribute slug. Attribute will be created if does "
+"not exist."
+msgstr ""
+
+#: EAScompliance.php:2126
+msgid "Reduced VAT for TBE"
+msgstr ""
+
+#: EAScompliance.php:2128
+msgid ""
+"Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
+"does not exist."
+msgstr ""
+
+#: EAScompliance.php:2134
+msgid "Act as Disclosed Agent"
+msgstr ""
+
+#: EAScompliance.php:2136
+msgid ""
+"Act as Disclosed Agent attribute slug. Attribute will be created if does not "
+"exist."
+msgstr ""
+
+#: EAScompliance.php:2142
+msgid "Seller registration country"
+msgstr ""
+
+#: EAScompliance.php:2144
+msgid ""
+"Seller registration country attribute slug. Attribute will be created if "
+"does not exist."
+msgstr ""
+
+#: EAScompliance.php:2150
+msgid "Originating Country"
+msgstr ""
+
+#: EAScompliance.php:2152
+msgid ""
+"Originating Country attribute slug. Attribute will be created if does not "
+"exist."
+msgstr ""
