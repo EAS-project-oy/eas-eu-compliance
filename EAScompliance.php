@@ -2205,9 +2205,29 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 		$context = stream_context_create( $options );
 
 		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return';
-		$refund_body = file_get_contents( $refund_url, false, $context );
 
-		$refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+        // retry API refund return request several times for anything except statuses 200 or 400
+        $MAX_ATTEMPTS = 3;
+		$attempt=1;
+        while (true) {
+            if ( $attempt > $MAX_ATTEMPTS) {
+				$refund->add_meta_data('_easproj_refund_invalid', '3', true);
+				$refund->save();
+				return;
+            }
+            $refund_body = file_get_contents( $refund_url, false, $context );
+            $refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+
+			if ( '200' === $refund_status || '400' === $refund_status) {
+                break;
+            }
+
+			$refund_error = json_decode( $refund_body, true );
+			eascompliance_logger()->error('Retrying refund return request, last attempt failed: '.print_r($refund_error, true));
+
+            sleep(1);
+			$attempt += 1;
+        }
 
 		if ( '200' === $refund_status ) {
 
@@ -2406,6 +2426,12 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
     if ( '2' === $refund->get_meta('_easproj_refund_invalid') ) {
 		wp_delete_post( $refund_id, true );
 		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due containing Giftcard. ', 'eascompliance'), array('refund_id'=>$refund_id) ));
+    }
+
+	// Delete refund with too many failed attempts  //.
+    if ( '3' === $refund->get_meta('_easproj_refund_invalid') ) {
+		wp_delete_post( $refund_id, true );
+		$order->add_order_note(  eascompliance_format(__( 'Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later ', 'eascompliance'), array('refund_id'=>$refund_id) ));
     }
 }
 
