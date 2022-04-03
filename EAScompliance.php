@@ -1291,23 +1291,74 @@ function eascompliance_recalculate_ajax() {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
 
 	try {
+		set_error_handler( 'eascompliance_error_handler' );
+		eascompliance_set_locale();
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json( array( 'status' => 'no permission' ) ) ;
+			wp_send_json( array( 'status'=>'error', 'message' => 'no permission' ) );
 		}
 
-		$order_id = absint( $_POST['order_id'] );
+        $order_id = absint( $_POST['order_id'] );
 
-		set_error_handler( 'eascompliance_error_handler' );
+        $order = wc_get_order($order_id);
+
+        $auth_token = eascompliance_get_oauth_token();
+
+        $confirmation_token = $order->get_meta( '_easproj_token' );
+        // JWT token is not present during STANDARD_CHECKOUT //.
+        if ( '' === $confirmation_token ) {
+            return;
+        }
+
+        $order_json = json_decode( $order->get_meta( '_easproj_order_json' ));
+        $sales_order_json = array(
+                'order'=>$order_json,
+                'sale_date'=>date_format(new DateTime(), 'Y-m-d'),
+                's10_cod'=>$order_json['external_order_id'],
+        );
 
 
+        $options = array(
+            'http' => array(
+                'method'        => 'POST',
+                'header'        => "Content-type: application/json\r\n"
+                    . 'Authorization: Bearer ' . $auth_token . "\r\n",
+                'content'       => json_encode($sales_order_json, JSON_THROW_ON_ERROR2),
+                'ignore_errors' => true,
+            ),
+            'ssl'  => array(
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ),
+        );
+        $context = stream_context_create( $options );
+
+        $sales_order_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
+        $sales_order_body = file_get_contents( $sales_order_url, false, $context );
+
+        $sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+
+        if ( '200' === $sales_order_status ) {
+            $order->add_meta_data('_easproj_order_json', $sales_order_body, true);
+            $order->add_order_note( format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
+
+
+            //TODO update order with data received from EAS
+        } else {
+            throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
+        }
+
+        $order->save();
+
+        eascompliance_logger()->info( "Sales order $order_id update successful" );
 
 		wp_send_json( array( 'status' => 'ok' ) );
 
 	} catch ( Exception $ex ) {
 		eascompliance_log_exception( $ex );
-		throw $ex;
+		wp_send_json( array( 'status' => 'error', 'message'=>$ex->getMessage() ) );;
 	} finally {
+		eascompliance_set_locale(true);
 		restore_error_handler();
 	}
 }
@@ -2450,7 +2501,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
 
-	if ( $order->is_editable() )
+	if ( $order->is_editable() && $order->get_meta('_easproj_order_json') !== '' )
 	{
         ?>
         <button type="button" class="button button-primary eascompliance-recalculate"><?php esc_html_e( 'Calculate Taxes & Duties EAS', 'woocommerce' ); ?></button>
