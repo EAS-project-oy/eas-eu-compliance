@@ -633,6 +633,22 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['delivery_cost']     = round( (float) ( $cart->get_shipping_total() ), 2 );
 	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
+    // WCML plugin fix: take payment_currency from plugin client_currency //.
+    eascompliance_logger()->debug('WCML check');
+    if ( function_exists('wcml_is_multi_currency_on') ) {
+		eascompliance_logger()->debug('WCML wcml_is_multi_currency_on exists');
+        if ( wcml_is_multi_currency_on() ) {
+			eascompliance_logger()->debug('WCML wcml_is_multi_currency_on is true');
+			global $woocommerce_wpml;
+			if ( ! is_null($woocommerce_wpml) ) {
+				eascompliance_logger()->debug('WCML $woocommerce_wpml is not null');
+                $currency = $woocommerce_wpml->multi_currency->get_client_currency();
+				eascompliance_logger()->debug('WCML $currency '.print_r($currency, true));
+				$calc_jreq['payment_currency'] = $currency;
+			}
+		}
+	}
+
 	$calc_jreq['is_delivery_to_person'] = eascompliance_array_get( $checkout, 'shipping_company', '' ) === '';
 
 	$calc_jreq['recipient_title']         = 'Mr.';
