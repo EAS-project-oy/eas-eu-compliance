@@ -325,6 +325,127 @@ function eascompliance_settings_scripts() {
 
 
 if ( eascompliance_is_active() ) {
+	add_filter( 'woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 10, 2 );
+}
+/**
+ * Filter for setting billing required fields in checkout form
+ *
+ * @param array $address_fields address_fields.
+ * @param string $country country.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_billing_fields( $address_fields, $country ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		if ( ! in_array($country, EUROPEAN_COUNTRIES)) {
+            return $address_fields;
+		}
+
+
+        $required_fields = array(
+            'billing_city'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'billing_address_1'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'billing_postcode'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'billing_country'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+			'billing_phone'=>array(
+				'required'=> true,
+				'hidden'=> false,
+			),
+			'billing_email'=>array(
+				'required'=> true,
+				'hidden'=> false,
+			),
+		);
+
+		$address_fields = array_replace_recursive($address_fields, $required_fields);
+        if ( is_null($address_fields)) {
+            throw new Exception( __('Unable to set required fields','eascompliance') );
+        }
+
+        return $address_fields;
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+if ( eascompliance_is_active() ) {
+	add_filter( 'woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2 );
+}
+/**
+ * Filter for setting shipping required fields in checkout form
+ *
+ * @param array $address_fields address_fields.
+ * @param string $country country.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		if ( ! in_array($country, EUROPEAN_COUNTRIES)) {
+            return $address_fields;
+		}
+
+        $required_fields = array(
+            'shipping_city'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'shipping_address_1'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'shipping_postcode'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+            'shipping_country'=>array(
+                'required'=> true,
+                'hidden'=> false,
+            ),
+		);
+
+		$address_fields = array_replace_recursive($address_fields, $required_fields);
+        if ( is_null($address_fields)) {
+            throw new Exception( __('Unable to set required fields','eascompliance') );
+        }
+
+        return $address_fields;
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+
+
+if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
 /**
@@ -634,16 +755,14 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
     // WCML plugin fix: take payment_currency from plugin client_currency //.
-    eascompliance_logger()->debug('WCML check');
     if ( function_exists('wcml_is_multi_currency_on') ) {
-		eascompliance_logger()->debug('WCML wcml_is_multi_currency_on exists');
         if ( wcml_is_multi_currency_on() ) {
-			eascompliance_logger()->debug('WCML wcml_is_multi_currency_on is true');
 			global $woocommerce_wpml;
 			if ( ! is_null($woocommerce_wpml) ) {
-				eascompliance_logger()->debug('WCML $woocommerce_wpml is not null');
                 $currency = $woocommerce_wpml->multi_currency->get_client_currency();
-				eascompliance_logger()->debug('WCML $currency '.print_r($currency, true));
+				 if (eascompliance_is_debug()) {
+					 eascompliance_logger()->debug('WCML $currency '.print_r($currency, true));
+                 }
 				$calc_jreq['payment_currency'] = $currency;
 			}
 		}
