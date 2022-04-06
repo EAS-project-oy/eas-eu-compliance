@@ -690,14 +690,9 @@ function eascompliance_make_eas_api_request_json() {
 	if ( ! wp_verify_nonce( strval( eascompliance_array_get( $_POST, 'eascompliance_nonce_calc', '' ) ), 'eascompliance_nonce_calc' ) ) {
 		throw new Exception( __( 'Security check', 'eascompliance' ) );
 	};
-	$checkout = $_POST;
-	// sanitize text fields //.
-	$sanitize_fields = preg_split( '/\s/', 'shipping_country shipping_state shipping_company shipping_first_name shipping_last_name shipping_address_1 shipping_address_2 shipping_city shipping_postcode shipping_phone billing_country billing_state billing_company billing_first_name billing_last_name billing_address_1 billing_address_2 billing_city billing_postcode billing_phone' );
-	foreach ( $sanitize_fields as $sf ) {
-		if ( array_key_exists( $sf, $checkout ) ) {
-			$checkout[ $sf ] = sanitize_text_field( $checkout[ $sf ] );
-		}
-	}
+
+    // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
+	$checkout = WC()->checkout->get_posted_data();
 
 	$cart = WC()->cart;
 
