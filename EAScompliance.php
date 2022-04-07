@@ -2985,6 +2985,18 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 		// taxes must be enabled to see taxes at order //.
 		update_option( 'woocommerce_calc_taxes', 'yes' );
 
+        // update option woocommerce_tax_display_cart and inform if it was changed
+        $option_tax_display_cart = get_option('woocommerce_tax_display_cart');
+        if ( 'excl' !== $option_tax_display_cart) {
+			update_option( 'woocommerce_tax_display_cart', 'excl' );
+			WC_Admin_Settings::add_message( eascompliance_format( __('Due to correct display of Duties and Taxes for the client EAS compliance plugin changed setting $setting in the $tax_section', 'eascompliance')
+            , array(
+                    'setting'=> __( 'Display prices during cart and checkout', 'woocommerce' ),
+                    'tax_section'=> __( 'Tax options', 'woocommerce' ),
+            )));
+        }
+
+
 		// add tax rate //.
 		global $wpdb;
 		$tax_rates   = $wpdb->get_results( $wpdb->prepare( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME ), ARRAY_A );
