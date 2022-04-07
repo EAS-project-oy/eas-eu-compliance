@@ -4,7 +4,7 @@ Tags: EU VAT comliance solution, VAT return management, EU VAT fiscal reporting,
 Requires at least: 4.8.0
 Requires PHP: 5.6
 Tested up to: 6.3.1
-Stable tag: 1.2.4
+Stable tag: 1.3.0
 
 
 EAS solution automates the complicated EU VAT and customs compliance. With the full automation you can focus on the important - sales.
