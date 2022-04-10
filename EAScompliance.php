@@ -606,15 +606,20 @@ function eascompliance_get_oauth_token() {
 
 		$auth_response_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
 
-		// response not OK //.
-		if ( '200' !== $auth_response_status ) {
+		if ( '200' === $auth_response_status ) {
+            // authentication failed with code 200 and empty response for any reason //.
+            if ( '' === $auth_response ) {
+                throw new Exception( __( 'Invalid Credentials provided. Please check EAS client ID and EAS client secret.', 'eascompliance' ) );
+            }
+		}
+		elseif ( '401' === $auth_response_status ) {
+            // Unauthorized
+			eascompliance_logger()->error( 'Authorization failed: ' . $auth_response );
+			throw new Exception( __( 'Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.', 'eascompliance' ) );
+		}
+		else {
 			eascompliance_logger()->error( 'Auth response not OK: ' . $auth_response );
 			throw new Exception( __( 'EU tax calculation service temporary unavailable. Please try to place an order later.', 'eascompliance' ) );
-		}
-
-		// response OK, but authentication failed with code 200 and empty response for any reason //.
-		if ( '' === $auth_response ) {
-			throw new Exception( __( 'Invalid Credentials provided. Please check EAS client ID and EAS client secret.', 'eascompliance' ) );
 		}
 
 		$jdebug['step']          = 'decode AUTH token';
@@ -2776,6 +2781,7 @@ function eascompliance_settings() {
 			'type' => 'text',
 			'desc' => __( 'Use the client ID you received from EAS Project', 'eascompliance' ),
 			'id'   => 'easproj_auth_client_id',
+			'custom_attributes'   => array('autocomplete'=>'off'),
 
 		),
 		'AUTH_client_secret'      => array(
@@ -2783,6 +2789,7 @@ function eascompliance_settings() {
 			'type' => 'password',
 			'desc' => __( 'Use the secret you received from EAS Project', 'eascompliance' ),
 			'id'   => 'easproj_auth_client_secret',
+			'custom_attributes'   => array('autocomplete'=>'off'),
 
 		),
 		'language'                => array(
