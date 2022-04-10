@@ -806,7 +806,7 @@ function eascompliance_make_eas_api_request_json() {
 			'long_description'            => $product->get_name(),
 			'id_provided_by_em'           => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
 			'quantity'                    => $item['quantity'],
-			'cost_provided_by_em'         => floatval( $item['line_total'] ),
+			'cost_provided_by_em'         => round( (float) $item['line_total'], 2 ),
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
 			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
 			// DEBUG check product country:
