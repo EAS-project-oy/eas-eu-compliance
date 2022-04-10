@@ -806,7 +806,7 @@ function eascompliance_make_eas_api_request_json() {
 			'long_description'            => $product->get_name(),
 			'id_provided_by_em'           => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
 			'quantity'                    => $item['quantity'],
-			'cost_provided_by_em'         => floatval( $product->get_price() ),
+			'cost_provided_by_em'         => floatval( $item['line_total'] ),
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
 			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
 			// DEBUG check product country:
@@ -1626,6 +1626,11 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 		foreach ( $cart_items as $cart_item ) {
 			$total += eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
 		}
+
+        // tax may not present in $total_taxes when buying only gift-cards
+		if ( ! array_key_exists($tax_rate_id0, $total_taxes) ) {
+			return $total_taxes;
+        }
 
 		$total_taxes[ $tax_rate_id0 ] += $total;
 
