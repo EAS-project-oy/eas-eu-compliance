@@ -47,4 +47,22 @@ jQuery(document).ready(function($) {
         }
     } )
 
+    // Admin Order view button 'Log EAS order data'
+    $('.eascompliance-orderdata').on('click', async function () {
+        j = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_logorderdata_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })}));
+
+        if ( 'ok' !== j.status) {
+            window.alert('EAS Order data log failed'+j.message)
+        } else {
+            window.alert('EAS Order data logged')
+        }
+    } )
+
 })

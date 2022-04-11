@@ -1497,6 +1497,52 @@ function eascompliance_recalculate_ajax() {
 		restore_error_handler();
 	}
 }
+if ( eascompliance_is_active() ) {
+	add_action( 'wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax' );
+}
+/**
+ * Admin Order method to log EAS order data
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_logorderdata_ajax() {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+		eascompliance_set_locale();
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_send_json( array( 'status'=>'error', 'message' => 'no permission' ) );
+		}
+
+        $order_id = absint( $_POST['order_id'] );
+
+        $order = wc_get_order($order_id);
+
+        eascompliance_logger()->info('EAS Order data'.print_r(array(
+                'order_id'=>$order_id,
+                '_easproj_token'=>$order->get_meta('_easproj_token'),
+                'easproj_payload'=>$order->get_meta('easproj_payload'),
+                '_easproj_order_json'=>$order->get_meta('_easproj_order_json'),
+                '_easproj_order_number_notified'=>$order->get_meta('_easproj_order_number_notified'),
+                '_easproj_payment_processed'=>$order->get_meta('_easproj_payment_processed'),
+            ), true));
+
+
+		wp_send_json( array( 'status' => 'ok' ) );
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		wp_send_json( array( 'status' => 'error', 'message'=>$ex->getMessage() ) );;
+	} finally {
+		eascompliance_set_locale(true);
+		restore_error_handler();
+	}
+}
+
+
 
 if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3 );
@@ -2647,6 +2693,12 @@ if ( eascompliance_is_active() ) {
 function eascompliance_woocommerce_order_item_add_action_buttons( $order ) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+    // button to log EAS order information
+	?>
+    <button type="button" class="button button-primary eascompliance-orderdata"><?php esc_html_e( 'Log EAS order data', 'woocommerce' ); ?></button>
+	<?php
+
 
 	if ( $order->is_editable() && $order->get_meta('_easproj_order_json') !== '' )
 	{
