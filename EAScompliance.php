@@ -2227,6 +2227,13 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 		set_error_handler( 'eascompliance_error_handler' );
 		eascompliance_set_locale();
 
+        // log order status change
+		eascompliance_logger()->info( eascompliance_format('Order $order changes status from $from to $to',
+            array('order'=>$order_id,
+                'from'=>$status_from,
+                'to'=>$status_to)));
+
+        // process order once when status becomes completed/processing
 		if ( ! ( ( 'completed' === $status_to || 'processing' === $status_to ) && ! ( $order->get_meta( '_easproj_payment_processed' ) === 'yes' ) ) ) {
 			return;
 		}
