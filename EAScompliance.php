@@ -121,7 +121,7 @@ function eascompliance_logger() {
 function eascompliance_log_exception( Exception $ex ) {
 	$txt = '';
 	while ( true ) {
-		$txt .= "\n" . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
+		$txt .= "\n" . get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
 
 		$ex = $ex->getPrevious();
 		if ( null === $ex ) {
@@ -605,7 +605,6 @@ function eascompliance_get_oauth_token() {
 		}
 
 		$auth_response_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
-
 		if ( '200' === $auth_response_status ) {
             // authentication failed with code 200 and empty response for any reason //.
             if ( '' === $auth_response ) {
@@ -615,7 +614,7 @@ function eascompliance_get_oauth_token() {
 		elseif ( '401' === $auth_response_status ) {
             // Unauthorized
 			eascompliance_logger()->error( 'Authorization failed: ' . $auth_response );
-			throw new Exception( __( 'Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.', 'eascompliance' ) );
+			throw new EAScomplianceAuthorizationFaliedException( __( 'EU tax calculation service temporary unavailable. Please try to place an order later.', 'eascompliance' ) );
 		}
 		else {
 			eascompliance_logger()->error( 'Auth response not OK: ' . $auth_response );
@@ -806,7 +805,7 @@ function eascompliance_make_eas_api_request_json() {
 			'long_description'            => $product->get_name(),
 			'id_provided_by_em'           => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
 			'quantity'                    => $item['quantity'],
-			'cost_provided_by_em'         => round( (float) $item['line_total'], 2 ),
+			'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
 			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
 			// DEBUG check product country:
@@ -859,6 +858,11 @@ function eascompliance_make_eas_api_request_json() {
  * EAScomplianceStandardCheckoutException class
  */
 class EAScomplianceStandardCheckoutException extends Exception { };
+
+/**
+ * EAScomplianceAuthorizationFaliedException class
+ */
+class EAScomplianceAuthorizationFaliedException extends Exception { };
 
 if ( eascompliance_is_active() ) {
 	add_action( 'wp_ajax_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler' );
@@ -1625,6 +1629,16 @@ function eascompliance_cart_total() {
 		}
 		$discount = WC()->session->get( 'EAS CART DISCOUNT' );
 		$total   -= $discount;
+
+        // PW Gift Cards plugin fix: take discounts of gift cards //.
+        if ( defined('PWGC_SESSION_KEY') ) {
+			$pwgc_session = (array) WC()->session->get( PWGC_SESSION_KEY );
+			if ( isset( $pwgc_session['gift_cards'] ) ) {
+				foreach ( $pwgc_session['gift_cards'] as $card_number => $discount_amount ) {
+					$total -= $discount_amount;
+				}
+			}
+        }
 
 		// check that payload total_order_amount equals Order total //.
 		if ( (float) $payload_total_order_amount !== (float) $total ) {
@@ -3355,6 +3369,9 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 						}
 					}
 				}
+            } catch ( EAScomplianceAuthorizationFaliedException $ex ) {
+                eascompliance_log_exception( $ex );
+                WC_Admin_Settings::add_error( __( 'Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.', 'eascompliance' ) );
 			} catch ( Exception $ex ) {
 				WC_Admin_Settings::save_fields(
 					array(
