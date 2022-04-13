@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.3.0
+ * Version: 1.3.1
  * Tested up to 5.9.2
  * WC requires at least: 4.8.0
  * WC tested up to: 6.3.1
@@ -32,7 +32,6 @@ define( 'JSON_THROW_ON_ERROR2', 4194304 );
  * */
 function eascompliance_set_locale( bool $reset = false ) {
 	static $current_locale = '';
-    static $error_reported = false;
 	if ( '' === $current_locale ) {
 		$current_locale = get_locale();
 	};
@@ -49,10 +48,10 @@ function eascompliance_set_locale( bool $reset = false ) {
 	$plugin_rel_path = plugin_basename( dirname( __FILE__ ) ) . '/languages';
 	$res = load_plugin_textdomain( 'eascompliance', false, $plugin_rel_path );
 	if ( ! $res ) {
-        if (! $error_reported ) {
+        if ( true !== WC()->session->get( 'eascompliance_locale_error_reported') ) {
         	eascompliance_logger()->error('Detected locale: ' . $current_locale . ' Plugin locale: '. $plugin_lang);
 			eascompliance_logger()->error('load_plugin_textdomain() failed, $plugin_rel_path is ' . $plugin_rel_path);
-			$error_reported = true;
+			WC()->session->set( 'eascompliance_locale_error_reported', true);
 		}
 	}
 }
