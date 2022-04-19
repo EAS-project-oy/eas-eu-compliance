@@ -733,7 +733,7 @@ function eascompliance_make_eas_api_request_json() {
 
 	// substitute billing address to shipping address  if checkbox 'Ship to a different address?' was empty //.
 	$ship_to_different_address = eascompliance_array_get( $checkout, 'ship_to_different_address', false );
-	if ( ! ( 'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
+	if ( ! ( true === $ship_to_different_address ||  'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
 		$checkout['shipping_country']    = $checkout['billing_country'];
 		$checkout['shipping_state']      = $checkout['billing_state'];
 		$checkout['shipping_company']    = $checkout['billing_company'];
@@ -1448,7 +1448,8 @@ function eascompliance_recalculate_ajax() {
             return;
         }
 
-        $order_json = json_decode( $order->get_meta( '_easproj_order_json' ));
+        $order_json = json_decode( $order->get_meta( '_easproj_order_json' ), true);
+
         $sales_order_json = array(
                 'order'=>$order_json,
                 'sale_date'=>date_format(new DateTime(), 'Y-m-d'),
@@ -1481,7 +1482,38 @@ function eascompliance_recalculate_ajax() {
             $order->add_order_note( format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
 
 
-            //TODO update order with data received from EAS
+            //updating order with data received from EAS
+
+			$payload_j = json_decode( $sales_order_body , true );
+			$payload_items = $payload_j['order_breakdown'];
+
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+
+			foreach ( $order->get_items() as $k => &$order_item ) {
+				$sku = wc_get_product( $order_item['product_id'] )->get_sku();
+				foreach ( $payload_items as $payload_item ) {
+					if ( $payload_item['item_id'] === $k ) {
+						break;}
+					// $payload_item['item_id'] is sku when it is available in product
+					if ( $payload_item['item_id'] === $sku ) {
+						break;}
+				}
+
+				$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'] );
+				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] );
+				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'] );
+				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'] );
+				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'] );
+
+				$amount = $payload_item['item_customs_duties'];
+				$order_item->set_taxes(
+					array(
+						'total'    => array( $tax_rate_id0 => $amount ),
+						'subtotal' => array( $tax_rate_id0 => $amount ),
+					)
+				);
+
+			}
         } else {
             throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
         }
@@ -1640,7 +1672,7 @@ function eascompliance_cart_total() {
         }
 
 		// check that payload total_order_amount equals Order total //.
-		if ( (float) $payload_total_order_amount !== (float) $total ) {
+		if ( (float) $payload_total_order_amount != (float) $total ) {
 			eascompliance_log_exception(
 				new Exception(
 					eascompliance_format(
