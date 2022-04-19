@@ -1478,14 +1478,17 @@ function eascompliance_recalculate_ajax() {
         $sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
 
         if ( '200' === $sales_order_status ) {
-            $order->add_meta_data('_easproj_order_json', $sales_order_body, true);
-            $order->add_order_note( format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
+            $order->add_meta_data('_easproj_order_json', $order_json, true);
+            $order->add_order_note( eascompliance_format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
 
 
             //updating order with data received from EAS
 
-			$payload_j = json_decode( $sales_order_body , true );
-			$payload_items = $payload_j['order_breakdown'];
+            $arr         = preg_split( '/[.]/', $sales_order_body, 3 );
+            $jwt_header  = base64_decode( $arr[0], false ); // {"alg":"RS256","typ":"JWT","kid":"default"}
+            $jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
+            $payload_j            = json_decode( $jwt_payload, true );
+			$payload_items = $payload_j['items'];
 
 			$tax_rate_id0 = eascompliance_tax_rate_id();
 
@@ -1499,11 +1502,11 @@ function eascompliance_recalculate_ajax() {
 						break;}
 				}
 
-				$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'] );
-				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] );
-				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'] );
-				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'] );
-				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'] );
+				$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
+				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] , true);
+				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
+				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'], true );
+				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
 
 				$amount = $payload_item['item_customs_duties'];
 				$order_item->set_taxes(

@@ -43,6 +43,7 @@ jQuery(document).ready(function($) {
         if ( 'ok' !== j.status) {
             window.alert('Calculate Taxes & Duties EAS failed. '+j.message)
         } else {
+            window.alert('Taxes & Duties EAS recalculated. Reloading page...')
             window.location.reload();
         }
     } )
