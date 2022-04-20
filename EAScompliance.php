@@ -47,14 +47,14 @@ function eascompliance_set_locale( bool $reset = false ) {
 
 	$plugin_rel_path = plugin_basename( dirname( __FILE__ ) ) . '/languages';
 	$res = load_plugin_textdomain( 'eascompliance', false, $plugin_rel_path );
-	if ( ! $res ) {
+	/*if ( ! $res ) {
         if ( true !== WC()->session->get( 'eascompliance_locale_error_reported') ) {
         	eascompliance_logger()->error('Detected locale: ' . $current_locale . ' Plugin locale: '. $plugin_lang);
 			eascompliance_logger()->error('load_plugin_textdomain() failed, $plugin_rel_path is ' . $plugin_rel_path);
 			WC()->session->set( 'eascompliance_locale_error_reported', true);
 		}
 	}
-}
+}*/
 
 
 /**
