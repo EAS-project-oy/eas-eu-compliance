@@ -53,8 +53,8 @@ function eascompliance_set_locale( bool $reset = false ) {
 			eascompliance_logger()->error('load_plugin_textdomain() failed, $plugin_rel_path is ' . $plugin_rel_path);
 			WC()->session->set( 'eascompliance_locale_error_reported', true);
 		}
-	}
-}*/
+	}*/
+}
 
 
 /**
