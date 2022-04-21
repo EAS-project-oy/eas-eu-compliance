@@ -220,7 +220,7 @@ msgstr ""
 
 #: EAScompliance.php:2797
 msgid "Finnish"
-msgstr ""
+msgstr "Suomi"
 
 #: EAScompliance.php:2801
 msgid "Shipping methods by post"
