@@ -5,7 +5,7 @@ msgstr ""
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
-"Language: en_US\n"
+"Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:144
@@ -68,7 +68,7 @@ msgstr ""
 
 #: EAScompliance.php:378 EAScompliance.php:433
 msgid "Unable to set required fields"
-msgstr ""
+msgstr "Unable to set the argument as mandatory"
 
 #: EAScompliance.php:485
 msgid "Calculate Taxes and Duties"
@@ -126,31 +126,35 @@ msgstr ""
 
 #: EAScompliance.php:2516
 msgid "Refund return created. Refund id $refund_id "
-msgstr ""
+msgstr "Refund is created (merchandise is returned) $refund_id "
 
 #: EAScompliance.php:2572
 msgid "Refund create failed: "
-msgstr ""
+msgstr "Refund could not be created: "
 
 #: EAScompliance.php:2602
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
 msgstr ""
+"Refund $refund_id  is cancelled due to insufficient remaining number of "
+"items. "
 
 #: EAScompliance.php:2609
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
+"Refund $refund_id is cancelled since gift card cannot be returned. Please, "
+"remove gift card form the refund. "
 
 #: EAScompliance.php:2615
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
 msgstr ""
+"Refund $refund_id cancelled due to the fact that EAS return management "
+"service  being temporary unavailable. Please try to create Refund later "
 
 #: EAScompliance.php:2637
-#, fuzzy
-#| msgid "Calculate Taxes and Duties"
 msgid "Calculate Taxes & Duties EAS"
 msgstr "Click to continue"
 
@@ -298,7 +302,7 @@ msgstr ""
 
 #: EAScompliance.php:2871
 msgid "Product type(s) used for Gift cards management"
-msgstr ""
+msgstr "Product type(s) used for Gift cards management"
 
 #: EAScompliance.php:2910
 msgid ""
@@ -306,12 +310,17 @@ msgid ""
 "selling Gift cards please enter Product type(s) in relevant configuration "
 "settings"
 msgstr ""
+"Attention! EAS plugin detected gift card Product type(s),  if you are "
+"selling Gift cards, please, identify Product type(s) related to Gift cards "
+"in relevant configuration settings"
 
 #: EAScompliance.php:2992
 msgid ""
 "Due to correct display of Duties and Taxes for the client EAS compliance "
 "plugin changed setting $setting in the $tax_section"
 msgstr ""
+"EAS compliance plugin changed the setting $setting in the $tax_section  in "
+"order to display Duties and Taxes correctly"
 
 #: EAScompliance.php:2994
 msgid "Display prices during cart and checkout"

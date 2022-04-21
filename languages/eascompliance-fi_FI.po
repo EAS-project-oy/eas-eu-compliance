@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:144
@@ -67,11 +67,11 @@ msgstr "Laske verot uudelleen"
 
 #: EAScompliance.php:295
 msgid "Standard Checkout"
-msgstr ""
+msgstr "Oletus Checkout"
 
 #: EAScompliance.php:378 EAScompliance.php:433
 msgid "Unable to set required fields"
-msgstr ""
+msgstr "Pakollisia kenttiä ei voitu määrittää"
 
 #: EAScompliance.php:485
 msgid "Calculate Taxes and Duties"
@@ -81,7 +81,7 @@ msgstr "Klikkaa jatkaaksesi tilausta"
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
-msgstr ""
+msgstr "EU ALV laskentapalvelu toistaiseksi poissa käytöstä"
 
 #: EAScompliance.php:617
 msgid ""
@@ -95,13 +95,11 @@ msgstr "Turvallisuustarkistus"
 
 #: EAScompliance.php:1473
 msgid "Sales order received, updating order $order_id"
-msgstr ""
+msgstr "Tilaus vastaanotettu, päivitetään $order_id"
 
 #: EAScompliance.php:1583
-#, fuzzy
-#| msgid "payload total_order_amount $a not equal order total $b"
 msgid "$payload_total_order_amount $a not equal order total $b"
-msgstr "Laskettu total_order_amount $a ei vastaa ostoskorin summaa $b"
+msgstr "Laskettu $payload_total_order_amount $a ei vastaa ostoskorin summaa $b"
 
 #: EAScompliance.php:2081
 msgid "CUSTOMS DUTIES MISSING"
@@ -133,27 +131,33 @@ msgstr "Tilauksen muutosilmoitus epäonnistui:"
 
 #: EAScompliance.php:2516
 msgid "Refund return created. Refund id $refund_id "
-msgstr ""
+msgstr "Maksun palaus aloitettu. Palautuksen tunnus $refund_id"
 
 #: EAScompliance.php:2572
 msgid "Refund create failed: "
-msgstr ""
+msgstr "Palautus epäonnistui"
 
 #: EAScompliance.php:2602
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
 msgstr ""
+"Palautus $refund_id peruuntui ja poistettiin riittämättömän tuotemäärän "
+"vuoksi"
 
 #: EAScompliance.php:2609
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
+"Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
+"palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen. "
 
 #: EAScompliance.php:2615
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
 msgstr ""
+"Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
+"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen"
 
 #: EAScompliance.php:2637
 #, fuzzy
@@ -291,7 +295,7 @@ msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole"
 
 #: EAScompliance.php:2868
 msgid "Giftcard product types"
-msgstr ""
+msgstr "Lahjakortit"
 
 #: EAScompliance.php:2871
 msgid "Product type(s) used for Gift cards management"
@@ -309,14 +313,16 @@ msgid ""
 "Due to correct display of Duties and Taxes for the client EAS compliance "
 "plugin changed setting $setting in the $tax_section"
 msgstr ""
+"EAS sovellus vaihtoi asetuksen $setting $tax_section kohdassa verojen ja "
+"tullien oikeellisuuden vuoksi"
 
 #: EAScompliance.php:2994
 msgid "Display prices during cart and checkout"
-msgstr ""
+msgstr "Näytä hinnat ostoskorissa ja checkout:issa"
 
 #: EAScompliance.php:2995
 msgid "Tax options"
-msgstr ""
+msgstr "Verovaihtoehdot"
 
 #~ msgid "Authentication failed with response status $auth_response_status"
 #~ msgstr "Vahvistus epäonnistui: $auth_response_status"
