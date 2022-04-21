@@ -854,6 +854,156 @@ function eascompliance_make_eas_api_request_json() {
 }
 
 /**
+ * Make JSON for API /calculate request
+ * @param $order_id int order_id.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_make_eas_api_request_json_from_order($order_id) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		$order = wc_get_order($order_id);
+
+        $calc_jreq      = json_decode(
+            '{
+         "external_order_id": "api_order_001",
+         "delivery_method": "postal",
+         "delivery_cost": 10,
+         "payment_currency": "EUR",
+         "is_delivery_to_person": true,
+         "recipient_title": "Mr.",
+         "recipient_first_name": "Recipient first name",
+         "recipient_last_name": "Recipient last name",
+         "recipient_company_name": "Recipient company name",
+         "recipient_company_vat": "Recipient company VAT number",
+         "delivery_address_line_1": "45, Dow Street",
+         "delivery_address_line_2": "Grassy meadows",
+         "delivery_city": "Green City",
+         "delivery_state_province": "Central",
+         "delivery_postal_code": "330100",
+         "delivery_country": "FI",
+         "delivery_phone": "041 123 7654",
+         "delivery_email": "firstname@email.fi",
+         "order_breakdown": [
+        {
+          "short_description": "First Item",
+          "long_description": "Handmade goods item",
+          "id_provided_by_em": "1004020",
+          "quantity": 1,
+          "cost_provided_by_em": 100,
+          "weight": 1,
+          "hs6p_received": "0707 00 1245",
+          "location_warehouse_country": "FI",
+          "type_of_goods": "GOODS",
+          "reduced_tbe_vat_group": true,
+          "act_as_disclosed_agent": true,
+          "seller_registration_country": "FI",
+          "originating_country": "FI"
+        }
+         ]
+                }',
+            true
+        );
+
+        // set delivery_method to postal if it is in postal delivery methods //.
+        $delivery_method         = 'courier';
+        $shipping_methods        = array_values( wc_get_chosen_shipping_method_ids() );
+        $shipping_methods_postal = WC_Admin_Settings::get_option( 'easproj_shipping_method_postal' );
+
+        if ( array_intersect( $shipping_methods, $shipping_methods_postal ) ) {
+            $delivery_method = 'postal';
+        }
+
+        $delivery_state_province        = $order->get_shipping_state() === '' ? '' : '' . WC()->countries->states[ $order->get_shipping_country() ][ $order->get_shipping_state() ];
+
+        $calc_jreq['external_order_id'] = '' . $order->get_id();
+        $calc_jreq['delivery_method']   = $delivery_method;
+        $calc_jreq['delivery_cost']     = round( (float) ( $order->get_shipping_total() ), 2 );
+        $calc_jreq['payment_currency']  = $order->get_currency();
+
+        $calc_jreq['is_delivery_to_person'] =  $order->get_shipping_company() === '';
+
+        $calc_jreq['recipient_title']         = 'Mr.';
+        $calc_jreq['recipient_first_name']    = $order->get_shipping_first_name();
+        $calc_jreq['recipient_last_name']     = $order->get_shipping_last_name();
+        $calc_jreq['recipient_company_name']  = $order->get_shipping_company() === '' ? 'No company' : $order->get_shipping_company();
+        $calc_jreq['recipient_company_vat']   = '';
+        $calc_jreq['delivery_address_line_1'] = $order->get_shipping_address_1();
+        $calc_jreq['delivery_address_line_2'] = $order->get_shipping_address_2();
+        $calc_jreq['delivery_city']           = $order->get_shipping_city();
+        $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
+        $calc_jreq['delivery_postal_code']    = $order->get_shipping_postcode();
+        $calc_jreq['delivery_country']        = $order->get_shipping_country();
+        $calc_jreq['delivery_phone']          = $order->get_billing_phone();
+        $calc_jreq['delivery_email']          = $order->get_billing_email();
+
+        $countries      = array_flip( WC()->countries->countries );
+        $items          = array();
+        foreach ( $order->get_items() as $k => $item ) {
+            $product_id = $item['product_id'];
+            $product    = wc_get_product( $product_id );
+
+            $location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
+            $originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
+            $seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
+
+            $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+            $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
+            if ( in_array($product->get_type(), $giftcard_product_types, true) ){
+                $type_of_goods = 'GIFTCARD';
+            }
+
+            $items[] = array(
+                'short_description'           => $product->get_name(),
+                'long_description'            => $product->get_name(),
+                'id_provided_by_em'           => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
+                'quantity'                    => $item['quantity'],
+                'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
+                'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
+                'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
+
+                'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
+
+                'type_of_goods'               => $type_of_goods,
+                'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
+                'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
+                'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
+                'originating_country'         => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
+            );
+        }
+
+        $d = $order->get_discount_total(); // discount d    //.
+        $t = 0; // cart total  T = p1*q1 + p2*q2           //.
+        $q = 0; // total quantity Q = q1 + q2              //.
+        foreach ( $items as $item ) {
+            $t += $item['quantity'] * $item['cost_provided_by_em'];
+            $q += $item['quantity'];
+        }
+
+        if ( $d > 0 && $t > 0 ) { // only process if discount and total are positive //.
+            foreach ( $items as &$item ) {
+                $q1 = $item['quantity'];
+                $p1 = $item['cost_provided_by_em'];
+
+                $item['cost_provided_by_em'] = $p1 * ( $t - $d ) / $t;
+            }
+        }
+        $calc_jreq['order_breakdown'] = $items;
+        // eascompliance_logger()->debug('$items after discount '.print_r($items, true));  //.
+
+        return $calc_jreq;
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		eascompliance_logger()->debug( '$calc_jreq '. print_r( $calc_jreq, true ) );
+	} finally {
+		restore_error_handler();
+	}
+}
+
+/**
  * EAScomplianceStandardCheckoutException class
  */
 class EAScomplianceStandardCheckoutException extends Exception { };
@@ -1442,13 +1592,19 @@ function eascompliance_recalculate_ajax() {
 
         $auth_token = eascompliance_get_oauth_token();
 
-        $confirmation_token = $order->get_meta( '_easproj_token' );
-        // JWT token is not present during STANDARD_CHECKOUT //.
-        if ( '' === $confirmation_token ) {
-            return;
+        $order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
+
+        // check requirements for calculate request //.
+        if ( '' === $order->get_shipping_first_name()
+            || '' === $order->get_shipping_last_name()
+            || '' === $order->get_shipping_country()
+            || '' === $order->get_shipping_address_1()) {
+            throw new Exception(__('Landed cost calculation can’t be processed until Delivery Name and address provided', 'eascompliance'));
         }
 
-        $order_json = json_decode( $order->get_meta( '_easproj_order_json' ), true);
+		if ( ! in_array($order->get_shipping_country(), EUROPEAN_COUNTRIES)) {
+			throw new Exception(__('Order shipping country must be in EU', 'eascompliance'));
+		}
 
         $sales_order_json = array(
                 'order'=>$order_json,
@@ -1475,19 +1631,50 @@ function eascompliance_recalculate_ajax() {
         $sales_order_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
         $sales_order_body = file_get_contents( $sales_order_url, false, $context );
 
-        $sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$sales_order_body = trim($sales_order_body,'"');
 
+        // validate token in $sales_order_body
+		$jwt_key_url      = woocommerce_settings_get_option( 'easproj_eas_api_url' ) . '/auth/keys';
+		$options          = array(
+			'http' => array(
+				'method' => 'GET',
+			),
+			'ssl'  => array(
+				'verify_peer'      => false,
+				'verify_peer_name' => false,
+			),
+		);
+		$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
+		if ( false === $jwt_key_response ) {
+			$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
+			throw new Exception( error_get_last()['message'] );
+		}
+		$jwt_key_j         = json_decode( $jwt_key_response, true );
+		$jwt_key           = $jwt_key_j['default'];
+
+		$arr = preg_split( '/[.]/', $sales_order_body, 3 );
+
+		// JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'   //.
+		$jwt_signature = base64_decode( str_replace( array( '-', '_' ), array( '+', '/' ), $arr[2] ) . '==', true );
+
+		// Validate JWT token signed with key //.
+		$verified       = openssl_verify( $arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256 );
+		if ( ! ( 1 === $verified ) ) {
+			throw new Exception( 'JWT verification failed: ' . $verified );
+		}
+
+        $sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
         if ( '200' === $sales_order_status ) {
-            $order->add_meta_data('_easproj_order_json', $order_json, true);
             $order->add_order_note( eascompliance_format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
 
-
             //updating order with data received from EAS
-
-            $arr         = preg_split( '/[.]/', $sales_order_body, 3 );
             $jwt_header  = base64_decode( $arr[0], false ); // {"alg":"RS256","typ":"JWT","kid":"default"}
             $jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
             $payload_j            = json_decode( $jwt_payload, true );
+
+			$order->add_meta_data('_easproj_token', $sales_order_body, true);
+			$order->add_meta_data('_easproj_order_json', json_encode( $payload_j, JSON_THROW_ON_ERROR2 ), true);
+			$order->add_meta_data('easproj_payload', $payload_j, true);
 			$payload_items = $payload_j['items'];
 
 			$tax_rate_id0 = eascompliance_tax_rate_id();
@@ -1502,13 +1689,14 @@ function eascompliance_recalculate_ajax() {
 						break;}
 				}
 
-				$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
+                // temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
+				$order_item->add_meta_data( 'Customs duties', $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], true );
 				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] , true);
 				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
 				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'], true );
 				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
 
-				$amount = $payload_item['item_customs_duties'];
+				$amount = $payload_item['item_duties_and_taxes'];
 				$order_item->set_taxes(
 					array(
 						'total'    => array( $tax_rate_id0 => $amount ),
@@ -1517,6 +1705,14 @@ function eascompliance_recalculate_ajax() {
 				);
 
 			}
+
+            $order->calculate_taxes();
+
+			$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
+
+			$order->set_total($payload_j['total_order_amount'] + $payload_j['taxes_and_duties']);
+			$order->set_shipping_total($payload_j['delivery_charge']);
+
         } else {
             throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
         }
@@ -2385,6 +2581,90 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 	} catch ( Exception $ex ) {
 		eascompliance_log_exception( $ex );
 		$order->add_order_note( __( 'Order status change notification failed: ', 'eascompliance' ) . $ex->getMessage() );
+	} finally {
+		eascompliance_set_locale( true );
+		restore_error_handler();
+	}
+
+}
+
+
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4 );
+}
+/**
+ * When order becomes paid (status becomes Processing, Completed), call /confirmpostsaleorder with obtained token
+ *
+ * @param int    $order_id order_id.
+ * @param string $status_from status_from.
+ * @param string $status_to status_to.
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_order_status_changed2( $order_id, $status_from, $status_to, $order ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+		eascompliance_set_locale();
+
+        // process order once when status becomes completed/processing
+		if ( ! ( 'completed' === $status_to || 'processing' === $status_to ) ) {
+			return;
+		}
+
+		$auth_token         = eascompliance_get_oauth_token();
+		$confirmation_token = $order->get_meta( '_easproj_token' );
+		// JWT token is not present during STANDARD_CHECKOUT //.
+		if ( '' === $confirmation_token ) {
+			return;
+		}
+
+		$payment_jreq = array(
+			'order_token'               => $confirmation_token,
+		);
+
+		$options = array(
+			'http' => array(
+				'method'        => 'POST',
+				'header'        => "Content-type: application/json\r\n"
+											. 'Authorization: Bearer ' . $auth_token . "\r\n",
+				'content'       => json_encode( $payment_jreq, JSON_THROW_ON_ERROR2 ),
+				'ignore_errors' => true,
+			),
+			'ssl'  => array(
+				'verify_peer'      => false,
+				'verify_peer_name' => false,
+			),
+		);
+		$context = stream_context_create( $options );
+
+		$payment_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirmpostsaleorder';
+		$payment_body = file_get_contents( $payment_url, false, $context );
+
+		$payment_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+
+		if ( '200' === $payment_status ) {
+			$order->add_order_note(
+				eascompliance_format(
+					__( 'Order $order_id payment notified to EAS', 'eascompliance'),
+					array(
+						'order_id' => $order_id,
+					)
+				)
+			);
+
+			$order->save();
+		} else {
+			throw new Exception( $http_response_header[0] . '\n\n' . $payment_body );
+		}
+
+		eascompliance_logger()->info( "Order $order_id payment confirmed" );
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		$order->add_order_note( __( "Order $order_id payment notification failed: ", 'eascompliance' ) . $ex->getMessage() );
 	} finally {
 		eascompliance_set_locale( true );
 		restore_error_handler();
