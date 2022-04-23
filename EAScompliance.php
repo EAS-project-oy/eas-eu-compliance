@@ -324,7 +324,7 @@ function eascompliance_settings_scripts() {
 
 
 if ( eascompliance_is_active() ) {
-	add_filter( 'woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 10, 2 );
+	add_filter( 'woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2 );
 }
 /**
  * Filter for setting billing required fields in checkout form
