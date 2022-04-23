@@ -1566,6 +1566,203 @@ function eascompliance_needs_recalculate_ajax() {
 	}
 }
 
+
+
+/**
+ * Call /createpostsaleorder and save received order data
+ *
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_order_createpostsaleorder($order) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+		$order_id = $order->get_id();
+
+		$auth_token = eascompliance_get_oauth_token();
+
+		$order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
+
+		// check requirements for calculate request //.
+		if ( '' === $order->get_shipping_first_name()
+			|| '' === $order->get_shipping_last_name()
+			|| '' === $order->get_shipping_country()
+			|| '' === $order->get_shipping_address_1()) {
+			throw new Exception(__('Landed cost calculation can’t be processed until Delivery Name and address provided', 'eascompliance'));
+		}
+
+		if ( ! in_array($order->get_shipping_country(), EUROPEAN_COUNTRIES)) {
+			throw new Exception(__('Order shipping country must be in EU', 'eascompliance'));
+		}
+
+		$sales_order_json = array(
+			'order'=>$order_json,
+			'sale_date'=>date_format(new DateTime(), 'Y-m-d'),
+			's10_cod'=>$order_json['external_order_id'],
+		);
+
+
+		$options = array(
+			'http' => array(
+				'method'        => 'POST',
+				'header'        => "Content-type: application/json\r\n"
+					. 'Authorization: Bearer ' . $auth_token . "\r\n",
+				'content'       => json_encode($sales_order_json, JSON_THROW_ON_ERROR2),
+				'ignore_errors' => true,
+			),
+			'ssl'  => array(
+				'verify_peer'      => false,
+				'verify_peer_name' => false,
+			),
+		);
+		$context = stream_context_create( $options );
+
+		$sales_order_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
+		$sales_order_body = file_get_contents( $sales_order_url, false, $context );
+
+		$sales_order_body = trim($sales_order_body,'"');
+
+		$sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		if ( '200' === $sales_order_status ) {
+			// validate token in $sales_order_body
+			$jwt_key_url      = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/auth/keys';
+			$options          = array(
+				'http' => array(
+					'method' => 'GET',
+				),
+				'ssl'  => array(
+					'verify_peer'      => false,
+					'verify_peer_name' => false,
+				),
+			);
+			$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
+			if ( false === $jwt_key_response ) {
+				$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
+				throw new Exception( error_get_last()['message'] );
+			}
+			$jwt_key_j         = json_decode( $jwt_key_response, true );
+			$jwt_key           = $jwt_key_j['default'];
+
+			$arr = preg_split( '/[.]/', $sales_order_body, 3 );
+
+			// JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'   //.
+			$jwt_signature = base64_decode( str_replace( array( '-', '_' ), array( '+', '/' ), $arr[2] ) . '==', true );
+
+			// Validate JWT token signed with key //.
+			$verified       = openssl_verify( $arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256 );
+			if ( ! ( 1 === $verified ) ) {
+				throw new Exception( 'JWT verification failed: ' . $verified );
+			}
+
+
+			$order->add_order_note( eascompliance_format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
+
+			//updating order with data received from EAS
+			$jwt_header  = base64_decode( $arr[0], false ); // {"alg":"RS256","typ":"JWT","kid":"default"}
+			$jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
+			$payload_j            = json_decode( $jwt_payload, true );
+
+			$order->add_meta_data('_easproj_token', $sales_order_body, true);
+			$order->add_meta_data('_easproj_order_json', json_encode( $payload_j, JSON_THROW_ON_ERROR2 ), true);
+			$order->add_meta_data('easproj_payload', $payload_j, true);
+			$payload_items = $payload_j['items'];
+
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+
+			foreach ( $order->get_items() as $k => &$order_item ) {
+				$sku = wc_get_product( $order_item['product_id'] )->get_sku();
+				foreach ( $payload_items as $payload_item ) {
+					if ( $payload_item['item_id'] === $k ) {
+						break;}
+					// $payload_item['item_id'] is sku when it is available in product
+					if ( $payload_item['item_id'] === $sku ) {
+						break;}
+				}
+
+				// temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
+				$order_item->add_meta_data( 'Customs duties', $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], true );
+				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] , true);
+				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
+				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'], true );
+				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
+
+				$amount = $payload_item['item_duties_and_taxes'];
+				$order_item->set_taxes(
+					array(
+						'total'    => array( $tax_rate_id0 => $amount ),
+						'subtotal' => array( $tax_rate_id0 => $amount ),
+					)
+				);
+
+			}
+
+			$order->update_taxes();
+
+			$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
+
+			$order->set_total($payload_j['total_order_amount'] + $payload_j['taxes_and_duties']);
+			$order->set_shipping_total($payload_j['delivery_charge']);
+
+		} else {
+			throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
+		}
+
+		$order->save();
+}
+
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1 );
+}
+/**
+ * EAS recalculate taxes after order is saved via API calls
+ *
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_after_order_object_save( $order ) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+		eascompliance_set_locale();
+
+
+        if ( eascompliance_woocommerce_settings_get_option_sql( 'easproj_process_imported_orders' ) !== 'yes') {
+            return;
+        }
+
+        if ( $order->get_created_via() === 'checkout') {
+            return;
+        }
+
+		//TODO Order must have some properties that differ final save() call from intermediate calls.
+
+		if ( $order->get_meta('_easproj_api_save_notification_started') === 'yes') {
+			return;
+		}
+		$order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
+		$order->save_meta_data();
+
+		eascompliance_order_createpostsaleorder($order);
+
+        $order_id = $order->get_id();
+
+        eascompliance_logger()->info( "EAS createpostsaleorder successful for order $order_id update successful" );
+
+
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+	} finally {
+		eascompliance_set_locale(true);
+		restore_error_handler();
+	}
+}
+
+
 if ( eascompliance_is_active() ) {
 	add_action( 'wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax' );
 }
@@ -1590,134 +1787,7 @@ function eascompliance_recalculate_ajax() {
 
         $order = wc_get_order($order_id);
 
-        $auth_token = eascompliance_get_oauth_token();
-
-        $order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
-
-        // check requirements for calculate request //.
-        if ( '' === $order->get_shipping_first_name()
-            || '' === $order->get_shipping_last_name()
-            || '' === $order->get_shipping_country()
-            || '' === $order->get_shipping_address_1()) {
-            throw new Exception(__('Landed cost calculation can’t be processed until Delivery Name and address provided', 'eascompliance'));
-        }
-
-		if ( ! in_array($order->get_shipping_country(), EUROPEAN_COUNTRIES)) {
-			throw new Exception(__('Order shipping country must be in EU', 'eascompliance'));
-		}
-
-        $sales_order_json = array(
-                'order'=>$order_json,
-                'sale_date'=>date_format(new DateTime(), 'Y-m-d'),
-                's10_cod'=>$order_json['external_order_id'],
-        );
-
-
-        $options = array(
-            'http' => array(
-                'method'        => 'POST',
-                'header'        => "Content-type: application/json\r\n"
-                    . 'Authorization: Bearer ' . $auth_token . "\r\n",
-                'content'       => json_encode($sales_order_json, JSON_THROW_ON_ERROR2),
-                'ignore_errors' => true,
-            ),
-            'ssl'  => array(
-                'verify_peer'      => false,
-                'verify_peer_name' => false,
-            ),
-        );
-        $context = stream_context_create( $options );
-
-        $sales_order_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
-        $sales_order_body = file_get_contents( $sales_order_url, false, $context );
-
-		$sales_order_body = trim($sales_order_body,'"');
-
-        // validate token in $sales_order_body
-		$jwt_key_url      = woocommerce_settings_get_option( 'easproj_eas_api_url' ) . '/auth/keys';
-		$options          = array(
-			'http' => array(
-				'method' => 'GET',
-			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
-		);
-		$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
-		if ( false === $jwt_key_response ) {
-			$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
-			throw new Exception( error_get_last()['message'] );
-		}
-		$jwt_key_j         = json_decode( $jwt_key_response, true );
-		$jwt_key           = $jwt_key_j['default'];
-
-		$arr = preg_split( '/[.]/', $sales_order_body, 3 );
-
-		// JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'   //.
-		$jwt_signature = base64_decode( str_replace( array( '-', '_' ), array( '+', '/' ), $arr[2] ) . '==', true );
-
-		// Validate JWT token signed with key //.
-		$verified       = openssl_verify( $arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256 );
-		if ( ! ( 1 === $verified ) ) {
-			throw new Exception( 'JWT verification failed: ' . $verified );
-		}
-
-        $sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
-        if ( '200' === $sales_order_status ) {
-            $order->add_order_note( eascompliance_format( __( 'Sales order received, updating order $order_id' , 'eascompliance'), array('order_id'=>$order_id)) );
-
-            //updating order with data received from EAS
-            $jwt_header  = base64_decode( $arr[0], false ); // {"alg":"RS256","typ":"JWT","kid":"default"}
-            $jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
-            $payload_j            = json_decode( $jwt_payload, true );
-
-			$order->add_meta_data('_easproj_token', $sales_order_body, true);
-			$order->add_meta_data('_easproj_order_json', json_encode( $payload_j, JSON_THROW_ON_ERROR2 ), true);
-			$order->add_meta_data('easproj_payload', $payload_j, true);
-			$payload_items = $payload_j['items'];
-
-			$tax_rate_id0 = eascompliance_tax_rate_id();
-
-			foreach ( $order->get_items() as $k => &$order_item ) {
-				$sku = wc_get_product( $order_item['product_id'] )->get_sku();
-				foreach ( $payload_items as $payload_item ) {
-					if ( $payload_item['item_id'] === $k ) {
-						break;}
-					// $payload_item['item_id'] is sku when it is available in product
-					if ( $payload_item['item_id'] === $sku ) {
-						break;}
-				}
-
-                // temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
-				$order_item->add_meta_data( 'Customs duties', $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], true );
-				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] , true);
-				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
-				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'], true );
-				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
-
-				$amount = $payload_item['item_duties_and_taxes'];
-				$order_item->set_taxes(
-					array(
-						'total'    => array( $tax_rate_id0 => $amount ),
-						'subtotal' => array( $tax_rate_id0 => $amount ),
-					)
-				);
-
-			}
-
-            $order->calculate_taxes();
-
-			$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
-
-			$order->set_total($payload_j['total_order_amount'] + $payload_j['taxes_and_duties']);
-			$order->set_shipping_total($payload_j['delivery_charge']);
-
-        } else {
-            throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
-        }
-
-        $order->save();
+        eascompliance_order_createpostsaleorder($order);
 
         eascompliance_logger()->info( "Sales order $order_id update successful" );
 
@@ -1762,6 +1832,7 @@ function eascompliance_logorderdata_ajax() {
                 '_easproj_order_json'=>$order->get_meta('_easproj_order_json'),
                 '_easproj_order_number_notified'=>$order->get_meta('_easproj_order_number_notified'),
                 '_easproj_payment_processed'=>$order->get_meta('_easproj_payment_processed'),
+                '_easproj_api_save_notified'=>$order->get_meta('_easproj_api_save_notified'),
             ), true));
 
 
@@ -2674,7 +2745,6 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 
 
 
-
 if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2 );
 }
@@ -3159,6 +3229,13 @@ function eascompliance_settings() {
 			'desc'    => 'Log debug messages',
 			'id'      => 'easproj_debug',
 			'default' => 'no',
+		),
+		'process_imported_orders'                   => array(
+			'name'    => __( 'Process imported orders', 'eascompliance' ),
+			'type'    => 'checkbox',
+			'desc'    => 'Automatic processing of orders imported via API',
+			'id'      => 'easproj_process_imported_orders',
+			'default' => 'yes',
 		),
 		'EAS_API_URL'             => array(
 			'name'    => __( 'EAS API Base URL', 'eascompliance' ),
