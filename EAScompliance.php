@@ -445,6 +445,53 @@ function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) 
 
 
 if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1 );
+}
+/**
+ *  Checkout -> Reload checkout when billing/shipping country changes
+ */
+function eascompliance_woocommerce_checkout_update_order_review($post_data) {
+	if ( EASCOMPLIANCE_DEVELOP ) {
+		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+
+	try {
+
+		$post_data = urldecode($post_data);
+
+		foreach (explode('&', $post_data) as $chunk) {
+			$param = explode("=", $chunk);
+			if ($param[0] === 'billing_country') {
+				$new_billing_country = urldecode($param[1]);
+			}
+			if ($param[0] === 'shipping_country') {
+				$new_shipping_country = urldecode($param[1]);
+			}
+		}
+
+        $old_billing_country = WC()->checkout->get_value('billing_country');
+        $old_shipping_country = WC()->checkout->get_value('shipping_country');
+
+//        eascompliance_logger()->debug('$old_billing_country  '.$old_billing_country . ' $new_billing_country '  . $new_billing_country);
+//        eascompliance_logger()->debug('$old_shipping_country  '.$old_shipping_country . ' $new_shipping_country '  . $new_shipping_country);
+
+		if ( !empty($new_billing_country) && $old_billing_country !== $new_billing_country && in_array($new_billing_country, EUROPEAN_COUNTRIES) )  {
+			WC()->session->set( 'reload_checkout', true );
+			return;
+		}
+
+		if ( !empty($new_shipping_country) && $old_shipping_country !== $new_shipping_country && in_array($new_shipping_country, EUROPEAN_COUNTRIES) )  {
+			WC()->session->set( 'reload_checkout', true );
+            return;
+        }
+
+	} catch ( Exception $ex ) {
+		eascompliance_log_exception( $ex );
+		throw $ex;
+	}
+}
+
+
+if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
 /**
