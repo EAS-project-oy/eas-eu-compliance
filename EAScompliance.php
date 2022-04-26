@@ -471,17 +471,17 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data) {
         $old_billing_country = WC()->checkout->get_value('billing_country');
         $old_shipping_country = WC()->checkout->get_value('shipping_country');
 
-//        eascompliance_logger()->debug('$old_billing_country  '.$old_billing_country . ' $new_billing_country '  . $new_billing_country);
-//        eascompliance_logger()->debug('$old_shipping_country  '.$old_shipping_country . ' $new_shipping_country '  . $new_shipping_country);
+//        eascompliance_logger()->debug('$old_billing_country '.$old_billing_country . ' $new_billing_country '  . $new_billing_country);
+//        eascompliance_logger()->debug('$old_shipping_country '.$old_shipping_country . ' $new_shipping_country '  . $new_shipping_country);
 
 		if ( !empty($new_billing_country) && $old_billing_country !== $new_billing_country && in_array($new_billing_country, EUROPEAN_COUNTRIES) )  {
+			WC()->checkout->set_value('billing_country', $new_billing_country);
 			WC()->session->set( 'reload_checkout', true );
-			return;
 		}
 
 		if ( !empty($new_shipping_country) && $old_shipping_country !== $new_shipping_country && in_array($new_shipping_country, EUROPEAN_COUNTRIES) )  {
+			WC()->checkout->set_value('shipping_country', $new_shipping_country);
 			WC()->session->set( 'reload_checkout', true );
-            return;
         }
 
 	} catch ( Exception $ex ) {
@@ -800,17 +800,20 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
     // WCML plugin fix: take payment_currency from plugin client_currency //.
+	$wcml_enabled = false;
     if ( function_exists('wcml_is_multi_currency_on') ) {
         if ( wcml_is_multi_currency_on() ) {
 			global $woocommerce_wpml;
 			if ( ! is_null($woocommerce_wpml) ) {
                 $currency = $woocommerce_wpml->multi_currency->get_client_currency();
+				$wcml_enabled = true;
 				 if (eascompliance_is_debug()) {
 					 eascompliance_logger()->debug('WCML $currency '.print_r($currency, true));
                  }
 				$calc_jreq['payment_currency'] = $currency;
 			}
 		}
+		eascompliance_logger()->warning('WCML wcml_is_multi_currency_on is false ');
 	}
 
 	$calc_jreq['is_delivery_to_person'] = eascompliance_array_get( $checkout, 'shipping_company', '' ) === '';
@@ -846,12 +849,17 @@ function eascompliance_make_eas_api_request_json() {
 		    $type_of_goods = 'GIFTCARD';
 		}
 
+		$cost_provided_by_em = round( (float) $item['line_total'] / $item['quantity'], 2 );
+        if ( $wcml_enabled ) {
+			$cost_provided_by_em = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $cost_provided_by_em);
+        }
+
 		$items[] = array(
 			'short_description'           => $product->get_name(),
 			'long_description'            => $product->get_name(),
 			'id_provided_by_em'           => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
 			'quantity'                    => $item['quantity'],
-			'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
+			'cost_provided_by_em'         => $cost_provided_by_em,
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
 			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
 			// DEBUG check product country:
