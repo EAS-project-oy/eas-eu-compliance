@@ -2431,6 +2431,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			return $packages;
 		}
 
+		$tax_rate_id0 = eascompliance_tax_rate_id();
 		foreach ( $packages as $px => &$p ) {
 			$k0         = eascompliance_array_key_first2( $woocommerce->cart->cart_contents );
 			$cart_item0 = $woocommerce->cart->cart_contents[ $k0 ];
@@ -2447,7 +2448,9 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
 					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] );
-					$packages[ $px ]['rates'][ $shm ]->add_meta_data( 'VAT Amount', $cart_item0['EAScompliance DELIVERY CHARGE VAT'] );
+					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] )
+
+					);
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
@@ -2838,7 +2841,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             $shipping_item = new WC_Order_Item_Shipping();
 			$shipping_item->set_name($order_shipping_item->get_name());
-			$shipping_item->add_meta_data( 'VAT Amount', $order_shipping_item->get_meta('VAT Amount') );
+			//$shipping_item->add_meta_data( 'VAT Amount', $order_shipping_item->get_meta('VAT Amount') );
 			$shipping_item->add_meta_data( 'Items', $order_shipping_item->get_meta('Items') );
             $shipping_item->add_meta_data('_refunded_item_id', $order_shipping_item->get_id());
             $refund->add_item( $shipping_item );
