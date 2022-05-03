@@ -2822,6 +2822,8 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 					array(
 						'token' => $confirmation_token,
 						'return_breakdown'     => $return_breakdown,
+						'return_date'     => date_format($refund->get_date_created(), 'Y-m-d'),
+						'confirmed'     => true,
 						JSON_THROW_ON_ERROR2,
 					)
 				),
@@ -2834,7 +2836,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 		);
 		$context = stream_context_create( $options );
 
-		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return';
+		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return_with_lc';
 
         // retry API refund return request several times for anything except statuses 200 or 400
         $MAX_ATTEMPTS = 3;
