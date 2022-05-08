@@ -1936,7 +1936,7 @@ function eascompliance_cart_total() {
         }
 
 		// check that payload total_order_amount equals Order total //.
-		if ( (float) $payload_total_order_amount != (float) $total ) {
+		if ( round( (float) $payload_total_order_amount, 2) != round( (float) $total, 2) ) {
 			eascompliance_log_exception(
 				new Exception(
 					eascompliance_format(
@@ -2456,6 +2456,21 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		// exclude external_order_id because get_cart_hash is always different //.
 		$calc_jreq_saved['external_order_id'] = '';
 		$calc_jreq_new['external_order_id']   = '';
+
+        // cost_provided_by_em and delivery_cost can differ in saved and new versions most by 1 cent
+		$saved_delivery_cost = $calc_jreq_saved['delivery_cost'];
+		if ( 0.01 >= abs($calc_jreq_new['delivery_cost'] - $saved_delivery_cost ) ) {
+			$calc_jreq_new['delivery_cost'] = $saved_delivery_cost;
+			eascompliance_logger()->debug('adjusting delivery_cost difference by 1 cent');
+		}
+
+        foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
+            $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
+            if ( 0.01 >= abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em ) ) {
+				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
+				eascompliance_logger()->debug('adjusting cost_provided_by_em difference by 1 cent');
+            }
+        }
 
 		// save new request in first item //.
 		global $woocommerce;
@@ -3087,7 +3102,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons( $order ) {
 	<?php
 
 
-	if ( $order->is_editable() && $order->get_meta('_easproj_order_json') !== '' )
+	if ( $order->is_editable() && $order->get_meta('_easproj_order_json') === '' )
 	{
         ?>
         <button type="button" class="button button-primary eascompliance-recalculate"><?php esc_html_e( 'Calculate Taxes & Duties EAS', 'woocommerce' ); ?></button>
