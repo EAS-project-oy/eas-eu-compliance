@@ -1,13 +1,23 @@
 *** EAS EU compliance plugin Changelog ***
+
+2022-05-09 - version 1.3.10
+* Multicurrency support enhanced
+* Multilanguage support enhanced
+* Rounding issue in total cart fixed
+* Taxes and Duties handling rules changed
+
+2022-04-07 - version 1.3.5
+* Implemented Required field in delivery address management
+
+2022-04-07 - version 1.3.4
+* Implemented handling of orders created manually in admin section or via API methods
+
 2022-04-07 - version 1.3.3
 * Suomi language updated
 * English wordings improved
 
 2022-04-07 - version 1.3.2
-*
-
-2022-04-07 - version 1.3.1
-*
+* Some bugs with differences in billing and shipping adresses fixed
 
 2022-04-07 - version 1.3.0
 * Gift cards support implemented
