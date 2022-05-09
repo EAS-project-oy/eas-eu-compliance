@@ -7,9 +7,10 @@
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
  * Version: 1.3.10
- * Tested up to 5.9.2
+ * Tested up to 5.9.3
  * WC requires at least: 4.8.0
- * WC tested up to: 6.3.1
+ * Requires at least: 4.8.0
+ * WC tested up to: 6.4.1
  * Requires PHP: 5.6
  *
  * @package eascompliance
