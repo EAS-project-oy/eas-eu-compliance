@@ -727,7 +727,7 @@ function eascompliance_make_eas_api_request_json() {
 	$ship_to_different_address = eascompliance_array_get( $checkout, 'ship_to_different_address', false );
 	if ( ! ( true === $ship_to_different_address ||  'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
 		$checkout['shipping_country']    = $checkout['billing_country'];
-		$checkout['shipping_state']      = $checkout['billing_state'];
+		$checkout['shipping_state']      = eascompliance_array_get($checkout,'billing_state', '');
 		$checkout['shipping_company']    = $checkout['billing_company'];
 		$checkout['shipping_first_name'] = $checkout['billing_first_name'];
 		$checkout['shipping_last_name']  = $checkout['billing_last_name'];
@@ -771,7 +771,7 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
 	$calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '' );//$checkout['shipping_address_2'];
 	$calc_jreq['delivery_city']           = $checkout['shipping_city'];
-	$calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
+	$calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
 	$calc_jreq['delivery_postal_code']    = $checkout['shipping_postcode'];
 	$calc_jreq['delivery_country']        = $checkout['shipping_country'];
 	$calc_jreq['delivery_phone']          = $checkout['billing_phone'];
@@ -935,7 +935,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
         $calc_jreq['delivery_address_line_1'] = $order->get_shipping_address_1();
         $calc_jreq['delivery_address_line_2'] = $order->get_shipping_address_2();
         $calc_jreq['delivery_city']           = $order->get_shipping_city();
-        $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
+        $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
         $calc_jreq['delivery_postal_code']    = $order->get_shipping_postcode();
         $calc_jreq['delivery_country']        = $order->get_shipping_country();
         $calc_jreq['delivery_phone']          = $order->get_billing_phone();
