@@ -526,6 +526,7 @@ function eascompliance_woocommerce_review_order_before_payment() {
 //		set_error_handler('eascompliance_error_handler');
 //		$jres = print_r(eval($debug_input), true);
 //	} catch (Exception $ex) {
+//		eascompliance_log_exception($ex);
 //		$jres = 'Error: ' . $ex->getMessage();
 //	} finally {
 //		restore_error_handler();
@@ -863,145 +864,135 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
 	if ( EASCOMPLIANCE_DEVELOP ) {
 		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
 
-	try {
-		set_error_handler( 'eascompliance_error_handler' );
+    $order = wc_get_order($order_id);
 
-		$order = wc_get_order($order_id);
+    $calc_jreq      = json_decode(
+        '{
+     "external_order_id": "api_order_001",
+     "delivery_method": "postal",
+     "delivery_cost": 10,
+     "payment_currency": "EUR",
+     "is_delivery_to_person": true,
+     "recipient_title": "Mr.",
+     "recipient_first_name": "Recipient first name",
+     "recipient_last_name": "Recipient last name",
+     "recipient_company_name": "Recipient company name",
+     "recipient_company_vat": "Recipient company VAT number",
+     "delivery_address_line_1": "45, Dow Street",
+     "delivery_address_line_2": "Grassy meadows",
+     "delivery_city": "Green City",
+     "delivery_state_province": "Central",
+     "delivery_postal_code": "330100",
+     "delivery_country": "FI",
+     "delivery_phone": "041 123 7654",
+     "delivery_email": "firstname@email.fi",
+     "order_breakdown": [
+    {
+      "short_description": "First Item",
+      "long_description": "Handmade goods item",
+      "id_provided_by_em": "1004020",
+      "quantity": 1,
+      "cost_provided_by_em": 100,
+      "weight": 1,
+      "hs6p_received": "0707 00 1245",
+      "location_warehouse_country": "FI",
+      "type_of_goods": "GOODS",
+      "reduced_tbe_vat_group": true,
+      "act_as_disclosed_agent": true,
+      "seller_registration_country": "FI",
+      "originating_country": "FI"
+    }
+     ]
+            }',
+        true
+    );
 
-        $calc_jreq      = json_decode(
-            '{
-         "external_order_id": "api_order_001",
-         "delivery_method": "postal",
-         "delivery_cost": 10,
-         "payment_currency": "EUR",
-         "is_delivery_to_person": true,
-         "recipient_title": "Mr.",
-         "recipient_first_name": "Recipient first name",
-         "recipient_last_name": "Recipient last name",
-         "recipient_company_name": "Recipient company name",
-         "recipient_company_vat": "Recipient company VAT number",
-         "delivery_address_line_1": "45, Dow Street",
-         "delivery_address_line_2": "Grassy meadows",
-         "delivery_city": "Green City",
-         "delivery_state_province": "Central",
-         "delivery_postal_code": "330100",
-         "delivery_country": "FI",
-         "delivery_phone": "041 123 7654",
-         "delivery_email": "firstname@email.fi",
-         "order_breakdown": [
-        {
-          "short_description": "First Item",
-          "long_description": "Handmade goods item",
-          "id_provided_by_em": "1004020",
-          "quantity": 1,
-          "cost_provided_by_em": 100,
-          "weight": 1,
-          "hs6p_received": "0707 00 1245",
-          "location_warehouse_country": "FI",
-          "type_of_goods": "GOODS",
-          "reduced_tbe_vat_group": true,
-          "act_as_disclosed_agent": true,
-          "seller_registration_country": "FI",
-          "originating_country": "FI"
+    // set delivery_method to postal if it is in postal delivery methods //.
+    $delivery_method         = 'courier';
+    $shipping_methods        = array_values( wc_get_chosen_shipping_method_ids() );
+    $shipping_methods_postal = WC_Admin_Settings::get_option( 'easproj_shipping_method_postal' );
+
+    if ( array_intersect( $shipping_methods, $shipping_methods_postal ) ) {
+        $delivery_method = 'postal';
+    }
+
+    $delivery_state_province = eascompliance_array_get(WC()->countries->states[ $order->get_shipping_country() ], $order->get_shipping_state(), '') ?: $order->get_shipping_state();
+
+    $calc_jreq['external_order_id'] = '' . $order->get_id();
+    $calc_jreq['delivery_method']   = $delivery_method;
+    $calc_jreq['delivery_cost']     = round( (float) ( $order->get_shipping_total() ), 2 );
+    $calc_jreq['payment_currency']  = $order->get_currency();
+
+    $calc_jreq['is_delivery_to_person'] =  $order->get_shipping_company() === '';
+
+    $calc_jreq['recipient_title']         = 'Mr.';
+    $calc_jreq['recipient_first_name']    = $order->get_shipping_first_name();
+    $calc_jreq['recipient_last_name']     = $order->get_shipping_last_name();
+    $calc_jreq['recipient_company_name']  = $order->get_shipping_company() === '' ? 'No company' : $order->get_shipping_company();
+    $calc_jreq['recipient_company_vat']   = '';
+    $calc_jreq['delivery_address_line_1'] = $order->get_shipping_address_1();
+    $calc_jreq['delivery_address_line_2'] = $order->get_shipping_address_2();
+    $calc_jreq['delivery_city']           = $order->get_shipping_city();
+    $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
+    $calc_jreq['delivery_postal_code']    = $order->get_shipping_postcode();
+    $calc_jreq['delivery_country']        = $order->get_shipping_country();
+    $calc_jreq['delivery_phone']          = $order->get_billing_phone();
+    $calc_jreq['delivery_email']          = $order->get_billing_email();
+    $countries      = array_flip( WORLD_COUNTRIES );
+    $items          = array();
+    foreach ( $order->get_items() as $k => $item ) {
+        $product_id = $item['product_id'];
+        $product    = wc_get_product( $product_id );
+
+        $location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
+        $originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
+        $seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
+
+        $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+        $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
+        if ( in_array($product->get_type(), $giftcard_product_types, true) ){
+            $type_of_goods = 'GIFTCARD';
         }
-         ]
-                }',
-            true
+
+        $items[] = array(
+            'short_description'           => $product->get_name(),
+            'long_description'            => $product->get_name(),
+            'id_provided_by_em'           => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
+            'quantity'                    => $item['quantity'],
+            'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
+            'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
+            'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
+
+            'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
+
+            'type_of_goods'               => $type_of_goods,
+            'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
+            'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
+            'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
+            'originating_country'         => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
+    }
 
-        // set delivery_method to postal if it is in postal delivery methods //.
-        $delivery_method         = 'courier';
-        $shipping_methods        = array_values( wc_get_chosen_shipping_method_ids() );
-        $shipping_methods_postal = WC_Admin_Settings::get_option( 'easproj_shipping_method_postal' );
+    $d = $order->get_discount_total(); // discount d    //.
+    $t = 0; // cart total  T = p1*q1 + p2*q2           //.
+    $q = 0; // total quantity Q = q1 + q2              //.
+    foreach ( $items as $item ) {
+        $t += $item['quantity'] * $item['cost_provided_by_em'];
+        $q += $item['quantity'];
+    }
 
-        if ( array_intersect( $shipping_methods, $shipping_methods_postal ) ) {
-            $delivery_method = 'postal';
+    if ( $d > 0 && $t > 0 ) { // only process if discount and total are positive //.
+        foreach ( $items as &$item ) {
+            $q1 = $item['quantity'];
+            $p1 = $item['cost_provided_by_em'];
+
+            $item['cost_provided_by_em'] = $p1 * ( $t - $d ) / $t;
         }
+    }
+    $calc_jreq['order_breakdown'] = $items;
+    // eascompliance_logger()->debug('$items after discount '.print_r($items, true));  //.
 
-        $delivery_state_province        = $order->get_shipping_state() === '' ? '' : '' . WC()->countries->states[ $order->get_shipping_country() ][ $order->get_shipping_state() ];
-
-        $calc_jreq['external_order_id'] = '' . $order->get_id();
-        $calc_jreq['delivery_method']   = $delivery_method;
-        $calc_jreq['delivery_cost']     = round( (float) ( $order->get_shipping_total() ), 2 );
-        $calc_jreq['payment_currency']  = $order->get_currency();
-
-        $calc_jreq['is_delivery_to_person'] =  $order->get_shipping_company() === '';
-
-        $calc_jreq['recipient_title']         = 'Mr.';
-        $calc_jreq['recipient_first_name']    = $order->get_shipping_first_name();
-        $calc_jreq['recipient_last_name']     = $order->get_shipping_last_name();
-        $calc_jreq['recipient_company_name']  = $order->get_shipping_company() === '' ? 'No company' : $order->get_shipping_company();
-        $calc_jreq['recipient_company_vat']   = '';
-        $calc_jreq['delivery_address_line_1'] = $order->get_shipping_address_1();
-        $calc_jreq['delivery_address_line_2'] = $order->get_shipping_address_2();
-        $calc_jreq['delivery_city']           = $order->get_shipping_city();
-        $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
-        $calc_jreq['delivery_postal_code']    = $order->get_shipping_postcode();
-        $calc_jreq['delivery_country']        = $order->get_shipping_country();
-        $calc_jreq['delivery_phone']          = $order->get_billing_phone();
-        $calc_jreq['delivery_email']          = $order->get_billing_email();
-
-        $countries      = array_flip( WORLD_COUNTRIES );
-        $items          = array();
-        foreach ( $order->get_items() as $k => $item ) {
-            $product_id = $item['product_id'];
-            $product    = wc_get_product( $product_id );
-
-            $location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
-            $originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
-            $seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
-
-            $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
-            $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
-            if ( in_array($product->get_type(), $giftcard_product_types, true) ){
-                $type_of_goods = 'GIFTCARD';
-            }
-
-            $items[] = array(
-                'short_description'           => $product->get_name(),
-                'long_description'            => $product->get_name(),
-                'id_provided_by_em'           => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
-                'quantity'                    => $item['quantity'],
-                'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
-                'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
-                'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
-
-                'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
-
-                'type_of_goods'               => $type_of_goods,
-                'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
-                'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
-                'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
-                'originating_country'         => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
-            );
-        }
-
-        $d = $order->get_discount_total(); // discount d    //.
-        $t = 0; // cart total  T = p1*q1 + p2*q2           //.
-        $q = 0; // total quantity Q = q1 + q2              //.
-        foreach ( $items as $item ) {
-            $t += $item['quantity'] * $item['cost_provided_by_em'];
-            $q += $item['quantity'];
-        }
-
-        if ( $d > 0 && $t > 0 ) { // only process if discount and total are positive //.
-            foreach ( $items as &$item ) {
-                $q1 = $item['quantity'];
-                $p1 = $item['cost_provided_by_em'];
-
-                $item['cost_provided_by_em'] = $p1 * ( $t - $d ) / $t;
-            }
-        }
-        $calc_jreq['order_breakdown'] = $items;
-        // eascompliance_logger()->debug('$items after discount '.print_r($items, true));  //.
-
-        return $calc_jreq;
-	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
-		eascompliance_logger()->debug( '$calc_jreq '. print_r( $calc_jreq, true ) );
-	} finally {
-		restore_error_handler();
-	}
+    return $calc_jreq;
 }
 
 /**
@@ -1673,20 +1664,31 @@ function eascompliance_order_createpostsaleorder($order) {
 
 			foreach ( $order->get_items() as $k => &$order_item ) {
 				$sku = wc_get_product( $order_item['product_id'] )->get_sku();
+				$payload_item_found = false;
 				foreach ( $payload_items as $payload_item ) {
-					if ( $payload_item['item_id'] === $k ) {
+					if ( (string) $payload_item['item_id'] === (string) $k ) {
+                        $payload_item_found = true;
 						break;}
 					// $payload_item['item_id'] is sku when it is available in product
-					if ( $payload_item['item_id'] === $sku ) {
+					if ( (string) $payload_item['item_id'] === $sku ) {
+						$payload_item_found = true;
 						break;}
 				}
+                // paranoid check that payload_item matching order_item was found
+                if ( !$payload_item_found ) {
+                    throw new Exception('no $payload_item found for $order_item key '.print_r($k, true).' $sku '.$sku.' $payload_items '.print_r($payload_items, true));
+                }
 
 				// temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
-				$order_item->add_meta_data( 'Customs duties', $payload_j['merchandise_vat'] + $payload_j['delivery_charge_vat'], true );
-				$order_item->add_meta_data( 'VAT Amount', $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'] , true);
+				$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
+                $vat_amount = $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
+				$order_item->add_meta_data( 'VAT Amount', $vat_amount, true);
 				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
 				$order_item->add_meta_data( 'EAS fee', $payload_item['item_eas_fee'], true );
 				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
+
+                $order_item->set_subtotal( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
+                $order_item->set_total( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
 
 				$amount = $payload_item['item_duties_and_taxes'];
 				$order_item->set_taxes(
@@ -1698,12 +1700,23 @@ function eascompliance_order_createpostsaleorder($order) {
 
 			}
 
+			// set delivery_charge for first found shipping //.
+			foreach ($order->get_items('shipping') as $shipping_item) {
+				$shipping_item->set_taxes (
+					array(
+						'total'    => array($tax_rate_id0 => $payload_j['delivery_charge_vat'] ),
+						'subtotal' => array($tax_rate_id0 => $payload_j['delivery_charge_vat'] ),
+					));
+
+				$shipping_item->set_total($payload_j['delivery_charge_vat_excl'] );
+
+				break;
+			}
 			$order->update_taxes();
 
-			$order_item->add_meta_data( 'Customs duties', $payload_item['item_customs_duties'], true );
-
-			$order->set_total($payload_j['total_order_amount'] + $payload_j['taxes_and_duties']);
-			$order->set_shipping_total($payload_j['delivery_charge']);
+			$order->set_total( $payload_j['total_order_amount'] );
+			$order->set_shipping_total( $payload_j['delivery_charge_vat_excl']);
+			$order->set_shipping_tax( $payload_j['delivery_charge_vat'] );
 
 		} else {
 			throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
@@ -2464,6 +2477,12 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 			$calc_jreq_new['delivery_cost'] = $saved_delivery_cost;
 			eascompliance_logger()->debug('adjusting delivery_cost difference by 1 cent');
 		}
+
+        // paranoid check that order_breakdown key is present
+        if ( !(array_key_exists('order_breakdown', $calc_jreq_saved) && array_key_exists('order_breakdown', $calc_jreq_new)) )
+		{
+			eascompliance_logger()->debug('order_breakdown key is not present in $calc_jreq_saved '.print_r($calc_jreq_saved, true).'\n\n\n or $calc_jreq_new'.print_r($calc_jreq_new, true));
+        }
 
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
