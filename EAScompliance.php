@@ -2470,7 +2470,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 
 		// disable order if customs duties are missing //.
 		if ( ! eascompliance_is_set() ) {
-			throw new Exception( __TR( 'CUSTOMS DUTIES MISSING' ) );
+			throw new Exception( __TR( 'Customs Duties Missing. We found error in your cart. Please reload page. <a href="./">reload</a>' ) );
 		}
 
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed //.
