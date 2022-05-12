@@ -759,7 +759,10 @@ function eascompliance_make_eas_api_request_json() {
 				$calc_jreq['payment_currency'] = $currency;
 			}
 		}
-		eascompliance_logger()->warning('WCML wcml_is_multi_currency_on is false ');
+        else {
+			eascompliance_logger()->warning('WCML wcml_is_multi_currency_on is false ');
+        }
+
 	}
 
 	$calc_jreq['is_delivery_to_person'] = eascompliance_array_get( $checkout, 'shipping_company', '' ) === '';
@@ -1033,6 +1036,7 @@ function eascompliance_ajaxhandler() {
 		$calc_jreq      = eascompliance_make_eas_api_request_json();
 
 		// save request json into session //.
+        eascompliance_logger()->debug('$calc_jreq before saving into session '.print_r($calc_jreq, true));
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
 		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
 
@@ -1758,6 +1762,8 @@ function eascompliance_woocommerce_after_order_object_save( $order ) {
 		}
 		$order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
 		$order->save_meta_data();
+
+
 
 		eascompliance_order_createpostsaleorder($order);
 
