@@ -2416,7 +2416,10 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
 				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
+
+				eascompliance_logger()->debug('$calc_jreq_saved before saving into session '.print_r($calc_jreq_saved, true));
 				WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq_saved );
+				eascompliance_logger()->debug('$calc_jreq_saved after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON'), true));
 			}
 		}
 
