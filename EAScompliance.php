@@ -1038,6 +1038,8 @@ function eascompliance_ajaxhandler() {
 		// save request json into session //.
         eascompliance_logger()->debug('$calc_jreq before saving into session '.print_r($calc_jreq, true));
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
+		eascompliance_logger()->debug('$calc_jreq after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON' ), true));
+
 		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
 
 		$jdebug['CALC request'] = $calc_jreq;
