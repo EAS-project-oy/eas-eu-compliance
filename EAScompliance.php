@@ -3230,6 +3230,19 @@ function eascompliance_settings_page() {
 }
 
 
+add_action('admin_enqueue_scripts', 'ds_admin_theme_style');
+add_action('login_enqueue_scripts', 'ds_admin_theme_style');
+/**
+ * Hide notices in settings page
+ */
+function ds_admin_theme_style() {
+    global $current_tab;
+    if( $current_tab === 'settings_tab_compliance' ) {
+        echo '<style> .notice { display: none !important; } .wp-submenu [href="admin.php?page=eas-settings"] { color:#fff !important; font-weight: 600 !important; } .wp-submenu [href="admin.php?page=wc-settings"] { color: rgba(240,246,252,.7) !important; font-weight: normal !important; } </style>';
+    }
+}
+
+
 /**
  * Settings
  */
@@ -3263,12 +3276,19 @@ function eascompliance_settings() {
 		$attributes[ $slug ] = $att_label . ' - ' . $slug;
 	}
 
+    $version = get_plugin_data(  __FILE__, false, false )['Version'];
+
 	return array(
 		'section_title'           => array(
 			'name' => __TR( 'Settings' ),
 			'type' => 'title',
 			'desc' => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">',
 		),
+        'version'                  => array(
+            'name'    => __TR( 'Version' ),
+            'type' => 'title',
+            'desc' => $version,
+        ),
 		'active'                  => array(
 			'name'    => __TR( 'Enable/Disable' ),
 			'type'    => 'checkbox',
@@ -3490,7 +3510,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance() {
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
-		
+
 		woocommerce_admin_fields( eascompliance_settings() );
 	} catch ( Exception $ex ) {
 		eascompliance_log_exception( $ex );

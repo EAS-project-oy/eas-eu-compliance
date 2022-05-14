@@ -23,10 +23,6 @@ jQuery(document).ready(function($) {
     if ($('.nav-tab-active').text() === PLUGIN_NAME) {
         $('#mainform').addClass('easproject_settings')
 
-        // highlight eas-settings menu item
-        $('.wp-submenu .current').removeClass('current')
-        $('.wp-submenu [href="admin.php?page=eas-settings"]').parent().addClass('current')
-
     } else {
         //hiding title, because it is rendered when 'General' tab is active
         $('.woocommerce-layout__header-heading:contains(\'' + PLUGIN_NAME + '\')').hide()
