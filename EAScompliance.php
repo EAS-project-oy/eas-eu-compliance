@@ -3212,6 +3212,24 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 
 }
 
+
+add_action( 'admin_menu', 'eascompliance_add_settings_page' );
+/**
+ * Settings menu item
+ */
+function eascompliance_add_settings_page() {
+    add_submenu_page( 'woocommerce', 'EAS EU compliance', 'EAS EU compliance', 'manage_woocommerce', 'eas-settings', 'eascompliance_settings_page' );
+}
+
+
+/**
+ * Settings page
+ */
+function eascompliance_settings_page() {
+    wp_safe_redirect( esc_url_raw( admin_url( 'admin.php?page=wc-settings&tab=settings_tab_compliance' ) ) );
+}
+
+
 /**
  * Settings
  */
@@ -3430,7 +3448,7 @@ function eascompliance_woocommerce_settings_start() {
 }
 
 
-add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settings_tabs_array' );
+add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settings_tabs_array', 999 );
 /**
  * Settings tab
  *
@@ -3444,7 +3462,12 @@ function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
-		$settings_tabs['settings_tab_compliance'] = EASCOMPLIANCE_PLUGIN_NAME;
+        global $current_tab;
+        if( $current_tab==='settings_tab_compliance' ) {
+            return array('settings_tab_compliance' => EASCOMPLIANCE_PLUGIN_NAME);
+        }
+
+        $settings_tabs['settings_tab_compliance'] = EASCOMPLIANCE_PLUGIN_NAME;
 		return $settings_tabs;
 	} catch ( Exception $ex ) {
 		eascompliance_log_exception( $ex );
