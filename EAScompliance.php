@@ -40,13 +40,14 @@ function __TR($text, $textdomain = 'eascompliance') {
     }
 
 	$plugin_lang = eascompliance_woocommerce_settings_get_option_sql( 'easproj_language' );
+	$locale = 'en_US';
     if ( 'Default' === $plugin_lang ) {
 		$locale = get_locale();
 	} elseif ( 'EN' === $plugin_lang ) {
 		$locale = 'en_US';
 	} elseif ( 'FI' === $plugin_lang ) {
 		$locale = 'fi';
-    };
+    }
 
 	$mo_file = dirname( __FILE__ ) . '/languages/'. $textdomain . '-' . $locale . '.mo';
     if ( !file_exists($mo_file)) {
