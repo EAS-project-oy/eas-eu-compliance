@@ -728,15 +728,15 @@ function eascompliance_make_eas_api_request_json() {
 	// substitute billing address to shipping address  if checkbox 'Ship to a different address?' was empty //.
 	$ship_to_different_address = eascompliance_array_get( $checkout, 'ship_to_different_address', false );
 	if ( ! ( true === $ship_to_different_address ||  'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
-		$checkout['shipping_country']    = $checkout['billing_country'];
+		$checkout['shipping_country']    = eascompliance_array_get($checkout,'billing_country','');
 		$checkout['shipping_state']      = eascompliance_array_get($checkout,'billing_state', '');
-		$checkout['shipping_company']    = $checkout['billing_company'];
-		$checkout['shipping_first_name'] = $checkout['billing_first_name'];
-		$checkout['shipping_last_name']  = $checkout['billing_last_name'];
-		$checkout['shipping_address_1']  = $checkout['billing_address_1'];
+		$checkout['shipping_company']    = eascompliance_array_get($checkout,'billing_company', '');
+		$checkout['shipping_first_name'] = eascompliance_array_get($checkout,'billing_first_name', '');
+		$checkout['shipping_last_name']  = eascompliance_array_get($checkout,'billing_last_name', '');
+		$checkout['shipping_address_1']  = eascompliance_array_get($checkout,'billing_address_1', '');
 		$checkout['shipping_address_2']  = eascompliance_array_get($checkout, 'billing_address_2', '' );
-		$checkout['shipping_city']       = $checkout['billing_city'];
-		$checkout['shipping_postcode']   = $checkout['billing_postcode'];
+		$checkout['shipping_city']       = eascompliance_array_get($checkout,'billing_city', '');
+		$checkout['shipping_postcode']   = eascompliance_array_get($checkout,'billing_postcode', '');
 		$checkout['shipping_phone']      = eascompliance_array_get($checkout, 'billing_phone', '');
 	}
 
@@ -766,6 +766,18 @@ function eascompliance_make_eas_api_request_json() {
 
 	}
 
+    // check for required fields in taxes calculation
+    $required_fields = preg_split( '/\s/', 'shipping_country shipping_first_name shipping_last_name shipping_address_1 shipping_city shipping_postcode billing_email');
+    foreach ($required_fields as $field) {
+        if ( ! array_key_exists($field, $checkout)) {
+            throw new Exception( eascompliance_format(__TR('We can’t proceed landed cost calculation because required delivery address field \'$field_name\' is disabled. Please contact support to fix the issue.'), array('field_name'=>$field)));
+        }
+		if ( eascompliance_array_get($checkout, $field, '') === '') {
+			throw new Exception( eascompliance_format(__TR('We can’t proceed landed cost calculation because required delivery address field \'$field_name\' is empty.'), array('field_name'=>$field)));
+		}
+    }
+
+
 	$calc_jreq['is_delivery_to_person'] = eascompliance_array_get( $checkout, 'shipping_company', '' ) === '';
 
 	$calc_jreq['recipient_title']         = 'Mr.';
@@ -775,7 +787,7 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['recipient_company_vat']   = '';
 	$calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
 	$calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '' );//$checkout['shipping_address_2'];
-	$calc_jreq['delivery_city']           = $checkout['shipping_city'];
+	$calc_jreq['delivery_city']           = $checkout['shipping_company']    = eascompliance_array_get($checkout,'shipping_city', '');
 	$calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
 	$calc_jreq['delivery_postal_code']    = $checkout['shipping_postcode'];
 	$calc_jreq['delivery_country']        = $checkout['shipping_country'];
@@ -1416,6 +1428,12 @@ function eascompliance_redirect_confirm() {
 		$item['EAScompliance HEAD']                = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
 		$item['EAScompliance TAXES AND DUTIES']    = $payload_j['taxes_and_duties'];
 		$item['EAScompliance NEEDS RECALCULATE']   = false;
+
+        // delivery_charge_vat_excl must not include delivery_charge_vat, it may happen due to EAS store settings
+		if ( 0.01 >= abs($payload_j['delivery_charge'] - $payload_j['delivery_charge_vat_excl']) ) {
+			$payload_j['delivery_charge_vat_excl'] = $payload_j['delivery_charge'] - $payload_j['delivery_charge_vat'];
+		}
+
 		$item['EAScompliance DELIVERY CHARGE']     = $payload_j['delivery_charge_vat_excl'];
 		$item['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
 		$item['EAScompliance MERCHANDISE COST']    = $payload_j['merchandise_cost'];
@@ -1937,7 +1955,7 @@ function eascompliance_cart_total() {
 		foreach ( $cart_items as $cart_item ) {
 			if ( $first ) {
 				// replace cart total with one from $payload_j['merchandise_cost'] //.
-				$total                      = $cart_item['EAScompliance DELIVERY CHARGE'];
+				$total                      = $cart_item['EAScompliance DELIVERY CHARGE']+$cart_item['EAScompliance DELIVERY CHARGE VAT'];
 				$first                      = false;
 				$payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
 				$payload                    = $cart_item['EASPROJ API PAYLOAD'];
@@ -2409,8 +2427,8 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
-					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] );
-					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] )
+					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
+					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
 
 					);
 				}
@@ -2418,9 +2436,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
 				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
 
-				eascompliance_logger()->debug('$calc_jreq_saved before saving into session '.print_r($calc_jreq_saved, true));
 				WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq_saved );
-				eascompliance_logger()->debug('$calc_jreq_saved after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON'), true));
 			}
 		}
 
