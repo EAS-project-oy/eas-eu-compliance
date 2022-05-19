@@ -925,7 +925,11 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
 
     // set delivery_method to postal if it is in postal delivery methods //.
     $delivery_method         = 'courier';
-    $shipping_methods        = array_values( wc_get_chosen_shipping_method_ids() );
+    $shipping_methods = array();
+    foreach ($order->get_items('shipping') as $sk=>$shipping_item)
+	{
+		$shipping_methods[] = $shipping_item->get_method_id();
+    }
     $shipping_methods_postal = WC_Admin_Settings::get_option( 'easproj_shipping_method_postal' );
 
     if ( array_intersect( $shipping_methods, $shipping_methods_postal ) ) {
@@ -1403,7 +1407,7 @@ function eascompliance_redirect_confirm() {
 
 			$tax_rates                                   = WC_Tax::get_rates();
 			$tax_rate_id                                 = array_keys( $tax_rates )[ array_search( 'EAScompliance', array_column( $tax_rates, 'label' ), true ) ];
-			$item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'];
+			$item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
 			$item['EAScompliance quantity']              = $payload_item['quantity'];
 			$item['EAScompliance unit_cost']             = $payload_item['unit_cost_excl_vat'];
 			$item['EAScompliance item price']            = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
@@ -1715,7 +1719,7 @@ function eascompliance_order_createpostsaleorder($order) {
                 $order_item->set_subtotal( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
                 $order_item->set_total( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
 
-				$amount = $payload_item['item_duties_and_taxes'];
+				$amount = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
 				$order_item->set_taxes(
 					array(
 						'total'    => array( $tax_rate_id0 => $amount ),
