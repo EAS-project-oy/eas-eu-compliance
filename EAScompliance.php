@@ -2438,6 +2438,12 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
+                
+                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we ignore setting delivery_cost
+                if ( empty($calc_jreq_saved) ) {
+					eascompliance_logger()->debug('ignoring empty EAS API REQUEST JSON');
+					continue;
+                }
 				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
 
 				WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq_saved );
