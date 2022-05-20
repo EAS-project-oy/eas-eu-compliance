@@ -1443,11 +1443,19 @@ function eascompliance_redirect_confirm() {
 		$item['EAScompliance MERCHANDISE COST']    = $payload_j['merchandise_cost'];
 		$item['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
 
+		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
+			eascompliance_logger()->debug('EAS API REQUEST JSON empty before redirect_confirm successful');
+		}
+
 		// DEBUG SAMPLE: return WC()->cart->get_cart(); //.
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it //.
 
 		eascompliance_logger()->info( 'redirect_confirm successful' );
 		eascompliance_logger()->debug( print_r( $jres, true ) );
+
+		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
+			eascompliance_logger()->debug('EAS API REQUEST JSON empty after redirect_confirm successful');
+		}
 	} catch ( Exception $ex ) {
 		$jres['status']  = 'error';
 		$jres['message'] = $ex->getMessage();
@@ -2441,7 +2449,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
                 
                 // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we ignore setting delivery_cost
                 if ( empty($calc_jreq_saved) ) {
-					eascompliance_logger()->debug('ignoring empty EAS API REQUEST JSON');
+					eascompliance_logger()->debug('EAS API REQUEST JSON empty during woocommerce_shipping_packages');
 					continue;
                 }
 				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
