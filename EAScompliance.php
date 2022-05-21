@@ -1433,11 +1433,6 @@ function eascompliance_redirect_confirm() {
 		$item['EAScompliance TAXES AND DUTIES']    = $payload_j['taxes_and_duties'];
 		$item['EAScompliance NEEDS RECALCULATE']   = false;
 
-        // delivery_charge_vat_excl must not include delivery_charge_vat, it may happen due to EAS store settings
-		if ( 0.01 >= abs($payload_j['delivery_charge'] - $payload_j['delivery_charge_vat_excl']) ) {
-			$payload_j['delivery_charge_vat_excl'] = $payload_j['delivery_charge'] - $payload_j['delivery_charge_vat'];
-		}
-
 		$item['EAScompliance DELIVERY CHARGE']     = $payload_j['delivery_charge_vat_excl'];
 		$item['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
 		$item['EAScompliance MERCHANDISE COST']    = $payload_j['merchandise_cost'];
