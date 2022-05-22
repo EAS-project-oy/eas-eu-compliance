@@ -20,8 +20,6 @@ define( 'EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance' );
 
 define( 'EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties' );
 
-define( 'EASCOMPLIANCE_DEVELOP', false );
-
 // The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier //.
 define( 'JSON_THROW_ON_ERROR2', 4194304 );
 
@@ -115,25 +113,6 @@ function eascompliance_logger() {
 }
 
 /**
- * Log exception
- *
- * @param Exception $ex ex.
- */
-function eascompliance_log_exception( Exception $ex ) {
-	$txt = '';
-	while ( true ) {
-		$txt .= "\n" . get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
-
-		$ex = $ex->getPrevious();
-		if ( null === $ex ) {
-			break;
-		}
-	}
-	$txt = ltrim( $txt, "\n" );
-	eascompliance_logger()->error( $txt );
-}
-
-/**
  * Get tax rate id
  *
  * @throws Exception May throw exception.
@@ -160,8 +139,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -175,7 +153,7 @@ function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
 
 		return $tax_totals;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 				restore_error_handler();
@@ -194,8 +172,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -209,7 +186,7 @@ function eascompliance_woocommerce_order_get_tax_totals( $tax_totals, $order ) {
 
 		return $tax_totals;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 				restore_error_handler();
@@ -240,10 +217,61 @@ function eascompliance_woocommerce_settings_get_option_sql( $option ) {
 }
 
 /**
- * Return debug setting
+ * Return true if debug level is present in easproj_debug settting
  */
-function eascompliance_is_debug() {
-	return eascompliance_woocommerce_settings_get_option_sql( 'easproj_debug' ) === 'yes';
+function eascompliance_log_level($level) {
+	$debug_levels = get_option('easproj_debug');
+
+	// update legacy easproj_debug option value
+	if ($debug_levels === 'yes' || $debug_levels === 'no') {
+		$debug_levels = array('info', 'error');
+		update_option('easproj_debug', $debug_levels);
+	}
+
+	$do_log = false;
+
+	if (is_array($debug_levels)) {
+		$do_log = in_array($level, $debug_levels);
+	}
+    return $do_log;
+}
+
+/**
+ * Log message or exception if log level is enabled
+ */
+function eascompliance_log($level, $message) {
+    if ( !eascompliance_log_level($level) ) {
+        return;
+    }
+
+    // convert $message into loggable text
+	$txt = '';
+    if ( $message instanceof Exception) {
+        $ex = $message;
+        while ( true ) {
+            $txt .= $level . ' ' . get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
+
+            $ex = $ex->getPrevious();
+            if ( null === $ex ) {
+                break;
+            }
+        }
+        $txt = ltrim( $txt, "\n" );
+    }
+    else {
+		$txt = $level . ' ' . print_r($message, true);
+    }
+
+    // log $txt
+    if ( $level === 'info') {
+        eascompliance_logger()->info($txt);
+    }
+    elseif ( $level === 'error') {
+        eascompliance_logger()->error($txt);
+    }
+    else {
+		eascompliance_logger()->debug($txt);
+    }
 }
 
 /**
@@ -267,8 +295,7 @@ if ( eascompliance_is_active() ) {
  * Browser client scripts
  */
 function eascompliance_javascript() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	// include css //.
 	wp_enqueue_style( 'EAScompliance-css', plugins_url( '/EAScompliance.css', __FILE__ ), array(), filemtime( dirname( __FILE__ ) . '/EAScompliance.css' ) );
@@ -303,8 +330,7 @@ if ( eascompliance_is_active() ) {
  * Browser admin client scripts
  */
 function eascompliance_settings_scripts() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	// include css //.
 	wp_enqueue_style( 'EAScompliance', plugins_url( '/EAScompliance-settings.css', __FILE__ ), array(), filemtime( dirname( __FILE__ ) . '/EAScompliance-settings.css' ) );
@@ -330,8 +356,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_billing_fields( $address_fields, $country ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -376,7 +401,7 @@ function eascompliance_woocommerce_billing_fields( $address_fields, $country ) {
         return $address_fields;
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -394,8 +419,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -431,7 +455,7 @@ function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) 
         return $address_fields;
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -446,8 +470,7 @@ if ( eascompliance_is_active() ) {
  *  Checkout -> Before 'Proceed Order' Hook
  */
 function eascompliance_woocommerce_review_order_before_payment() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 				// checkout form data saved during /calculate step //.
@@ -463,18 +486,6 @@ function eascompliance_woocommerce_review_order_before_payment() {
 		$nonce_calc  = esc_attr( wp_create_nonce( 'eascompliance_nonce_calc' ) );
 		$nonce_debug = esc_attr( wp_create_nonce( 'eascompliance_nonce_debug' ) );
 
-		$translation_file = dirname( __FILE__ ) . '/languages/eascompliance-' . get_locale() . '.po';
-		eascompliance_logger()->debug(
-			eascompliance_format(
-				'Locale: $locale, Plugin language: $plugin, Textdomain file: $file, Exist: $exist',
-				array(
-					'locale' => get_locale(),
-					'plugin' => eascompliance_woocommerce_settings_get_option_sql( 'easproj_language' ),
-					'file'   => $translation_file,
-					'exist'  => file_exists( $translation_file ) ? 'yes' : 'no',
-				)
-			)
-		);
 		$button_name = __TR( 'Calculate Taxes and Duties' );
 
 		$status            = eascompliance_is_set() ? 'present' : 'not present';
@@ -490,7 +501,7 @@ function eascompliance_woocommerce_review_order_before_payment() {
 			<input type="hidden" id="eascompliance_nonce_calc" name="eascompliance_nonce_calc" value="<?php echo esc_attr( $nonce_calc ); ?>" /></input>
 			<p class="eascompliance_status" checkout-form-data="<?php echo esc_attr( $checkout_form_data ); ?>" needs-recalculate="<?php echo esc_attr( $needs_recalculate ); ?>"><?php echo esc_attr( $status ); ?></p>
 			<?php
-			if ( EASCOMPLIANCE_DEVELOP ) {
+			if ( eascompliance_log_level('eval') ) {
 				?>
 					<h3>EAScompliance Debug</h3>
 					<p class="eascompliance_debug">
@@ -510,31 +521,34 @@ function eascompliance_woocommerce_review_order_before_payment() {
 
 
 // Debug Console //.
-//if (eascompliance_is_debug() && EASCOMPLIANCE_DEVELOP) {
-//	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
-//	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
-//};
-//function eascompliance_debug() {
-//	if (EASCOMPLIANCE_DEVELOP) {eascompliance_logger()->debug('Entered action '.__FUNCTION__.'()');}
-//
-//	try {
-//		if (!wp_verify_nonce( strval(eascompliance_array_get($_POST, 'eascompliance_nonce_debug', '')), 'eascompliance_nonce_debug' )) {
-//			throw new Exception('Security check');
-//		}
-//
-//		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
-//
-//		set_error_handler('eascompliance_error_handler');
-//		$jres = print_r(eval($debug_input), true);
-//	} catch (Exception $ex) {
-//		eascompliance_log_exception($ex);
-//		$jres = 'Error: ' . $ex->getMessage();
-//	} finally {
-//		restore_error_handler();
-//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-//	}
-//
-//};
+if (eascompliance_is_active()) {
+	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
+	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
+};
+function eascompliance_debug() {
+	eascompliance_log('entry', 'action '.__FUNCTION__.'()');
+
+	try {
+		if (!eascompliance_log_level('eval')) {
+            return;
+        }
+
+		if (!wp_verify_nonce( strval(eascompliance_array_get($_POST, 'eascompliance_nonce_debug', '')), 'eascompliance_nonce_debug' )) {
+			throw new Exception('Security check');
+		}
+
+		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
+
+		set_error_handler('eascompliance_error_handler');
+		$jres = print_r(eval($debug_input), true);
+	} catch (Exception $ex) {
+		eascompliance_log('eval', $ex);
+		$jres = 'Error: ' . $ex->getMessage();
+	} finally {
+		restore_error_handler();
+		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+	}
+}
 
 
 
@@ -545,8 +559,7 @@ function eascompliance_woocommerce_review_order_before_payment() {
  * @throws Exception May throw exception.
  */
 function eascompliance_get_oauth_token() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('oauth', 'entering ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -585,8 +598,8 @@ function eascompliance_get_oauth_token() {
 
 		// request failed //.
 		if ( false === $auth_response ) {
-			eascompliance_logger()->error( 'Auth request failed: ' . error_get_last()['message'] );
-			if ( eascompliance_is_debug() ) {
+			eascompliance_log('error', 'Auth request failed: ' . error_get_last()['message'] );
+			if ( eascompliance_log_level('oauth-phpinfo') ) {
 				// check php configuration //.
 				ob_start();
 				phpinfo( INFO_CONFIGURATION );
@@ -606,11 +619,11 @@ function eascompliance_get_oauth_token() {
 		}
 		elseif ( '401' === $auth_response_status ) {
             // Unauthorized
-			eascompliance_logger()->error( 'Authorization failed: ' . $auth_response );
+			eascompliance_log('error', 'Authorization failed: ' . $auth_response );
 			throw new EAScomplianceAuthorizationFaliedException( __TR( 'EU tax calculation service temporary unavailable. Please try to place an order later.' ) );
 		}
 		else {
-			eascompliance_logger()->error( 'Auth response not OK: ' . $auth_response );
+			eascompliance_log('error', 'Auth response not OK: ' . $auth_response );
 			throw new Exception( __TR( 'EU tax calculation service temporary unavailable. Please try to place an order later.' ) );
 		}
 
@@ -619,13 +632,11 @@ function eascompliance_get_oauth_token() {
 		$jdebug['AUTH response'] = $auth_j;
 
 		$auth_token = $auth_j['access_token'];
-		eascompliance_logger()->info( 'OAUTH token request successful' );
+		eascompliance_log('oauth', 'OAUTH token request successful' );
 		return $auth_token;
 	} catch ( Exception $ex ) {
-			eascompliance_log_exception( $ex );
-		if ( eascompliance_is_debug() ) {
-			eascompliance_logger()->debug( print_r( $jdebug, true ) );
-		}
+			eascompliance_log('error', $ex );
+		    eascompliance_log('oauth', $jdebug );
 			throw $ex;
 	} finally {
 		restore_error_handler();
@@ -638,6 +649,8 @@ function eascompliance_get_oauth_token() {
  * @throws Exception May throw exception.
  */
 function eascompliance_make_eas_api_request_json() {
+	eascompliance_log('request', 'entering ' . __FUNCTION__ . '()');
+
 	$jdebug = array();
 
 	$jdebug['step'] = 'default json request sample, works alright';
@@ -754,14 +767,12 @@ function eascompliance_make_eas_api_request_json() {
 			if ( ! is_null($woocommerce_wpml) ) {
                 $currency = $woocommerce_wpml->multi_currency->get_client_currency();
 				$wcml_enabled = true;
-				 if (eascompliance_is_debug()) {
-					 eascompliance_logger()->debug('WCML $currency '.print_r($currency, true));
-                 }
+				eascompliance_log('request', 'WCML $currency '.print_r($currency, true));
 				$calc_jreq['payment_currency'] = $currency;
 			}
 		}
         else {
-			eascompliance_logger()->warning('WCML wcml_is_multi_currency_on is false ');
+			eascompliance_log('request', 'WCML wcml_is_multi_currency_on is false');
         }
 
 	}
@@ -841,7 +852,7 @@ function eascompliance_make_eas_api_request_json() {
 		);
 	}
 
-	eascompliance_logger()->debug('$items before discount '.print_r($items, true));
+	eascompliance_log('request','$items before discount '.print_r($items, true));
 	// split cart discount proportionally between items
 	// making and solving equation to get new item price //.
 	$d = $cart->get_discount_total(); // discount d    //.
@@ -862,11 +873,11 @@ function eascompliance_make_eas_api_request_json() {
 			// x1 * q1 + x2 * q2 = T - d                          //.
 			// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
 			$item['cost_provided_by_em'] = $p1 * ( $t - $d ) / $t;
-			// eascompliance_logger()->debug("\$T $T \$Q $Q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']); //.
+			eascompliance_log('request',"\$T $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']);
 		}
 	}
 	$calc_jreq['order_breakdown'] = $items;
-	// eascompliance_logger()->debug('$items after discount '.print_r($items, true));  //.
+	eascompliance_log('request','$items after discount '.print_r($items, true));  //.
 
 	return $calc_jreq;
 }
@@ -877,8 +888,7 @@ function eascompliance_make_eas_api_request_json() {
  * @throws Exception May throw exception.
  */
 function eascompliance_make_eas_api_request_json_from_order($order_id) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('request', 'entering ' . __FUNCTION__ . '()');
 
     $order = wc_get_order($order_id);
 
@@ -993,6 +1003,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
         );
     }
 
+	eascompliance_log('request','$items before discount '.print_r($items, true));
     $d = $order->get_discount_total(); // discount d    //.
     $t = 0; // cart total  T = p1*q1 + p2*q2           //.
     $q = 0; // total quantity Q = q1 + q2              //.
@@ -1010,7 +1021,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
         }
     }
     $calc_jreq['order_breakdown'] = $items;
-    // eascompliance_logger()->debug('$items after discount '.print_r($items, true));  //.
+    eascompliance_log('request','$items after discount '.print_r($items, true));  //.
 
     return $calc_jreq;
 }
@@ -1039,8 +1050,7 @@ if ( eascompliance_is_active() ) {
  * @throws EAScomplianceStandardCheckoutException May throw exception.
  */
 function eascompliance_ajaxhandler() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1053,9 +1063,8 @@ function eascompliance_ajaxhandler() {
 		$calc_jreq      = eascompliance_make_eas_api_request_json();
 
 		// save request json into session //.
-        eascompliance_logger()->debug('$calc_jreq before saving into session '.print_r($calc_jreq, true));
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
-		eascompliance_logger()->debug('$calc_jreq after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON' ), true));
+		eascompliance_log('calculate','$calc_jreq after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON' ), true));
 
 		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
 
@@ -1137,7 +1146,7 @@ function eascompliance_ajaxhandler() {
 
 				// STANDARD_CHECKOUT //.
 				if ( 'STANDARD_CHECKOUT' === $calc_error['type'] ) {
-					eascompliance_logger()->info( 'STANDARD_CHECKOUT' );
+					eascompliance_log('calculate', 'STANDARD_CHECKOUT' );
 
 					global $woocommerce;
 					foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
@@ -1175,7 +1184,7 @@ function eascompliance_ajaxhandler() {
 
 		$jdebug['CALC response'] = $calc_response;
 
-		eascompliance_logger()->info( '/calculate request successful, $calc_response ' . $calc_response );
+		eascompliance_log('calculate', '/calculate request successful, $calc_response ' . $calc_response );
 		// throw new Exception('debug');   //.
 
 		$jres['status']        = 'ok';
@@ -1193,14 +1202,14 @@ function eascompliance_ajaxhandler() {
 		// // build json reply
 		$jres['status']  = 'error';
 		$jres['message'] = $ex->getMessage();
-		eascompliance_log_exception( $ex );
-		eascompliance_logger()->debug( print_r( $jdebug, true ) );
+		eascompliance_log('error', $ex);
+		eascompliance_log('calculate', $jdebug);
 	} finally {
 		restore_error_handler();
 	}
 
 	// send json reply  //.
-	if ( eascompliance_is_debug() ) {
+	if ( eascompliance_log_level('debug') ) {
 		$jres['debug'] = $jdebug;
 	}
 
@@ -1218,8 +1227,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_redirect_confirm() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	$jres   = array( 'status' => 'ok' );
 	$jdebug = array();
@@ -1387,9 +1395,9 @@ function eascompliance_redirect_confirm() {
 		// when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat //.
 		$cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'];
 		$margin     = $cart_total - $payload_j['total_order_amount'];
-		// eascompliance_logger()->debug('$cart_total is '.$cart_total.'  payload total_order_amount '.$payload_j['total_order_amount']); //.
+		eascompliance_log('confirm','$cart_total is '.$cart_total.'  payload total_order_amount is '.$payload_j['total_order_amount']);
 		if ( 0 < abs( $margin ) && abs( $margin ) < 0.10 ) { // only process when there is margin and is small //.
-			eascompliance_logger()->info( "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin" );
+			eascompliance_log('confirm', "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin" );
 			$most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
 
 			$total_price -= $margin;
@@ -1439,25 +1447,25 @@ function eascompliance_redirect_confirm() {
 		$item['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
 
 		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_logger()->debug('EAS API REQUEST JSON empty before redirect_confirm successful');
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty before redirect_confirm successful');
 		}
 
 		// DEBUG SAMPLE: return WC()->cart->get_cart(); //.
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it //.
 
-		eascompliance_logger()->info( 'redirect_confirm successful' );
-		eascompliance_logger()->debug( print_r( $jres, true ) );
+		eascompliance_log('info', 'redirect_confirm successful' );
+		eascompliance_log('confirm', $jres);
 
 		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_logger()->debug('EAS API REQUEST JSON empty after redirect_confirm successful');
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty after redirect_confirm successful');
 		}
 	} catch ( Exception $ex ) {
 		$jres['status']  = 'error';
 		$jres['message'] = $ex->getMessage();
-		eascompliance_log_exception( $ex );
-		eascompliance_logger()->debug( print_r( $jres, true ) );
+		eascompliance_log('error', $ex);
+		eascompliance_log('confirm', $jres);
 		wc_add_notice( $ex->getMessage(), 'error' );
-		if ( eascompliance_is_debug() ) {
+		if ( eascompliance_log_level('debug') ) {
 			$jres['debug'] = $jdebug;
 		}
 	} finally {
@@ -1496,7 +1504,7 @@ function eascompliance_is_set() {
 		return true;
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -1530,7 +1538,7 @@ function eascompliance_is_standard_checkout() {
 		return true;
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -1554,7 +1562,7 @@ function eascompliance_needs_recalculate() {
 		}
 		return ( true === $item['EAScompliance NEEDS RECALCULATE'] );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -1573,8 +1581,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_needs_recalculate_ajax() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1583,7 +1590,7 @@ function eascompliance_needs_recalculate_ajax() {
 		wp_send_json( array( 'needs_recalculate' => $needs_recalculate ) );
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -1599,8 +1606,7 @@ function eascompliance_needs_recalculate_ajax() {
  * @throws Exception May throw exception.
  */
 function eascompliance_order_createpostsaleorder($order) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 		$order_id = $order->get_id();
 
@@ -1768,8 +1774,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_after_order_object_save( $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1797,12 +1802,12 @@ function eascompliance_woocommerce_after_order_object_save( $order ) {
 
         $order_id = $order->get_id();
 
-        eascompliance_logger()->info( "EAS createpostsaleorder successful for order $order_id update successful" );
+        eascompliance_log('info', "EAS createpostsaleorder successful for order $order_id update successful" );
 
 
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 	} finally {
 				restore_error_handler();
 	}
@@ -1818,8 +1823,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_recalculate_ajax() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1834,12 +1838,12 @@ function eascompliance_recalculate_ajax() {
 
         eascompliance_order_createpostsaleorder($order);
 
-        eascompliance_logger()->info( "Sales order $order_id update successful" );
+        eascompliance_log('info', "Sales order $order_id update successful" );
 
 		wp_send_json( array( 'status' => 'ok' ) );
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		wp_send_json( array( 'status' => 'error', 'message'=>$ex->getMessage() ) );;
 	} finally {
 				restore_error_handler();
@@ -1854,8 +1858,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_logorderdata_ajax() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1882,7 +1885,7 @@ function eascompliance_logorderdata_ajax() {
 		wp_send_json( array( 'status' => 'ok' ) );
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		wp_send_json( array( 'status' => 'error', 'message'=>$ex->getMessage() ) );;
 	} finally {
 				restore_error_handler();
@@ -1903,8 +1906,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_tax, $tax_rate_id, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -1942,7 +1944,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 		}
 		return $order_item_tax;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -1953,6 +1955,8 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
  * Calculate cart total
  */
 function eascompliance_cart_total() {
+	eascompliance_log('cart_total', 'entering '.__FUNCTION__.'()');
+
 	$total = WC()->cart->get_total( 'edit' );
 	if ( eascompliance_is_set() ) {
 		$payload_total_order_amount = -1;
@@ -1985,18 +1989,12 @@ function eascompliance_cart_total() {
 
 		// check that payload total_order_amount equals Order total //.
 		if ( round( (float) $payload_total_order_amount, 2) != round( (float) $total, 2) ) {
-			eascompliance_log_exception(
-				new Exception(
-					eascompliance_format(
-						__TR( '$payload_total_order_amount $a not equal order total $b' ),
-						array(
-							'a' => $payload_total_order_amount,
-							'b' => $total,
-						)
+			eascompliance_log('error',
+					eascompliance_format('$payload_total_order_amount $a not equal order total $b',
+						array('a' => $payload_total_order_amount, 'b' => $total)
 					)
-				)
 			);
-			eascompliance_logger()->debug( print_r( $payload, true ) );
+			eascompliance_log('cart_total', $payload);
 		}
 	}
 	return $total;
@@ -2012,8 +2010,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2039,7 +2036,7 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 
 		return $total_taxes;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2060,8 +2057,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, $cart_item_key ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2072,7 +2068,7 @@ function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 
 		return wc_price( $cart_item['EAScompliance item price'] );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2092,8 +2088,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $cart ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2110,7 +2105,7 @@ function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $ca
 
 		return wc_price( $subtotal );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2128,8 +2123,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2138,7 +2132,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
 
 		return '<strong>' . wc_price( wc_format_decimal( $total, wc_get_price_decimals() ) ) . '</strong> ';
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2158,8 +2152,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order_line_item( $order_item_product, $cart_item_key, $values, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2173,7 +2166,7 @@ function eascompliance_woocommerce_checkout_create_order_line_item( $order_item_
 		$order_item_product->set_total( $cart_item['EAScompliance item price'] );
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2191,8 +2184,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_klarna_settings_fix( $kp_settings ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2211,7 +2203,7 @@ function eascompliance_klarna_settings_fix( $kp_settings ) {
 		}
 		return $kp_settings;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2235,8 +2227,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rates, $item, $cart ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2259,7 +2250,7 @@ function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rat
 
 		return $item_tax_rates;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2278,8 +2269,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2335,14 +2325,14 @@ function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
 				$klarna_order_lines[ $ix ] = $klarna_item;
 				++$ix;
 			}
-			eascompliance_logger()->info( 'Klarna order_id ' . print_r( $order_id, true ) );
-			eascompliance_logger()->info( 'Klarna $order_lines after ' . print_r( $klarna_order_lines, true ) );
+			eascompliance_log('klarna', 'Klarna order_id ' . print_r( $order_id, true ) );
+			eascompliance_log('klarna', 'Klarna $order_lines after ' . print_r( $klarna_order_lines, true ) );
 			return $klarna_order_lines;
 		}
 
 		return $klarna_order_lines;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2361,8 +2351,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item, $calculate_tax_for ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2377,7 +2366,7 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item
 			)
 		);
 	} catch ( Exception $ex ) {
-			eascompliance_log_exception( $ex );
+			eascompliance_log('error', $ex);
 			throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2395,8 +2384,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_shipping_packages( $packages ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2410,7 +2398,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 		// Sometimes we get here when chosen_shipping_methods are empty. If this happens, we reset calculation //.
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 		if ( ! is_array( $chosen_shipping_methods ) ) {
-			eascompliance_logger()->info( 'Chosen shipping method must not be empty! Resetting EASCompliance' );
+			eascompliance_log('info', 'Chosen shipping method must not be empty! Resetting EASCompliance' );
 			foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
 				$item['EAScompliance SET'] = false;
 			}
@@ -2425,7 +2413,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 
 			// Sometimes we get here when first item was removed. If this happens, we reset calculation //.
 			if ( eascompliance_array_get( $cart_item0, 'EAScompliance DELIVERY CHARGE', null ) === null ) {
-				eascompliance_logger()->info( 'EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance' );
+				eascompliance_log('info', 'EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance' );
 				foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
 					$item['EAScompliance SET'] = false;
 				}
@@ -2444,7 +2432,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
                 
                 // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we ignore setting delivery_cost
                 if ( empty($calc_jreq_saved) ) {
-					eascompliance_logger()->debug('EAS API REQUEST JSON empty during woocommerce_shipping_packages');
+					eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages');
 					continue;
                 }
 				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
@@ -2455,7 +2443,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 
 		return $packages;
 	} catch ( Exception $ex ) {
-			eascompliance_log_exception( $ex );
+			eascompliance_log('error', $ex);
 			throw $ex;
 	} finally {
 		restore_error_handler();
@@ -2473,8 +2461,8 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_create_order( $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+	eascompliance_log('place_order', 'entered ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2494,7 +2482,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		}
 
 		if ( eascompliance_is_standard_checkout() ) {
-			eascompliance_logger()->info( 'STANDARD_CHECKOUT ORDER' );
+			eascompliance_log('place_order', 'STANDARD_CHECKOUT ORDER' );
 			return;
 		}
 
@@ -2516,20 +2504,20 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		$saved_delivery_cost = $calc_jreq_saved['delivery_cost'];
 		if ( 0.01 >= abs($calc_jreq_new['delivery_cost'] - $saved_delivery_cost ) ) {
 			$calc_jreq_new['delivery_cost'] = $saved_delivery_cost;
-			eascompliance_logger()->debug('adjusting delivery_cost difference by 1 cent');
+			eascompliance_log('place_order','adjusting delivery_cost difference by 1 cent');
 		}
 
         // paranoid check that order_breakdown key is present
         if ( !(array_key_exists('order_breakdown', $calc_jreq_saved) && array_key_exists('order_breakdown', $calc_jreq_new)) )
 		{
-			eascompliance_logger()->debug('order_breakdown key is not present in $calc_jreq_saved '.print_r($calc_jreq_saved, true).'\n\n\n or $calc_jreq_new'.print_r($calc_jreq_new, true));
+			eascompliance_log('place_order','order_breakdown key is not present in $calc_jreq_saved '.print_r($calc_jreq_saved, true).'\n\n\n or $calc_jreq_new'.print_r($calc_jreq_new, true));
         }
 
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
             if ( 0.01 >= abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em ) ) {
 				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
-				eascompliance_logger()->debug('adjusting cost_provided_by_em difference by 1 cent');
+				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent');
             }
         }
 
@@ -2542,7 +2530,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		$woocommerce->cart->set_session();
 
 		if ( json_encode( $calc_jreq_saved, JSON_THROW_ON_ERROR2 ) !== json_encode( $calc_jreq_new, JSON_THROW_ON_ERROR2 ) ) {
-			eascompliance_logger()->debug( '$calc_jreq_saved ' . print_r( $calc_jreq_saved, true ) . '  $calc_jreq_new  ' . print_r( $calc_jreq_new, true ) );
+			eascompliance_log('place_order', '$calc_jreq_saved ' . print_r( $calc_jreq_saved, true ) . '  $calc_jreq_new  ' . print_r( $calc_jreq_new, true ) );
 			// reset EAScompliance if json's mismatch //.
 			$item0['EAScompliance NEEDS RECALCULATE'] = true;
 			// reset calculate of cart since calculate may have changed previous values //.
@@ -2562,10 +2550,10 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		// saving token to notify EAS during order status change //.
 		$order->add_meta_data( '_easproj_token', $item0['EASPROJ API CONFIRMATION TOKEN'] );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
-				restore_error_handler();
+        restore_error_handler();
 	}
 }
 
@@ -2579,8 +2567,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_checkout_order_created( $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	// notify EAS API on Order number //.
 	$order_id = $order->get_id();
@@ -2628,9 +2615,9 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 		$order->add_meta_data( '_easproj_order_number_notified', 'yes', true );
 		$order->save();
 
-		eascompliance_logger()->info( "Notify Order number $order_id successful" );
+		eascompliance_log('info', "Notify Order number $order_id successful" );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		$order->add_order_note( eascompliance_format( __( 'Notify Order number $order_id failed: ' ), array( 'order_id' => $order_id ) ) . $ex->getMessage() );
 	} finally {
 				restore_error_handler();
@@ -2650,14 +2637,13 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 		
         // log order status change
-		eascompliance_logger()->info( eascompliance_format('Order $order changes status from $from to $to',
+		eascompliance_log('info', eascompliance_format('Order $order changes status from $from to $to',
             array('order'=>$order_id,
                 'from'=>$status_from,
                 'to'=>$status_to)));
@@ -2716,9 +2702,9 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 		$order->add_meta_data( '_easproj_payment_processed', 'yes', true );
 		$order->save();
 
-		eascompliance_logger()->info( "Notify Order $order_id status change successful" );
+		eascompliance_log('info', "Notify Order $order_id status change successful" );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		$order->add_order_note( __TR( 'Order status change notification failed: ' ) . $ex->getMessage() );
 	} finally {
 				restore_error_handler();
@@ -2741,8 +2727,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_status_changed2( $order_id, $status_from, $status_to, $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -2798,9 +2783,9 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 			throw new Exception( $http_response_header[0] . '\n\n' . $payment_body );
 		}
 
-		eascompliance_logger()->info( "Order $order_id payment confirmed" );
+		eascompliance_log('info', "Order $order_id payment confirmed" );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		$order->add_order_note( __TR( "Order $order_id payment notification failed: " ) . $ex->getMessage() );
 	} finally {
 				restore_error_handler();
@@ -2821,8 +2806,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_create_refund( $refund, $args ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     $order_id = $args['order_id'];
 
@@ -2887,7 +2871,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             $return_breakdown[] = $refund_item;
         }
 
-        // eascompliance_logger()->debug('$return_breakdown '.print_r($return_breakdown, true)); //.
+        eascompliance_log('refund','$return_breakdown '.print_r($return_breakdown, true)); //.
 
 		$options = array(
 			'http' => array(
@@ -2931,7 +2915,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             }
 
 			$refund_error = json_decode( $refund_body, true );
-			eascompliance_logger()->error('Retrying refund return request, last attempt failed: '.print_r($refund_error, true));
+			eascompliance_log('error','Retrying refund return request, last attempt failed: '.print_r($refund_error, true));
 
             sleep(1);
 			$attempt += 1;
@@ -3041,7 +3025,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             $refund->save();
 
 			$order->add_order_note( eascompliance_format( __TR( 'Refund return created. Refund id $refund_id ' ), array('refund_id'=>$refund->get_id()) ) );
-			eascompliance_logger()->info( eascompliance_format('Refund return created. Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) . print_r($refund_payload, true) );
+			eascompliance_log('info', eascompliance_format('Refund return created. Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) . print_r($refund_payload, true) );
 		}
 		// Refund return failed. Insufficient remaining quantity //.
         elseif ( '400' === $refund_status ) {
@@ -3073,7 +3057,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
              */
 
 			$refund_error = json_decode( $refund_body, true );
-            eascompliance_logger()->error('Refund return error. '.print_r($refund_error, true));
+            eascompliance_log('error','Refund return error. '.print_r($refund_error, true));
 
 			$error_message = '';
 			if ( array_key_exists( 'message', $refund_error ) ) {
@@ -3095,10 +3079,10 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 		$order->save();
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		$order->add_order_note( __TR( 'Refund create failed: ' ) . $ex->getMessage() );
 	} finally {
-				restore_error_handler();
+        restore_error_handler();
 	}
 
 }
@@ -3115,8 +3099,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	$order = wc_get_order( $order_id );
 
@@ -3154,8 +3137,7 @@ if ( eascompliance_is_active() ) {
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_order_item_add_action_buttons( $order ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     // button to log EAS order information
 	?>
@@ -3181,8 +3163,7 @@ if ( eascompliance_is_active() ) {
  * @param int $order_id order_id.
  */
 function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	$order = wc_get_order( $order_id );
 
@@ -3308,6 +3289,21 @@ function eascompliance_settings() {
 
     $version = get_plugin_data(  __FILE__, false, false )['Version'];
 
+	$easproj_debug_options = array(
+		'info'      => __TR( 'Info' ),
+		'error' => __TR( 'Error' ),
+	);
+    $easproj_debug = woocommerce_settings_get_option('easproj_debug');
+
+	//extend list of default log levels with ones that were already chosen
+    if ( is_array($easproj_debug) ) {
+        foreach($easproj_debug as $opt) {
+            if (!array_key_exists($opt, $easproj_debug_options)) {
+				$easproj_debug_options[$opt] = $opt;
+            }
+        }
+    }
+
 	return array(
 		'section_title'           => array(
 			'name' => __TR( 'Settings' ),
@@ -3327,11 +3323,13 @@ function eascompliance_settings() {
 			'default' => 'no',
 		),
 		'debug'                   => array(
-			'name'    => __TR( 'Debug' ),
-			'type'    => 'checkbox',
-			'desc'    => 'Log debug messages',
+			'name'    => __TR( 'Log levels' ),
+			'type'    => 'multiselect',
+			'class'   => 'wc-enhanced-select',
+			'desc'    => 'Debug messages levels',
 			'id'      => 'easproj_debug',
-			'default' => 'no',
+			'default' => array('info', 'error'),
+			'options' => $easproj_debug_options,
 		),
 		'process_imported_orders'                   => array(
 			'name'    => __TR( 'Process imported orders' ),
@@ -3465,8 +3463,7 @@ add_filter( 'woocommerce_settings_start', 'eascompliance_woocommerce_settings_st
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_start() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -3490,7 +3487,7 @@ function eascompliance_woocommerce_settings_start() {
         }
 
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -3506,8 +3503,7 @@ add_filter( 'woocommerce_settings_tabs_array', 'eascompliance_woocommerce_settin
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered filter ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -3520,7 +3516,7 @@ function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
         $settings_tabs['settings_tab_compliance'] = EASCOMPLIANCE_PLUGIN_NAME;
 		return $settings_tabs;
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 		restore_error_handler();
@@ -3535,15 +3531,14 @@ add_action( 'woocommerce_settings_tabs_settings_tab_compliance', 'eascompliance_
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_settings_tabs_settings_tab_compliance() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
 		woocommerce_admin_fields( eascompliance_settings() );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		throw $ex;
 	} finally {
 				restore_error_handler();
@@ -3557,8 +3552,7 @@ add_action( 'woocommerce_update_options_settings_tab_compliance', 'eascompliance
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_update_options_settings_tab_compliance() {
-	if ( EASCOMPLIANCE_DEVELOP ) {
-		eascompliance_logger()->debug( 'Entered action ' . __FUNCTION__ . '()' );}
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
@@ -3867,7 +3861,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 					}
 				}
             } catch ( EAScomplianceAuthorizationFaliedException $ex ) {
-                eascompliance_log_exception( $ex );
+                eascompliance_log('error', $ex);
                 WC_Admin_Settings::add_error( __TR( 'Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.' ) );
 			} catch ( Exception $ex ) {
 				WC_Admin_Settings::save_fields(
@@ -3886,9 +3880,9 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 			}
 		}
 
-		eascompliance_logger()->info( 'Plugin activated' );
+		eascompliance_log('info', 'Plugin activated' );
 	} catch ( Exception $ex ) {
-		eascompliance_log_exception( $ex );
+		eascompliance_log('error', $ex);
 		WC_Admin_Settings::add_error( $ex->getMessage() );
 	} finally {
 		restore_error_handler();
