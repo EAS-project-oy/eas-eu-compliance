@@ -1068,6 +1068,9 @@ function eascompliance_ajaxhandler() {
 		// save request json into session //.
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
 		eascompliance_log('calculate','$calc_jreq after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON' ), true));
+		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 1');
+		}
 
 		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
 
@@ -1216,6 +1219,10 @@ function eascompliance_ajaxhandler() {
 		$jres['debug'] = $jdebug;
 	}
 
+	// this line saves cart here, but does not save before EAScomplianceStandardCheckoutException thrown. Why?
+	if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
+		eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 2');
+	}
 	wp_send_json( $jres );
 };
 
@@ -1237,6 +1244,10 @@ function eascompliance_redirect_confirm() {
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
+
+		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 3');
+		}
 
 		global $woocommerce;
 		$cart = WC()->cart;
@@ -1452,7 +1463,7 @@ function eascompliance_redirect_confirm() {
 		$item['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
 
 		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty before redirect_confirm successful');
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 4');
 		}
 
 		// DEBUG SAMPLE: return WC()->cart->get_cart(); //.
@@ -1462,7 +1473,7 @@ function eascompliance_redirect_confirm() {
 		eascompliance_log('confirm', $jres);
 
 		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty after redirect_confirm successful');
+			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 5');
 		}
 	} catch ( Exception $ex ) {
 		$jres['status']  = 'error';
@@ -3245,6 +3256,8 @@ add_action( 'admin_menu', 'eascompliance_add_settings_page' );
  * Settings menu item
  */
 function eascompliance_add_settings_page() {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
     add_submenu_page( 'woocommerce', 'EAS EU compliance', 'EAS EU compliance', 'manage_woocommerce', 'eas-settings', 'eascompliance_settings_page' );
 }
 
@@ -3263,6 +3276,8 @@ add_action('login_enqueue_scripts', 'ds_admin_theme_style');
  * Hide notices in settings page
  */
 function ds_admin_theme_style() {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
     global $current_tab;
     if( $current_tab === 'settings_tab_compliance' ) {
         echo '<style> .notice { display: none !important; } .wp-submenu [href="admin.php?page=eas-settings"] { color:#fff !important; font-weight: 600 !important; } .wp-submenu [href="admin.php?page=wc-settings"] { color: rgba(240,246,252,.7) !important; font-weight: normal !important; } </style>';
