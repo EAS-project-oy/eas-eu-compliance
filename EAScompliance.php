@@ -2541,6 +2541,8 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
             $margin = abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em );
+			eascompliance_log('WP-61','difference item $item $cost -> $saved_cost margin $margin',
+				array('$item'=>$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost'=>$item['cost_provided_by_em'], '$saved_cost'=>$saved_cost_provided_by_em, '$margin'=>$margin) ) ;
             if ( 0 < $margin && $margin <= 0.01 ) {
 				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent for item $item $cost -> $saved_cost margin $margin',
                     array('$item'=>$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost'=>$item['cost_provided_by_em'], '$saved_cost'=>$saved_cost_provided_by_em, '$margin'=>$margin) ) ;
