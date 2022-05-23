@@ -2040,6 +2040,7 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 		$total      = 0;
 		$cart_items = array_values( WC()->cart->get_cart_contents() );
 		foreach ( $cart_items as $cart_item ) {
+			$total_taxes[ $tax_rate_id0 ] += eascompliance_array_get( $cart_item, 'EAScompliance DELIVERY CHARGE VAT', 0 ) ;
 			$total += eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
 		}
 
