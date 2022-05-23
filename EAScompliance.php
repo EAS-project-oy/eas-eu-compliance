@@ -2515,12 +2515,13 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
-            if ( 0.01 >= abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em ) ) {
+            if ( 0.01 <= abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em ) ) {
+				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent for item'.$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'].'  '.$item['cost_provided_by_em'].' -> '. $saved_cost_provided_by_em.' current deviation  '.(abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em )) ) ;
 				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
-				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent');
+				
             }
         }
-
+        
 		// save new request in first item //.
 		global $woocommerce;
 		$cart                                     = WC()->cart;
