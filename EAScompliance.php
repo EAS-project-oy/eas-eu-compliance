@@ -239,7 +239,7 @@ function eascompliance_log_level($level) {
 /**
  * Log message or exception if log level is enabled
  */
-function eascompliance_log($level, $message) {
+function eascompliance_log($level, $message, $vars = null) {
     if ( !eascompliance_log_level($level) ) {
         return;
     }
@@ -259,6 +259,9 @@ function eascompliance_log($level, $message) {
         $txt = ltrim( $txt, "\n" );
     }
     else {
+		if (is_array($vars) && is_string($message)) {
+			$message = eascompliance_format($message, $vars);
+		}
 		$txt = $level . ' ' . print_r($message, true);
     }
 
@@ -1296,6 +1299,8 @@ function eascompliance_redirect_confirm() {
 		$payload_j            = json_decode( $jwt_payload, true );
 		$jdebug['$payload_j'] = $payload_j;
 
+        eascompliance_log('confirm', 'received EAS payload '.print_r($payload_j, true));
+
 		/*
 		Sample $payload_j json:
 		{
@@ -1745,7 +1750,6 @@ function eascompliance_order_createpostsaleorder($order) {
 						'total'    => array($tax_rate_id0 => $payload_j['delivery_charge_vat'] ),
 						'subtotal' => array($tax_rate_id0 => $payload_j['delivery_charge_vat'] ),
 					));
-
 				$shipping_item->set_total($payload_j['delivery_charge_vat_excl'] );
 
 				break;
@@ -1955,7 +1959,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
  * Calculate cart total
  */
 function eascompliance_cart_total() {
-	eascompliance_log('cart_total', 'entering '.__FUNCTION__.'()');
+	eascompliance_log('entry', 'entering '.__FUNCTION__.'()');
 
 	$total = WC()->cart->get_total( 'edit' );
 	if ( eascompliance_is_set() ) {
@@ -1997,6 +2001,7 @@ function eascompliance_cart_total() {
 			eascompliance_log('cart_total', $payload);
 		}
 	}
+    eascompliance_log('cart_total', 'cart total is $total', array('$total'=>$total));
 	return $total;
 }
 
@@ -2359,6 +2364,10 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item
 		$tax_rate_id0 = eascompliance_tax_rate_id();
 
 		$amount = $order_item->get_meta( 'Customs duties' );
+
+		eascompliance_log('WP-61', 'setting taxes for order item name $name type $type amount $amount'
+            , array('$name'=>$order_item->get_name(), '$type'=>$order_item->get_type(), '$amount'=>$amount));
+
 		$order_item->set_taxes(
 			array(
 				'total'    => array( $tax_rate_id0 => $amount ),
@@ -2378,7 +2387,7 @@ if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1 );
 }
 /**
- * Replace chosen shipping method cost with $payload_j['delivery_charge']
+ * Replace chosen shipping method cost with $payload_j['delivery_charge_vat_excl']
  *
  * @param array $packages packages.
  * @throws Exception May throw exception.
@@ -2421,7 +2430,9 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				return $packages;
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
+				eascompliance_log('WP-61', '$chosen_shipping_methods is '.print_r($chosen_shipping_methods, true));
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
+					eascompliance_log('WP-61', 'found shipping method $shm in package $px, setting cost to $cost , tax to $tax', array('$shm'=>$shm, '$px'=>$px, '$cost'=>$cart_item0['EAScompliance DELIVERY CHARGE'], '$tax'=>$cart_item0['EAScompliance DELIVERY CHARGE VAT']));
 					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
 					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
 
@@ -2502,9 +2513,11 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 
         // cost_provided_by_em and delivery_cost can differ in saved and new versions most by 1 cent
 		$saved_delivery_cost = $calc_jreq_saved['delivery_cost'];
-		if ( 0.01 >= abs($calc_jreq_new['delivery_cost'] - $saved_delivery_cost ) ) {
+        $margin = abs($calc_jreq_new['delivery_cost'] - $saved_delivery_cost );
+		if ( 0 < $margin && $margin <= 0.01 ) {
 			$calc_jreq_new['delivery_cost'] = $saved_delivery_cost;
-			eascompliance_log('place_order','adjusting delivery_cost difference by 1 cent');
+			eascompliance_log('place_order','adjusting delivery_cost difference by 1 cent $delivery_cost -> $saved_delivery_cost margin $margin',
+				array( '$delivery_cost'=>$calc_jreq_new['delivery_cost'], '$saved_delivery_cost'=>$saved_delivery_cost, '$margin'=>$margin) ) ;
 		}
 
         // paranoid check that order_breakdown key is present
@@ -2515,8 +2528,10 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
-            if ( 0.01 <= abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em ) ) {
-				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent for item'.$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'].'  '.$item['cost_provided_by_em'].' -> '. $saved_cost_provided_by_em.' current deviation  '.(abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em )) ) ;
+            $margin = abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em );
+            if ( 0 < $margin && $margin <= 0.01 ) {
+				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent for item $item $cost -> $saved_cost margin $margin',
+                    array('$item'=>$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost'=>$item['cost_provided_by_em'], '$saved_cost'=>$saved_cost_provided_by_em, '$margin'=>$margin) ) ;
 				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
 				
             }
@@ -3900,7 +3915,7 @@ function eascompliance_format( $string, $vars ) {
 	$patterns     = array_keys( $vars );
 	$replacements = array_values( $vars );
 	foreach ( $patterns as &$pattern ) {
-		$pattern = '/\$' . $pattern . '/';
+		$pattern = '/\$' . ltrim($pattern, '$') . '/';
 	}
 	return preg_replace( $patterns, $replacements, $string );
 };
