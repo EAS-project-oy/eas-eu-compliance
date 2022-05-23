@@ -1944,11 +1944,21 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 				++$ix;
 			}
 			$order_item_tax->save();
+			//WP-61 debug logs
+			foreach($order->get_items('shipping') as $shipping_item)  {
+				eascompliance_log('WP-61', 'shipping total before order update_taxes  $total, tax $tax, taxes $taxes',
+					array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+			}
 			$order->update_taxes();
 			// Calculate Order Total //.
 			$total = eascompliance_cart_total();
 			// Set Order Total //.
 			$order->set_total( $total );
+			//WP-61 debug logs
+			foreach($order->get_items('shipping') as $shipping_item)  {
+				eascompliance_log('WP-61', 'shipping total after update_taxes $total, tax $tax, taxes $taxes',
+					array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+			}
 		}
 		return $order_item_tax;
 	} catch ( Exception $ex ) {
