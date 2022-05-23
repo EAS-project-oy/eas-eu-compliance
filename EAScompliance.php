@@ -2526,7 +2526,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
         // cost_provided_by_em and delivery_cost can differ in saved and new versions most by 1 cent
 		$saved_delivery_cost = $calc_jreq_saved['delivery_cost'];
         $margin = abs($calc_jreq_new['delivery_cost'] - $saved_delivery_cost );
-		if ( 0 < $margin && $margin <= 0.01 ) {
+		if ( 0 < $margin && $margin <= 0.014 ) {
 			$calc_jreq_new['delivery_cost'] = $saved_delivery_cost;
 			eascompliance_log('place_order','adjusting delivery_cost difference by 1 cent $delivery_cost -> $saved_delivery_cost margin $margin',
 				array( '$delivery_cost'=>$calc_jreq_new['delivery_cost'], '$saved_delivery_cost'=>$saved_delivery_cost, '$margin'=>$margin) ) ;
