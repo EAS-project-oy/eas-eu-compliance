@@ -759,7 +759,9 @@ function eascompliance_make_eas_api_request_json() {
 	$delivery_state_province        = eascompliance_array_get( $checkout, 'shipping_state', '' ) === '' ? '' : '' . WC()->countries->states[ $checkout['shipping_country'] ][ $checkout['shipping_state'] ];
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method']   = $delivery_method;
-	$calc_jreq['delivery_cost']     = round( (float) ( $cart->get_shipping_total() ), 2 );
+    $delivery_cost = round( (float) ( $cart->get_shipping_total() ), 2 );
+	eascompliance_log('WP-61', 'delivery_cost is set to $d in json request', array('$d'=>$delivery_cost));
+	$calc_jreq['delivery_cost']     = $delivery_cost;
 	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
     // WCML plugin fix: take payment_currency from plugin client_currency //.
@@ -1239,7 +1241,6 @@ if ( eascompliance_is_active() ) {
 function eascompliance_redirect_confirm() {
 	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
-	$jres   = array( 'status' => 'ok' );
 	$jdebug = array();
 
 	try {
@@ -1285,7 +1286,6 @@ function eascompliance_redirect_confirm() {
 		);
 		$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
 		if ( false === $jwt_key_response ) {
-			$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
 			throw new Exception( error_get_last()['message'] );
 		}
 		$jwt_key_j         = json_decode( $jwt_key_response, true );
@@ -1470,20 +1470,13 @@ function eascompliance_redirect_confirm() {
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it //.
 
 		eascompliance_log('info', 'redirect_confirm successful' );
-		eascompliance_log('confirm', $jres);
 
 		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
 			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 5');
 		}
 	} catch ( Exception $ex ) {
-		$jres['status']  = 'error';
-		$jres['message'] = $ex->getMessage();
 		eascompliance_log('error', $ex);
-		eascompliance_log('confirm', $jres);
 		wc_add_notice( $ex->getMessage(), 'error' );
-		if ( eascompliance_log_level('debug') ) {
-			$jres['debug'] = $jdebug;
-		}
 	} finally {
 		restore_error_handler();
 	}
@@ -1767,6 +1760,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			}
 			$order->update_taxes();
 
+			eascompliance_log('WP-61', 'We should not get to this line');
 			$order->set_total( $payload_j['total_order_amount'] );
 			$order->set_shipping_total( $payload_j['delivery_charge_vat_excl']);
 			$order->set_shipping_tax( $payload_j['delivery_charge_vat'] );
@@ -1810,7 +1804,6 @@ function eascompliance_woocommerce_after_order_object_save( $order ) {
 		}
 		$order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
 		$order->save_meta_data();
-
 
 
 		eascompliance_order_createpostsaleorder($order);
@@ -2442,12 +2435,10 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				return $packages;
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
-				eascompliance_log('WP-61', '$chosen_shipping_methods is '.print_r($chosen_shipping_methods, true));
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
-					eascompliance_log('WP-61', 'found shipping method $shm in package $px, setting cost to $cost , tax to $tax', array('$shm'=>$shm, '$px'=>$px, '$cost'=>$cart_item0['EAScompliance DELIVERY CHARGE'], '$tax'=>$cart_item0['EAScompliance DELIVERY CHARGE VAT']));
+					eascompliance_log('WP-61', 'shipping cost set to $cost , tax to $tax', array('$shm'=>$shm, '$px'=>$px, '$cost'=>$cart_item0['EAScompliance DELIVERY CHARGE'], '$tax'=>$cart_item0['EAScompliance DELIVERY CHARGE VAT']));
 					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
 					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
-
 					);
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
@@ -2458,7 +2449,11 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 					eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages');
 					continue;
                 }
-				$calc_jreq_saved['delivery_cost'] = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
+                $delivery_cost = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
+				eascompliance_log('WP-61', 'changing saved delivery_cost to $d', array('$d'=>$delivery_cost));
+				$calc_jreq_saved['delivery_cost'] = $delivery_cost;
+
+				eascompliance_log('WP-42', 'EAS API REQUEST JSON was present during woocommerce_shipping_packages');
 
 				WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq_saved );
 			}
@@ -2541,16 +2536,19 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
             $margin = abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em );
-			eascompliance_log('WP-61','difference item $item $cost -> $saved_cost margin $margin',
-				array('$item'=>$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost'=>$item['cost_provided_by_em'], '$saved_cost'=>$saved_cost_provided_by_em, '$margin'=>$margin) ) ;
             if ( 0 < $margin && $margin <= 0.014 ) {
 				eascompliance_log('place_order','adjusting cost_provided_by_em difference by 1 cent for item $item $cost -> $saved_cost margin $margin',
                     array('$item'=>$calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost'=>$item['cost_provided_by_em'], '$saved_cost'=>$saved_cost_provided_by_em, '$margin'=>$margin) ) ;
 				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
-				
             }
         }
-        
+        //WP-61 debug logs
+        foreach($order->get_items('shipping') as $shipping_item)  {
+            eascompliance_log('WP-61', 'shipping total $total, tax $tax, taxes $taxes',
+                array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+        }
+
+
 		// save new request in first item //.
 		global $woocommerce;
 		$cart                                     = WC()->cart;
@@ -2579,6 +2577,9 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 
 		// saving token to notify EAS during order status change //.
 		$order->add_meta_data( '_easproj_token', $item0['EASPROJ API CONFIRMATION TOKEN'] );
+
+		eascompliance_log('place_order', 'order $order total is $o, tax is $t', array('$order'=>$order->get_id(), '$o'=>$order->get_total(), '$t'=>$order->get_total_tax()));
+
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
@@ -2603,6 +2604,12 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 	$order_id = $order->get_id();
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
+
+		//WP-61 debug logs
+		foreach($order->get_items('shipping') as $shipping_item)  {
+			eascompliance_log('WP-61', 'order created with shipping total $total, tax $tax, taxes $taxes',
+				array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+		}
 
 		$auth_token         = eascompliance_get_oauth_token();
 		$confirmation_token = $order->get_meta( '_easproj_token' );
@@ -3931,9 +3938,12 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
  */
 function eascompliance_format( $string, $vars ) {
 	$patterns     = array_keys( $vars );
-	$replacements = array_values( $vars );
+	$replacements = array();
+    foreach (array_values( $vars ) as $v) {
+		$replacements[] = print_r($v, true);
+    }
 	foreach ( $patterns as &$pattern ) {
-		$pattern = '/\$' . ltrim($pattern, '$') . '/';
+		$pattern = '/\$' . ltrim($pattern, '$') . '(?!\w)/';
 	}
 	return preg_replace( $patterns, $replacements, $string );
 };
