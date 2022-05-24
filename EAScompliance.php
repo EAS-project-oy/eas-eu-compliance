@@ -467,6 +467,56 @@ function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) 
 
 
 if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1 );
+}
+/**
+ *  Checkout -> Reset calculate billing/shipping country changes
+ */
+function eascompliance_woocommerce_checkout_update_order_review($post_data) {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+
+		$post_data = urldecode($post_data);
+
+		foreach (explode('&', $post_data) as $chunk) {
+			$param = explode("=", $chunk);
+			if ($param[0] === 'billing_country') {
+				$new_billing_country = urldecode($param[1]);
+			}
+			if ($param[0] === 'shipping_country') {
+				$new_shipping_country = urldecode($param[1]);
+			}
+			if ($param[0] === 'ship_to_different_address') {
+				$ship_to_different_address = urldecode($param[1]);
+			}
+		}
+
+		if ( ! ( true === $ship_to_different_address ||  'true' === $ship_to_different_address || '1' === $ship_to_different_address ) ) {
+			$new_shipping_country = $new_billing_country;
+		}
+
+        // if country changes to non-EU and taxes were set then reset calculations
+        if ( !in_array($new_shipping_country, EUROPEAN_COUNTRIES) && eascompliance_is_set() ) {
+			eascompliance_log('WP-58', 'reset calculate due to shipping country changed to '.$new_shipping_country);
+
+			global $woocommerce;
+			$cart                                     = WC()->cart;
+			$k0                                       = eascompliance_array_key_first2( $cart->get_cart() );
+			$item0                                    = &$woocommerce->cart->cart_contents[ $k0 ];
+			$item0['EAScompliance NEEDS RECALCULATE'] = true;
+			$item0['EAScompliance SET'] = false;
+			$woocommerce->cart->set_session();
+        }
+
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex );
+		throw $ex;
+	}
+}
+
+if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
 /**
@@ -760,7 +810,6 @@ function eascompliance_make_eas_api_request_json() {
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method']   = $delivery_method;
     $delivery_cost = round( (float) ( $cart->get_shipping_total() ), 2 );
-	eascompliance_log('WP-61', 'delivery_cost is set to $d in json request', array('$d'=>$delivery_cost));
 	$calc_jreq['delivery_cost']     = $delivery_cost;
 	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
@@ -1760,7 +1809,6 @@ function eascompliance_order_createpostsaleorder($order) {
 			}
 			$order->update_taxes();
 
-			eascompliance_log('WP-61', 'We should not get to this line');
 			$order->set_total( $payload_j['total_order_amount'] );
 			$order->set_shipping_total( $payload_j['delivery_charge_vat_excl']);
 			$order->set_shipping_tax( $payload_j['delivery_charge_vat'] );
@@ -1949,21 +1997,12 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			}
 			$order_item_tax->save();
 
-			//WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again
+			//WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again for first found shipping item
 			foreach($order->get_items('shipping') as $shipping_item)  {
-				eascompliance_log('WP-61', 'shipping total before order update_taxes  $total, tax $tax, taxes $taxes',
-					array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
-
                 if ( 0 == $shipping_item->get_total_tax() and 0 != $delivery_charge_vat ) {
 					eascompliance_log('place_order', 'correct shipping item tax to $tax',
 						array('$tax'=>$delivery_charge_vat));
 					$shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat) );
-
-					//WP-61 debug logs
-					foreach($order->get_items('shipping') as $shipping_item)  {
-						eascompliance_log('WP-61', 'shipping total after fix $total, tax $tax, taxes $taxes',
-							array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
-					}
                 }
                 break;
 			}
@@ -1973,11 +2012,6 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			$total = eascompliance_cart_total();
 			// Set Order Total //.
 			$order->set_total( $total );
-			//WP-61 debug logs
-			foreach($order->get_items('shipping') as $shipping_item)  {
-				eascompliance_log('WP-61', 'shipping total after update_taxes $total, tax $tax, taxes $taxes',
-					array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
-			}
 		}
 		return $order_item_tax;
 	} catch ( Exception $ex ) {
@@ -2059,11 +2093,16 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 
 		$tax_rate_id0 = eascompliance_tax_rate_id();
 
-		$total      = 0;
+		$total_tax      = 0;
 		$cart_items = array_values( WC()->cart->get_cart_contents() );
 		foreach ( $cart_items as $cart_item ) {
-			$total_taxes[ $tax_rate_id0 ] += eascompliance_array_get( $cart_item, 'EAScompliance DELIVERY CHARGE VAT', 0 ) ;
-			$total += eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
+            eascompliance_log('cart_total', 'adding $v to cart_total', array('$v'=>eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 )));
+            $delivery_charge_vat = eascompliance_array_get( $cart_item, 'EAScompliance DELIVERY CHARGE VAT', 0 );
+			if (0 != $delivery_charge_vat) {
+				eascompliance_log('cart_total', 'add delivery_charge_vat $dcv to cart total ', array('$dcv'=>$delivery_charge_vat));
+				$total_taxes[ $tax_rate_id0 ] += $delivery_charge_vat;
+            }
+			$total_tax += eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
 		}
 
         // tax may not present in $total_taxes when buying only gift-cards
@@ -2071,7 +2110,8 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 			return $total_taxes;
         }
 
-		$total_taxes[ $tax_rate_id0 ] += $total;
+		$total_taxes[ $tax_rate_id0 ] += $total_tax;
+		eascompliance_log('cart_total', 'cart total tax set to $tax', array('$tax'=>$total_taxes[ $tax_rate_id0 ]));
 
 		return $total_taxes;
 	} catch ( Exception $ex ) {
@@ -2399,7 +2439,7 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes( $order_item
 
 		$amount = $order_item->get_meta( 'Customs duties' );
 
-		eascompliance_log('WP-61', 'setting taxes for order item name $name type $type amount $amount'
+		eascompliance_log('place_order', 'setting taxes for order item name $name type $type amount $amount'
             , array('$name'=>$order_item->get_name(), '$type'=>$order_item->get_type(), '$amount'=>$amount));
 
 		$order_item->set_taxes(
@@ -2465,13 +2505,10 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
-					eascompliance_log('WP-61', 'shipping cost set to $cost , tax to $tax', array('$shm'=>$shm, '$px'=>$px, '$cost'=>$cart_item0['EAScompliance DELIVERY CHARGE'], '$tax'=>$cart_item0['EAScompliance DELIVERY CHARGE VAT']));
                     $shipping_rate = $packages[ $px ]['rates'][ $shm ];
 					$shipping_rate->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
 					$shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
 					);
-					eascompliance_log('WP-61', 'shipping rate immediately after it was set: cost  $cost, shipping tax $tax, taxes $taxes',
-						array('$cost'=>$shipping_rate->get_cost(), '$tax'=>$shipping_rate->get_shipping_tax(), '$taxes'=>$shipping_rate->get_taxes()));
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
@@ -2482,10 +2519,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 					continue;
                 }
                 $delivery_cost = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
-				eascompliance_log('WP-61', 'changing saved delivery_cost to $d', array('$d'=>$delivery_cost));
 				$calc_jreq_saved['delivery_cost'] = $delivery_cost;
-
-				eascompliance_log('WP-42', 'EAS API REQUEST JSON was present during woocommerce_shipping_packages');
 
 				WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq_saved );
 			}
@@ -2541,7 +2575,6 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 			throw new Exception( __TR( 'Customs Duties Missing. We found error in your cart. Please reload page. <a href="./">reload</a>' ) );
 		}
 
-
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed //.
 		$calc_jreq_saved = WC()->session->get( 'EAS API REQUEST JSON' );
 
@@ -2581,12 +2614,6 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 				$item['cost_provided_by_em'] = $saved_cost_provided_by_em;
             }
         }
-        //WP-61 debug logs
-        foreach($order->get_items('shipping') as $shipping_item)  {
-            eascompliance_log('WP-61', 'shipping total $total, tax $tax, taxes $taxes',
-                array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
-        }
-
 
 		// save new request in first item //.
 		global $woocommerce;
@@ -2643,12 +2670,6 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 	$order_id = $order->get_id();
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
-
-		//WP-61 debug logs
-		foreach($order->get_items('shipping') as $shipping_item)  {
-			eascompliance_log('WP-61', 'order created with shipping total $total, tax $tax, taxes $taxes',
-				array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
-		}
 
 		$auth_token         = eascompliance_get_oauth_token();
 		$confirmation_token = $order->get_meta( '_easproj_token' );
