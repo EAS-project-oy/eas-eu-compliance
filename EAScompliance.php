@@ -498,15 +498,9 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data) {
 
         // if country changes to non-EU and taxes were set then reset calculations
         if ( !in_array($new_shipping_country, EUROPEAN_COUNTRIES) && eascompliance_is_set() ) {
-			eascompliance_log('WP-58', 'reset calculate due to shipping country changed to '.$new_shipping_country);
+			eascompliance_log('calculate', 'reset calculate due to shipping country changed to '.$new_shipping_country);
 
-			global $woocommerce;
-			$cart                                     = WC()->cart;
-			$k0                                       = eascompliance_array_key_first2( $cart->get_cart() );
-			$item0                                    = &$woocommerce->cart->cart_contents[ $k0 ];
-			$item0['EAScompliance NEEDS RECALCULATE'] = true;
-			$item0['EAScompliance SET'] = false;
-			$woocommerce->cart->set_session();
+			eascompliance_unset();
         }
 
 
@@ -1569,6 +1563,35 @@ function eascompliance_is_set() {
 	}
 }
 
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0 );
+}
+/**
+ *  Reset calculated taxes in cart and checkout
+ */
+function eascompliance_unset() {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+        if (eascompliance_is_set()) {
+
+			global $woocommerce;
+			$cart = WC()->cart;
+			$k0 = eascompliance_array_key_first2($cart->get_cart());
+			$item0 = &$woocommerce->cart->cart_contents[$k0];
+			$item0['EAScompliance NEEDS RECALCULATE'] = true;
+			$item0['EAScompliance SET'] = false;
+			$woocommerce->cart->set_session();
+		}
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex );
+		throw $ex;
+	}
+}
+
+
 /**
  * Check if it is Standard Checkout scenario
  *
@@ -2482,10 +2505,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
 		if ( ! is_array( $chosen_shipping_methods ) ) {
 			eascompliance_log('info', 'Chosen shipping method must not be empty! Resetting EASCompliance' );
-			foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
-				$item['EAScompliance SET'] = false;
-			}
-			$woocommerce->cart->set_session();
+			eascompliance_unset();
 			return $packages;
 		}
 
@@ -2497,10 +2517,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			// Sometimes we get here when first item was removed. If this happens, we reset calculation //.
 			if ( eascompliance_array_get( $cart_item0, 'EAScompliance DELIVERY CHARGE', null ) === null ) {
 				eascompliance_log('info', 'EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance' );
-				foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
-					$item['EAScompliance SET'] = false;
-				}
-				$woocommerce->cart->set_session();
+				eascompliance_unset();
 				return $packages;
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
@@ -2628,8 +2645,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 			// reset EAScompliance if json's mismatch //.
 			$item0['EAScompliance NEEDS RECALCULATE'] = true;
 			// reset calculate of cart since calculate may have changed previous values //.
-			$item0['EAScompliance SET'] = false;
-			$woocommerce->cart->set_session();
+			eascompliance_unset();
 			throw new Exception( __TR( 'PLEASE RE-CALCULATE CUSTOMS DUTIES' ) );
 		}
 		// save payload in order metadata //.
