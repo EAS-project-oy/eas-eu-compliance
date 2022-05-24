@@ -2541,8 +2541,15 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 			throw new Exception( __TR( 'Customs Duties Missing. We found error in your cart. Please reload page. <a href="./">reload</a>' ) );
 		}
 
+
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed //.
 		$calc_jreq_saved = WC()->session->get( 'EAS API REQUEST JSON' );
+
+        //WP-42
+		eascompliance_log('WP-42', 'EAS API REQUEST JSON $j', array('$j'=>$calc_jreq_saved));
+        if (empty($calc_jreq_saved)) {
+            throw new Exception('WP-42 $calc_jreq_saved cannot be empty');
+        }
 
 		$calc_jreq_new = eascompliance_make_eas_api_request_json();
 
