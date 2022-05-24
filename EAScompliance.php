@@ -1927,6 +1927,10 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			$total      = 0;
 			foreach ( $order->get_items() as $k => $item ) {
 				$cart_item   = $cart_items[ $ix ];
+
+				if (array_key_exists( 'EAScompliance DELIVERY CHARGE VAT', $cart_item )) {
+					$delivery_charge_vat = $cart_item['EAScompliance DELIVERY CHARGE VAT'];
+				}
 				$item_amount = $cart_item['EAScompliance item_duties_and_taxes'];
 				$total      += $item_amount;
 				$item->add_meta_data( 'Customs duties', $cart_item['EAScompliance ITEM']['item_customs_duties'] );
@@ -1944,11 +1948,26 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 				++$ix;
 			}
 			$order_item_tax->save();
-			//WP-61 debug logs
+
+			//WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again
 			foreach($order->get_items('shipping') as $shipping_item)  {
 				eascompliance_log('WP-61', 'shipping total before order update_taxes  $total, tax $tax, taxes $taxes',
 					array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+
+                if ( 0 == $shipping_item->get_total_tax() and 0 != $delivery_charge_vat ) {
+					eascompliance_log('place_order', 'correct shipping item tax to $tax',
+						array('$tax'=>$delivery_charge_vat));
+					$shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat) );
+
+					//WP-61 debug logs
+					foreach($order->get_items('shipping') as $shipping_item)  {
+						eascompliance_log('WP-61', 'shipping total after fix $total, tax $tax, taxes $taxes',
+							array('$total'=>$shipping_item->get_total(), '$tax'=>$shipping_item->get_total_tax(), '$taxes'=>$shipping_item->get_taxes()));
+					}
+                }
+                break;
 			}
+
 			$order->update_taxes();
 			// Calculate Order Total //.
 			$total = eascompliance_cart_total();
@@ -2447,9 +2466,12 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
 					eascompliance_log('WP-61', 'shipping cost set to $cost , tax to $tax', array('$shm'=>$shm, '$px'=>$px, '$cost'=>$cart_item0['EAScompliance DELIVERY CHARGE'], '$tax'=>$cart_item0['EAScompliance DELIVERY CHARGE VAT']));
-					$packages[ $px ]['rates'][ $shm ]->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
-					$packages[ $px ]['rates'][ $shm ]->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
+                    $shipping_rate = $packages[ $px ]['rates'][ $shm ];
+					$shipping_rate->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
+					$shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
 					);
+					eascompliance_log('WP-61', 'shipping rate immediately after it was set: cost  $cost, shipping tax $tax, taxes $taxes',
+						array('$cost'=>$shipping_rate->get_cost(), '$tax'=>$shipping_rate->get_shipping_tax(), '$taxes'=>$shipping_rate->get_taxes()));
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
