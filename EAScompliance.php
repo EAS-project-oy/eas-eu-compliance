@@ -2123,9 +2123,10 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
             $delivery_charge_vat = eascompliance_array_get( $cart_item, 'EAScompliance DELIVERY CHARGE VAT', 0 );
 			if (0 != $delivery_charge_vat) {
 				eascompliance_log('cart_total', 'add delivery_charge_vat $dcv to cart total ', array('$dcv'=>$delivery_charge_vat));
-				$total_taxes[ $tax_rate_id0 ] += $delivery_charge_vat;
+				$total_tax += $delivery_charge_vat;
             }
-			$total_tax += eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
+            $item_tax = eascompliance_array_get( $cart_item, 'EAScompliance item_duties_and_taxes', 0 );
+			$total_tax += $item_tax;
 		}
 
         // tax may not present in $total_taxes when buying only gift-cards
@@ -2133,8 +2134,8 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 			return $total_taxes;
         }
 
-		$total_taxes[ $tax_rate_id0 ] += $total_tax;
-		eascompliance_log('cart_total', 'cart total tax set to $tax', array('$tax'=>$total_taxes[ $tax_rate_id0 ]));
+		$total_taxes[ $tax_rate_id0 ] = $total_tax;
+		eascompliance_log('cart_total', 'cart total tax is $tax', array('$tax'=>$total_tax));
 
 		return $total_taxes;
 	} catch ( Exception $ex ) {
