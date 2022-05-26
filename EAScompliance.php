@@ -856,9 +856,9 @@ function eascompliance_make_eas_api_request_json() {
 	$jdebug['step'] = 'fill json request with cart data';
 	$countries = array_flip(WORLD_COUNTRIES);
     
-	$items          = array();
-	foreach ( $cart->get_cart() as $k => $item ) {
-		$product_id = $item['product_id'];
+	$order_breakdown_items          = array();
+	foreach ( $cart->get_cart() as $k => $cart_item ) {
+		$product_id = $cart_item['product_id'];
 		$product    = wc_get_product( $product_id );
 
 		$location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
@@ -871,16 +871,19 @@ function eascompliance_make_eas_api_request_json() {
 		    $type_of_goods = 'GIFTCARD';
 		}
 
-		$cost_provided_by_em = round( (float) $item['line_total'] / $item['quantity'], 2 );
+		$cost_provided_by_em = round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
+		eascompliance_log('WP-66', 'line total is $lt quantity is $q  cost_provided_by_em is $c', array('$lt'=>$cart_item['line_total'], '$q'=>$cart_item['quantity'], '$c'=>$cost_provided_by_em));
         if ( $wcml_enabled ) {
-			$cost_provided_by_em = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $cost_provided_by_em);
+            $cost_provided_by_em2 = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $cost_provided_by_em);
+			eascompliance_log('WP-66', 'converting cost_provided_by_em from $c1 to $c2', array('$c1'=>$cost_provided_by_em, '$c2'=>$cost_provided_by_em2));
+			$cost_provided_by_em = $cost_provided_by_em2;
         }
 
-		$items[] = array(
+		$order_breakdown_items[] = array(
 			'short_description'           => $product->get_name(),
 			'long_description'            => $product->get_name(),
 			'id_provided_by_em'           => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
-			'quantity'                    => $item['quantity'],
+			'quantity'                    => $cart_item['quantity'],
 			'cost_provided_by_em'         => $cost_provided_by_em,
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
 			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
@@ -900,19 +903,19 @@ function eascompliance_make_eas_api_request_json() {
 		);
 	}
 
-	eascompliance_log('request','$items before discount '.print_r($items, true));
+	eascompliance_log('request','$items before discount '.print_r($order_breakdown_items, true));
 	// split cart discount proportionally between items
 	// making and solving equation to get new item price //.
 	$d = $cart->get_discount_total(); // discount d    //.
 	$t = 0; // cart total  T = p1*q1 + p2*q2           //.
 	$q = 0; // total quantity Q = q1 + q2              //.
-	foreach ( $items as $item ) {
+	foreach ( $order_breakdown_items as $item ) {
 		$t += $item['quantity'] * $item['cost_provided_by_em'];
 		$q += $item['quantity'];
 	}
 
 	if ( $d > 0 && $t > 0 ) { // only process if discount and total are positive //.
-		foreach ( $items as &$item ) {
+		foreach ( $order_breakdown_items as &$item ) {
 			$q1 = $item['quantity'];
 			$p1 = $item['cost_provided_by_em'];
 
@@ -924,8 +927,8 @@ function eascompliance_make_eas_api_request_json() {
 			eascompliance_log('request',"\$T $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']);
 		}
 	}
-	$calc_jreq['order_breakdown'] = $items;
-	eascompliance_log('request','$items after discount '.print_r($items, true));  //.
+	$calc_jreq['order_breakdown'] = $order_breakdown_items;
+	eascompliance_log('request','$items after discount '.print_r($order_breakdown_items, true));  //.
 
 	return $calc_jreq;
 }
