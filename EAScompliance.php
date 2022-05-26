@@ -1997,10 +1997,10 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			$ix         = 0;
 			$total      = 0;
 
-            //sometimes there are multiple order_items, but only some of them have attribute  EAScompliance ITEM
+            //WP-66 fix: sometimes there are multiple order_items, but only right ones have property legacy_values
             $order_items = [];
             foreach ($order->get_items() as $oi) {
-                if (array_key_exists('EAScompliance item price',  $oi->legacy_values)) {
+                if ( property_exists($oi, 'legacy_values') ) {
 					$order_items[] = $oi;
                 }
             };
