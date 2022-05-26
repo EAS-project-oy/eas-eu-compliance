@@ -695,14 +695,14 @@ function eascompliance_get_oauth_token() {
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_make_eas_api_request_json() {
+function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 	eascompliance_log('request', 'entering ' . __FUNCTION__ . '()');
 
 	$jdebug = array();
 
 	$jdebug['step'] = 'default json request sample, works alright';
 	$calc_jreq      = json_decode(
-		'{
+		'{  
 	 "external_order_id": "api_order_001",
 	 "delivery_method": "postal",
 	 "delivery_cost": 10,
@@ -873,7 +873,7 @@ function eascompliance_make_eas_api_request_json() {
 
 		$cost_provided_by_em = round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
 		eascompliance_log('WP-66', 'line total is $lt quantity is $q  cost_provided_by_em is $c', array('$lt'=>$cart_item['line_total'], '$q'=>$cart_item['quantity'], '$c'=>$cost_provided_by_em));
-        if ( $wcml_enabled ) {
+        if ( $wcml_enabled and $currency_conversion ) {
             $cost_provided_by_em2 = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $cost_provided_by_em);
 			eascompliance_log('WP-66', 'converting cost_provided_by_em from $c1 to $c2', array('$c1'=>$cost_provided_by_em, '$c2'=>$cost_provided_by_em2));
 			$cost_provided_by_em = $cost_provided_by_em2;
@@ -1021,8 +1021,8 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
     $calc_jreq['delivery_email']          = $order->get_billing_email();
     $countries      = array_flip( WORLD_COUNTRIES );
     $items          = array();
-    foreach ( $order->get_items() as $k => $item ) {
-        $product_id = $item['product_id'];
+    foreach ( $order->get_items() as $k => $order_item ) {
+        $product_id = $order_item['product_id'];
         $product    = wc_get_product( $product_id );
 
         $location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
@@ -1039,8 +1039,8 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
             'short_description'           => $product->get_name(),
             'long_description'            => $product->get_name(),
             'id_provided_by_em'           => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
-            'quantity'                    => $item['quantity'],
-            'cost_provided_by_em'         => round( (float) $item['line_total'] / $item['quantity'], 2 ),
+            'quantity'                    => $order_item['quantity'],
+            'cost_provided_by_em'         => round( (float) $order_item['line_total'] / $order_item['quantity'], 2 ),
             'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
             'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
 
@@ -2616,7 +2616,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
             throw new Exception('WP-42 $calc_jreq_saved cannot be empty');
         }
 
-		$calc_jreq_new = eascompliance_make_eas_api_request_json();
+		$calc_jreq_new = eascompliance_make_eas_api_request_json(false);
 
 		// exclude external_order_id because get_cart_hash is always different //.
 		$calc_jreq_saved['external_order_id'] = '';
