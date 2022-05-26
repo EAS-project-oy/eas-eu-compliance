@@ -1996,7 +1996,18 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			$cart_items = array_values( WC()->cart->get_cart_contents() );
 			$ix         = 0;
 			$total      = 0;
-			foreach ( $order->get_items() as $k => $item ) {
+
+            //sometimes there are multiple order_items, but only some of them have attribute  EAScompliance ITEM
+            $order_items = [];
+            foreach ($order->get_items() as $oi) {
+                if (array_key_exists('EAScompliance item price',  $oi->legacy_values)) {
+					$order_items[] = $oi;
+                }
+            };
+            if ( count($order_items) != count($cart_items)) {
+                throw new Exception('number of order_items $oi does not match number of items in cart $ci, please check', array('$oi'=>count($order_items), '$ci'=> count($cart_items)));
+            }
+			foreach ( $order_items as $k => $order_item ) {
 				$cart_item   = $cart_items[ $ix ];
 
 				if (array_key_exists( 'EAScompliance DELIVERY CHARGE VAT', $cart_item )) {
@@ -2004,13 +2015,13 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 				}
 				$item_amount = $cart_item['EAScompliance item_duties_and_taxes'];
 				$total      += $item_amount;
-				$item->add_meta_data( 'Customs duties', $cart_item['EAScompliance ITEM']['item_customs_duties'] );
-				$item->add_meta_data( 'VAT Amount', $cart_item['EAScompliance VAT'] );
-				$item->add_meta_data( 'VAT Rate', $cart_item['EAScompliance ITEM']['vat_rate'] );
-				$item->add_meta_data( 'EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee'] );
-				$item->add_meta_data( 'VAT on EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee_vat'] );
+				$order_item->add_meta_data( 'Customs duties', $cart_item['EAScompliance ITEM']['item_customs_duties'] );
+				$order_item->add_meta_data( 'VAT Amount', $cart_item['EAScompliance VAT'] );
+				$order_item->add_meta_data( 'VAT Rate', $cart_item['EAScompliance ITEM']['vat_rate'] );
+				$order_item->add_meta_data( 'EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee'] );
+				$order_item->add_meta_data( 'VAT on EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee_vat'] );
 
-				$item->set_taxes(
+				$order_item->set_taxes(
 					array(
 						'total'    => array( $tax_rate_id0 => $item_amount ),
 						'subtotal' => array( $tax_rate_id0 => $item_amount ),
@@ -2345,7 +2356,7 @@ function eascompliance_woocommerce_cart_totals_get_item_tax_rates( $item_tax_rat
 		$item_total   = $cart_items[ $item->key ]['line_total'];
 
 		// 0-priced items should have 0 rate
-		if ( 0 === $item_total ) {
+		if ( (float) 0 === (float) $item_total ) {
 			$item_tax_rates[ $tax_rate_id0 ]['rate'] = 0;
 		} else {
 			$item_tax_rates[ $tax_rate_id0 ]['rate'] = intval( floor( 10000 * $item_tax / $item_total ) / 10000 );
