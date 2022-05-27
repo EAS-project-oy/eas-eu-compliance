@@ -2435,7 +2435,7 @@ function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
 				);
 				// 0-priced items should have 0 tax_rate
 				$tax_rate = 0;
-				if ( ( $klarna_item['total_amount'] - $klarna_item['total_tax_amount'] ) !== 0 ) {
+				if ( (float) ( $klarna_item['total_amount'] - $klarna_item['total_tax_amount'] ) !== (float) 0 ) {
 					$tax_rate = round( 10000.0 * $klarna_item['total_tax_amount'] / ( $klarna_item['total_amount'] - $klarna_item['total_tax_amount'] ) );
 				}
 				$klarna_item['tax_rate']   = $tax_rate;
@@ -3641,7 +3641,7 @@ function eascompliance_woocommerce_settings_tabs_array( $settings_tabs ) {
 		set_error_handler( 'eascompliance_error_handler' );
 
         global $current_tab;
-        if( $current_tab==='settings_tab_compliance' ) {
+        if( $current_tab === 'settings_tab_compliance' ) {
             return array('settings_tab_compliance' => EASCOMPLIANCE_PLUGIN_NAME);
         }
 
