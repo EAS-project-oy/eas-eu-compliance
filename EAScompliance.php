@@ -997,7 +997,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
         $delivery_method = 'postal';
     }
 
-    $delivery_state_province = eascompliance_array_get(WC()->countries->states[ $order->get_shipping_country() ], $order->get_shipping_state(), '') ?: $order->get_shipping_state();
+    $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_shipping_country(), array()), $order->get_shipping_state(), '') ?: $order->get_shipping_state();
 
     $calc_jreq['external_order_id'] = '' . $order->get_id();
     $calc_jreq['delivery_method']   = $delivery_method;
@@ -1780,6 +1780,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			$order->add_meta_data('_easproj_token', $sales_order_body, true);
 			$order->add_meta_data('_easproj_order_json', json_encode( $payload_j, JSON_THROW_ON_ERROR2 ), true);
 			$order->add_meta_data('easproj_payload', $payload_j, true);
+			$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
 			$payload_items = $payload_j['items'];
 
 			$tax_rate_id0 = eascompliance_tax_rate_id();
@@ -2776,6 +2777,12 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
                 'from'=>$status_from,
                 'to'=>$status_to)));
 
+		// ignore orders created with createpostsaleorder
+		if ( $order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
+			return;
+		}
+
+
         // process order once when status becomes completed/processing
 		if ( ! ( ( 'completed' === $status_to || 'processing' === $status_to ) && ! ( $order->get_meta( '_easproj_payment_processed' ) === 'yes' ) ) ) {
 			return;
@@ -2907,7 +2914,12 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 			);
 
 			$order->save();
-		} else {
+		} elseif ( '206' === $payment_status ) {
+			$order->add_order_note(
+				__TR('EAS EU compliance: Order created. Cannot make shipments as S10 is not provided. Login to dashboard to create shipments')
+			);
+        }
+        else {
 			throw new Exception( $http_response_header[0] . '\n\n' . $payment_body );
 		}
 
