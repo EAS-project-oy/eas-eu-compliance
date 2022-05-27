@@ -2401,7 +2401,7 @@ function eascompliance_kp_wc_api_order_lines( $klarna_order_lines, $order_id ) {
 
 				// 0-priced items should have 0 tax_rate
 				$tax_rate = 0;
-				if ( ( $cart_item['line_total'] - $cart_item['line_tax'] ) !== 0 ) {
+				if ( (float) ( $cart_item['line_total'] - $cart_item['line_tax'] ) !== (float) 0 ) {
 					$tax_rate = round( 10000.0 * $cart_item['line_tax'] / ( $cart_item['line_total'] - $cart_item['line_tax'] ) );
 				}
 
