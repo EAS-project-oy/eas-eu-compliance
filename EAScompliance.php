@@ -3292,35 +3292,90 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 
 	$order = wc_get_order( $order_id );
 
-    $refund = wc_get_order ($refund_id);
+	$refund = wc_get_order ($refund_id);
 
-    $reason = $refund->get_meta('_easproj_refund_invalid');
-
-	eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id'=>$order_id, '$refund_id'=>$refund_id, '$reason'=>$reason));
-
-	// Delete refund that is invalid due to  insufficient remaining quantity //.
-    if ( '1' === $reason ) {
-		wp_delete_post( $refund_id, true );
-		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ' ), array('refund_id'=>$refund_id) ));
-    }
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
 
 
-	// Delete refund with refunded giftcards  //.
-    if ( '2' === $reason ) {
-		wp_delete_post( $refund_id, true );
-		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due containing Giftcard. ' ), array('refund_id'=>$refund_id) ));
-    }
+        $reason = $refund->get_meta('_easproj_refund_invalid');
 
-	// Delete refund with too many failed attempts  //.
-    if ( '3' === $reason ) {
-		wp_delete_post( $refund_id, true );
-		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later ' ), array('refund_id'=>$refund_id) ));
-    }
+        eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id'=>$order_id, '$refund_id'=>$refund_id, '$reason'=>$reason));
 
-	// Delete refund with no items to refund //.
-    if ( '4' === $reason ) {
-		wp_delete_post( $refund_id, true );
-		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed. Please enter quantity greater then 0 for items to be returned and try again. ' ), array('$refund_id'=>$refund_id) ));
+        // Delete refund that is invalid due to  insufficient remaining quantity //.
+        if ( '1' === $reason ) {
+            wp_delete_post( $refund_id, true );
+            $order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ' ), array('refund_id'=>$refund_id) ));
+            return;
+        }
+
+        // Delete refund with refunded giftcards  //.
+        if ( '2' === $reason ) {
+            wp_delete_post( $refund_id, true );
+            $order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due containing Giftcard. ' ), array('refund_id'=>$refund_id) ));
+            return;
+        }
+
+        // Delete refund with too many failed attempts  //.
+        if ( '3' === $reason ) {
+            wp_delete_post( $refund_id, true );
+            $order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later ' ), array('refund_id'=>$refund_id) ));
+            return;
+        }
+
+        // Delete refund with no items to refund //.
+        if ( '4' === $reason ) {
+            wp_delete_post( $refund_id, true );
+            $order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed. Please enter quantity greater then 0 for items to be returned and try again. ' ), array('$refund_id'=>$refund_id) ));
+            return;
+        }
+
+		// confirm refund to EAS
+        $auth_token = eascompliance_get_oauth_token();
+
+        $refund_token = $refund->get_meta( '_easproj_refund_payload' );
+        if ( '' === $refund_token ) {
+            throw new Exception('refund token not found');
+        }
+
+        $options = array(
+            'http' => array(
+                'method'        => 'POST',
+                'header'        => "Content-type: application/json\r\n"
+                    . 'Authorization: Bearer ' . $auth_token . "\r\n",
+                'content'       => json_encode(
+                    array(
+                        'token' => $refund_token,
+                        'refund_date'     => date_format(new DateTime(), 'Y-m-d'),
+                        JSON_THROW_ON_ERROR2,
+                    )
+                ),
+                'ignore_errors' => true,
+            ),
+            'ssl'  => array(
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ),
+        );
+        $context = stream_context_create( $options );
+
+        $confirm_refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirm_refund';
+
+        $refund_body = file_get_contents( $confirm_refund_url, false, $context );
+        $refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+
+        if ( '200' === $refund_status) {
+            throw new Exception(eascompliance_format('EAS refund confirm failed with status $status body $body', array('$status'=>$refund_status, '$body'=>$refund_body)));
+        }
+
+        $order->add_order_note( __TR( 'Refund confirmed to EAS' ) );
+		eascompliance_log('refund', 'refund confirmed to EAS', array('$refund_id'=>$refund_id));
+
+    } catch ( Exception $ex ) {
+        eascompliance_log('error', $ex);
+        $order->add_order_note( __TR( 'Refund confirm failed: ' ) . $ex->getMessage() );
+    } finally {
+        restore_error_handler();
     }
 
 }
