@@ -1021,6 +1021,25 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
     $calc_jreq['delivery_email']          = $order->get_billing_email();
     $countries      = array_flip( WORLD_COUNTRIES );
     $items          = array();
+
+	// check for required fields in taxes calculation
+	$required_fields = preg_split( '/\s/', 'delivery_country recipient_first_name recipient_last_name delivery_address_line_1 delivery_city delivery_postal_code delivery_email');
+    $empty_fields = array();
+	foreach ($required_fields as $field) {
+		if ( eascompliance_array_get($calc_jreq, $field, '') === '') {
+            $empty_fields[] = $field;
+		}
+	}
+
+    if ( count($empty_fields) == 0) {
+
+    } elseif (count($empty_fields) == 1) {
+		throw new Exception( eascompliance_format(__TR('Field $fields is required, please enter $fields and try again.'), array('$fields'=>join(', ', $empty_fields))));
+    } else {
+		throw new Exception( eascompliance_format(__TR('Fields [$fields] are required, please enter [$fields], and try again.'), array('$fields'=>join(', ', $empty_fields))));
+	}
+
+
     foreach ( $order->get_items() as $k => $order_item ) {
         $product_id = $order_item['product_id'];
         $product    = wc_get_product( $product_id );
