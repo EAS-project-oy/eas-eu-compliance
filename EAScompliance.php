@@ -3198,7 +3198,13 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             // refund amount is positive value, rendered at admin order view //.
 			$refund->set_amount( -$refund_total);
 
-            eascompliance_log('refund', 'refund total is $rt', array('$rt'=>$refund_total));
+            eascompliance_log('refund', 'refund total is $rt, order total is $ot', array('$rt'=>$refund_total, '$ot'=>$order->get_total()));
+
+            if ( abs($refund_total) > $order->get_total()) {
+				$refund->add_meta_data('_easproj_refund_invalid', '5', true);
+				$refund->save();
+				return;
+            }
 
             $refund->save();
 
@@ -3327,6 +3333,14 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
         if ( '4' === $reason ) {
             wp_delete_post( $refund_id, true );
             $order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed. Please enter quantity greater then 0 for items to be returned and try again. ' ), array('$refund_id'=>$refund_id) ));
+            return;
+        }
+
+        // Delete refund when its total is larger than order total //.
+        if ( '5' === $reason ) {
+            wp_delete_post( $refund_id, true );
+
+			$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed. Refund total cannot be more than order total.' ), array('$refund_id'=>$refund_id) ));
             return;
         }
 
