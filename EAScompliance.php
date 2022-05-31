@@ -2872,6 +2872,11 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 			return;
 		}
 
+        // process only orders created with createpostsaleorder
+		if ( $order->get_meta('_easproj_order_created_with_createpostsaleorder') !== '1') {
+			return;
+		}
+
 		$auth_token         = eascompliance_get_oauth_token();
 		$confirmation_token = $order->get_meta( '_easproj_token' );
 		// JWT token is not present during STANDARD_CHECKOUT //.
