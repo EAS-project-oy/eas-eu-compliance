@@ -1797,7 +1797,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			$payload_j            = json_decode( $jwt_payload, true );
 
 			$order->add_meta_data('_easproj_token', $sales_order_body, true);
-			$order->add_meta_data('_easproj_order_json', json_encode( $payload_j, JSON_THROW_ON_ERROR2 ), true);
+			$order->add_meta_data('_easproj_order_json', json_encode( $order_json, JSON_THROW_ON_ERROR2 ), true);
 			$order->add_meta_data('easproj_payload', $payload_j, true);
 			$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
 			$payload_items = $payload_j['items'];
@@ -3003,10 +3003,10 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
         $return_breakdown = array();
 
-        foreach ($refund->items as $item) {
+        foreach ($refund->items as $refund_item) {
 
             // can only refund non-zero quantity
-			if ($item->get_quantity() === 0) {
+			if ($refund_item->get_quantity() === 0) {
 				continue;
 			}
 
@@ -3016,7 +3016,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 			$payload_item = null;
 			$request_json =  json_decode( $order->get_meta('_easproj_order_json'), true );
             foreach($order->get_items() as $k=>$order_item) {
-                if ($order_item['product_id'] === $item['product_id']) {
+                if ($order_item['product_id'] === $refund_item['product_id']) {
                     $item_id = $payload_j['items'][$px]['item_id'];
 					$payload_item = $request_json['order_breakdown'][$px];
                 }
@@ -3030,12 +3030,18 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
                 return;
 			}
 
-            $refund_item = array('id_provided_by_em'=>$item_id, 'quantity'=> -$item->get_quantity());
+            $return_breakdown_item = array('id_provided_by_em'=>$item_id, 'quantity'=> -$refund_item->get_quantity());
 
-            $return_breakdown[] = $refund_item;
+            $return_breakdown[] = $return_breakdown_item;
         }
 
-        eascompliance_log('refund','$return_breakdown '.print_r($return_breakdown, true)); //.
+        if ( empty($return_breakdown) ) {
+			$refund->add_meta_data('_easproj_refund_invalid', '4', true);
+			$refund->save();
+			return;
+        }
+
+        eascompliance_log('refund','refund breakdown is  '.print_r($return_breakdown, true)); //.
 
 		$options = array(
 			'http' => array(
@@ -3047,7 +3053,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 						'token' => $confirmation_token,
 						'return_breakdown'     => $return_breakdown,
 						'return_date'     => date_format($refund->get_date_created(), 'Y-m-d'),
-						'confirmed'     => true,
+						'confirmed'     => false,
 						JSON_THROW_ON_ERROR2,
 					)
 				),
@@ -3124,20 +3130,21 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             $refund->add_meta_data('_easproj_refund_payload', $refund_payload, true);
 
+            eascompliance_log('refund', 'refund payload is $p', array('$p'=>$refund_payload));
+
 			$refund_total = 0;
             $return_delivery_cost = 0;
+			$return_vat_on_delivery_charge = 0;
             $total_return_item_tax = 0;
             // modify refund taxes from $refund_payload  //.
 			$tax_rate_id0 = eascompliance_tax_rate_id();
-            foreach($refund->get_items() as $item) {
-
-                $refund_total += $item->get_total();
+            foreach($refund->get_items() as $refund_item) {
 
 				// get item_id or refund item from easproj_payload //.
 				$px = 0;
 				$item_id = '';
 				foreach($order->get_items() as $k=>$order_item) {
-					if ($order_item['product_id'] === $item['product_id']) {
+					if ($order_item['product_id'] === $refund_item['product_id']) {
 						$item_id = $payload_j['items'][$px]['item_id'];
 					}
 					$px += 1;
@@ -3152,16 +3159,21 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
                 if ( is_null( $return_item) ) { continue; }
 
-                $return_delivery_cost += $return_item['return_delivery_cost'];
+				$return_item_amount = $return_item['return_item_amount'];
+				$refund_total += -$return_item_amount;
 
-                $return_item_tax = $return_item['return_vat_value'] + $return_item['return_vat_on_delivery_charge'] + $return_item['return_vat_on_eas_fee'] + $return_item['return_eas_fee'];
+                $return_delivery_cost += $return_item['return_delivery_cost'];
+                $return_vat_on_delivery_charge += $return_item['return_vat_on_delivery_charge'];
+
+                $return_item_tax = $return_item['return_vat_value'] + $return_item['return_vat_on_eas_fee'] + $return_item['return_eas_fee'];
 				$refund_total += -$return_item_tax;
-				$item->set_taxes(
+				$refund_item->set_taxes(
 					array(
 						'total'    => array($tax_rate_id0 => -$return_item_tax),
 						'subtotal' => array($tax_rate_id0 => -$return_item_tax),
 					)
 				);
+                $refund_item->set_total(-$return_item_amount);
             }
 
 			// set return_delivery_cost for first found shipping //.
@@ -3170,8 +3182,8 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 				$shipping_item->set_taxes (
 					array(
-						'total'    => array($tax_rate_id0 => -0),
-						'subtotal' => array($tax_rate_id0 => -0),
+						'total'    => array($tax_rate_id0 => -$return_vat_on_delivery_charge),
+						'subtotal' => array($tax_rate_id0 => -$return_vat_on_delivery_charge),
 					));
 
                 $shipping_item->set_total(-$return_delivery_cost);
@@ -3186,10 +3198,12 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             // refund amount is positive value, rendered at admin order view //.
 			$refund->set_amount( -$refund_total);
 
+            eascompliance_log('refund', 'refund total is $rt', array('$rt'=>$refund_total));
+
             $refund->save();
 
-			$order->add_order_note( eascompliance_format( __TR( 'Refund return created. Refund id $refund_id ' ), array('refund_id'=>$refund->get_id()) ) );
-			eascompliance_log('info', eascompliance_format('Refund return created. Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) . print_r($refund_payload, true) );
+
+            eascompliance_log('refund', eascompliance_format('Refund return created (unconfirmed). Refund id $refund_id ', array('refund_id'=>$refund->get_id()) ) );
 		}
 		// Refund return failed. Insufficient remaining quantity //.
         elseif ( '400' === $refund_status ) {
@@ -3217,6 +3231,13 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
             "name": "JsonWebTokenError",
             "nodeID": "eas-auth-7f5764647c-9m59d-18"
             }
+            (
+            [message] => Invalid ID Token
+            [code] => 400
+            [type] => CONTACT_ADMIN
+            [retryable] =>
+            [nodeID] => eas-returns-89db77958-jxs2d-17
+            )
 
              */
 
@@ -3230,6 +3251,10 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             if ($error_message === 'invalid token') {
 				$error_message = ' Order not found in EAS dashboard';
+            }
+
+            if ($error_message === 'Invalid ID Token' || eascompliance_array_get($refund_error, 'code', -1) == 400) {
+				$error_message = __TR('Refund is cancelled. This order was created by different EM from that is configured in EAS EU compliance plugin.');
             }
 
 			if ( array_key_exists( 'code', $refund_error ) ) {
@@ -3271,11 +3296,11 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 
     $reason = $refund->get_meta('_easproj_refund_invalid');
 
+	eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id'=>$order_id, '$refund_id'=>$refund_id, '$reason'=>$reason));
 
 	// Delete refund that is invalid due to  insufficient remaining quantity //.
     if ( '1' === $reason ) {
 		wp_delete_post( $refund_id, true );
-		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ' ), array('refund_id'=>$refund_id) ));
     }
 
@@ -3283,15 +3308,19 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 	// Delete refund with refunded giftcards  //.
     if ( '2' === $reason ) {
 		wp_delete_post( $refund_id, true );
-		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due containing Giftcard. ' ), array('refund_id'=>$refund_id) ));
     }
 
 	// Delete refund with too many failed attempts  //.
     if ( '3' === $reason ) {
 		wp_delete_post( $refund_id, true );
-		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later ' ), array('refund_id'=>$refund_id) ));
+    }
+
+	// Delete refund with no items to refund //.
+    if ( '4' === $reason ) {
+		wp_delete_post( $refund_id, true );
+		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed. Please enter quantity greater then 0 for items to be returned and try again. ' ), array('$refund_id'=>$refund_id) ));
     }
 
 }
