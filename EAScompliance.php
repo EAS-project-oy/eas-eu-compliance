@@ -3269,24 +3269,31 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 
     $refund = wc_get_order ($refund_id);
 
+    $reason = $refund->get_meta('_easproj_refund_invalid');
+
+
 	// Delete refund that is invalid due to  insufficient remaining quantity //.
-    if ( '1' === $refund->get_meta('_easproj_refund_invalid') ) {
+    if ( '1' === $reason ) {
 		wp_delete_post( $refund_id, true );
+		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due to insufficient remaining quantity. ' ), array('refund_id'=>$refund_id) ));
     }
 
 
 	// Delete refund with refunded giftcards  //.
-    if ( '2' === $refund->get_meta('_easproj_refund_invalid') ) {
+    if ( '2' === $reason ) {
 		wp_delete_post( $refund_id, true );
+		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due containing Giftcard. ' ), array('refund_id'=>$refund_id) ));
     }
 
 	// Delete refund with too many failed attempts  //.
-    if ( '3' === $refund->get_meta('_easproj_refund_invalid') ) {
+    if ( '3' === $reason ) {
 		wp_delete_post( $refund_id, true );
+		eascompliance_log('refund', 'refund $refund_id deleted with reason $reason ', array('$refund_id'=>$refund_id, '$reason'=>$reason));
 		$order->add_order_note(  eascompliance_format(__TR( 'Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later ' ), array('refund_id'=>$refund_id) ));
     }
+
 }
 
 
