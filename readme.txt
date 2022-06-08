@@ -3,8 +3,11 @@ Contributors: eascompliance
 Tags: EU VAT comliance solution, VAT return management, EU VAT fiscal reporting, full landed cost calculation, Customs duties calculation, HS6 code AI assigning 
 Requires at least: 4.8.0
 Requires PHP: 5.6
-Tested up to: 6.3.1
-Stable tag: 1.3.0
+WC tested up to: 6.5.1
+Tested up to: 6.0
+Stable tag: 1.3.23
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 
 EAS solution automates the complicated EU VAT and customs compliance. With the full automation you can focus on the important - sales.
@@ -32,7 +35,7 @@ Monthly costs per country you sell - no more! Sell anywhere in EU at a simple, l
 2. Activate  EAS EU compliance plugin
 3. Go to WooCommerce → Settings → EAS EU compliance tab
 4. Input the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api. Sign up with EAS Project to obtain authorization key via the EAS self-registration system:  https://registration.easproject.com
-5. If you already registered, then obtain authorization keys in Merchant Dashboard https://dashboard.easproject.com.
+5. If you already registered, then obtain authorization keys in Merchant Dashboard https://dashboard.easproject.com. If no please register at https://register.easproject.com
 6. Set the language interface for the Plugin (EN for English is set by Default).
 7. Tick the box "Enable EAS EU compliance" and press "Save changes" to test connection with API and create necessary EAS system attributes.
 8. If wrong credentials provided Plugin won’t activate and an error message will be displayed.

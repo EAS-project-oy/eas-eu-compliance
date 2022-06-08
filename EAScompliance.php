@@ -12,6 +12,7 @@
  * Requires at least: 4.8.0
  * WC tested up to: 6.5.1
  * Requires PHP: 5.6
+ * License: GPL2
  *
  * @package eascompliance
  **/
