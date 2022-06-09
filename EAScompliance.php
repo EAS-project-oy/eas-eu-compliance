@@ -569,34 +569,30 @@ function eascompliance_woocommerce_review_order_before_payment() {
 
 
 // Debug Console //.
-if (eascompliance_is_active()) {
-	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
-	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
-};
-function eascompliance_debug() {
-	eascompliance_log('entry', 'action '.__FUNCTION__.'()');
-
-	try {
-		if (!eascompliance_log_level('eval')) {
-            return;
-        }
-
-		if (!wp_verify_nonce( strval(eascompliance_array_get($_POST, 'eascompliance_nonce_debug', '')), 'eascompliance_nonce_debug' )) {
-			throw new Exception('Security check');
-		}
-
-		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
-
-		set_error_handler('eascompliance_error_handler');
-		$jres = print_r(eval($debug_input), true);
-	} catch (Exception $ex) {
-		eascompliance_log('eval', $ex);
-		$jres = 'Error: ' . $ex->getMessage();
-	} finally {
-		restore_error_handler();
-		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-	}
-}
+//if (eascompliance_is_active()) {
+//	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
+//	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
+//}
+//function eascompliance_debug() {
+//	eascompliance_log('entry', 'action '.__FUNCTION__.'()');
+//
+//	try {
+//		if (!eascompliance_log_level('eval')) {
+//            return;
+//        }
+//
+//		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
+//
+//		set_error_handler('eascompliance_error_handler');
+//		$jres = print_r(eval($debug_input), true);
+//	} catch (Exception $ex) {
+//		eascompliance_log('eval', $ex);
+//		$jres = 'Error: ' . $ex->getMessage();
+//	} finally {
+//		restore_error_handler();
+//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+//	}
+//}
 
 
 
@@ -746,7 +742,12 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 	$jdebug['step'] = 'Fill json request with checkout data';
 
 	if ( ! wp_verify_nonce( strval( eascompliance_array_get( $_POST, 'eascompliance_nonce_calc', '' ) ), 'eascompliance_nonce_calc' ) ) {
-		throw new Exception( __TR( 'Security check' ) );
+		if (eascompliance_log_level('WP-74')) {
+			eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_POST is $POST', array('POST'=>$_POST));
+		}
+		else {
+			throw new Exception( __TR( 'Security check' ) );
+		}
 	};
 
     // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
@@ -1135,10 +1136,6 @@ function eascompliance_ajaxhandler() {
 
 		// save request json into session //.
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
-		eascompliance_log('calculate','$calc_jreq after saving into session '.print_r(WC()->session->get( 'EAS API REQUEST JSON' ), true));
-		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 1');
-		}
 
 		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
 
@@ -1287,10 +1284,6 @@ function eascompliance_ajaxhandler() {
 		$jres['debug'] = $jdebug;
 	}
 
-	// this line saves cart here, but does not save before EAScomplianceStandardCheckoutException thrown. Why?
-	if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-		eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 2');
-	}
 	wp_send_json( $jres );
 };
 
@@ -1312,16 +1305,17 @@ function eascompliance_redirect_confirm() {
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
-		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 3');
-		}
-
 		global $woocommerce;
 		$cart = WC()->cart;
 
 		$confirm_hash = json_decode( base64_decode( sanitize_mime_type( eascompliance_array_get( $_GET, 'confirm_hash', '' ) ) ), true, 512, JSON_THROW_ON_ERROR2 );
 		if ( ! wp_verify_nonce( $confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api' ) ) {
-			throw new Exception( __TR( 'Security check' ) );
+            if (eascompliance_log_level('WP-74')) {
+				eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_GET is $GET', array('GET'=>$_GET));
+            }
+            else {
+				throw new Exception( __TR( 'Security check' ) );
+            }
 		};
 
 		if ( ! array_key_exists( 'eas_checkout_token', $_GET ) ) {
@@ -1513,33 +1507,29 @@ function eascompliance_redirect_confirm() {
 		// throw new Exception('debug'); //.
 
 		// save data in first cart item  //.
-		$k = eascompliance_array_key_first2( $cart->get_cart() );
+		$k0 = eascompliance_array_key_first2( $cart->get_cart() );
 		// pass by reference is required here  //.
-		$item                                      = &$woocommerce->cart->cart_contents[ $k ];
-		$item['EASPROJ API CONFIRMATION TOKEN']    = $eas_checkout_token;
-		$item['EASPROJ API PAYLOAD']               = $payload_j;
-		$item['EASPROJ API JWT KEY']               = $jwt_key;
-		$item['EAScompliance HEAD']                = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
-		$item['EAScompliance TAXES AND DUTIES']    = $payload_j['taxes_and_duties'];
-		$item['EAScompliance NEEDS RECALCULATE']   = false;
+		$cart_item0                                      = &$woocommerce->cart->cart_contents[ $k0 ];
+		$cart_item0['EASPROJ API CONFIRMATION TOKEN']    = $eas_checkout_token;
+		$cart_item0['EASPROJ API PAYLOAD']               = $payload_j;
+		$cart_item0['EASPROJ API JWT KEY']               = $jwt_key;
+		$cart_item0['EAScompliance HEAD']                = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
+		$cart_item0['EAScompliance TAXES AND DUTIES']    = $payload_j['taxes_and_duties'];
+		$cart_item0['EAScompliance NEEDS RECALCULATE']   = false;
 
-		$item['EAScompliance DELIVERY CHARGE']     = $payload_j['delivery_charge_vat_excl'];
-		$item['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
-		$item['EAScompliance MERCHANDISE COST']    = $payload_j['merchandise_cost'];
-		$item['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
+		$cart_item0['EAScompliance DELIVERY CHARGE']     = $payload_j['delivery_charge_vat_excl'];
+		$cart_item0['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
+		$cart_item0['EAScompliance MERCHANDISE COST']    = $payload_j['merchandise_cost'];
+		$cart_item0['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
 
-		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 4');
-		}
+		// WP-42 save request json backup copy into cart first item
+		$cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get('EAS API REQUEST JSON');
 
 		// DEBUG SAMPLE: return WC()->cart->get_cart(); //.
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it //.
 
 		eascompliance_log('info', 'redirect_confirm successful' );
 
-		if ( empty(WC()->session->get( 'EAS API REQUEST JSON' )) ) {
-			eascompliance_log('WP-42', 'EAS API REQUEST JSON empty 5');
-		}
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		wc_add_notice( $ex->getMessage(), 'error' );
@@ -2565,11 +2555,11 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
-                
-                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we ignore setting delivery_cost
+
+                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
                 if ( empty($calc_jreq_saved) ) {
-					eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages');
-					continue;
+					eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
+					$calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
                 $delivery_cost = round( (float) $cart_item0['EAScompliance DELIVERY CHARGE'], 2 );
 				$calc_jreq_saved['delivery_cost'] = $delivery_cost;
@@ -2605,7 +2595,12 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		set_error_handler( 'eascompliance_error_handler' );
 		
 		if ( ! wp_verify_nonce( strval( eascompliance_array_get( $_POST, 'eascompliance_nonce_calc', '' ) ), 'eascompliance_nonce_calc' ) ) {
-			throw new Exception( 'Security check' );
+			if (eascompliance_log_level('WP-74')) {
+				eascompliance_log('WP-74', 'Nonce security check failed for eascompliance_nonce_calc, _POST is $POST', array('POST'=>$_POST));
+			}
+			else {
+				throw new Exception( __TR( 'Security check' ) );
+			}
 		};
 
 		// only work for European countries //.
@@ -2631,8 +2626,6 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		// compare new json with saved version. We need to offer customs duties recalculation if json changed //.
 		$calc_jreq_saved = WC()->session->get( 'EAS API REQUEST JSON' );
 
-        //WP-42
-		eascompliance_log('WP-42', 'EAS API REQUEST JSON $j', array('$j'=>$calc_jreq_saved));
         if (empty($calc_jreq_saved)) {
             throw new Exception('WP-42 $calc_jreq_saved cannot be empty');
         }
@@ -2720,6 +2713,7 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 
 	// notify EAS API on Order number //.
 	$order_id = $order->get_id();
+	eascompliance_log('place_order', 'order $order_id created ', array('$order_id'=>$order_id));
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
@@ -3379,7 +3373,7 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
         $refund_body = file_get_contents( $confirm_refund_url, false, $context );
         $refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
 
-        if ( '200' === $refund_status) {
+        if ( '200' !== $refund_status) {
             throw new Exception(eascompliance_format('EAS refund confirm failed with status $status body $body', array('$status'=>$refund_status, '$body'=>$refund_body)));
         }
 
