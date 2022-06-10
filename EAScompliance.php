@@ -163,6 +163,51 @@ function eascompliance_woocommerce_cart_tax_totals( $tax_totals, $order ) {
 
 
 if ( eascompliance_is_active() ) {
+	add_filter( 'woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1 );
+}
+
+/**
+ * Filter for woocommerce_available_payment_gateways. Hide payment methods until /calculate has been set or not required
+ *
+ * @param array  $available_gateways available_gateways.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_available_payment_gateways( $available_gateways ) {
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+        $show_payment_methods = false;
+
+		// standard checkout or /calculate has been set
+		if (eascompliance_is_standard_checkout() || eascompliance_is_set() ) {
+			$show_payment_methods = true;
+        }
+
+        // non-EU countries
+		$delivery_country          = WC()->customer->get_shipping_country();
+		if ( ! array_key_exists( $delivery_country, array_flip( EUROPEAN_COUNTRIES ) ) ) {
+			$show_payment_methods = true;
+		}
+
+        if ($show_payment_methods) {
+            return $available_gateways;
+        }
+        else {
+			return array();
+        }
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+        restore_error_handler();
+	}
+}
+
+
+if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2 );
 }
 /**
