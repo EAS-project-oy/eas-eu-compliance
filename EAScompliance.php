@@ -185,11 +185,16 @@ function eascompliance_woocommerce_available_payment_gateways( $available_gatewa
 			$show_payment_methods = true;
         }
 
-        // non-EU countries
-		$delivery_country          = WC()->customer->get_shipping_country();
-		if ( ! array_key_exists( $delivery_country, array_flip( EUROPEAN_COUNTRIES ) ) ) {
-			$show_payment_methods = true;
-		}
+        if (is_null(WC()->customer)) {
+            $show_payment_methods = true;
+        } else {
+			// non-EU countries
+			$delivery_country          = WC()->customer->get_shipping_country();
+			if ( ! array_key_exists( $delivery_country, array_flip( EUROPEAN_COUNTRIES ) ) ) {
+				$show_payment_methods = true;
+			}
+        }
+
 
         if ($show_payment_methods) {
             return $available_gateways;
