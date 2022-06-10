@@ -1660,6 +1660,9 @@ function eascompliance_is_standard_checkout() {
 		set_error_handler( 'eascompliance_error_handler' );
 
 		$cart = WC()->cart;
+        if (is_null($cart)) {
+            return false;
+        }
 		$k    = eascompliance_array_key_first2( $cart->get_cart() );
 		if ( null === $k ) {
 			return false;
