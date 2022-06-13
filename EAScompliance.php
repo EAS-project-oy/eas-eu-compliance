@@ -3268,6 +3268,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 			// set return_delivery_cost for first found shipping //.
             foreach ($refund->get_items('shipping') as $shipping_item) {
                 $refund_total += -$return_delivery_cost;
+                $refund_total += -$return_vat_on_delivery_charge;
 
 				$shipping_item->set_taxes (
 					array(
