@@ -212,6 +212,37 @@ function eascompliance_woocommerce_available_payment_gateways( $available_gatewa
 }
 
 
+
+if ( eascompliance_is_active() ) {
+	add_filter( 'woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2 );
+}
+
+/**
+ * Filter for woocommerce_available_payment_gateways. Hide payment methods until /calculate has been set or not required
+ *
+ * @param array  $available_gateways available_gateways.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_no_available_payment_methods_message( $message ) {
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+        return __TR('Please calculate taxes and duties to proceed with order payment');
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+        restore_error_handler();
+	}
+}
+
+
+
+
+
 if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2 );
 }
