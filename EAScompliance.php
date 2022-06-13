@@ -218,9 +218,9 @@ if ( eascompliance_is_active() ) {
 }
 
 /**
- * Filter for woocommerce_available_payment_gateways. Hide payment methods until /calculate has been set or not required
+ * Filter for woocommerce_no_available_payment_methods_message. Change message when available payment methods are hidden
  *
- * @param array  $available_gateways available_gateways.
+ * @param string $message message.
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_no_available_payment_methods_message( $message ) {
