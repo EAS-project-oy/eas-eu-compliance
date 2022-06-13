@@ -1736,12 +1736,19 @@ function eascompliance_needs_recalculate() {
 		set_error_handler( 'eascompliance_error_handler' );
 
 		$cart = WC()->cart;
-		$k    = eascompliance_array_key_first2( $cart->get_cart() );
-		$item = $cart->get_cart_contents()[ $k ];
-		if ( ! array_key_exists( 'EAScompliance NEEDS RECALCULATE', $item ) ) {
+        if (is_null($cart)) {
+            return false;
+        }
+		$k0    = eascompliance_array_key_first2( $cart->get_cart() );
+
+        if (is_null($k0)) {
+            return false;
+        }
+		$cart_item0 = $cart->get_cart_contents()[ $k0 ];
+		if ( ! array_key_exists( 'EAScompliance NEEDS RECALCULATE', $cart_item0 ) ) {
 			return false;
 		}
-		return ( true === $item['EAScompliance NEEDS RECALCULATE'] );
+		return ( true === $cart_item0['EAScompliance NEEDS RECALCULATE'] );
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
