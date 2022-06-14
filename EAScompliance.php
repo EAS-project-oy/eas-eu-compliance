@@ -584,7 +584,22 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data) {
 
 			eascompliance_unset();
         }
+        
+        //when checkout was not initiated by user, is_user_checkout will be 'false'
+		$is_user_checkout = true;
+		foreach (explode('&', $_POST['post_data']) as $chunk) {
+			$param = explode("=", $chunk);
+			if ( $param[0] === 'is_user_checkout' && $param[1] === 'false') {
+				eascompliance_log('calculate', '$is_user_checkout is false');
+				$is_user_checkout = false;
+			}
+		}
 
+
+		if ($is_user_checkout && eascompliance_is_set() ) {
+            eascompliance_unset();
+			eascompliance_log('calculate', 'calculation reset due checkout data changed');
+        }
 
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex );

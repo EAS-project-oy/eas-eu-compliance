@@ -126,6 +126,9 @@ jQuery(document).ready(function($) {
     })
 
     // handle return from confirmation page
+
+    //checkout data change happens when page loads, avoid calculate reset in such case
+    $( 'form.checkout' ).append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
     $(document.body).one("updated_checkout", async function () {
         if ($('.eascompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
@@ -148,6 +151,7 @@ jQuery(document).ready(function($) {
                         await new Promise ( function (resolve) {
                             $(document.body).one("updated_checkout", function () {resolve()});
                         })
+                        $( 'form.checkout #is_user_checkout' ).remove()
                     }
                 } else {
                     $('#'+k).val(v);
