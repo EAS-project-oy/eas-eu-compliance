@@ -1741,6 +1741,38 @@ function eascompliance_is_standard_checkout() {
 	}
 }
 
+
+/**
+ * Check if it is VAT deductible outside EU
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_is_deduct_vat_outside_eu() {
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		$deduct_vat_outside_eu = get_option('easproj_deduct_vat_outside_eu', '');
+        if ($deduct_vat_outside_eu === '') {
+            return false;
+        }
+
+        $store_country = explode( ':', get_option( 'woocommerce_default_country') )[0];
+        $shipping_country = WC()->customer->get_shipping_country();
+
+        if ($shipping_country === $store_country || in_array( $shipping_country,EUROPEAN_COUNTRIES )) {
+            return false;
+		}
+
+		return true;
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
 /**
  * CHeck if EAScompliance needs to  recalculate
  *
@@ -2244,6 +2276,21 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
+        if (eascompliance_is_deduct_vat_outside_eu()) {
+			$deduct_vat_outside_eu = (float) get_option('easproj_deduct_vat_outside_eu');
+
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+			$total_tax = 0;
+			$cart_items = array_values( WC()->cart->get_cart_contents() );
+			foreach ( $cart_items as $cart_item ) {
+				$item_tax = round($cart_item['line_total'] - $cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
+				$total_tax += $item_tax;
+			}
+			$total_taxes[ $tax_rate_id0 ] = $total_tax;
+			eascompliance_log('cart_total', 'deduct vat outside EU, total tax is $t', array('$t'=>$total_tax));
+			return $total_taxes;
+        }
+
 		if ( ! eascompliance_is_set() ) {
 			return $total_taxes;
 		}
@@ -2330,6 +2377,17 @@ function eascompliance_woocommerce_cart_subtotal( $cart_subtotal, $compound, $ca
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
+        if (eascompliance_is_deduct_vat_outside_eu()) {
+			$deduct_vat_outside_eu = (float) get_option('easproj_deduct_vat_outside_eu');
+            $subtotal = 0;
+            foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+                $item_total = round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
+                $subtotal += $item_total;
+            }
+            eascompliance_log('cart_total', 'deduct vat outside EU, cart subtotal is $t', array('$t'=>$subtotal));
+            return wc_price( $subtotal );;
+        }
+
 		if ( ! eascompliance_is_set() ) {
 			return $cart_subtotal;
 		}
@@ -2367,7 +2425,13 @@ function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
 
 		$total = eascompliance_cart_total();
 
-		return '<strong>' . wc_price( wc_format_decimal( $total, wc_get_price_decimals() ) ) . '</strong> ';
+        $html = '<strong>' . wc_price( wc_format_decimal( $total, wc_get_price_decimals() ) ) . '</strong> ';
+
+		if (eascompliance_is_deduct_vat_outside_eu()) {
+			$html .= __TR('Prices are VAT exclusive, you are obligated to pay VAT on delivery');
+		}
+        return $html;
+
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
