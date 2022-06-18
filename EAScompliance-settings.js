@@ -76,4 +76,23 @@ jQuery(document).ready(function($) {
         tokenSeparators: [',', ' ']
     })
 
+
+    // checkbox for deduct_vat_outside_eu option
+    $('#easproj_deduct_vat_outside_eu').parent().prepend($('<input type=checkbox id="easproj_deduct_vat_outside_eu_checkbox">'))
+    $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
+    $('#easproj_deduct_vat_outside_eu').prop('readonly', $('#easproj_deduct_vat_outside_eu').val() === '')
+
+    $('#easproj_deduct_vat_outside_eu').on( 'input', function() {
+        $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
+    })
+
+    $('#easproj_deduct_vat_outside_eu_checkbox').on( 'change', function() {
+        if ( $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked') ) {
+            $('#easproj_deduct_vat_outside_eu').prop('readonly', false)
+        } else {
+            $('#easproj_deduct_vat_outside_eu').prop('readonly', true)
+            $('#easproj_deduct_vat_outside_eu').val('')
+        }
+    })
+
 })

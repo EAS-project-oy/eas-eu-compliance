@@ -3716,6 +3716,13 @@ function eascompliance_settings() {
 			'id'      => 'easproj_process_imported_orders',
 			'default' => 'yes',
 		),
+		'deduct_vat_outside_eu'                   => array(
+			'name'    => __TR( 'Deduct VAT for deliveries outside EU' ),
+			'type'    => 'text',
+			'desc'    => 'Deduct VAT amount from prices on checkout for delivery countries outside EU except store’s registration Country.',
+			'id'      => 'easproj_deduct_vat_outside_eu',
+			'default' => '',
+		),
 		'EAS_API_URL'             => array(
 			'name'    => __TR( 'EAS API Base URL' ),
 			'type'    => 'text',
