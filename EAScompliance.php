@@ -2144,9 +2144,9 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
-		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data //.
 		$tax_rate_id0 = eascompliance_tax_rate_id();
 
+        // no taxes for deducted VAT outside EU
 		if ($tax_rate_id === $tax_rate_id0 && eascompliance_is_deduct_vat_outside_eu()) {
 			$deduct_vat_outside_eu = (float) get_option('easproj_deduct_vat_outside_eu');
             $ix = 0;
@@ -2154,7 +2154,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			foreach ( $order->get_items() as $k => $order_item ) {
                 $cart_item = $cart_items[$ix];
 
-				$item_tax = round($cart_item['line_total'] - $cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
+				$item_tax = 0;
 				$order_item->set_taxes(
 					array(
 						'total'    => array( $tax_rate_id0 => $item_tax ),
@@ -2174,7 +2174,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
             return $order_item_tax;
 		}
 
-
+		// add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data //.
 		if ( $tax_rate_id === $tax_rate_id0 && eascompliance_is_set() ) {
 			$cart_items = array_values( WC()->cart->get_cart_contents() );
 			$ix         = 0;
@@ -2246,6 +2246,18 @@ function eascompliance_cart_total() {
 	eascompliance_log('entry', 'entering '.__FUNCTION__.'()');
 
 	$total = WC()->cart->get_total( 'edit' );
+
+	if (eascompliance_is_deduct_vat_outside_eu()) {
+		$deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
+
+		$cart_total = 0;
+		$cart_items = array_values(WC()->cart->get_cart_contents());
+		foreach ($cart_items as $cart_item) {
+			$cart_total += round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
+		}
+		eascompliance_log('cart_total', 'deduct vat outside EU, cart total is $t', array('$t' => $cart_total));
+        return $cart_total;
+	}
 	if ( eascompliance_is_set() ) {
 		$payload_total_order_amount = -1;
 
@@ -2305,17 +2317,7 @@ function eascompliance_woocommerce_cart_get_taxes( $total_taxes ) {
 		set_error_handler( 'eascompliance_error_handler' );
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
-			$deduct_vat_outside_eu = (float) get_option('easproj_deduct_vat_outside_eu');
-
-			$tax_rate_id0 = eascompliance_tax_rate_id();
-			$total_tax = 0;
-			$cart_items = array_values( WC()->cart->get_cart_contents() );
-			foreach ( $cart_items as $cart_item ) {
-				$item_tax = round($cart_item['line_total'] - $cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
-				$total_tax += $item_tax;
-			}
-			$total_taxes[ $tax_rate_id0 ] = $total_tax;
-			eascompliance_log('cart_total', 'deduct vat outside EU, total tax is $t', array('$t'=>$total_tax));
+			eascompliance_log('cart_total', 'no tax changes for deduct vat outside EU, total cart tax is $t', array('$t'=>$total_taxes));
 			return $total_taxes;
         }
 
@@ -2463,7 +2465,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
         $html = '<strong>' . wc_price( wc_format_decimal( $total, wc_get_price_decimals() ) ) . '</strong> ';
 
 		if (eascompliance_is_deduct_vat_outside_eu()) {
-			$html .= __TR('Prices are VAT exclusive, you are obligated to pay VAT on delivery');
+			$html .= __TR('Prices are VAT exclusive, you might be obligated to pay VAT on delivery');
 		}
         return $html;
 
