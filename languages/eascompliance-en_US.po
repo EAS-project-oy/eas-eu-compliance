@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:125
@@ -291,8 +291,8 @@ msgstr ""
 #: EAScompliance.php:3715
 msgid "Use the secret you received from EAS Project"
 msgstr ""
-"Use the client secret you received from EAS Project Dashboard <a "
-"href=\"https://dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
+"Use the client secret you received from EAS Project Dashboard <a href="
+"\"https://dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
 
 #: EAScompliance.php:3721
 msgid "Language"
@@ -332,9 +332,7 @@ msgstr ""
 
 #: EAScompliance.php:3754
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
-msgstr ""
-"Location warehouse country attribute holder. Attribute will be created if "
-"does not exist."
+msgstr "HSCode attribute holder. Attribute will be created if does not exist."
 
 #: EAScompliance.php:3762
 msgid ""
