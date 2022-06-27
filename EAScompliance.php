@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.3.30
+ * Version: 1.3.31
  * Tested up to 5.9.3
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -181,7 +181,7 @@ function eascompliance_woocommerce_available_payment_gateways( $available_gatewa
         $show_payment_methods = false;
 
 		// standard checkout or /calculate has been set
-		if (eascompliance_is_standard_checkout() || eascompliance_is_set() ) {
+		if (eascompliance_is_standard_checkout() || (eascompliance_is_set() && !eascompliance_needs_recalculate()) ) {
 			$show_payment_methods = true;
         }
 
@@ -584,21 +584,19 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data) {
 
 			eascompliance_unset();
         }
-        
+
+		// В идеале мы хотим сбрасывать расчёты каждый раз, когда обновляется чекаут. Но есть момент, когда чекаут обновляется не пользователем, а кодом после Calculate или после возврата на страницу чекаута. В этом случае сбрасывать расчёты нельзя. В яваскрипте Calculate надо отметить момент, когда updated_checkout не должен приводить к сбросу расчётов. Это делается передачей is_user_checkout==false в POST-запросе на updated_checkout.
         //when checkout was not initiated by user, is_user_checkout will be 'false'
 		$is_user_checkout = true;
 		foreach (explode('&', $_POST['post_data']) as $chunk) {
 			$param = explode("=", $chunk);
 			if ( $param[0] === 'is_user_checkout' && $param[1] === 'false') {
-				eascompliance_log('calculate', '$is_user_checkout is false');
 				$is_user_checkout = false;
 			}
 		}
 
-
 		if ($is_user_checkout && eascompliance_is_set() ) {
             eascompliance_unset();
-			eascompliance_log('calculate', 'calculation reset due checkout data changed');
         }
 
 	} catch ( Exception $ex ) {
@@ -1695,8 +1693,8 @@ function eascompliance_unset() {
 			$item0['EAScompliance NEEDS RECALCULATE'] = true;
 			$item0['EAScompliance SET'] = false;
 			$woocommerce->cart->set_session();
+			eascompliance_log('calculate', 'calculation unset');
 		}
-
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex );
 		throw $ex;
@@ -1795,7 +1793,8 @@ function eascompliance_needs_recalculate() {
 		if ( ! array_key_exists( 'EAScompliance NEEDS RECALCULATE', $cart_item0 ) ) {
 			return false;
 		}
-		return ( true === $cart_item0['EAScompliance NEEDS RECALCULATE'] );
+        $needs_recalculate  = (true === $cart_item0['EAScompliance NEEDS RECALCULATE']);
+		return $needs_recalculate;
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
@@ -2387,7 +2386,23 @@ function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 			return $price_html;
 		}
 
-		return wc_price( $cart_item['EAScompliance item price'] );
+        $item_total = $cart_item['EAScompliance item price'];
+
+		// WCML plugin fix: convert item_total in client currency //.
+		if ( function_exists('wcml_is_multi_currency_on') ) {
+			if ( wcml_is_multi_currency_on() ) {
+				global $woocommerce_wpml;
+				if ( ! is_null($woocommerce_wpml) ) {
+					$currency = $woocommerce_wpml->multi_currency->get_client_currency();
+//					eascompliance_log('debug', 'client currency $cc posted currency $pc client curency $clc', array('$cc'=>$currency, '$pc'=>eascompliance_array_get($_POST, 'currency'), '$clc'=>1));
+                    $item_total = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $item_total, $currency);
+                    //$item_total = $woocommerce_wpml->multi_currency->prices->convert_price_amount_by_currencies( $item_total);
+				}
+			}
+
+		}
+
+		return wc_price( $item_total );
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;

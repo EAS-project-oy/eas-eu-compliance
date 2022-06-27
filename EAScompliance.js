@@ -129,6 +129,10 @@ jQuery(document).ready(function($) {
 
     //checkout data change happens when page loads, avoid calculate reset in such case
     $( 'form.checkout' ).append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+    $('form.checkout').on('focusin', function() {
+        $( 'form.checkout #is_user_checkout' ).remove()
+    })
+
     $(document.body).one("updated_checkout", async function () {
         if ($('.eascompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
@@ -151,7 +155,6 @@ jQuery(document).ready(function($) {
                         await new Promise ( function (resolve) {
                             $(document.body).one("updated_checkout", function () {resolve()});
                         })
-                        $( 'form.checkout #is_user_checkout' ).remove()
                     }
                 } else {
                     $('#'+k).val(v);
@@ -185,6 +188,7 @@ jQuery(document).ready(function($) {
             (
                 $('.eascompliance_status').text() == 'present'
                 && needs_recalculate === false
+                && $('.wc_payment_method').length > 0 // WP-75 Plugin fix 'WooCommerce Cart Abandonment Recovery' may restore cart from previous version which may lead to needs_recalculate to be false incorrectly. To overcome it, we rely on absence of payment methods on page
             )
             ||
             (
