@@ -1,5 +1,11 @@
 *** EAS EU compliance plugin Changelog ***
 
+2022-06-27 - version 1.3.31
+* New method of checkout handling implemented
+* WPML supporting improved
+* Deduction of VAT from inclusive prices for the clients from non supported coutries implemented
+* Refund amount calculation improved
+
 2022-05-09 - version 1.3.10
 * Multicurrency support enhanced
 * Multilanguage support enhanced
