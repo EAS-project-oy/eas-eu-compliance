@@ -896,7 +896,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		$checkout['shipping_phone']      = eascompliance_array_get($checkout, 'billing_phone', '');
 	}
 
-	$delivery_state_province        = eascompliance_array_get( $checkout, 'shipping_state', '' ) === '' ? '' : '' . WC()->countries->states[ $checkout['shipping_country'] ][ $checkout['shipping_state'] ];
+	$delivery_state_province        = eascompliance_array_get( $checkout, 'shipping_state', '' ) === '' ? '' : '' . eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $checkout['shipping_country'], array() ), $checkout['shipping_state'], $checkout['shipping_state']);
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method']   = $delivery_method;
     $delivery_cost = round( (float) ( $cart->get_shipping_total() ), 2 );
