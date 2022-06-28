@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:125
@@ -59,7 +59,7 @@ msgstr "Odottaa vero ja tullilaskelmaa"
 
 #: EAScompliance.php:400
 msgid "confirmation"
-msgstr "Vahvistus"
+msgstr "vahvistus"
 
 #: EAScompliance.php:401
 msgid "Sorry, didn't work, please try again"
@@ -85,7 +85,7 @@ msgstr "Klikkaa jatkaaksesi tilausta"
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
-msgstr "EU ALV laskentapalvelu toistaiseksi poissa käytöstä"
+msgstr "EU ALV laskentapalvelu toistaiseksi poissa käytöstä."
 
 #: EAScompliance.php:742
 msgid ""
@@ -147,7 +147,7 @@ msgstr "Tilausnumero $order_id onnistui"
 
 #: EAScompliance.php:2851
 msgid "Notify Order number $order_id failed: "
-msgstr "Tilanusnumero $order_id epäonnistui:"
+msgstr "Tilanusnumero $order_id epäonnistui: "
 
 #: EAScompliance.php:2927
 msgid ""
@@ -159,7 +159,7 @@ msgstr ""
 
 #: EAScompliance.php:2944
 msgid "Order status change notification failed: "
-msgstr "Tilauksen muutosilmoitus epäonnistui:"
+msgstr "Tilauksen muutosilmoitus epäonnistui: "
 
 #: EAScompliance.php:3015
 msgid "Order $order_id payment notified to EAS"
@@ -179,7 +179,7 @@ msgstr ""
 
 #: EAScompliance.php:3360
 msgid "Refund create failed: "
-msgstr "Palautus epäonnistui"
+msgstr "Palautus epäonnistui: "
 
 #: EAScompliance.php:3396
 msgid ""
@@ -187,7 +187,7 @@ msgid ""
 "quantity. "
 msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin riittämättömän tuotemäärän "
-"vuoksi"
+"vuoksi. "
 
 #: EAScompliance.php:3403
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
@@ -201,39 +201,31 @@ msgid ""
 "temporary unavailable. Please try to create Refund later "
 msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
-"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen"
+"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
 
 #: EAScompliance.php:3417
-#, fuzzy
-#| msgid ""
-#| "Refund $refund_id cancelled and removed due EAS return management service "
-#| "temporary unavailable. Please try to create Refund later "
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
-"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen"
+"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
 
 #: EAScompliance.php:3425
-#, fuzzy
-#| msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
 "Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
-"palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen. "
+"palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen."
 
 #: EAScompliance.php:3467
 msgid "Refund confirmed to EAS"
 msgstr ""
 
 #: EAScompliance.php:3472
-#, fuzzy
-#| msgid "Refund create failed: "
 msgid "Refund confirm failed: "
-msgstr "Palautus epäonnistui"
+msgstr "Palautus epäonnistui "
 
 #: EAScompliance.php:3495
 msgid "Log EAS order data"
@@ -289,7 +281,7 @@ msgstr "EAS client ID"
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
-"easpoject.com\">https://dashboard.easpoject.com</a>"
+"easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:3713
 msgid "EAS client secret"
@@ -299,7 +291,7 @@ msgstr "EAS client secret"
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
-"easpoject.com\">https://dashboard.easpoject.com/</a>"
+"easproject.com\">https://dashboard.easproject.com/</a>"
 
 #: EAScompliance.php:3721
 msgid "Language"
@@ -319,7 +311,7 @@ msgstr "Kaupan vakioasetus"
 
 #: EAScompliance.php:3728
 msgid "English"
-msgstr "Englanti"
+msgstr "English"
 
 #: EAScompliance.php:3729
 msgid "Finnish"
@@ -345,7 +337,7 @@ msgstr "HS-koodi tunniste. Atribuutti luodaan jos sitä ei ole."
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
-msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole"
+msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:3768
 msgid "Reduced VAT for TBE"
@@ -357,7 +349,7 @@ msgid ""
 "does not exist."
 msgstr ""
 "Alennettu verokanta elektroniselle tuotteelle tunniste. Atribuutti luodaan "
-"jos sitä ei ole"
+"jos sitä ei ole."
 
 #: EAScompliance.php:3776
 msgid "Act as Disclosed Agent"
@@ -367,7 +359,7 @@ msgstr "Toimi vapaana agenttina (Disclosed Agent)"
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
-msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole"
+msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:3784
 msgid "Seller registration country"
@@ -377,7 +369,7 @@ msgstr "Maa johon myyjä on rekisteröitynyt"
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
-msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole"
+msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:3792
 msgid "Originating Country"
@@ -387,7 +379,7 @@ msgstr "Tuotteen alkuperämaa"
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
-msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole"
+msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:3800
 msgid "Giftcard product types"

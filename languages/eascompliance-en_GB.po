@@ -211,14 +211,12 @@ msgstr ""
 "service  being temporary unavailable. Please try to create Refund later "
 
 #: EAScompliance.php:3425
-#, fuzzy
-#| msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
 "Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund. "
+"remove gift card form the refund."
 
 #: EAScompliance.php:3467
 msgid "Refund confirmed to EAS"
@@ -282,7 +280,7 @@ msgstr ""
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Use the client ID you received from EAS Project Dashboard <a href=\"https://"
-"dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
+"dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:3713
 msgid "EAS client secret"
@@ -292,7 +290,7 @@ msgstr ""
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Use the client secret you received from EAS Project Dashboard <a href="
-"\"https://dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:3721
 msgid "Language"

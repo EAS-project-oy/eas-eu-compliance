@@ -143,7 +143,7 @@ msgstr "Kundenauftrag erhalten, Bestellung $order_id wird aktualisiert"
 msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
-msgstr "ZOLLGEBÜHREN FEHLEN."
+msgstr "ZOLLGEBÜHREN FEHLEN. Please reload page. <a href=\"./\">reload</a>"
 
 #: EAScompliance.php:2765
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
@@ -155,7 +155,7 @@ msgstr "Benachrichtigung Bestellnummer $order_id erfolgreich"
 
 #: EAScompliance.php:2851
 msgid "Notify Order number $order_id failed: "
-msgstr "Benachrichtigung Bestellnummer $order_id fehlgeshlagen:"
+msgstr "Benachrichtigung Bestellnummer $order_id fehlgeshlagen: "
 
 #: EAScompliance.php:2927
 msgid ""
@@ -167,11 +167,11 @@ msgstr ""
 
 #: EAScompliance.php:2944
 msgid "Order status change notification failed: "
-msgstr "Benachrichtigung über Bestellstatusänderung fehlgeschlagen:"
+msgstr "Benachrichtigung über Bestellstatusänderung fehlgeschlagen: "
 
 #: EAScompliance.php:3015
 msgid "Order $order_id payment notified to EAS"
-msgstr "Bezahlung der Bestellung $order_id an EAS gemeldet "
+msgstr "Bezahlung der Bestellung $order_id an EAS gemeldet"
 
 #: EAScompliance.php:3025
 msgid ""
@@ -189,7 +189,7 @@ msgstr ""
 
 #: EAScompliance.php:3360
 msgid "Refund create failed: "
-msgstr "Erstellung der Rückerstattung fehlgeschlagen:"
+msgstr "Erstellung der Rückerstattung fehlgeschlagen: "
 
 #: EAScompliance.php:3396
 msgid ""
@@ -197,13 +197,13 @@ msgid ""
 "quantity. "
 msgstr ""
 "Die Rückerstattung $refund_id wurde storniert und wegen unzureichender "
-"Restmenge gelöscht."
+"Restmenge gelöscht. "
 
 #: EAScompliance.php:3403
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
 "Die Rückerstattung $refund_id ist storniert und wegen der beinhalteten "
-"Geschenkkarte entfernt."
+"Geschenkkarte entfernt. "
 
 #: EAScompliance.php:3410
 msgid ""
@@ -212,7 +212,7 @@ msgid ""
 msgstr ""
 "Die Rückerstattung $refund_id wurde storniert und entfernt, da der EAS-"
 "Rückgabeverwaltungsdienst vorübergehend nicht verfügbar ist. Versuchen Sie "
-"bitte später, eine Rückerstattung zu erstellen"
+"bitte später, eine Rückerstattung zu erstellen "
 
 #: EAScompliance.php:3417
 msgid ""
@@ -232,7 +232,7 @@ msgstr "Rückerstattung an EAS bestätigt"
 
 #: EAScompliance.php:3472
 msgid "Refund confirm failed: "
-msgstr "Erstellung der Rückerstattung fehlgeschlagen:"
+msgstr "Erstellung der Rückerstattung fehlgeschlagen: "
 
 #: EAScompliance.php:3495
 msgid "Log EAS order data"
@@ -284,7 +284,10 @@ msgstr "EAS-Kunden-ID"
 
 #: EAScompliance.php:3707
 msgid "Use the client ID you received from EAS Project"
-msgstr "Verwenden Sie die Kunden-ID, die Sie von EAS Project erhalten haben"
+msgstr ""
+"Verwenden Sie die Kunden-ID, die Sie von EAS Project Dashboard <a href=\\"
+"\"https://dashboard.easproject.com\\\">https://dashboard.easproject.com</a> "
+"erhalten haben"
 
 #: EAScompliance.php:3713
 msgid "EAS client secret"
@@ -292,7 +295,10 @@ msgstr "EAS-Kunden-Geheimnis"
 
 #: EAScompliance.php:3715
 msgid "Use the secret you received from EAS Project"
-msgstr "Verwenden Sie das Geheimnis, das Sie von EAS Project erhalten haben"
+msgstr ""
+"Verwenden Sie das Geheimnis, das Sie von  EAS Project Dashboard <a href=\\"
+"\"https://dashboard.easproject.com\\\">https://dashboard.easproject.com</a> "
+"erhalten haben"
 
 #: EAScompliance.php:3721
 msgid "Language"
@@ -397,7 +403,7 @@ msgstr "Geschenkkarten Produktarten"
 
 #: EAScompliance.php:3803
 msgid "Product type(s) used for Gift cards management"
-msgstr "Für die Verwaltung von Geschenkkarten verwendete(r) Produkttyp(en)."
+msgstr "Für die Verwaltung von Geschenkkarten verwendete(r) Produkttyp(en)"
 
 #: EAScompliance.php:3841
 msgid ""

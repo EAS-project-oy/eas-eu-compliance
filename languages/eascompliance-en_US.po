@@ -282,7 +282,7 @@ msgstr ""
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Use the client ID you received from EAS Project Dashboard <a href=\"https://"
-"dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
+"dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:3713
 msgid "EAS client secret"
@@ -292,7 +292,7 @@ msgstr ""
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Use the client secret you received from EAS Project Dashboard <a href="
-"\"https://dashboard.easpoject.com\">https://dashboard.easpoject.com</a>"
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:3721
 msgid "Language"
