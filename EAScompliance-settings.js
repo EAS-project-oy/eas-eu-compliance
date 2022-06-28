@@ -81,6 +81,13 @@ jQuery(document).ready(function($) {
     $('#easproj_deduct_vat_outside_eu').parent().prepend($('<input type=checkbox id="easproj_deduct_vat_outside_eu_checkbox">'))
     $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
     $('#easproj_deduct_vat_outside_eu').prop('readonly', $('#easproj_deduct_vat_outside_eu').val() === '')
+    //disable checkbox and input if WC prices are tax exclusive
+    if ($('#easproj_deduct_vat_outside_eu').attr('prices_include_tax') === 'no') {
+        $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', false)
+        $('#easproj_deduct_vat_outside_eu_checkbox').prop('disabled', true)
+        $('#easproj_deduct_vat_outside_eu').prop('readonly', true)
+        $('#easproj_deduct_vat_outside_eu').val('')
+    }
 
     $('#easproj_deduct_vat_outside_eu').on( 'input', function() {
         $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')

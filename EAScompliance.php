@@ -2146,6 +2146,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 		$tax_rate_id0 = eascompliance_tax_rate_id();
 
         // no taxes for deducted VAT outside EU
+		$deduct_vat_outside_eu = (float) 0;
 		if ($tax_rate_id === $tax_rate_id0 && eascompliance_is_deduct_vat_outside_eu()) {
 			$deduct_vat_outside_eu = (float) get_option('easproj_deduct_vat_outside_eu');
             $ix = 0;
@@ -2216,8 +2217,8 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			//WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again for first found shipping item
 			foreach($order->get_items('shipping') as $shipping_item)  {
                 if ( 0 == $shipping_item->get_total_tax() and 0 != $delivery_charge_vat ) {
-					eascompliance_log('place_order', 'correct shipping item tax to $tax',
-						array('$tax'=>$delivery_charge_vat));
+					eascompliance_log('place_order', 'correct shipping item tax to $tax', array('$tax'=>$delivery_charge_vat));
+                    $delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
 					$shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat) );
                 }
                 break;
@@ -2254,6 +2255,11 @@ function eascompliance_cart_total() {
 		foreach ($cart_items as $cart_item) {
 			$cart_total += round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
 		}
+
+        $shipping_total = WC()->cart->get_shipping_total();
+
+        $cart_total += $shipping_total;
+
 		eascompliance_log('cart_total', 'deduct vat outside EU, cart total is $t', array('$t' => $cart_total));
         return $cart_total;
 	}
@@ -2756,6 +2762,30 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
+
+
+        if ( eascompliance_is_deduct_vat_outside_eu() ) {
+			$chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
+			if (!is_array($chosen_shipping_methods)) {
+				return $packages;
+			}
+
+			foreach ($packages as $px => &$p) {
+				foreach ($chosen_shipping_methods as $sx => $shm) {
+					if (array_key_exists($shm, $packages[$px]['rates'])) {
+						$shipping_rate = $packages[$px]['rates'][$shm];
+
+						$deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
+						$shipping_cost = round($shipping_rate->cost / (1 + $deduct_vat_outside_eu / 100.0), 2);
+						$shipping_rate->set_cost($shipping_cost);
+						$shipping_rate->set_taxes(0);
+
+					}
+
+				}
+			}
+            return $packages;
+		}
 
 		if ( ! eascompliance_is_set() ) {
 			return $packages;
@@ -3843,14 +3873,6 @@ function eascompliance_settings() {
 			'id'      => 'easproj_process_imported_orders',
 			'default' => 'yes',
 		),
-		'deduct_vat_outside_eu'                   => array(
-			'name'    => __TR( 'Deduct VAT for deliveries outside EU' ),
-			'type'    => 'number',
-			'desc'    => 'Deduct VAT amount from prices on checkout for delivery countries outside EU except store’s registration Country.',
-			'id'      => 'easproj_deduct_vat_outside_eu',
-			'default' => '',
-			'custom_attributes'   => array('min'=>0,'max'=>100,'step'=>0.01),
-		),
 		'EAS_API_URL'             => array(
 			'name'    => __TR( 'EAS API Base URL' ),
 			'type'    => 'text',
@@ -3886,6 +3908,14 @@ function eascompliance_settings() {
 				'EN'      => __TR( 'English' ),
 				'FI'      => __TR( 'Finnish' ),
 			),
+		),
+		'deduct_vat_outside_eu'                   => array(
+			'name'    => __TR( 'Deduct home VAT for deliveries to countries where tax calculations are  not supported' ),
+			'type'    => 'number',
+			'desc'    => 'Enter home country VAT rate for VAT to be deducted from catalog price for countries where no support for tax calculation is available. Option is to be used only if prices in the catalog are VAT inclusive!',
+			'id'      => 'easproj_deduct_vat_outside_eu',
+			'default' => '',
+			'custom_attributes'   => array('min'=>0,'max'=>100,'step'=>0.01, 'prices_include_tax'=>get_option('woocommerce_prices_include_tax')),
 		),
 		'shipping_methods_postal' => array(
 			'name'    => __TR( 'Shipping methods by post' ),
@@ -4083,6 +4113,11 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
                     'setting'=> __( 'Display prices during cart and checkout', 'woocommerce' ),
                     'tax_section'=> __( 'Tax options', 'woocommerce' ),
             )));
+        }
+
+        // reset easproj_deduct_vat_outside_eu if WC prices are tax exclusive
+        if (get_option('woocommerce_prices_include_tax')==='no') {
+			update_option( 'easproj_deduct_vat_outside_eu', '' );
         }
 
 
