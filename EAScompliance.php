@@ -2772,6 +2772,10 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 
 			foreach ($packages as $px => &$p) {
 				foreach ($chosen_shipping_methods as $sx => $shm) {
+                    if (!is_string($shm)) {
+                        eascompliance_log('WP-82', 'shipping method must be string, but it is $shm', array('$shm'=>$shm));
+                        $shm = 'skip';
+                    }
 					if (array_key_exists($shm, $packages[$px]['rates'])) {
 						$shipping_rate = $packages[$px]['rates'][$shm];
 
