@@ -2773,7 +2773,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			foreach ($packages as $px => &$p) {
 				foreach ($chosen_shipping_methods as $sx => $shm) {
                     if (!is_string($shm)) {
-                        eascompliance_log('error', 'shipping method must be string, but it is $shm', array('$shm'=>$shm));
+                        eascompliance_log('error', 'WP-82 shipping method must be string, but it is $shm', array('$shm'=>$shm));
                         $shm = 'skip';
                     }
 					if (array_key_exists($shm, $packages[$px]['rates'])) {
@@ -2818,6 +2818,10 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 			}
 			foreach ( $chosen_shipping_methods as $sx => $shm ) {
 				if ( array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
+					if (!is_string($shm)) {
+						eascompliance_log('error', 'WP-82 shipping method must be string, but it is $shm', array('$shm'=>$shm));
+						$shm = 'skip';
+					}
                     $shipping_rate = $packages[ $px ]['rates'][ $shm ];
 					$shipping_rate->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
 					$shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
