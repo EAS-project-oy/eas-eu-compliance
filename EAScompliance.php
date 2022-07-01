@@ -2242,10 +2242,16 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 /**
  * Calculate cart total
  */
-function eascompliance_cart_total() {
+function eascompliance_cart_total($current_total = null) {
 	eascompliance_log('entry', 'entering '.__FUNCTION__.'()');
 
-	$total = WC()->cart->get_total( 'edit' );
+    // prevents recursion in woocommerce_cart_get_total filter
+    if (is_null($current_total)) {
+		$total = WC()->cart->get_total( 'edit' );
+    } else {
+        $total = $current_total;
+    }
+
 
 	if (eascompliance_is_deduct_vat_outside_eu()) {
 		$deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
@@ -2305,6 +2311,36 @@ function eascompliance_cart_total() {
     eascompliance_log('cart_total', 'cart total is $total', array('$total'=>$total));
 	return $total;
 }
+
+
+if ( eascompliance_is_active() ) {
+	add_filter( 'woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3 );
+}
+/**
+ * Filter for cart total
+ *
+ * @param float    $cart_total cart_total.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_cart_get_total( $cart_total ) {
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+        $cart_total = eascompliance_cart_total($cart_total);
+
+        eascompliance_log('debug', 'cart_contents TOTAL');
+
+		return $cart_total;
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
 
 if ( eascompliance_is_active() ) {
 	add_filter( 'woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10 );
