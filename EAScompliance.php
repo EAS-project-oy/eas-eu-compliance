@@ -3085,7 +3085,9 @@ if ( eascompliance_is_active() ) {
  */
 function eascompliance_woocommerce_order_status_changed( $order_id, $status_from, $status_to, $order ) {
 	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
-	eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id'=>$order_id, '$from'=>$status_from, '$to'=>$status_to));
+    if ($status_to === 'completed') {
+		eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id' => $order_id, '$from' => $status_from, '$to' => $status_to));
+	}
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
