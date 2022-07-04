@@ -2330,8 +2330,6 @@ function eascompliance_woocommerce_cart_get_total( $cart_total ) {
 
         $cart_total = eascompliance_cart_total($cart_total);
 
-        eascompliance_log('debug', 'cart_contents TOTAL');
-
 		return $cart_total;
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
