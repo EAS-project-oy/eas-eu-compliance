@@ -710,33 +710,24 @@ function eascompliance_get_oauth_token() {
 
 		// woocommerce_settings_get_option is undefined when called via Credit Card payment type //.
 		$auth_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/auth/open-id/connect';
-		$auth_data = array(
-			'client_id'     => eascompliance_woocommerce_settings_get_option_sql( 'easproj_auth_client_id' ),
-			'client_secret' => eascompliance_woocommerce_settings_get_option_sql( 'easproj_auth_client_secret' ),
-			'grant_type'    => 'client_credentials',
-		);
 
 		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/x-www-form-urlencoded\r\n",
-				'content'       => http_build_query( $auth_data ),
-				'ignore_errors' => true,
+            'method'=>'POST',
+            'headers'=>array('Content-type'=>'application/x-www-form-urlencoded'),
+            'body'=>array(
+				'client_id'     => eascompliance_woocommerce_settings_get_option_sql( 'easproj_auth_client_id' ),
+				'client_secret' => eascompliance_woocommerce_settings_get_option_sql( 'easproj_auth_client_secret' ),
+				'grant_type'    => 'client_credentials',
 			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
+			'sslverify'=>false,
 		);
 
 		// prevent Warning: Cannot modify header information - headers already sent //.
-		error_reporting( E_ERROR );
-		$auth_response = file_get_contents( $auth_url, false, stream_context_create( $options ) );
-		error_reporting( E_ALL );
+		$auth_response = (new WP_Http)->request( $auth_url, $options);
 
 		// request failed //.
-		if ( false === $auth_response ) {
-			eascompliance_log('error', 'Auth request failed: ' . error_get_last()['message'] );
+		if ( is_wp_error($auth_response) ) {
+			eascompliance_log('error', 'Auth request failed: ' . $auth_response->get_error_message() );
 			if ( eascompliance_log_level('oauth-phpinfo') ) {
 				// check php configuration //.
 				ob_start();
@@ -748,10 +739,10 @@ function eascompliance_get_oauth_token() {
 			throw new Exception( __TR( 'EU tax calculation service temporary unavailable. Please try to place an order later.' ) );
 		}
 
-		$auth_response_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$auth_response_status = (string) $auth_response['response']['code'];
 		if ( '200' === $auth_response_status ) {
             // authentication failed with code 200 and empty response for any reason //.
-            if ( '' === $auth_response ) {
+            if ( '' === $auth_response['http_response']->get_data() ) {
                 throw new Exception( __TR( 'Invalid Credentials provided. Please check EAS client ID and EAS client secret.' ) );
             }
 		}
@@ -766,7 +757,7 @@ function eascompliance_get_oauth_token() {
 		}
 
 		$jdebug['step']          = 'decode AUTH token';
-		$auth_j                  = json_decode( $auth_response, true, 512, JSON_THROW_ON_ERROR2 );
+		$auth_j                  = json_decode( $auth_response['http_response']->get_data(), true, 512, JSON_THROW_ON_ERROR2 );
 		$jdebug['AUTH response'] = $auth_j;
 
 		$auth_token = $auth_j['access_token'];
@@ -1250,29 +1241,26 @@ function eascompliance_ajaxhandler() {
 		$jdebug['redirect_uri'] = $redirect_uri;
 
 		$jdebug['step'] = 'prepare EAS API /calculate request';
-		$options        = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => 'Content-type: application/json' . "\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n"
-											. 'x-redirect-uri: ' . $redirect_uri . "\r\n",
-				'content'       => json_encode( $calc_jreq, JSON_THROW_ON_ERROR2 ),
-				'ignore_errors' => true,
-			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
+		$options = array(
+			'method'=>'POST',
+			'headers'=>array(
+                    'Content-type'=>'application/json',
+                    'Authorization'=>'Bearer '.$auth_token,
+                    'x-redirect-uri'=> $redirect_uri,
+            ),
+			'body'=>json_encode( $calc_jreq, JSON_THROW_ON_ERROR2 ),
+			'sslverify'=>false,
 		);
-
-		$context = stream_context_create( $options );
 
 		$jdebug['step']               = 'send /calculate request';
 		$calc_url                     = woocommerce_settings_get_option( 'easproj_eas_api_url' ) . '/calculate';
-		$calc_body                    = file_get_contents( $calc_url, false, $context );
-		$jdebug['CALC response body'] = $calc_body;
+		$response                    =  (new WP_Http)->request( $calc_url, $options );
+		if ( is_wp_error($response) ) {
+			throw new Exception( $response->get_error_message());
+		}
+		$jdebug['CALC response body'] = $response;
 
-		$calc_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$calc_status = (string) $response['response']['code'];
 
 		$jres = array(
 			'status'  => 'unknown',
@@ -1280,9 +1268,9 @@ function eascompliance_ajaxhandler() {
 		);
 
 		if ( '200' !== $calc_status ) {
-			$jdebug['CALC response headers'] = $http_response_header;
+			$jdebug['CALC response headers'] = $response['headers'];
 			$jdebug['CALC response status']  = $calc_status;
-			$error_message                   = $http_response_header[0];
+			$error_message                   = $response['response']['message'];
 
 			/*
 			Parse error json and extract detailed error message
@@ -1306,7 +1294,7 @@ function eascompliance_ajaxhandler() {
 			}';
 			*/
 
-			$calc_error = json_decode( $calc_body, true );
+			$calc_error = json_decode( $response['http_response']->get_data(), true );
 			if ( array_key_exists( 'code', $calc_error ) && array_key_exists( 'type', $calc_error ) ) {
 
 				// STANDARD_CHECKOUT //.
@@ -1342,7 +1330,7 @@ function eascompliance_ajaxhandler() {
 
 		$jdebug['step'] = 'parse /calculate response';
 		// CALC response should be quoted link to confirmation page: "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"     //.
-		$calc_response = trim( json_decode( $calc_body ) );
+		$calc_response = trim( json_decode( $response['http_response']->get_data() ) );
 
 		// sometimes eas_checkout_token is appended with '?' while should be '&':           //.
 		$calc_response = str_replace( '?eas_checkout_token=', '&eas_checkout_token=', $calc_response );
@@ -1438,11 +1426,16 @@ function eascompliance_redirect_confirm() {
 				'verify_peer_name' => false,
 			),
 		);
-		$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
-		if ( false === $jwt_key_response ) {
-			throw new Exception( error_get_last()['message'] );
+		$options = array(
+			'method'=>'GET',
+			'sslverify'=>false,
+		);
+
+		$jwt_key_response = (new WP_Http)->request( $jwt_key_url, $options );
+		if ( is_wp_error($jwt_key_response) ) {
+			throw new Exception( $jwt_key_response->get_error_message() );
 		}
-		$jwt_key_j         = json_decode( $jwt_key_response, true );
+		$jwt_key_j         = json_decode( $jwt_key_response['http_response']->get_data(), true );
 		$jwt_key           = $jwt_key_j['default'];
 		$jdebug['jwt_key'] = $jwt_key;  // -----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM1HywEFXH0TPxSso0qw69WQbA24VYLL\ng2NG0w9QSYKLVf9tC4LWJkYzrA0KpS5ypO8DREq+AD3XCVqsrdWlzwUCAwEAAQ==\n-----END PUBLIC KEY-----
 		$jdebug['step']    = 'Decode EAS API token from redirect_uri';
@@ -1867,48 +1860,41 @@ function eascompliance_order_createpostsaleorder($order) {
 		);
 
 
-		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-					. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode($sales_order_json, JSON_THROW_ON_ERROR2),
-				'ignore_errors' => true,
-			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
-		);
-		$context = stream_context_create( $options );
+        $options = array(
+            'method'=>'POST',
+            'headers'=>array(
+                    'Content-type'=>'application/json',
+                    'Authorization'=>'Bearer ' . $auth_token,
+            ),
+            'body'=>json_encode($sales_order_json, JSON_THROW_ON_ERROR2),
+            'sslverify'=>false,
+        );
+
 
 		$sales_order_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/createpostsaleorder';
-		$sales_order_body = file_get_contents( $sales_order_url, false, $context );
+		$sales_order_response = (new WP_Http)->request( $sales_order_url, $options );
+        if ( is_wp_error($sales_order_response) ) {
+            throw new Exception( $sales_order_response->get_error_message());
+        }
 
-		$sales_order_body = trim($sales_order_body,'"');
-
-		$sales_order_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$sales_order_status = (string) $sales_order_response['response']['code'];
 		if ( '200' === $sales_order_status ) {
 			// validate token in $sales_order_body
 			$jwt_key_url      = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/auth/keys';
-			$options          = array(
-				'http' => array(
-					'method' => 'GET',
-				),
-				'ssl'  => array(
-					'verify_peer'      => false,
-					'verify_peer_name' => false,
-				),
+			$options = array(
+				'method'=>'GET',
+				'sslverify'=>false,
 			);
-			$jwt_key_response = file_get_contents( $jwt_key_url, false, stream_context_create( $options ) );
-			if ( false === $jwt_key_response ) {
-				$jres['message'] = 'AUTH KEY error: ' . error_get_last()['message'];
-				throw new Exception( error_get_last()['message'] );
+
+			$jwt_key_response = (new WP_Http)->request( $jwt_key_url, $options );
+			if ( is_wp_error($jwt_key_response) ) {
+				$jres['message'] = 'AUTH KEY error: ' . $jwt_key_response->get_error_message();
+				throw new Exception( $jwt_key_response->get_error_message());
 			}
-			$jwt_key_j         = json_decode( $jwt_key_response, true );
+			$jwt_key_j         = json_decode( $jwt_key_response['http_response']->get_data(), true );
 			$jwt_key           = $jwt_key_j['default'];
 
-			$arr = preg_split( '/[.]/', $sales_order_body, 3 );
+			$arr = preg_split( '/[.]/', trim($sales_order_response['http_response']->get_data(), '"'), 3 );
 
 			// JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'   //.
 			$jwt_signature = base64_decode( str_replace( array( '-', '_' ), array( '+', '/' ), $arr[2] ) . '==', true );
@@ -1927,7 +1913,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			$jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
 			$payload_j            = json_decode( $jwt_payload, true );
 
-			$order->add_meta_data('_easproj_token', $sales_order_body, true);
+			$order->add_meta_data('_easproj_token', $sales_order_response['http_response']->get_data(), true);
 			$order->add_meta_data('_easproj_order_json', json_encode( $order_json, JSON_THROW_ON_ERROR2 ), true);
 			$order->add_meta_data('easproj_payload', $payload_j, true);
 			$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
@@ -1991,7 +1977,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			$order->set_shipping_tax( $payload_j['delivery_charge_vat'] );
 
 		} else {
-			throw new Exception( $http_response_header[0] . '\n\n' . $sales_order_body );
+			throw new Exception( 'createpostsaleorder failed\n\nsales_order response is $s', array('$s'=>$sales_order_response) );
 		}
 
 		$order->save();
