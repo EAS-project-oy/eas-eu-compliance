@@ -1913,7 +1913,7 @@ function eascompliance_order_createpostsaleorder($order) {
 			$jwt_payload = base64_decode( $arr[1], false ); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
 			$payload_j            = json_decode( $jwt_payload, true );
 
-			$order->add_meta_data('_easproj_token', $sales_order_response['http_response']->get_data(), true);
+			$order->add_meta_data('_easproj_token', trim($sales_order_response['http_response']->get_data(),'"'), true);
 			$order->add_meta_data('_easproj_order_json', json_encode( $order_json, JSON_THROW_ON_ERROR2 ), true);
 			$order->add_meta_data('easproj_payload', $payload_j, true);
 			$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
@@ -3018,29 +3018,27 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 		);
 
 		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode( $jreq, JSON_THROW_ON_ERROR2 ),
-				'ignore_errors' => true,
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer '.$auth_token,
 			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
+			'body'=>json_encode( $jreq, JSON_THROW_ON_ERROR2 ),
+			'sslverify'=>false,
 		);
-		$context = stream_context_create( $options );
 
 		$notify_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/updateExternalOrderId';
-		$notify_body = file_get_contents( $notify_url, false, $context );
-
-		$notify_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$notify_response = (new WP_Http)->request( $notify_url, $options );
+		if ( is_wp_error($notify_response) ) {
+			throw new Exception( $notify_response->get_error_message());
+		}
+		$notify_status = (string) $notify_response['response']['code'];
 
 		if ( '200' === $notify_status ) {
 			$order->add_order_note( eascompliance_format( __TR( 'Notify Order number $order_id successful' ), array( 'order_id' => $order_id ) ) );
 		} else {
-			throw new Exception( $http_response_header[0] . '\n\n' . $notify_body );
+            eascompliance_log('error', 'Notify failed response is $r', array('$r'=>$notify_response));
+			throw new Exception( $notify_status . ' '. $notify_response['response']['message'] );
 		}
 
 		$order->add_meta_data( '_easproj_order_number_notified', 'yes', true );
@@ -3106,24 +3104,22 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 		);
 
 		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode( $payment_jreq, JSON_THROW_ON_ERROR2 ),
-				'ignore_errors' => true,
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer '.$auth_token,
 			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
+			'body'=>json_encode( $payment_jreq, JSON_THROW_ON_ERROR2 ),
+			'sslverify'=>false,
 		);
-		$context = stream_context_create( $options );
 
 		$payment_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/payment/verify';
-		$payment_body = file_get_contents( $payment_url, false, $context );
+		$payment_response = (new WP_Http)->request( $payment_url, $options );
+		if ( is_wp_error($payment_response) ) {
+			throw new Exception( $payment_response->get_error_message());
+		}
 
-		$payment_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$payment_status = (string) $payment_response['response']['code'];
 
 		if ( '200' === $payment_status ) {
 			$order->add_order_note(
@@ -3136,7 +3132,8 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 				)
 			);
 		} else {
-			throw new Exception( $http_response_header[0] . '\n\n' . $payment_body );
+            eascompliance_log('error', 'Order status change failed response is $r', array('$r'=>$payment_response));
+			throw new Exception( $payment_status . ' '. $payment_response['response']['message'] );
 		}
 
 		$order->add_meta_data( '_easproj_payment_processed', 'yes', true );
@@ -3194,24 +3191,22 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 		);
 
 		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode( $payment_jreq, JSON_THROW_ON_ERROR2 ),
-				'ignore_errors' => true,
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer '.$auth_token,
 			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
+			'body'=>json_encode( $payment_jreq, JSON_THROW_ON_ERROR2 ),
+			'sslverify'=>false,
 		);
-		$context = stream_context_create( $options );
 
 		$payment_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirmpostsaleorder';
-		$payment_body = file_get_contents( $payment_url, false, $context );
+		$payment_response = (new WP_Http)->request( $payment_url, $options );
+		if ( is_wp_error($payment_response) ) {
+			throw new Exception( $payment_response->get_error_message());
+		}
 
-		$payment_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+		$payment_status = (string) $payment_response['response']['code'];
 
 		if ( '200' === $payment_status ) {
 			$order->add_order_note(
@@ -3230,7 +3225,8 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 			);
         }
         else {
-			throw new Exception( $http_response_header[0] . '\n\n' . $payment_body );
+            eascompliance_log('error', 'Notify failed response is $r', array('$r'=>$payment_response));
+			throw new Exception( $payment_status . ' '. $payment_response['response']['message'] );
 		}
 
 		eascompliance_log('info', "Order $order_id payment confirmed" );
@@ -3329,28 +3325,23 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
         eascompliance_log('refund','refund breakdown is  '.print_r($return_breakdown, true)); //.
 
-		$options = array(
-			'http' => array(
-				'method'        => 'POST',
-				'header'        => "Content-type: application/json\r\n"
-											. 'Authorization: Bearer ' . $auth_token . "\r\n",
-				'content'       => json_encode(
-					array(
-						'token' => $confirmation_token,
-						'return_breakdown'     => $return_breakdown,
-						'return_date'     => date_format($refund->get_date_created(), 'Y-m-d'),
-						'confirmed'     => false,
-						JSON_THROW_ON_ERROR2,
-					)
-				),
-				'ignore_errors' => true,
+        $options = array(
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer '.$auth_token,
 			),
-			'ssl'  => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
+			'body'=>json_encode(
+				array(
+					'token' => $confirmation_token,
+					'return_breakdown'     => $return_breakdown,
+					'return_date'     => date_format($refund->get_date_created(), 'Y-m-d'),
+					'confirmed'     => false,
+					JSON_THROW_ON_ERROR2,
+				)
 			),
+			'sslverify'=>false,
 		);
-		$context = stream_context_create( $options );
 
 		$refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return_with_lc';
 
@@ -3363,15 +3354,17 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 				$refund->save();
 				return;
             }
-            $refund_body = file_get_contents( $refund_url, false, $context );
-            $refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+            $refund_response = (new WP_Http)->request( $refund_url, $options );
+			if ( is_wp_error($refund_response) ) {
+				throw new Exception( $refund_response->get_error_message());
+			}
+            $refund_status = (string) $refund_response['response']['code'];
 
 			if ( '200' === $refund_status || '400' === $refund_status) {
                 break;
             }
 
-			$refund_error = json_decode( $refund_body, true );
-			eascompliance_log('error','Retrying refund return request, last attempt failed: '.print_r($refund_error, true));
+			eascompliance_log('error', 'Retrying refund return request, last attempt failed: $r', array('$r'=>$refund_response));
 
             sleep(1);
 			$attempt += 1;
@@ -3379,7 +3372,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 		if ( '200' === $refund_status ) {
 
-			$arr         = preg_split( '/[.]/', $refund_body, 3 );
+			$arr         = preg_split( '/[.]/', $refund_response['http_response']->get_data(), 3 );
 			$refund_payload = json_decode(base64_decode( $arr[1], false ), true);
 
             /*
@@ -3534,7 +3527,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
              */
 
-			$refund_error = json_decode( $refund_body, true );
+			$refund_error = json_decode( $refund_response['http_response']->get_data(), true );
             eascompliance_log('error','Refund return error. '.print_r($refund_error, true));
 
 			$error_message = '';
@@ -3639,31 +3632,30 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
             throw new Exception('refund token not found');
         }
 
-        $options = array(
-            'http' => array(
-                'method'        => 'POST',
-                'header'        => "Content-type: application/json\r\n"
-                    . 'Authorization: Bearer ' . $auth_token . "\r\n",
-                'content'       => json_encode(
-                    array(
-                        'token' => $refund_token,
-                        'refund_date'     => date_format(new DateTime(), 'Y-m-d'),
-                        JSON_THROW_ON_ERROR2,
-                    )
-                ),
-                'ignore_errors' => true,
-            ),
-            'ssl'  => array(
-                'verify_peer'      => false,
-                'verify_peer_name' => false,
-            ),
-        );
-        $context = stream_context_create( $options );
+		$options = array(
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer ' . $auth_token,
+			),
+			'body'=>json_encode(
+				array(
+					'token' => $refund_token,
+					'refund_date'     => date_format(new DateTime(), 'Y-m-d'),
+					JSON_THROW_ON_ERROR2,
+				)
+			),
+			'sslverify'=>false,
+		);
 
         $confirm_refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirm_refund';
 
-        $refund_body = file_get_contents( $confirm_refund_url, false, $context );
-        $refund_status = preg_split( '/\s/', $http_response_header[0], 3 )[1];
+        $refund_response = (new WP_Http)->request( $confirm_refund_url, $options );
+		$refund_body = $refund_response['http_response']->get_data();
+		if ( is_wp_error($refund_response) ) {
+			throw new Exception( $refund_response->get_error_message());
+		}
+        $refund_status = (string) $refund_response['response']['code'];
 
         if ( '200' !== $refund_status) {
             throw new Exception(eascompliance_format('EAS refund confirm failed with status $status body $body', array('$status'=>$refund_status, '$body'=>$refund_body)));
