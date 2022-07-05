@@ -724,8 +724,6 @@ function eascompliance_get_oauth_token() {
 
 		// prevent Warning: Cannot modify header information - headers already sent //.
 		$auth_response = (new WP_Http)->request( $auth_url, $options);
-
-		// request failed //.
 		if ( is_wp_error($auth_response) ) {
 			eascompliance_log('error', 'Auth request failed: ' . $auth_response->get_error_message() );
 			if ( eascompliance_log_level('oauth-phpinfo') ) {
@@ -2008,14 +2006,15 @@ function eascompliance_woocommerce_after_order_object_save( $order ) {
             return;
         }
 
-		//TODO Order must have some properties that differ final save() call from intermediate calls.
+		if ( $order->get_status() === 'draft') {
+			return;
+		}
 
 		if ( $order->get_meta('_easproj_api_save_notification_started') === 'yes') {
 			return;
 		}
 		$order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
 		$order->save_meta_data();
-
 
 		eascompliance_order_createpostsaleorder($order);
 
@@ -3407,7 +3406,7 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
             */
 
-            $refund->add_meta_data('_easproj_refund_payload', $refund_payload, true);
+            $refund->add_meta_data('_easproj_refund_return_token', trim($refund_response['http_response']->get_data(),'"'), true);
 
             eascompliance_log('refund', 'refund payload is $p', array('$p'=>$refund_payload));
 
@@ -3627,7 +3626,7 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 		// confirm refund to EAS
         $auth_token = eascompliance_get_oauth_token();
 
-        $refund_token = $refund->get_meta( '_easproj_refund_payload' );
+        $refund_token = $refund->get_meta( '_easproj_refund_return_token' );
         if ( '' === $refund_token ) {
             throw new Exception('refund token not found');
         }
@@ -3651,10 +3650,10 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
         $confirm_refund_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirm_refund';
 
         $refund_response = (new WP_Http)->request( $confirm_refund_url, $options );
-		$refund_body = $refund_response['http_response']->get_data();
 		if ( is_wp_error($refund_response) ) {
 			throw new Exception( $refund_response->get_error_message());
 		}
+		$refund_body = $refund_response['http_response']->get_data();
         $refund_status = (string) $refund_response['response']['code'];
 
         if ( '200' !== $refund_status) {
