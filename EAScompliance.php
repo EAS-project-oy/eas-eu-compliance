@@ -889,26 +889,17 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 	$calc_jreq['external_order_id'] = $cart->get_cart_hash();
 	$calc_jreq['delivery_method']   = $delivery_method;
     $delivery_cost = round( (float) ( $cart->get_shipping_total() ), 2 );
+    if ($currency_conversion) {
+      $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
+    }
 	$calc_jreq['delivery_cost']     = $delivery_cost;
-	$calc_jreq['payment_currency']  = get_woocommerce_currency();
 
-    // WCML plugin fix: take payment_currency from plugin client_currency //.
-	$wcml_enabled = false;
-    if ( function_exists('wcml_is_multi_currency_on') ) {
-        if ( wcml_is_multi_currency_on() ) {
-			global $woocommerce_wpml;
-			if ( ! is_null($woocommerce_wpml) ) {
-                $currency = $woocommerce_wpml->multi_currency->get_client_currency();
-				$wcml_enabled = true;
-				eascompliance_log('request', 'WCML $currency '.print_r($currency, true));
-				$calc_jreq['payment_currency'] = $currency;
-			}
-		}
-        else {
-			eascompliance_log('request', 'WCML wcml_is_multi_currency_on is false');
-        }
-
+    $currency = get_woocommerce_currency();
+	if (function_exists('WC_Payments_Multi_Currency')) {
+		$multi_currency = WC_Payments_Multi_Currency();
+		$currency = $multi_currency->get_selected_currency()->get_code();
 	}
+	$calc_jreq['payment_currency']  = $currency;
 
     // check for required fields in taxes calculation
     $required_fields = preg_split( '/\s/', 'shipping_country shipping_first_name shipping_last_name shipping_address_1 shipping_city shipping_postcode billing_email');
@@ -956,12 +947,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		    $type_of_goods = 'GIFTCARD';
 		}
 
-		$cost_provided_by_em = round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
-		eascompliance_log('WP-66', 'line total is $lt quantity is $q  cost_provided_by_em is $c', array('$lt'=>$cart_item['line_total'], '$q'=>$cart_item['quantity'], '$c'=>$cost_provided_by_em));
-        if ( $wcml_enabled and $currency_conversion ) {
-            $cost_provided_by_em2 = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $cost_provided_by_em);
-			eascompliance_log('WP-66', 'converting cost_provided_by_em from $c1 to $c2', array('$c1'=>$cost_provided_by_em, '$c2'=>$cost_provided_by_em2));
-			$cost_provided_by_em = $cost_provided_by_em2;
+		$cost_provided_by_em =   round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
+        if ($currency_conversion) {
+			$cost_provided_by_em = eascompliance_convert_price_to_selected_currency($cost_provided_by_em);
         }
 
 		$order_breakdown_items[] = array(
@@ -2225,6 +2213,23 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 }
 
 /**
+ * Convert price to selected currency for WC Payments plugin
+ *
+ * @param float $price price.
+ */
+function eascompliance_convert_price_to_selected_currency($price) {
+	eascompliance_log('entry', 'entering '.__FUNCTION__.'()');
+    $price_old = $price;
+    if (function_exists('WC_Payments_Multi_Currency')) {
+        $multi_currency = WC_Payments_Multi_Currency();
+        $currency = $multi_currency->get_selected_currency()->get_code();
+        $price = $multi_currency->get_price($price, 'product');
+    }
+	return $price;
+}
+
+
+/**
  * Calculate cart total
  */
 function eascompliance_cart_total($current_total = null) {
@@ -2413,20 +2418,7 @@ function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 
         $item_total = $cart_item['EAScompliance item price'];
 
-		// WCML plugin fix: convert item_total in client currency //.
-		if ( function_exists('wcml_is_multi_currency_on') ) {
-			if ( wcml_is_multi_currency_on() ) {
-				global $woocommerce_wpml;
-				if ( ! is_null($woocommerce_wpml) ) {
-					$currency = $woocommerce_wpml->multi_currency->get_client_currency();
-//					eascompliance_log('debug', 'client currency $cc posted currency $pc client curency $clc', array('$cc'=>$currency, '$pc'=>eascompliance_array_get($_POST, 'currency'), '$clc'=>1));
-                    $item_total = $woocommerce_wpml->multi_currency->prices->convert_price_amount( $item_total, $currency);
-                    //$item_total = $woocommerce_wpml->multi_currency->prices->convert_price_amount_by_currencies( $item_total);
-				}
-			}
-
-		}
-
+		// $item_total = eascompliance_convert_price_to_selected_currency($item_total);
 		return wc_price( $item_total );
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
