@@ -895,9 +895,25 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 	$calc_jreq['delivery_cost']     = $delivery_cost;
 
     $currency = get_woocommerce_currency();
-	if (function_exists('WC_Payments_Multi_Currency')) {
+
+	$wcml_enabled = false;
+	if ( function_exists('wcml_is_multi_currency_on') ) {
+		if ( wcml_is_multi_currency_on() ) {
+			global $woocommerce_wpml;
+			if ( ! is_null($woocommerce_wpml) ) {
+				$currency = $woocommerce_wpml->multi_currency->get_client_currency();
+				$wcml_enabled = true;
+				eascompliance_log('request', 'WCML currency is $c', array('$c'=>$currency));
+			}
+		}
+		else {
+			eascompliance_log('request', 'WCML present and disabled');
+		}
+	}
+	if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
 		$multi_currency = WC_Payments_Multi_Currency();
 		$currency = $multi_currency->get_selected_currency()->get_code();
+		eascompliance_log('request', 'WC_Payments_Multi_Currency currency is $c', array('$c'=>$currency));
 	}
 	$calc_jreq['payment_currency']  = $currency;
 
@@ -948,9 +964,13 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		}
 
 		$cost_provided_by_em =   round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
-        if ($currency_conversion) {
+		if ( $wcml_enabled and $currency_conversion ) {
+			global $woocommerce_wpml;
+			$cost_provided_by_em = (float) $woocommerce_wpml->multi_currency->prices->get_product_price_in_currency( $product_id, $currency );
+		}
+        elseif ( $currency_conversion ) {
 			$cost_provided_by_em = eascompliance_convert_price_to_selected_currency($cost_provided_by_em);
-        }
+		}
 
 		$order_breakdown_items[] = array(
 			'short_description'           => $product->get_name(),
@@ -1001,7 +1021,8 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		}
 	}
 	$calc_jreq['order_breakdown'] = $order_breakdown_items;
-	eascompliance_log('request','$items after discount '.print_r($order_breakdown_items, true));  //.
+
+	eascompliance_log('request','request is $r', array('$r'=>$calc_jreq));
 
 	return $calc_jreq;
 }
