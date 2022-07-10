@@ -42,14 +42,78 @@ Monthly costs per country you sell - no more! Sell anywhere in EU at a simple, l
 9. Setup delivery option
 10. Setup additional product attributes
 11. Detailed instructions available at
- https://github.com/EAS-project-oy/eas-eu-compliance/blob/571199fe3faa455060ce03c30a5acf9e71cd5de5/Plugin%20installation%20and%20setup%20v1.1.docx
+ https://github.com/EAS-project-oy/eas-eu-compliance/blob/main/Installation%20and%20Setup%20guide%201.1.pdf
 
 = Manual installation =
 
 Follow instuctions from our github repo https://github.com/EAS-project-oy/eas-eu-compliance
 
 
-== Frequently Asked Questions ==
+== Changelog ==
+= 1.3.36 =
+* Code review and refactoring done
+* minor bugs fixed in checkout step
+
+= 1.3.33 =
+* PayPal ans Avarda support implemented
+
+= 1.3.31 =
+* New method of checkout handling implemented
+* WPML supporting improved
+* Deduction of VAT from inclusive prices for the clients from non supported coutries implemented
+* Refund amount calculation improved
+
+= 1.3.10 =
+* Multicurrency support enhanced
+* Multilanguage support enhanced (WPML)
+* Rounding issue in total cart fixed
+* Taxes and Duties handling rules changed
+
+= 1.3.5 =
+* Implemented Required field in delivery address management
+
+= 1.3.4 =
+* Implemented handling of orders created manually in admin section or via API methods
+
+= 1.3.3 =
+* Suomi language updated
+* English wordings improved
+
+= 1.3.2 =
+* Some bugs with differences in billing and shipping adresses fixed
+
+= 1.3.0 =
+* Gift cards support implemented
+* Checkout process improved
+* Refund and Cancelation improved
+* Multi currency support implemented
+* German language added
+
+= 1.2.4 =
+* SKU identification issue fixed
+* Bug fixed with TBE management
+
+= 1.2.0 =
+* Refund functionality implemented
+* Capons and points and rewards support implemented
+* Some minor issues were fixed
+* Rounding issue for total order amount fixed
+
+= 1.1.3 =
+* Multilingual support implemented
+* Suomi translation added
+* Delivery methods management enhanced
+* Some minor bugs were fixed
+* Fixed issue with custom theme support
+* Implemented support of renaming buttons of plugin
+
+= 1.0.5 =
+* Code review according to Woocommerce standard requirements
+
+= 1.0.0 =
+* Initial release
+
+
 
 
 
