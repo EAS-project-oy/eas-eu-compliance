@@ -16,14 +16,17 @@ EAS solution automates the complicated EU VAT, IOSS, OSS and customs compliance.
  
 == Description ==
 
-**Your WooCommerce store should support IOSS, OSS, Non-Union schemes and customs duties cumputation!**
 
-**The end-to-end solution allows you to sell throughout the whole EU!** Whether you deliver from outside of the EU or intra-EU, EAS automates VAT compliance, from Smart calculation to preparing the ready-for-filing reports or production of accountant-friendly data. And of course, we utilise the 600k reduced rates when calculating VAT providing you more margin or lower prices to customers. We know the VAT compliance, you don’t have to.
+**Sell throughout the whole EU with EAS comprehensive, powerful VAT compliance.** 
+
+Whether you deliver from outside of the EU or intra-EU, EAS automates VAT compliance, from Smart calculation to preparing the ready-for-filing reports or production of accountant-friendly data. And of course, we utilise the 600k reduced rates when calculating VAT providing you more margin or lower prices to customers. We know the VAT compliance, you don’t have to.
 
 
-**All automatic and without stress.** You have spent time and effort building your store, which is why EAS Solution supports all functionalities serious e-merchants need, such as multi warehouse, different discount types, HS codes and returns.   
+**All automatic and without stress.** 
 
-**Transparent and clear pricings** The simple transaction based fee is transparent and you always know the charges. We do not charge for domestic sales, only cross-border. In other words, if you don’t use it, there are no charges.
+You have spent time and effort building your store, which is why EAS Solution supports all functionalities serious e-merchants need, such as multi-warehouse, discounts types, HS codes and returns.
+
+**Transparent and clear pricing** The transaction fee is simple and transparent, you always know the charges. We do only charge for cross-border sales. In other words, if you don’t use it, there are no charges.
 
 Available in the following languages:
 
@@ -36,11 +39,9 @@ Available in the following languages:
 * Swedish
 
 The following currency switcher plugins are supported:
-* WooCommerce Currency Switcher from WooCommerce Payments by 
+
+* WooCommerce Currency Switcher from WooCommerce Payments by Automattic
 * WPML WooCommerce Multi-currency by OnTheGoSystems
-* Multi Currency for WooCommerce by VillaTheme
-* WooCommerce Ultimate Multi Currency Suite by Dev49.net (requires a patch, contact us for details)
-* Polylang + Hyyan WooCommerce Polylang Integration
 
 = EAS EU compliance Features =
 
@@ -66,8 +67,7 @@ The following currency switcher plugins are supported:
 8. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
 9. Setup delivery option
 10. Setup additional product attributes
-11. Detailed instructions available at
- [Installation and Setup guide.pdf](https://github.com/EAS-project-oy/eas-eu-compliance/blob/main/Installation%20and%20Setup%20guide%201.1.pdf "Installation and setup manual for plugin on github") or in the plugin directory under the 'doc' folder
+11. Detailed instructions available at [Installation and Setup guide.pdf](https://github.com/EAS-project-oy/eas-eu-compliance/blob/main/doc/Installation%20and%20Setup%20guide%201.1.pdf "Installation and setup manual for plugin on github") or in the plugin directory under the 'doc' folder
 
 = Manual installation =
 
