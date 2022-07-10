@@ -3872,14 +3872,10 @@ function eascompliance_settings() {
 		'section_title'           => array(
 			'name' => EAS_TR( 'Settings' ),
 			'type' => 'title',
-			'desc' => '<img src="' . plugins_url( 'assets/images//pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 100px;">',
+			'desc' => '<div style="float:left;"><img src="' . plugins_url( 'assets/images/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 100px;vertical-align: top;"></div><div style="margin-top:15px;float:left;margin-left:20px;vertical-align: middle;width:600px;font-size:1.3em;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;">EAS solution settings page. Please refer to <a href="'.plugins_url( 'doc/Installation and Setup guide 1.1.pdf', __FILE__ ).'">Installation and configuration guide</a> for detailed instructions.<p style="margin-top:10px;font-size:1em;"><b>Current version</b>:  '. $version.'</p></div>',
+			
 		),
-        'version'                  => array(
-            'name'    => EAS_TR( 'Version' ),
-            'type' => 'title',
-            'desc' => $version,
-        ),
-		'active'                  => array(
+       		'active'                  => array(
 			'name'    => EAS_TR( 'Enable/Disable' ),
 			'type'    => 'checkbox',
 			'desc'    => 'Enable ' . EASCOMPLIANCE_PLUGIN_NAME,
