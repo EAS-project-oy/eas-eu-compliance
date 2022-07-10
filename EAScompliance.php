@@ -3872,7 +3872,7 @@ function eascompliance_settings() {
 		'section_title'           => array(
 			'name' => EAS_TR( 'Settings' ),
 			'type' => 'title',
-			'desc' => '<img src="' . plugins_url( '/pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 150px;">',
+			'desc' => '<img src="' . plugins_url( 'assets/images//pluginlogo_woocommerce.png', __FILE__ ) . '" style="width: 100px;">',
 		),
         'version'                  => array(
             'name'    => EAS_TR( 'Version' ),
