@@ -605,6 +605,24 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data) {
 	}
 }
 
+
+if ( eascompliance_is_active() ) {
+	add_action( 'wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1 );
+}
+/**
+ *  Reset calculations when WCML currency changes
+ */
+function eascompliance_wcml_switch_currency($post_data) {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+            eascompliance_unset();
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex );
+		throw $ex;
+	}
+}
+
 if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
@@ -615,13 +633,28 @@ function eascompliance_woocommerce_review_order_before_payment() {
 	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
-				// checkout form data saved during /calculate step //.
+        // checkout form data saved during /calculate step //.
 		$checkout_form_data = null;
 		if ( eascompliance_is_set() ) {
 			$cart               = WC()->cart;
 			$k                  = eascompliance_array_key_first2( $cart->get_cart() );
 			$item               = $cart->get_cart_contents()[ $k ];
 			$checkout_form_data = eascompliance_array_get( $item, 'CHECKOUT FORM DATA', '' );
+
+
+			//reset calculation when WC Payments currency changes
+			if (function_exists('WC_Payments_Multi_Currency') ) {
+				$multi_currency = WC_Payments_Multi_Currency();
+				$currency_new = $multi_currency->get_selected_currency()->get_code();
+
+				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
+				$currency_old = $calc_jreq_saved['payment_currency'];
+
+				if ($currency_new !== $currency_old) {
+					eascompliance_unset();
+				}
+			}
+
 		}
 
 		// prevent processing form data without nonce verification //.
