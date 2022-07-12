@@ -2017,7 +2017,8 @@ function eascompliance_order_createpostsaleorder($order) {
 			$order->set_shipping_tax( $payload_j['delivery_charge_vat'] );
 
 		} else {
-			throw new Exception( 'createpostsaleorder failed\n\nsales_order response is $s', array('$s'=>$sales_order_response) );
+            eascompliance_log('error', 'sales_order response is $s', array('$s'=>$sales_order_response) );
+			throw new Exception( EAS_TR('createpostsaleorder failed'));
 		}
 
 		$order->save();
@@ -2215,7 +2216,8 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
                 }
             };
             if ( count($order_items) != count($cart_items)) {
-                throw new Exception('number of order_items $oi does not match number of items in cart $ci, please check', array('$oi'=>count($order_items), '$ci'=> count($cart_items)));
+                eascompliance_log('error', 'number of order_items $oi does not match number of items in cart $ci, please check', array('$oi'=>count($order_items), '$ci'=> count($cart_items)));
+                throw new Exception(EAS_TR('number of order_items does not match number of items in cart'));
             }
 			foreach ( $order_items as $k => $order_item ) {
 				$cart_item   = $cart_items[ $ix ];
