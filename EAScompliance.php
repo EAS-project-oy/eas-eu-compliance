@@ -2314,6 +2314,7 @@ function eascompliance_cart_total($current_total = null) {
 		$cart_total = 0;
 		$cart_items = array_values(WC()->cart->get_cart_contents());
 		foreach ($cart_items as $cart_item) {
+			if (array_key_exists('line_total',$cart_item))
 			$cart_total += round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
 		}
 
