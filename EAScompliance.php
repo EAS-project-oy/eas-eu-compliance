@@ -321,7 +321,7 @@ function eascompliance_log_level($level) {
 /**
  * Log message or exception if log level is enabled
  */
-function eascompliance_log($level, $message, $vars = null) {
+function eascompliance_log($level, $message, $vars = null, $callstack = false) {
     if ( !eascompliance_log_level($level) ) {
         return;
     }
@@ -346,6 +346,15 @@ function eascompliance_log($level, $message, $vars = null) {
 		}
 		$txt = $level . ' ' . print_r($message, true);
     }
+
+	if ($callstack) {
+        $ex = new Exception();
+		ob_start();
+		var_dump($ex->getTraceAsString());
+		$trace = ob_get_contents();
+		ob_end_clean();
+		$txt .= "\n Callstack: " . $trace;
+	}
 
     // log $txt
     if ( $level === 'info') {
@@ -779,11 +788,11 @@ function eascompliance_get_oauth_token() {
 		}
 		elseif ( '401' === $auth_response_status ) {
             // Unauthorized
-			eascompliance_log('error', 'Authorization failed: ' . $auth_response );
+			eascompliance_log('error', 'Authorization failed: $r', array('$r'=> $auth_response));
 			throw new EAScomplianceAuthorizationFaliedException( EAS_TR( 'EU tax calculation service temporary unavailable. Please try to place an order later.' ) );
 		}
 		else {
-			eascompliance_log('error', 'Auth response not OK: ' . $auth_response );
+			eascompliance_log('error', 'Auth response not OK: $r', array('$r'=> $auth_response) );
 			throw new Exception( EAS_TR( 'EU tax calculation service temporary unavailable. Please try to place an order later.' ) );
 		}
 
@@ -2885,8 +2894,8 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 				if ( is_string($shm) && array_key_exists( $shm, $packages[ $px ]['rates'] ) ) {
                     $shipping_rate = $packages[ $px ]['rates'][ $shm ];
 					$shipping_rate->set_cost( $cart_item0['EAScompliance DELIVERY CHARGE'] ); // $payload_j['delivery_charge_vat_excl']; //.
-					$shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] ) //$payload_j['delivery_charge_vat']; //.
-					);
+					$shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'] )); //$payload_j['delivery_charge_vat']; //.
+
 				}
 				// update $calc_jreq_saved with new delivery_cost //.
 				$calc_jreq_saved                  = WC()->session->get( 'EAS API REQUEST JSON' );
