@@ -934,7 +934,6 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
     if ($currency_conversion) {
       $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
     }
-	$calc_jreq['delivery_cost']     = $delivery_cost;
 
     $currency = get_woocommerce_currency();
 
@@ -945,6 +944,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 			if ( ! is_null($woocommerce_wpml) ) {
 				$currency = $woocommerce_wpml->multi_currency->get_client_currency();
 				$wcml_enabled = true;
+				if ($currency_conversion) {
+					$delivery_cost = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($delivery_cost);
+				}
 				eascompliance_log('request', 'WCML currency is $c', array('$c'=>$currency));
 			}
 		}
@@ -958,6 +960,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		eascompliance_log('request', 'WC_Payments_Multi_Currency currency is $c', array('$c'=>$currency));
 	}
 	$calc_jreq['payment_currency']  = $currency;
+	$calc_jreq['delivery_cost']     = $delivery_cost;
 
     // check for required fields in taxes calculation
     $required_fields = preg_split( '/\s/', 'shipping_country shipping_first_name shipping_last_name shipping_address_1 shipping_city shipping_postcode billing_email');
@@ -2255,8 +2258,10 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 			//WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again for first found shipping item
 			foreach($order->get_items('shipping') as $shipping_item)  {
                 if ( 0 == $shipping_item->get_total_tax() and 0 != $delivery_charge_vat ) {
+                    if ( $deduct_vat_outside_eu > 0 ) {
+						$delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
+                    }
 					eascompliance_log('place_order', 'correct shipping item tax to $tax', array('$tax'=>$delivery_charge_vat));
-                    $delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
 					$shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat) );
                 }
                 break;
