@@ -633,6 +633,23 @@ function eascompliance_wcml_switch_currency($post_data) {
 }
 
 if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_applied_coupon', 'eascompliance_woocommerce_applied_coupon', 10, 1 );
+}
+/**
+ *  Reset calculations when coupons are applied
+ */
+function eascompliance_woocommerce_applied_coupon($post_data) {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+        eascompliance_unset();
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex );
+		throw $ex;
+	}
+}
+
+if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
 /**
@@ -934,26 +951,27 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
     if ($currency_conversion) {
       $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
     }
+    $cart_discount = (float)$cart->get_discount_total();
 
     $currency = get_woocommerce_currency();
 
-	$wcml_enabled = false;
-	if ( function_exists('wcml_is_multi_currency_on') ) {
-		if ( wcml_is_multi_currency_on() ) {
-			global $woocommerce_wpml;
-			if ( ! is_null($woocommerce_wpml) ) {
-				$currency = $woocommerce_wpml->multi_currency->get_client_currency();
-				$wcml_enabled = true;
-				if ($currency_conversion) {
-					$delivery_cost = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($delivery_cost);
-				}
-				eascompliance_log('request', 'WCML currency is $c', array('$c'=>$currency));
-			}
-		}
-		else {
-			eascompliance_log('request', 'WCML present and disabled');
-		}
-	}
+	$wcml_enabled = eascompliance_is_wcml_enabled();
+	if ( $wcml_enabled ) {
+        global $woocommerce_wpml;
+        $currency = $woocommerce_wpml->multi_currency->get_client_currency();
+
+        // WCML breaks $cart->get_discount_total() so we re-calculcate it
+        $cart_discount = (float)0;
+        foreach( $cart->get_coupons() as $coupon) {
+            $cart_discount += $coupon->get_amount();
+        }
+
+        if ($currency_conversion) {
+            $delivery_cost = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($delivery_cost);
+            $cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
+        }
+        eascompliance_log('request', 'WCML currency is $c, delivery cost is $dc, cart discount is $cd', array('$c'=>$currency, '$dc'=>$delivery_cost, '$cd'=>$cart_discount));
+    }
 	if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
 		$multi_currency = WC_Payments_Multi_Currency();
 		$currency = $multi_currency->get_selected_currency()->get_code();
@@ -1009,7 +1027,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		}
 
 		$cost_provided_by_em =   round( (float) $cart_item['line_total'] / $cart_item['quantity'], 2 );
-		if ( $wcml_enabled and $currency_conversion ) {
+		if ( $wcml_enabled ) {
 			global $woocommerce_wpml;
 			$cost_provided_by_em = (float) $woocommerce_wpml->multi_currency->prices->get_product_price_in_currency( $product_id, $currency );
 		}
@@ -1044,9 +1062,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 	eascompliance_log('request','$items before discount '.print_r($order_breakdown_items, true));
 	// split cart discount proportionally between items
 	// making and solving equation to get new item price //.
-	$d = $cart->get_discount_total(); // discount d    //.
-	$t = 0; // cart total  T = p1*q1 + p2*q2           //.
-	$q = 0; // total quantity Q = q1 + q2              //.
+	$d = $cart_discount; // discount d    //.
+	$t = 0; // cart total  t = p1*q1 + p2*q2           //.
+	$q = 0; // total quantity q = q1 + q2              //.
 	foreach ( $order_breakdown_items as $item ) {
 		$t += $item['quantity'] * $item['cost_provided_by_em'];
 		$q += $item['quantity'];
@@ -1058,11 +1076,11 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 			$p1 = $item['cost_provided_by_em'];
 
 			// Equation: cart total is sum of price*qnty of each item, new price*qnty relates to original price*qnty same as p*q of first item relates to p*q of others //.
-			// p1 * q1 + p2 * q2 = T                              //.
-			// x1 * q1 + x2 * q2 = T - d                          //.
+			// p1 * q1 + p2 * q2 = t                              //.
+			// x1 * q1 + x2 * q2 = t - d                          //.
 			// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
 			$item['cost_provided_by_em'] = $p1 * ( $t - $d ) / $t;
-			eascompliance_log('request',"\$T $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']);
+			eascompliance_log('request',"\$t $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em ".$item['cost_provided_by_em']);
 		}
 	}
 	$calc_jreq['order_breakdown'] = $order_breakdown_items;
@@ -1274,15 +1292,20 @@ function eascompliance_ajaxhandler() {
 		// save request json into session //.
 		WC()->session->set( 'EAS API REQUEST JSON', $calc_jreq );
 
-		WC()->session->set( 'EAS CART DISCOUNT', WC()->cart->get_discount_total() );
+		$cart = WC()->cart;
+		$cart_discount = (float)$cart->get_discount_total();
+        if (eascompliance_is_wcml_enabled()) {
+			global $woocommerce_wpml;
+			$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
+        }
+		WC()->session->set( 'EAS CART DISCOUNT', $cart_discount );
 
 		$jdebug['CALC request'] = $calc_jreq;
-		// DEBUG EVAL SAMPLE: return print_r(WC()->checkout->get_posted_data(), true);  //.
 
 		$confirm_hash = base64_encode(
 			json_encode(
 				array(
-					'cart_hash'               => WC()->cart->get_cart_hash(),
+					'cart_hash'               => $cart->get_cart_hash(),
 					'eascompliance_nonce_api' => wp_create_nonce( 'eascompliance_nonce_api' ),
 				),
 				EASCOMPLIANCE_JSON_THROW_ON_ERROR
@@ -1592,6 +1615,7 @@ function eascompliance_redirect_confirm() {
 		$cart = WC()->cart;
 
 		$discount = WC()->session->get( 'EAS CART DISCOUNT' );
+		eascompliance_log('debug', 'EAS CART DISCOUNT get is $t', array('$t'=>WC()->session->get( 'EAS CART DISCOUNT' )));
 
 		// calculate $total_price and $most_expensive_item //.
 		$total_price                 = 0;
@@ -1775,6 +1799,35 @@ function eascompliance_is_standard_checkout() {
 		}
 
 		return true;
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+/**
+ * Check if WCML/WPML plugin is enabled
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_is_wcml_enabled() {
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		$wcml_enabled = false;
+		if ( function_exists('wcml_is_multi_currency_on') ) {
+			if ( wcml_is_multi_currency_on() ) {
+				global $woocommerce_wpml;
+				if ( ! is_null($woocommerce_wpml) ) {
+					$wcml_enabled = true;
+				}
+			}
+		}
+
+		return $wcml_enabled;
 
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
