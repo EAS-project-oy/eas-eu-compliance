@@ -1,12 +1,12 @@
 ===  EAS EU compliance  ===
 
-Contributors: easyaccesssystem 
+Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 6.5.1
 Tested up to: 6.0
-Stable tag: 1.3.42
+Stable tag: 1.3.38
 Last updated time: 10.07.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -16,17 +16,38 @@ EAS solution automates the complicated EU VAT, IOSS, OSS and customs compliance.
  
 == Description ==
 
+__Note!__ EAS Registration is required. Register at
+[https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY")
 
-**Sell throughout the whole EU with EAS comprehensive, powerful VAT compliance.** 
+**Easy EU sales with IOSS & OSS automation** 
+
+EAS is an all-inclusive IOSS & OSS solution. EAS automates everything from IOSS registration and Smart VAT calculations to IOSS/OSS reporting and filing.
+
+**IOSS registration**
+
+EAS registers companies for IOSS and acts as an intermediary. EAS has no starting or monthly fees.
+
+**30-minute onboarding / How to get started**
+
+Getting started is easy! EAS makes you EU compliant within minutes.
+
+1. Start by registering at  [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
+2. Install the EAS Plugin, or request free EAS installation assistance
+3. If you decide to install the plugin yourself, please follow setup instructions at the [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide  "EAS Help Centre").
+
+**Sell throughout the whole EU with EAS comprehensive, powerful VAT compliance.**
 
 Whether you deliver from outside of the EU or intra-EU, EAS automates VAT compliance, from Smart calculation to preparing the ready-for-filing reports or production of accountant-friendly data. And of course, we utilise the 600k reduced rates when calculating VAT providing you more margin or lower prices to customers. We know the VAT compliance, you don’t have to.
-
 
 **All automatic and without stress.** 
 
 You have spent time and effort building your store, which is why EAS Solution supports all functionalities serious e-merchants need, such as multi-warehouse, discounts types, HS codes and returns.
 
-**Transparent and clear pricing** The transaction fee is simple and transparent, you always know the charges. We do only charge for cross-border sales. In other words, if you don’t use it, there are no charges.
+**Transparent and clear pricing** 
+
+The transaction fee is simple and transparent, you always know the charges. We do only charge for cross-border sales. In other words, if you don’t use it, there are no charges.
+
+Full pricing at [https://easproject.com](https://easproject.com/#pricing "Look at our pricing, it is clear and transparent")
 
 Available in the following languages:
 
@@ -57,17 +78,18 @@ The following currency switcher plugins are supported:
 
 == Installation ==
 
-1. Upload the plugin files to the '/wp-content/plugins' directory and unzip, or install the plugin through the WordPress plugins screen directly.
-2. Activate  EAS EU compliance plugin through the 'Plugins' screen in WordPress.
-3. Go to WooCommerce → EAS EU compliance tab
-4. Input the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api.
-5. If you already registered, then obtain authorization keys in Merchant Dashboard [https://dashboard.easproject.com](https://dashboard.easproject.com "Visit EAS Dashboard for your credentials"). If no please register at [https://registration.easproject.com](https://registration.easproject.com "Get credentials by registering to EAS project OY")
-6. Set the language interface for the Plugin (EN for English is set by Default).
-7. Tick the box "Enable EAS EU compliance" and press "Save changes" to test connection with API and create necessary EAS system attributes.
-8. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
-9. Setup delivery option
-10. Setup additional product attributes
-11. Detailed instructions available at [Installation and Setup guide.pdf](https://github.com/EAS-project-oy/eas-eu-compliance/blob/main/doc/Installation%20and%20Setup%20guide%201.1.pdf "Installation and setup manual for plugin on github") or in the plugin directory under the 'doc' folder
+1.	Register with EAS at [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
+2. Install the plugin through the WordPress plugin directory
+3. Activate  EAS EU compliance plugin through the 'Plugins' screen in WordPress.
+4. Go to WooCommerce → EAS EU compliance tab
+5. Input the following connection point for connection to EAS system API: https://manager.easproject.com/api.
+6. If you already registered, then obtain authorization keys in Merchant Dashboard [https://dashboard.easproject.com](https://dashboard.easproject.com "Visit EAS Dashboard for your credentials"). If no please register at [https://easproject.com/](https://easproject.com/ "Get credentials by registering to EAS project OY")
+7. Set the language interface for the Plugin (EN for English is set by Default).
+8. Tick the box "Enable EAS EU compliance" and press "Save changes" to test connection with API and create necessary EAS system attributes.
+9. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
+10. Setup delivery options
+11. Setup additional product attributes
+12. Detailed instructions available at [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide "Visit EAS Help Center for instructions and manuals.") or manual can be found in the plugin directory under the 'doc' folder.
 
 = Manual installation =
 
@@ -75,8 +97,9 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Screenshots ==
 
-1. Only few configuation options to be set up on main configuration screen contain
-2. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
+1. Only few configuation options to be set up on main configuration screen contains.
+2. EAS calculates EU taxes and uses reduced VAT rates.
+3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
 
