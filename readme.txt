@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 6.5.1
 Tested up to: 6.0
-Stable tag: 1.3.38
+Stable tag: 1.3.42
 Last updated time: 10.07.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -57,11 +57,11 @@ The following currency switcher plugins are supported:
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins` directory and unzip, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to the '/wp-content/plugins' directory and unzip, or install the plugin through the WordPress plugins screen directly.
 2. Activate  EAS EU compliance plugin through the 'Plugins' screen in WordPress.
 3. Go to WooCommerce → EAS EU compliance tab
-4. Input the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api. 
-5. If you already registered, then obtain authorization keys in Merchant Dashboard https://dashboard.easproject.com. If no please register at https://register.easproject.com
+4. Input the following connection point for connection to EAS system API (item 1 above): https://manager.easproject.com/api.
+5. If you already registered, then obtain authorization keys in Merchant Dashboard [https://dashboard.easproject.com](https://dashboard.easproject.com "Visit EAS Dashboard for your credentials"). If no please register at [https://registration.easproject.com](https://registration.easproject.com "Get credentials by registering to EAS project OY")
 6. Set the language interface for the Plugin (EN for English is set by Default).
 7. Tick the box "Enable EAS EU compliance" and press "Save changes" to test connection with API and create necessary EAS system attributes.
 8. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
@@ -79,6 +79,11 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 2. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.3.42 =
+* Delivery option support inhanced
+* Refund management inhanced
+* WPML support inhanced
 
 = 1.3.38 =
 * Woocommerce multy currency impelmented
