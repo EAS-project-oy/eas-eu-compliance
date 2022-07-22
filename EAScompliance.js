@@ -133,6 +133,12 @@ jQuery(document).ready(function($) {
         $( 'form.checkout #is_user_checkout' ).remove()
     })
 
+    // avoid calculate reset when payment method changes
+    $('form.checkout').on('change', 'input[name="payment_method"]', function() {
+        $( 'form.checkout #is_user_checkout' ).remove()
+        $( 'form.checkout' ).append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+    })
+
     $(document.body).one("updated_checkout", async function () {
         if ($('.eascompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'
