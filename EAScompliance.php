@@ -1013,7 +1013,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
     
 	$order_breakdown_items          = array();
 	foreach ( $cart->get_cart() as $k => $cart_item ) {
-		$product_id = $cart_item['product_id'];
+		$product_id =  $cart_item['variation_id'] ?: $cart_item['product_id'];
 		$product    = wc_get_product( $product_id );
 
 		$location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
