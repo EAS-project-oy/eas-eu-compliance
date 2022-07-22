@@ -139,6 +139,11 @@ jQuery(document).ready(function($) {
         $( 'form.checkout' ).append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
     })
 
+    // move security_check message higher for reload link to work
+    if ($('.woocommerce-error #error_security_check').length) {
+        $('.woocommerce').prepend(($('.woocommerce-error #error_security_check').parents('.woocommerce-error')))
+    }
+
     $(document.body).one("updated_checkout", async function () {
         if ($('.eascompliance_status').text() == 'present') {
             // restore fields from what was submitted upon 'Calculate'

@@ -489,7 +489,7 @@ function eascompliance_woocommerce_billing_fields( $address_fields, $country ) {
 
 		$address_fields = array_replace_recursive($address_fields, $required_fields);
         if ( is_null($address_fields)) {
-            throw new Exception( __('Unable to set required fields','eascompliance') );
+            throw new Exception( EAS_TR('Unable to set required fields','eascompliance') );
         }
 
         return $address_fields;
@@ -543,7 +543,7 @@ function eascompliance_woocommerce_shipping_fields( $address_fields, $country ) 
 
 		$address_fields = array_replace_recursive($address_fields, $required_fields);
         if ( is_null($address_fields)) {
-            throw new Exception( __('Unable to set required fields','eascompliance') );
+            throw new Exception( EAS_TR('Unable to set required fields','eascompliance') );
         }
 
         return $address_fields;
@@ -1471,7 +1471,7 @@ function eascompliance_redirect_confirm() {
 				eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_GET is $GET', array('GET'=>$_GET));
             }
             else {
-				throw new Exception( EAS_TR( 'Security check' ) );
+				throw new Exception( EAS_TR( 'Security check, please <a id=error_security_check href="./">reload</a> page.' ) );
             }
 		};
 
@@ -3162,7 +3162,7 @@ function eascompliance_woocommerce_checkout_order_created( $order ) {
 		eascompliance_log('info', "Notify Order number $order_id successful" );
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
-		$order->add_order_note( eascompliance_format( __( 'Notify Order number $order_id failed: ' ), array( 'order_id' => $order_id ) ) . $ex->getMessage() );
+		$order->add_order_note( eascompliance_format( EAS_TR( 'Notify Order number $order_id failed: ' ), array( 'order_id' => $order_id ) ) . $ex->getMessage() );
 	} finally {
 				restore_error_handler();
 	}
@@ -3239,7 +3239,7 @@ function eascompliance_woocommerce_order_status_changed( $order_id, $status_from
 		if ( '200' === $payment_status ) {
 			$order->add_order_note(
 				eascompliance_format(
-					__( 'Order status changed from $status_from to $status_to .  EAS API payment notified' ),
+					EAS_TR( 'Order status changed from $status_from to $status_to .  EAS API payment notified' ),
 					array(
 						'status_from' => $status_from,
 						'status_to'   => $status_to,
@@ -4238,8 +4238,8 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance() {
 			update_option( 'woocommerce_tax_display_cart', 'excl' );
 			WC_Admin_Settings::add_message( eascompliance_format( EAS_TR('Due to correct display of Duties and Taxes for the client EAS compliance plugin changed setting $setting in the $tax_section' )
             , array(
-                    'setting'=> __( 'Display prices during cart and checkout', 'woocommerce' ),
-                    'tax_section'=> __( 'Tax options', 'woocommerce' ),
+                    'setting'=> EAS_TR( 'Display prices during cart and checkout', 'woocommerce' ),
+                    'tax_section'=> EAS_TR( 'Tax options', 'woocommerce' ),
             )));
         }
 
