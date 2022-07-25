@@ -46,6 +46,16 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance') {
 		$locale = 'en_US';
 	} elseif ( 'FI' === $plugin_lang ) {
 		$locale = 'fi';
+	} elseif ( 'FR' === $plugin_lang ) {
+		$locale = 'fr';
+	} elseif ( 'DE' === $plugin_lang ) {
+		$locale = 'de_DE';
+	} elseif ( 'IT' === $plugin_lang ) {
+		$locale = 'it_IT';
+	} elseif ( 'NL' === $plugin_lang ) {
+		$locale = 'nl_NL';
+	} elseif ( 'SE' === $plugin_lang ) {
+		$locale = 'se_SE';
     }
 
 	$mo_file = dirname( __FILE__ ) . '/languages/'. $textdomain . '-' . $locale . '.mo';
@@ -4035,6 +4045,11 @@ function eascompliance_settings() {
 				'Default' => EAS_TR( 'Store Default' ),
 				'EN'      => EAS_TR( 'English' ),
 				'FI'      => EAS_TR( 'Finnish' ),
+				'FR'      => EAS_TR( 'French' ),
+				'DE'      => EAS_TR( 'German' ),
+				'IT'      => EAS_TR( 'Italian' ),
+				'NL'      => EAS_TR( 'Netherlands' ),
+				'SE'      => EAS_TR( 'Swedish' ),
 			),
 		),
 		'deduct_vat_outside_eu'                   => array(
