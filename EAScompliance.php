@@ -33,7 +33,7 @@ const WORLD_COUNTRIES = array('AF' => 'Afghanistan', 'AX' => 'Åland Islands', '
  * @param string $text text.
  * @param string $textdomain textdomain.
  * */
-function EAS_TR($text, $textdomain = 'eascompliance') {
+function EAS_TR($text, $textdomain = 'eas-eu-compliance') {
     if (is_textdomain_loaded($textdomain)) {
         return translate( $text, $textdomain );
     }
@@ -50,7 +50,7 @@ function EAS_TR($text, $textdomain = 'eascompliance') {
 
 	$mo_file = dirname( __FILE__ ) . '/languages/'. $textdomain . '-' . $locale . '.mo';
     if ( !file_exists($mo_file)) {
-		$mo_file = dirname( __FILE__ ) . '/languages/eascompliance-en_US.mo';
+		$mo_file = dirname( __FILE__ ) . '/languages/eas-eu-compliance-en_US.mo';
     }
 	load_textdomain( $textdomain, $mo_file );
 
