@@ -5,7 +5,7 @@ msgstr ""
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
-"Language: en_GB\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,12 +15,12 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:125
 msgid "No tax rate found, please check plugin settings"
-msgstr ""
+msgstr "Please calculate taxes and duties to proceed with payment"
 
 #: EAScompliance.php:151 EAScompliance.php:265
 msgid "Taxes & Duties"
@@ -99,6 +99,9 @@ msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
 msgstr ""
+"We can’t proceed landed cost calculation because required delivery address "
+"field '$field_name' is disabled in the store. Please contact store support "
+"to fix the issue."
 
 #: EAScompliance.php:990
 msgid ""
@@ -125,10 +128,12 @@ msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
 msgstr ""
+"Landed cost calculation can’t be processed until Name and delivery address "
+"provided"
 
 #: EAScompliance.php:1958
 msgid "Order shipping country must be in EU"
-msgstr ""
+msgstr "Shipping country must be in EU"
 
 #: EAScompliance.php:2014
 msgid "Sales order received, updating order $order_id"
@@ -145,6 +150,7 @@ msgstr ""
 #: EAScompliance.php:2624
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr ""
+"Prices do not include VAT, you will be obligated to pay VAT on delivery"
 
 #: EAScompliance.php:3026
 msgid ""
@@ -229,12 +235,14 @@ msgstr ""
 "service  being temporary unavailable. Please try to create Refund later "
 
 #: EAScompliance.php:3738
+#, fuzzy
+#| msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
 "Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund."
+"remove gift card form the refund. "
 
 #: EAScompliance.php:3779
 msgid "Refund confirmed to EAS"
@@ -276,7 +284,7 @@ msgstr ""
 
 #: EAScompliance.php:3998
 msgid "Process imported orders"
-msgstr ""
+msgstr "Process imported orders (post-sale data)"
 
 #: EAScompliance.php:4005
 msgid "EAS API Base URL"
@@ -303,9 +311,8 @@ msgstr ""
 #: EAScompliance.php:4023
 msgid "Use the secret you received from EAS Project"
 msgstr ""
-"Use the client secret you received from EAS Project Dashboard <a "
-"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
-"a>"
+"Use the client secret you received from EAS Project Dashboard <a href="
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:4029
 msgid "Language"
@@ -336,6 +343,8 @@ msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
 msgstr ""
+"Deduct domestic VAT from deliveries to countries where tax calculation is "
+"not supported"
 
 #: EAScompliance.php:4049
 msgid "Shipping methods by post"
@@ -423,9 +432,8 @@ msgid ""
 "selling Gift cards please enter Product type(s) in relevant configuration "
 "settings"
 msgstr ""
-"Attention! EAS plugin detected gift card Product type(s),  if you are "
-"selling Gift cards, please, identify Product type(s) related to Gift cards "
-"in relevant configuration settings"
+"Attention! EAS plugin noticed gift card Product type(s). If you are selling "
+"Gift cards please enter Product type(s) in relevant configuration settings"
 
 #: EAScompliance.php:4239
 msgid ""
