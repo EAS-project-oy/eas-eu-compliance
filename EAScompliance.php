@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.3.44
+ * Version: 1.3.45
  * Tested up to 6.0
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -33,7 +33,7 @@ const WORLD_COUNTRIES = array('AF' => 'Afghanistan', 'AX' => 'Åland Islands', '
  * @param string $text text.
  * @param string $textdomain textdomain.
  * */
-function EAS_TR($text, $textdomain = 'eascompliance') {
+function EAS_TR($text, $textdomain = 'eas-eu-compliance') {
     if (is_textdomain_loaded($textdomain)) {
         return translate( $text, $textdomain );
     }
@@ -46,11 +46,21 @@ function EAS_TR($text, $textdomain = 'eascompliance') {
 		$locale = 'en_US';
 	} elseif ( 'FI' === $plugin_lang ) {
 		$locale = 'fi';
+	} elseif ( 'FR' === $plugin_lang ) {
+		$locale = 'fr';
+	} elseif ( 'DE' === $plugin_lang ) {
+		$locale = 'de_DE';
+	} elseif ( 'IT' === $plugin_lang ) {
+		$locale = 'it_IT';
+	} elseif ( 'NL' === $plugin_lang ) {
+		$locale = 'nl_NL';
+	} elseif ( 'SE' === $plugin_lang ) {
+		$locale = 'se_SE';
     }
 
 	$mo_file = dirname( __FILE__ ) . '/languages/'. $textdomain . '-' . $locale . '.mo';
     if ( !file_exists($mo_file)) {
-		$mo_file = dirname( __FILE__ ) . '/languages/eascompliance-en_US.mo';
+		$mo_file = dirname( __FILE__ ) . '/languages/eas-eu-compliance-en_US.mo';
     }
 	load_textdomain( $textdomain, $mo_file );
 
@@ -4035,6 +4045,11 @@ function eascompliance_settings() {
 				'Default' => EAS_TR( 'Store Default' ),
 				'EN'      => EAS_TR( 'English' ),
 				'FI'      => EAS_TR( 'Finnish' ),
+				'FR'      => EAS_TR( 'French' ),
+				'DE'      => EAS_TR( 'German' ),
+				'IT'      => EAS_TR( 'Italian' ),
+				'NL'      => EAS_TR( 'Netherlands' ),
+				'SE'      => EAS_TR( 'Swedish' ),
 			),
 		),
 		'deduct_vat_outside_eu'                   => array(

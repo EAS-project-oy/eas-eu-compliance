@@ -5,12 +5,12 @@ msgstr ""
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
-"Language: fi\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;"
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
@@ -20,11 +20,12 @@ msgstr ""
 
 #: EAScompliance.php:125
 msgid "No tax rate found, please check plugin settings"
-msgstr "Verokantaa ei löytynyt, tarkista plugin asetukset"
+msgstr ""
+"Aucun taux fiscal n'a été trouvé, veuillez vérifier les paramètres du plug-in"
 
 #: EAScompliance.php:151 EAScompliance.php:265
 msgid "Taxes & Duties"
-msgstr "Verot"
+msgstr "Frais fiscaux et douaniers"
 
 #: EAScompliance.php:232
 msgid "Please calculate taxes and duties to proceed with order payment"
@@ -35,67 +36,73 @@ msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
 msgstr ""
-"Tarkista vaaditut tiedot. Kaikki pakolliset kentät tulee olla täytettynä."
+"Veuillez vérifier les détails de facturation requis. Tous les champs "
+"indiqués comme requis doivent être remplis."
 
 #: EAScompliance.php:405
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
 msgstr ""
-"Tarkista vaaditut toimitustiedot. Kaikki pakolliset kentät tulee olla "
-"täytettynä."
+"Veuillez vérifier les détails d’expédition requis. Tous les champs indiqués "
+"comme requis doivent être remplis."
 
 #: EAScompliance.php:406
 msgid "Calculating taxes and duties ..."
-msgstr "Laskee veroja ..."
+msgstr "Frais fiscaux et douaniers ajoutés..."
 
 #: EAScompliance.php:407
 msgid "Customs taxes and duties added..."
-msgstr "Verot lisätty..."
+msgstr "Frais fiscaux et douaniers ajoutés..."
 
 #: EAScompliance.php:408
 msgid "Waiting for Customs Duties Calculation and confirmation details"
-msgstr "Odottaa vero ja tullilaskelmaa"
+msgstr ""
+"En attente du calcul des droits de douanes et des détails de confirmation"
 
 #: EAScompliance.php:409
 msgid "confirmation"
-msgstr "vahvistus"
+msgstr "confirmation"
 
 #: EAScompliance.php:410
 msgid "Sorry, didn't work, please try again"
-msgstr "Yritä uudelleen"
+msgstr "Désolé, cela n'a pas fonctionné, veuillez réessayer"
 
 #: EAScompliance.php:411
 msgid "Recalculate Taxes and Duties"
-msgstr "Laske verot uudelleen"
+msgstr "Recalculer les frais fiscaux et douaniers"
 
 #: EAScompliance.php:412
 msgid "Standard Checkout"
-msgstr "Oletus Checkout"
+msgstr "Vérification standard"
 
 #: EAScompliance.php:492 EAScompliance.php:546
 msgid "Unable to set required fields"
-msgstr "Pakollisia kenttiä ei voitu määrittää"
+msgstr "Impossible de paramétrer les champs requis"
 
 #: EAScompliance.php:690
 msgid "Calculate Taxes and Duties"
-msgstr "Klikkaa jatkaaksesi tilausta"
+msgstr "Calculer les frais fiscaux et douaniers"
 
 #: EAScompliance.php:796 EAScompliance.php:809 EAScompliance.php:813
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
-msgstr "EU ALV laskentapalvelu toistaiseksi poissa käytöstä."
+msgstr ""
+"Service de calcul de la taxe intracommunautaire temporairement indisponible. "
+"Veuillez essayer de passer une commande plus tard."
 
 #: EAScompliance.php:803
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
-msgstr "Tarkista EAS Client ID ja EAS client secret."
+msgstr ""
+"Identifiants fournis non valides. Veuillez vérifier votre identifiant client "
+"EAS et votre code secret EAS."
 
 #: EAScompliance.php:891 EAScompliance.php:3005
 msgid "Security check"
-msgstr "Turvallisuustarkistus"
+msgstr "Vérification de la sécurité"
 
 #: EAScompliance.php:987
 msgid ""
@@ -128,14 +135,16 @@ msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
 msgstr ""
+"Le calcul du coût en magasin ne peut pas être traité tant que le nom et "
+"l'adresse de livraison ne sont pas indiqués"
 
 #: EAScompliance.php:1958
 msgid "Order shipping country must be in EU"
-msgstr ""
+msgstr "Le pays d'expédition de la commande doit être inclus dans l'UE"
 
 #: EAScompliance.php:2014
 msgid "Sales order received, updating order $order_id"
-msgstr "Tilaus vastaanotettu, päivitetään $order_id"
+msgstr "Ordre de vente reçu, mise à jour de la commande $order_id"
 
 #: EAScompliance.php:2086
 msgid "createpostsaleorder failed"
@@ -154,34 +163,35 @@ msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
 msgstr ""
+"DROITS DE DOUANE MANQUANTS. Please reload page. <a href=\"./\">reload</a>"
 
 #: EAScompliance.php:3081
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
-msgstr "LASKE TULLIMAKSUT UUDELLEEN"
+msgstr "VEUILLEZ RECALCULER LES DROITS DE DOUANE"
 
 #: EAScompliance.php:3153
 msgid "Notify Order number $order_id successful"
-msgstr "Tilausnumero $order_id onnistui"
+msgstr "Notification réussie de la commande numéro $order_id"
 
 #: EAScompliance.php:3165
 msgid "Notify Order number $order_id failed: "
-msgstr "Tilanusnumero $order_id epäonnistui: "
+msgstr "Échec de la notification de l’ordre numéro $order_id : "
 
 #: EAScompliance.php:3242
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
 msgstr ""
-"Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
-"payment ilmoitettu"
+"Le statut de la commande est passé de $status_from à $status_to . "
+"Notification de paiement API EAS"
 
 #: EAScompliance.php:3260
 msgid "Order status change notification failed: "
-msgstr "Tilauksen muutosilmoitus epäonnistui: "
+msgstr "Échec de la notification de modification du statut de la commande : "
 
 #: EAScompliance.php:3329
 msgid "Order $order_id payment notified to EAS"
-msgstr ""
+msgstr "Paiement de la commande $order_id transmis à EAS"
 
 #: EAScompliance.php:3339
 msgid ""
@@ -197,45 +207,42 @@ msgstr ""
 
 #: EAScompliance.php:3673
 msgid "Refund create failed: "
-msgstr "Palautus epäonnistui: "
+msgstr "Échec de la demande de remboursement "
 
 #: EAScompliance.php:3709
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
 msgstr ""
-"Palautus $refund_id peruuntui ja poistettiin riittämättömän tuotemäärän "
-"vuoksi. "
+"La demande de remboursement $refund_id a été annulée et supprimée en raison "
+"d'un nombre d'articles insuffisant. "
 
 #: EAScompliance.php:3716
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
-"Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
-"palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen. "
+"La demande de remboursement $refund_id a été annulée et supprimée en raison "
+"de la présence d'une carte cadeau. "
 
 #: EAScompliance.php:3723
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
 msgstr ""
-"Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
-"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
+"La demande de remboursement $refund_id a été annulée et supprimée car le "
+"service de gestion des remboursements est temporairement indisponible. "
+"Veuillez essayer de créer une demande de remboursement ultérieurement "
 
 #: EAScompliance.php:3730
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
-"Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
-"on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
 
 #: EAScompliance.php:3738
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
-"Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
-"palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen."
 
 #: EAScompliance.php:3779
 msgid "Refund confirmed to EAS"
@@ -243,85 +250,85 @@ msgstr ""
 
 #: EAScompliance.php:3784
 msgid "Refund confirm failed: "
-msgstr "Palautus epäonnistui "
+msgstr ""
 
 #: EAScompliance.php:3807
 msgid "Log EAS order data"
-msgstr ""
+msgstr "Saisir les données de commande EAS"
 
 #: EAScompliance.php:3814
-#, fuzzy
-#| msgid "Calculate Taxes and Duties"
 msgid "Calculate Taxes & Duties EAS"
-msgstr "Klikkaa jatkaaksesi tilausta"
+msgstr "Calculer les frais fiscaux et douaniers EAS"
 
 #: EAScompliance.php:3960
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: EAScompliance.php:3961
 msgid "Error"
-msgstr ""
+msgstr "Erreur"
 
 #: EAScompliance.php:3976
 msgid "Settings"
-msgstr "Asetukset"
+msgstr "Paramètres"
 
 #: EAScompliance.php:3982
 msgid "Enable/Disable"
-msgstr "Ota käyttöön / poista käytöstä"
+msgstr "Activer/Désactiver"
 
 #: EAScompliance.php:3989
 msgid "Log levels"
-msgstr ""
+msgstr "Déboguer"
 
 #: EAScompliance.php:3998
 msgid "Process imported orders"
-msgstr ""
+msgstr "Traitement des commandes importées"
 
 #: EAScompliance.php:4005
 msgid "EAS API Base URL"
-msgstr "EAS API Base URL"
+msgstr "URL de base API EAS"
 
 #: EAScompliance.php:4007
 msgid "API URL"
-msgstr "API URL"
+msgstr "URL API"
 
 #: EAScompliance.php:4013
 msgid "EAS client ID"
-msgstr "EAS client ID"
+msgstr "Identifiant client EAS"
 
 #: EAScompliance.php:4015
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
-"Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
-"easproject.com\">https://dashboard.easproject.com</a>"
+"Utilisez l'identifiant client que vous avez reçu de EAS Project Dashboard <a "
+"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
+"a>"
 
 #: EAScompliance.php:4021
 msgid "EAS client secret"
-msgstr "EAS client secret"
+msgstr "Code client secret EAS"
 
 #: EAScompliance.php:4023
 msgid "Use the secret you received from EAS Project"
 msgstr ""
-"Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
-"easproject.com\">https://dashboard.easproject.com/</a>"
+"Utilisez le code secret que vous avez reçu de EAS Project  Dashboard <a "
+"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
+"a>"
 
 #: EAScompliance.php:4029
 msgid "Language"
-msgstr "Kieli"
+msgstr "Langue"
 
 #: EAScompliance.php:4031
 msgid "Choose language for user interface of plugin"
-msgstr "Valitse plugin kieli"
+msgstr "Choisissez la langue pour l'interface utilisateur du plug-in"
 
 #: EAScompliance.php:4033
 msgid "Default"
-msgstr "Vakio"
+msgstr "Par défaut"
 
 #: EAScompliance.php:4035
 msgid "Store Default"
-msgstr "Kaupan vakioasetus"
+msgstr "Boutique par défaut"
 
 #: EAScompliance.php:4036
 msgid "English"
@@ -339,75 +346,86 @@ msgstr ""
 
 #: EAScompliance.php:4049
 msgid "Shipping methods by post"
-msgstr "Postitusvaihtoehdot"
+msgstr "Méthodes d'expédition par voie postale"
 
 #: EAScompliance.php:4052
 msgid "Select shipping methods for delivery by post"
-msgstr "Valitse postitusvaihtoehdot"
+msgstr ""
+"Sélectionnez les méthodes d'expédition pour une livraison par voie postale"
 
 #: EAScompliance.php:4068
 msgid "HSCODE"
-msgstr "HS-koodi"
+msgstr "CODEHS"
 
 #: EAScompliance.php:4070
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
-msgstr "HS-koodi tunniste. Atribuutti luodaan jos sitä ei ole."
+msgstr ""
+"Caractéristique de la ligne de code HS. Une caractéristique sera créée si "
+"elle n'existe pas."
 
 #: EAScompliance.php:4078
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
-msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole."
+msgstr ""
+"Caractéristique de localisation du pays d'entreposage de la ligne de code. "
+"Une caractéristique sera créée si elle n'existe pas."
 
 #: EAScompliance.php:4084
 msgid "Reduced VAT for TBE"
-msgstr "Alennettu verokanta elektroniselle tuotteelle"
+msgstr "TVA réduite pour TBE"
 
 #: EAScompliance.php:4086
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
-"Alennettu verokanta elektroniselle tuotteelle tunniste. Atribuutti luodaan "
-"jos sitä ei ole."
+"Caractéristique de TVA réduite pour le titulaire de TBE de la ligne de code. "
+"Une caractéristique sera créée si elle n'existe pas."
 
 #: EAScompliance.php:4092
 msgid "Act as Disclosed Agent"
-msgstr "Toimi vapaana agenttina (Disclosed Agent)"
+msgstr "Agit en tant que mandataire principal"
 
 #: EAScompliance.php:4094
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
-msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole."
+msgstr ""
+"Agit en tant que mandataire principal du titulaire de la ligne de code. Une "
+"caractéristique sera créée si elle n'existe pas."
 
 #: EAScompliance.php:4100
 msgid "Seller registration country"
-msgstr "Maa johon myyjä on rekisteröitynyt"
+msgstr "Pays d'immatriculation du vendeur"
 
 #: EAScompliance.php:4102
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
-msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole."
+msgstr ""
+"Pays d'immatriculation du vendeur titulaire de la ligne de code. Une "
+"caractéristique sera créée si elle n'existe pas."
 
 #: EAScompliance.php:4108
 msgid "Originating Country"
-msgstr "Tuotteen alkuperämaa"
+msgstr "Pays d'origine"
 
 #: EAScompliance.php:4110
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
-msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole."
+msgstr ""
+"Caractéristique du pays d'origine du titulaire de la ligne de code. Une "
+"caractéristique sera créée si elle n'existe pas."
 
 #: EAScompliance.php:4116
 msgid "Giftcard product types"
-msgstr "Lahjakortit"
+msgstr "Type(s) de produits relatifs aux cartes cadeaux"
 
 #: EAScompliance.php:4119
 msgid "Product type(s) used for Gift cards management"
-msgstr ""
+msgstr "Type(s) de produits utilisés pour la gestion des cartes cadeaux"
 
 #: EAScompliance.php:4157
 msgid ""
@@ -415,50 +433,43 @@ msgid ""
 "selling Gift cards please enter Product type(s) in relevant configuration "
 "settings"
 msgstr ""
+"Attention ! Le plug-in EAS a détecté des type(s) de produits relatifs aux "
+"cartes cadeaux. Si vous vendez des cartes cadeaux, veuillez saisir le(s) "
+"type(s) de produits relatifs aux cartes cadeaux dans les paramètres de "
+"configuration pertinents"
 
 #: EAScompliance.php:4239
 msgid ""
 "Due to correct display of Duties and Taxes for the client EAS compliance "
 "plugin changed setting $setting in the $tax_section"
 msgstr ""
-"EAS sovellus vaihtoi asetuksen $setting $tax_section kohdassa verojen ja "
-"tullien oikeellisuuden vuoksi"
+"En raison d'un affichage correct des frais fiscaux et douaniers pour le "
+"client, le plug-in de conformité EAS a modifié le paramètre $setting dans la "
+"$tax_section"
 
 #: EAScompliance.php:4241
 msgid "Display prices during cart and checkout"
-msgstr "Näytä hinnat ostoskorissa ja checkout:issa"
+msgstr "Afficher les prix dans le panier et lors de la vérification"
 
 #: EAScompliance.php:4242
 msgid "Tax options"
-msgstr "Verovaihtoehdot"
+msgstr "Options fiscales"
 
 #: EAScompliance.php:4541
-#, fuzzy
-#| msgid ""
-#| "Invalid Credentials provided. Please check EAS client ID and EAS client "
-#| "secret."
 msgid ""
 "Authorisation failed, wrong credentials provided. Please check your Client "
 "ID and Client secret."
-msgstr "Tarkista EAS Client ID ja EAS client secret."
+msgstr ""
+"Échec de l'autorisation, les mauvais identifiants ont été fournis. Veuillez "
+"vérifier votre identifiant client et votre code client secret."
+
+#~ msgid "Version"
+#~ msgstr "Version"
 
 #~ msgid "Refund return created. Refund id $refund_id "
-#~ msgstr "Maksun palaus aloitettu. Palautuksen tunnus $refund_id"
-
-#~ msgid "$payload_total_order_amount $a not equal order total $b"
-#~ msgstr ""
-#~ "Laskettu $payload_total_order_amount $a ei vastaa ostoskorin summaa $b"
-
-#~ msgid "Debug"
-#~ msgstr "Debug"
-
-#~ msgid "CUSTOMS DUTIES MISSING"
-#~ msgstr "TULLIMAKSUT PUUTTUVAT"
-
-#~ msgid "Authentication failed with response status $auth_response_status"
-#~ msgstr "Vahvistus epäonnistui: $auth_response_status"
+#~ msgstr "Refund is created (merchandise is returned) $refund_id "
 
 #, fuzzy
 #~| msgid "Shipping methods by post"
 #~ msgid "Chosen shipping method must not be empty!"
-#~ msgstr "Postitusvaihtoehdot"
+#~ msgstr "Shipping methods carried out by postal operators"

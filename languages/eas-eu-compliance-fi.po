@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:125
@@ -247,7 +247,7 @@ msgstr "Palautus epäonnistui: "
 
 #: EAScompliance.php:3807
 msgid "Log EAS order data"
-msgstr ""
+msgstr "Vie EAS tilausdata"
 
 #: EAScompliance.php:3814
 msgid "Calculate Taxes & Duties EAS"
