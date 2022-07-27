@@ -973,7 +973,15 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
         // WCML breaks $cart->get_discount_total() so we re-calculcate it
         $cart_discount = (float)0;
         foreach( $cart->get_coupons() as $coupon) {
-            $cart_discount += $coupon->get_amount();
+			if ($coupon->get_discount_type() === 'fixed') {
+				$cart_discount += $coupon->get_amount();
+			} elseif ($coupon->get_discount_type() === 'percent') {
+				$cart_discount = WC()->session->get('EAS CART DISCOUNT');
+                if ($currency_conversion) {
+					$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->unconvert_price_amount($cart_discount);
+                }
+                break;
+			}
         }
 
         if ($currency_conversion) {
@@ -1306,6 +1314,14 @@ function eascompliance_ajaxhandler() {
 		$cart_discount = (float)$cart->get_discount_total();
         if (eascompliance_is_wcml_enabled()) {
 			global $woocommerce_wpml;
+			//$woocommerce_wpml->cart->wcml_refresh_cart_total();
+			//$woocommerce_wpml->cart->woocommerce_calculate_totals($cart);
+			//WC()->cart->calculate_totals();
+			//eascompliance_log('debug', 'wcml cart is $c', array('$c'=>$woocommerce_wpml->cart));
+            //TODO cart total is wrong here, but where is correct one? Above tries give error
+            //  ErrorException Undefined index: product_id @/home/beaustoc/public_html/wp-content/plugins/woocommerce-multilingual/inc/class-wcml-cart.php:309
+			$cart_discount = (float)$cart->get_discount_total();
+			eascompliance_log('debug', 'wcml cart discount is $c', array('$c'=>$cart_discount));
 			$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
         }
 		WC()->session->set( 'EAS CART DISCOUNT', $cart_discount );
@@ -1625,7 +1641,6 @@ function eascompliance_redirect_confirm() {
 		$cart = WC()->cart;
 
 		$discount = WC()->session->get( 'EAS CART DISCOUNT' );
-		eascompliance_log('debug', 'EAS CART DISCOUNT get is $t', array('$t'=>WC()->session->get( 'EAS CART DISCOUNT' )));
 
 		// calculate $total_price and $most_expensive_item //.
 		$total_price                 = 0;
