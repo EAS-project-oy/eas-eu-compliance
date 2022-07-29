@@ -977,9 +977,10 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 				$cart_discount += $coupon->get_amount();
 			} elseif ($coupon->get_discount_type() === 'percent') {
 				$cart_discount = WC()->session->get('EAS CART DISCOUNT');
-                if ($currency_conversion) {
+				eascompliance_log('request', 'WCML taking cart discount from session $c', array('$c'=>$cart_discount));
+				if ($currency_conversion) {
 					$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->unconvert_price_amount($cart_discount);
-                }
+				}
                 break;
 			}
         }
@@ -1313,16 +1314,7 @@ function eascompliance_ajaxhandler() {
 		$cart = WC()->cart;
 		$cart_discount = (float)$cart->get_discount_total();
         if (eascompliance_is_wcml_enabled()) {
-			global $woocommerce_wpml;
-			//$woocommerce_wpml->cart->wcml_refresh_cart_total();
-			//$woocommerce_wpml->cart->woocommerce_calculate_totals($cart);
-			//WC()->cart->calculate_totals();
-			//eascompliance_log('debug', 'wcml cart is $c', array('$c'=>$woocommerce_wpml->cart));
-            //TODO cart total is wrong here, but where is correct one? Above tries give error
-            //  ErrorException Undefined index: product_id @/home/beaustoc/public_html/wp-content/plugins/woocommerce-multilingual/inc/class-wcml-cart.php:309
-			$cart_discount = (float)$cart->get_discount_total();
-			eascompliance_log('debug', 'wcml cart discount is $c', array('$c'=>$cart_discount));
-			$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
+			$cart_discount = (float)WC()->session->get( 'EAS CART DISCOUNT');
         }
 		WC()->session->set( 'EAS CART DISCOUNT', $cart_discount );
 
@@ -2569,6 +2561,41 @@ function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 
 		// $item_total = eascompliance_convert_price_to_selected_currency($item_total);
 		return wc_price( $item_total );
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_checkout_before_order_review', 'eascompliance_woocommerce_checkout_before_order_review');
+}
+/**
+ * Checkout actiom to fix WCML cart discount for percent coupons from $o to $n
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_checkout_before_order_review() {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		if (eascompliance_is_wcml_enabled() && !eascompliance_is_set()) {
+            $cart = WC()->cart;
+			foreach( $cart->get_coupons() as $coupon) {
+				if ($coupon->get_discount_type() === 'percent') {
+					$cart_discount_prev = WC()->session->get( 'EAS CART DISCOUNT');
+                    //TODO at this point discount total is correct. Problem is this action may sometimes not be called
+					$cart_discount = $cart->get_discount_total();
+					eascompliance_log('request', 'WCML fix cart discount for percent coupons from $o to $n', array('$o'=>$cart_discount_prev, '$n'=>$cart_discount));
+					WC()->session->set( 'EAS CART DISCOUNT',$cart_discount);
+					break;
+				}
+			}
+		}
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
