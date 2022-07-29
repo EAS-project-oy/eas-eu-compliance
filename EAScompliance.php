@@ -2570,14 +2570,16 @@ function eascompliance_woocommerce_cart_item_subtotal( $price_html, $cart_item, 
 }
 
 if ( eascompliance_is_active() ) {
-	add_action( 'woocommerce_checkout_before_order_review', 'eascompliance_woocommerce_checkout_before_order_review');
+	add_action( 'woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
+	add_action( 'woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
+	add_action( 'woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
 }
 /**
  * Checkout actiom to fix WCML cart discount for percent coupons from $o to $n
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_checkout_before_order_review() {
+function eascompliance_wcml_update_coupon_percent_discount() {
 	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
@@ -2588,7 +2590,6 @@ function eascompliance_woocommerce_checkout_before_order_review() {
 			foreach( $cart->get_coupons() as $coupon) {
 				if ($coupon->get_discount_type() === 'percent') {
 					$cart_discount_prev = WC()->session->get( 'EAS CART DISCOUNT');
-                    //TODO at this point discount total is correct. Problem is this action may sometimes not be called
 					$cart_discount = $cart->get_discount_total();
 					eascompliance_log('request', 'WCML fix cart discount for percent coupons from $o to $n', array('$o'=>$cart_discount_prev, '$n'=>$cart_discount));
 					WC()->session->set( 'EAS CART DISCOUNT',$cart_discount);
