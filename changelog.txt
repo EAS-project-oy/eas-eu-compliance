@@ -1,4 +1,16 @@
 *** EAS EU compliance plugin Changelog ***
+
+
+== Changelog ==
+
+22-08-05 - version 1.4.0
+* Delivery option support inhanced
+* Refund management inhanced
+* WPML multicurrency support inhanced
+* Support for smart coupons implemented
+* Administrative UI refactored
+* Additional product attributes management inhanced
+
 22-07-05 - version 1.3.36
 * Code review and refactoring done
 
