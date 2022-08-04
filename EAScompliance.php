@@ -719,6 +719,23 @@ function eascompliance_woocommerce_applied_coupon($post_data) {
 }
 
 if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_removed_coupon', 'eascompliance_woocommerce_removed_coupon', 10, 1 );
+}
+/**
+ *  Reset calculations when coupons are applied
+ */
+function eascompliance_woocommerce_removed_coupon($coupon_code) {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+        eascompliance_unset();
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex );
+		throw $ex;
+	}
+}
+
+if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment' );
 }
 /**
@@ -1031,17 +1048,28 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 
         // WCML breaks $cart->get_discount_total() so we re-calculcate it
         $cart_discount = (float)0;
+        if (count($cart->get_coupons()) > 1) {
+			throw new Exception(EAS_TR('Multiple coupons not supported, please contact support'));
+        }
         foreach( $cart->get_coupons() as $coupon) {
-			if ($coupon->get_discount_type() === 'fixed') {
-				$cart_discount += $coupon->get_amount();
-			} elseif ($coupon->get_discount_type() === 'percent') {
-				$cart_discount = WC()->session->get('EAS CART DISCOUNT');
+			if ($coupon->get_discount_type() == 'fixed_cart') {
+				$cart_discount += $cart->get_coupon_discount_amount( $coupon->get_code(), WC()->cart->display_cart_ex_tax );;
+			}
+            elseif ($coupon->get_discount_type() == 'fixed_product') {
+				$cart_discount += $cart->get_coupon_discount_amount( $coupon->get_code(), WC()->cart->display_cart_ex_tax );
+			}
+            elseif ($coupon->get_discount_type() === 'percent') {
+				$cart_discount = WC()->session->get( 'EAS CART DISCOUNT');
 				eascompliance_log('request', 'WCML taking cart discount from session $c', array('$c'=>$cart_discount));
 				if ($currency_conversion) {
 					$cart_discount = (float)$woocommerce_wpml->multi_currency->prices->unconvert_price_amount($cart_discount);
 				}
                 break;
 			}
+            else {
+				eascompliance_log('error', 'Coupon type not supported: $ct', array('$c'=>$cart_discount));
+                throw new Exception(EAS_TR('Selected coupon type is not supported, please contact support'));
+            }
         }
 
         if ($currency_conversion) {
@@ -1719,14 +1747,23 @@ function eascompliance_redirect_confirm() {
 		}
 
 		foreach ( $woocommerce->cart->cart_contents as $k => &$item ) {
-			$sku = wc_get_product( $item['product_id'] )->get_sku();
+			$product_id = $item['variation_id'] ?: $item['product_id'];
+			$sku = wc_get_product( $product_id )->get_sku();
+			$found = false;
 			foreach ( $payload_items as &$payload_item ) {
 				if ( $payload_item['item_id'] === $k ) {
-					break;}
+                    $found = true;
+					break;
+                }
 				// $payload_item['item_id'] is sku when it is available in product
 				if ( $payload_item['item_id'] === $sku ) {
-					break;}
+					$found = true;
+					break;
+                }
 			}
+            if (!$found) {
+                throw new Exception('Cart item not found from payload');
+            }
 
 			$tax_rates                                   = WC_Tax::get_rates();
 			$tax_rate_id                                 = array_keys( $tax_rates )[ array_search( 'EAScompliance', array_column( $tax_rates, 'label' ), true ) ];
@@ -1762,7 +1799,7 @@ function eascompliance_redirect_confirm() {
 		$cart_item0['EAScompliance total_order_amount']  = $payload_j['total_order_amount'];
 
 		// WP-42 save request json backup copy into cart first item
-		$cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get('EAS API REQUEST JSON');
+		$cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get( 'EAS API REQUEST JSON');
 
 		// DEBUG SAMPLE: return WC()->cart->get_cart(); //.
 		$woocommerce->cart->set_session();   // when in ajax calls, saves it //.
@@ -1837,6 +1874,7 @@ function eascompliance_unset() {
 			$item0 = &$woocommerce->cart->cart_contents[$k0];
 			$item0['EAScompliance NEEDS RECALCULATE'] = true;
 			$item0['EAScompliance SET'] = false;
+			WC()->session->set( 'EAS CART DISCOUNT', null);
 			$woocommerce->cart->set_session();
 			eascompliance_log('calculate', 'calculation unset');
 		}
@@ -2647,13 +2685,11 @@ function eascompliance_wcml_update_coupon_percent_discount() {
 		if (eascompliance_is_wcml_enabled() && !eascompliance_is_set()) {
             $cart = WC()->cart;
 			foreach( $cart->get_coupons() as $coupon) {
-				if ($coupon->get_discount_type() === 'percent') {
-					$cart_discount_prev = WC()->session->get( 'EAS CART DISCOUNT');
-					$cart_discount = $cart->get_discount_total();
-					eascompliance_log('request', 'WCML fix cart discount for percent coupons from $o to $n', array('$o'=>$cart_discount_prev, '$n'=>$cart_discount));
-					WC()->session->set( 'EAS CART DISCOUNT',$cart_discount);
-					break;
-				}
+                $cart_discount_prev = WC()->session->get( 'EAS CART DISCOUNT');
+                $cart_discount = $cart->get_discount_total();
+                eascompliance_log('request', 'WCML fix cart discount for coupons from $o to $n', array('$o'=>$cart_discount_prev, '$n'=>$cart_discount));
+                WC()->session->set( 'EAS CART DISCOUNT',$cart_discount);
+                break;
 			}
 		}
 	} catch ( Exception $ex ) {
@@ -3012,7 +3048,7 @@ function eascompliance_woocommerce_shipping_packages( $packages ) {
 
 
         if ( eascompliance_is_deduct_vat_outside_eu() ) {
-			$chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods');
 			if (!is_array($chosen_shipping_methods)) {
 				return $packages;
 			}
