@@ -1,8 +1,17 @@
 jQuery(document).ready(function($) {
     window.$ = $
 
-    // Place Order button and grodonkey theme 'continue to payment' button
-    const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
+    var place_order_visible = function(is_visible) {
+        // Place Order button and grodonkey theme 'continue to payment' button
+        const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
+
+        if (is_visible) {
+            $(PLACE_ORDER_BUTTON).show().css('z-index', '')
+        }
+        else {
+            $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000')
+        }
+    }
 
     //// block, unblock UI when request is processed
     var unblock = function( $node ) {
@@ -99,7 +108,7 @@ jQuery(document).ready(function($) {
                             $('.eascompliance_status').text('standard_checkout');
 
                             $('.button_calc').hide()
-                            $(PLACE_ORDER_BUTTON).show();
+                            place_order_visible(true);
                         }
                         else {
                             window.open(j['CALC response'], '_self');
@@ -210,11 +219,11 @@ jQuery(document).ready(function($) {
             )
         ) {
             $('.button_calc').hide();
-            $(PLACE_ORDER_BUTTON).show();
+            place_order_visible(true);
         }
         else {
             $('.button_calc').show();
-            $(PLACE_ORDER_BUTTON).hide();
+            place_order_visible(false);
         }
     });
 
