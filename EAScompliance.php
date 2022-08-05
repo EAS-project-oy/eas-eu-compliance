@@ -3198,7 +3198,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 				eascompliance_log('WP-74', 'Nonce security check failed for eascompliance_nonce_calc, _POST is $POST', array('POST'=>$_POST));
 			}
 			else {
-				throw new Exception( EAS_TR( 'Security check' ) );
+				throw new Exception( EAS_TR( 'Security check, please <a id=error_security_check href="./">reload</a> page.' ) );
 			}
 		};
 
