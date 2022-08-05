@@ -368,6 +368,23 @@ function eascompliance_woocommerce_settings_get_option_sql( $option ) {
 }
 
 /**
+ * get_meta_keys() from sql
+ */
+function eascompliance_get_meta_keys_sql( ) {
+	global $wpdb;
+
+	$keys = $wpdb->get_col(
+		"
+            SELECT meta_key
+            FROM $wpdb->postmeta
+            GROUP BY meta_key
+            ORDER BY meta_key"
+	);
+
+    return $keys;
+}
+
+/**
  * Return true if debug level is present in easproj_debug settting
  */
 function eascompliance_log_level($level) {
@@ -1122,9 +1139,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		$product_id =  $cart_item['variation_id'] ?: $cart_item['product_id'];
 		$product    = wc_get_product( $product_id );
 
-		$location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
-		$originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
-		$seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
+		$location_warehouse_country  = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_warehouse_country' ) , '' );
+		$originating_country         = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_originating_country' ) , '' );
+		$seller_registration_country = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_seller_reg_country' ) , '' );
 
         $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
         $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
@@ -1148,7 +1165,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 			'quantity'                    => $cart_item['quantity'],
 			'cost_provided_by_em'         => $cost_provided_by_em,
 			'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
-			'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
+			'hs6p_received'               => eascompliance_product_attribute_or_meta($product,  'easproj_hs6p_received' ) ,
 			// DEBUG check product country:
 			// $cart = WC()->cart->get_cart();
 			// $cart[eascompliance_array_key_first2($cart)]['product_id'];
@@ -1158,8 +1175,8 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 		    'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
 
 			'type_of_goods'               => $type_of_goods,
-			'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
-			'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
+			'reduced_tbe_vat_group'       => eascompliance_product_attribute_or_meta($product,  'easproj_reduced_vat_group' )  === 'yes',
+			'act_as_disclosed_agent'      => '' . eascompliance_product_attribute_or_meta($product,  'easproj_disclosed_agent' )  === 'yes' ? true : false,
 			'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
 			'originating_country'         => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
 		);
@@ -1195,6 +1212,37 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 
 	return $calc_jreq;
 }
+
+
+
+/**
+ * Return product attribute or meta from key name saved in settings 
+ * 
+ * @param object $product product.
+ * @param string $settings_key settings key.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_product_attribute_or_meta($product, $settings_key) {
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+        
+        $key_name = eascompliance_woocommerce_settings_get_option_sql($settings_key);
+
+		if (str_starts_with($key_name, 'meta_')) {
+			return $product->get_meta(substr($key_name, 5));
+        }
+        else {
+			return $product->get_attribute($key_name);
+        }
+
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
 
 /**
  * Make JSON for API /calculate request
@@ -1307,9 +1355,9 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
         $product_id = $order_item['product_id'];
         $product    = wc_get_product( $product_id );
 
-        $location_warehouse_country  = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_warehouse_country' ) ), '' );
-        $originating_country         = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_originating_country' ) ), '' );
-        $seller_registration_country = eascompliance_array_get( $countries, $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_seller_reg_country' ) ), '' );
+        $location_warehouse_country  = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_warehouse_country' ) , '' );
+        $originating_country         = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_originating_country' ) , '' );
+        $seller_registration_country = eascompliance_array_get( $countries, eascompliance_product_attribute_or_meta($product,  'easproj_seller_reg_country' ) , '' );
 
         $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
         $giftcard_product_types = WC_Admin_Settings::get_option( 'easproj_giftcard_product_types', array() );
@@ -1324,13 +1372,13 @@ function eascompliance_make_eas_api_request_json_from_order($order_id) {
             'quantity'                    => $order_item['quantity'],
             'cost_provided_by_em'         => round( (float) $order_item['line_total'] / $order_item['quantity'], 2 ),
             'weight'                      => $product->get_weight() === '' ? 0 : floatval( $product->get_weight() ),
-            'hs6p_received'               => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_hs6p_received' ) ),
+            'hs6p_received'               => eascompliance_product_attribute_or_meta($product,  'easproj_hs6p_received' ) ,
 
             'location_warehouse_country'      => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
 
             'type_of_goods'               => $type_of_goods,
-            'reduced_tbe_vat_group'       => $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_reduced_vat_group' ) ) === 'yes',
-            'act_as_disclosed_agent'      => '' . $product->get_attribute( eascompliance_woocommerce_settings_get_option_sql( 'easproj_disclosed_agent' ) ) === 'yes' ? true : false,
+            'reduced_tbe_vat_group'       => eascompliance_product_attribute_or_meta($product,  'easproj_reduced_vat_group' )  === 'yes',
+            'act_as_disclosed_agent'      => '' . eascompliance_product_attribute_or_meta($product,  'easproj_disclosed_agent' )  === 'yes' ? true : false,
             'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
             'originating_country'         => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
@@ -4102,6 +4150,10 @@ function eascompliance_settings() {
 		$attributes[ $slug ] = $att_label . ' - ' . $slug;
 	}
 
+    foreach ( eascompliance_get_meta_keys_sql() as $meta_key) {
+		$attributes[ 'meta_' . $meta_key ] = 'meta ' . $meta_key ;
+    }
+
     $version = get_plugin_data(  __FILE__, false, false )['Version'];
 
 	$easproj_debug_options = array(
@@ -4220,6 +4272,7 @@ function eascompliance_settings() {
 		'HSCode_field'            => array(
 			'name'    => EAS_TR( 'HSCODE' ),
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'HSCode attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_hs6p_received',
 			'default' => 'easproj_hs6p_received',
@@ -4228,6 +4281,7 @@ function eascompliance_settings() {
 		'Warehouse_country'       => array(
 			'name'    => 'Warehouse country',
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'Location warehouse country attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_warehouse_country',
 			'default' => 'easproj_warehouse_country',
@@ -4236,6 +4290,7 @@ function eascompliance_settings() {
 		'Reduced_tbe_vat_group'   => array(
 			'name'    => EAS_TR( 'Reduced VAT for TBE' ),
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'Reduced VAT for TBE attribute attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_reduced_vat_group',
 			'default' => 'easproj_reduced_vat_group',
@@ -4244,6 +4299,7 @@ function eascompliance_settings() {
 		'Disclosed_agent'         => array(
 			'name'    => EAS_TR( 'Act as Disclosed Agent' ),
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'Act as Disclosed Agent attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_disclosed_agent',
 			'default' => 'easproj_disclosed_agent',
@@ -4252,6 +4308,7 @@ function eascompliance_settings() {
 		'Seller_country'          => array(
 			'name'    => EAS_TR( 'Seller registration country' ),
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'Seller registration country attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_seller_reg_country',
 			'default' => 'easproj_seller_reg_country',
@@ -4260,6 +4317,7 @@ function eascompliance_settings() {
 		'Originating_country'     => array(
 			'name'    => EAS_TR( 'Originating Country' ),
 			'type'    => 'select',
+			'class'   => 'wc-enhanced-select',
 			'desc'    => EAS_TR( 'Originating Country attribute slug. Attribute will be created if does not exist.' ),
 			'id'      => 'easproj_originating_country',
 			'default' => 'easproj_originating_country',
