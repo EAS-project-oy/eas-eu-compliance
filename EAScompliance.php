@@ -2211,7 +2211,7 @@ function eascompliance_order_createpostsaleorder($order) {
 				$order_item->add_meta_data( 'VAT Amount', $vat_amount, true);
 				$order_item->add_meta_data( 'VAT Rate', $payload_item['vat_rate'], true );
 				$order_item->add_meta_data( 'Other fees', $payload_item['item_eas_fee'], true );
-				$order_item->add_meta_data( 'VAT on EAS fee', $payload_item['item_eas_fee_vat'], true );
+				$order_item->add_meta_data( 'VAT on Other fees', $payload_item['item_eas_fee_vat'], true );
 
                 $order_item->set_subtotal( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
                 $order_item->set_total( $payload_item['unit_cost_excl_vat'] * $order_item->get_quantity() );
@@ -2458,7 +2458,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item( $order_item_t
 				$order_item->add_meta_data( 'VAT Amount', $cart_item['EAScompliance VAT'] );
 				$order_item->add_meta_data( 'VAT Rate', $cart_item['EAScompliance ITEM']['vat_rate'] );
 				$order_item->add_meta_data( 'Other fees', $cart_item['EAScompliance ITEM']['item_eas_fee'] );
-				$order_item->add_meta_data( 'VAT on EAS fee', $cart_item['EAScompliance ITEM']['item_eas_fee_vat'] );
+				$order_item->add_meta_data( 'VAT on Other fees', $cart_item['EAScompliance ITEM']['item_eas_fee_vat'] );
 
 				$order_item->set_taxes(
 					array(
