@@ -1,6 +1,9 @@
 jQuery(document).ready(function($) {
     window.$ = $
 
+    // Place Order button and grodonkey theme 'continue to payment' button
+    const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
+
     //// block, unblock UI when request is processed
     var unblock = function( $node ) {
         $node.removeClass( 'processing' ).unblock();
@@ -96,7 +99,7 @@ jQuery(document).ready(function($) {
                             $('.eascompliance_status').text('standard_checkout');
 
                             $('.button_calc').hide()
-                            $('#place_order').show();
+                            $(PLACE_ORDER_BUTTON).show();
                         }
                         else {
                             window.open(j['CALC response'], '_self');
@@ -207,11 +210,11 @@ jQuery(document).ready(function($) {
             )
         ) {
             $('.button_calc').hide();
-            $('#place_order').show();
+            $(PLACE_ORDER_BUTTON).show();
         }
         else {
             $('.button_calc').show();
-            $('#place_order').hide();
+            $(PLACE_ORDER_BUTTON).hide();
         }
     });
 
