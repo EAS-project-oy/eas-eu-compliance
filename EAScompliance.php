@@ -4061,7 +4061,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 	</tr>
 	<tr>
 		<td class="label ">
-			Total EAS fee
+			Total Other fees
 		</td>
 		<td width="1%"></td>
 		<td class="total">
@@ -4070,7 +4070,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total( $order_id ) {
 	</tr>
 	<tr>
 		<td class="label ">
-			Total EAS fee VAT
+			Total Other fees VAT
 		</td>
 		<td width="1%"></td>
 		<td class="total">
