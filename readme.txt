@@ -108,8 +108,10 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 * Refund management inhanced
 * WPML multicurrency support inhanced
 * Support for smart coupons implemented
+* Additional shpping attributes supported
 * Administrative UI refactored
-* 
+* Bulk update and AI assignment of Hormonized system codes for Products implemented
+* Support for customized Themes inhanced 
 
 = 1.3.38 =
 * Woocommerce multy currency impelmented
@@ -120,7 +122,7 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 * minor bugs fixed in checkout step
 
 = 1.3.33 =
-* PayPal ans Avarda support implemented
+* PayPal and Avarda support implemented
 
 = 1.3.31 =
 * New method of checkout handling implemented

@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:164
@@ -115,7 +115,7 @@ msgid ""
 "field '$field_name' is disabled. Please contact support to fix the issue."
 msgstr ""
 "Kokonaiskulua ei voi laskea koska toimitusosoite kenttä '$field_name' "
-"puuttuu kaupasta. Ota yhteyttä myyjään. "
+"puuttuu kaupasta. Ota yhteyttä myyjään."
 
 #: EAScompliance.php:1113
 msgid ""
@@ -123,17 +123,16 @@ msgid ""
 "field '$field_name' is empty."
 msgstr ""
 "Kokonaiskulua ei voi laskea koska toimitusosoite kenttä  '$field_name'  on "
-"tyhjä. "
+"tyhjä."
 
 #: EAScompliance.php:1348
 msgid "Field $fields is required, please enter $fields and try again."
-msgstr ""
-"Kenttä $fields on pakollinen, täytä kenttä $fields ja yritä uudelleen. "
+msgstr "Kenttä $fields on pakollinen, täytä kenttä $fields ja yritä uudelleen."
 
 #: EAScompliance.php:1350
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
-"Kenttä [$fields] on pakollinen, täytä kenttä [$fields] ja yritä uudelleen. "
+"Kenttä [$fields] on pakollinen, täytä kenttä [$fields] ja yritä uudelleen."
 
 #: EAScompliance.php:1627 EAScompliance.php:3201
 msgid ""
@@ -164,7 +163,7 @@ msgstr "createpostsaleorder epäonnistui"
 
 #: EAScompliance.php:2447
 msgid "number of order_items does not match number of items in cart"
-msgstr "Tilattujen tuotteiden määrä ei vastaa ostoskärryn tuotemäärää"
+msgstr "tilattujen tuotteiden määrä ei vastaa ostoskärryn tuotemäärää"
 
 #: EAScompliance.php:2820
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
@@ -210,7 +209,7 @@ msgid ""
 "provided. Login to dashboard to create shipments"
 msgstr ""
 "EAS EU Compliance ratkaisu: Tilaus muodostettu. Lähetystä ei voitu muodostaa "
-"koska S10 puuttuu. Login EAS Dashboardiin muodostaaksesi lähetyksen. "
+"koska S10 puuttuu. Login EAS Dashboardiin muodostaaksesi lähetyksen"
 
 #: EAScompliance.php:3854
 msgid ""
@@ -218,7 +217,7 @@ msgid ""
 "configured in EAS EU compliance plugin."
 msgstr ""
 "Palautus on peruutettu. Tilauksen on tehnyt eri Client_ID kuin on "
-"rekisteröity EAS Compliance ratkaisuun.  "
+"rekisteröity EAS Compliance ratkaisuun."
 
 #: EAScompliance.php:3869
 msgid "Refund create failed: "
@@ -356,23 +355,23 @@ msgstr "Suomi"
 
 #: EAScompliance.php:4238
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: EAScompliance.php:4239
 msgid "German"
-msgstr ""
+msgstr "Deutsch"
 
 #: EAScompliance.php:4240
 msgid "Italian"
-msgstr ""
+msgstr "Italiano"
 
 #: EAScompliance.php:4241
 msgid "Netherlands"
-msgstr ""
+msgstr "Dutch"
 
 #: EAScompliance.php:4242
 msgid "Swedish"
-msgstr ""
+msgstr "Svensk"
 
 #: EAScompliance.php:4246
 msgid ""
@@ -380,7 +379,7 @@ msgid ""
 "supported"
 msgstr ""
 "Vähennä kotimaan ALV toimituksista maihin missä verojen laskenta ei ole "
-"tuettu. "
+"tuettu"
 
 #: EAScompliance.php:4254
 msgid "Shipping methods by post"
@@ -461,7 +460,7 @@ msgid ""
 "settings"
 msgstr ""
 "Huomio! EAS havaitsi Lahjakortti -tuotetyyppejä. Jos myyt Lahjakortteja, "
-"lisää tuotetyypit asetuksissa. "
+"lisää tuotetyypit asetuksissa"
 
 #: EAScompliance.php:4450
 msgid ""

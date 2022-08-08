@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: ./EAScompliance.php\n"
 
 #: EAScompliance.php:164
@@ -159,7 +159,7 @@ msgstr "Mottagen försäljningsorder, uppdatering av order $order_id"
 
 #: EAScompliance.php:2248
 msgid "createpostsaleorder failed"
-msgstr ""
+msgstr "createpostsaleorder  misslyckas"
 
 #: EAScompliance.php:2447
 msgid "number of order_items does not match number of items in cart"
@@ -308,9 +308,8 @@ msgstr "EAS klient-ID"
 #: EAScompliance.php:4215
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
-"Använd det klient-ID som du fick från EAS Project Dashboard <a "
-"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
-"a>"
+"Använd det klient-ID som du fick från EAS Project Dashboard <a href="
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:4221
 msgid "EAS client secret"
@@ -348,23 +347,23 @@ msgstr "Suomi"
 
 #: EAScompliance.php:4238
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: EAScompliance.php:4239
 msgid "German"
-msgstr ""
+msgstr "Deutsch"
 
 #: EAScompliance.php:4240
 msgid "Italian"
-msgstr ""
+msgstr "Italiano"
 
 #: EAScompliance.php:4241
 msgid "Netherlands"
-msgstr ""
+msgstr "Dutch"
 
 #: EAScompliance.php:4242
 msgid "Swedish"
-msgstr ""
+msgstr "Svensk"
 
 #: EAScompliance.php:4246
 msgid ""

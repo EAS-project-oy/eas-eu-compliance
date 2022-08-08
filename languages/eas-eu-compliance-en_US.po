@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:164
@@ -235,36 +235,28 @@ msgstr ""
 "service  being temporary unavailable. Please try to create Refund later "
 
 #: EAScompliance.php:3926
-#, fuzzy
-#| msgid ""
-#| "Refund $refund_id cancelled and removed due EAS return management service "
-#| "temporary unavailable. Please try to create Refund later "
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
 "Refund $refund_id cancelled due to the fact that EAS return management "
-"service  being temporary unavailable. Please try to create Refund later "
+"service  being temporary unavailable. Please try to create Refund later"
 
 #: EAScompliance.php:3934
-#, fuzzy
-#| msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
 "Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund. "
+"remove gift card form the refund."
 
 #: EAScompliance.php:3975
 msgid "Refund confirmed to EAS"
 msgstr ""
 
 #: EAScompliance.php:3980
-#, fuzzy
-#| msgid "Refund create failed: "
 msgid "Refund confirm failed: "
-msgstr "Refund could not be created: "
+msgstr "Refund could not be created:"
 
 #: EAScompliance.php:4003
 msgid "Log EAS order data"
@@ -323,9 +315,8 @@ msgstr ""
 #: EAScompliance.php:4223
 msgid "Use the secret you received from EAS Project"
 msgstr ""
-"Use the client secret you received from EAS Project Dashboard <a "
-"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
-"a>"
+"Use the client secret you received from EAS Project Dashboard <a href="
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:4229
 msgid "Language"
