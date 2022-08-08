@@ -40,6 +40,8 @@ jQuery(document).ready(function($) {
         $([document.documentElement, document.body]).animate({
             scrollTop: $('.woocommerce-notices-wrapper:first').offset().top-50
         }, 2000);
+        // Add reload link to Security check error message
+        $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
 
 
@@ -151,10 +153,6 @@ jQuery(document).ready(function($) {
         $( 'form.checkout' ).append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
     })
 
-    // move security_check message higher for reload link to work
-    if ($('.woocommerce-error #error_security_check').length) {
-        $('.woocommerce').prepend(($('.woocommerce-error #error_security_check').parents('.woocommerce-error')))
-    }
 
     $(document.body).one("updated_checkout", async function () {
         if ($('.eascompliance_status').text() == 'present') {

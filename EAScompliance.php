@@ -496,6 +496,8 @@ function eascompliance_javascript() {
 			'sorry_didnt_work'                => EAS_TR( "Sorry, didn't work, please try again" ),
 			'recalculate_taxes'               => EAS_TR( 'Recalculate Taxes and Duties' ),
 			'standard_checkout'               => EAS_TR( 'Standard Checkout' ),
+			'reload_link'                     => EAS_TR( 'reload' ),
+			'security_check'                  => EAS_TR( 'Security check, please reload page. ' ),
 		)
 	);
 
@@ -991,9 +993,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true) {
 			eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_POST is $POST', array('POST'=>$_POST));
 		}
 		else {
-			throw new Exception( EAS_TR( 'Security check' ) );
+			throw new Exception( 'Security check' );
 		}
-	};
+	}
 
     // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
 	$checkout = WC()->checkout->get_posted_data();
@@ -1624,7 +1626,7 @@ function eascompliance_redirect_confirm() {
 				eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_GET is $GET', array('GET'=>$_GET));
             }
             else {
-				throw new Exception( EAS_TR( 'Security check, please <a id=error_security_check href="./">reload</a> page.' ) );
+				throw new Exception( 'Security check' );
             }
 		};
 
@@ -3198,7 +3200,7 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 				eascompliance_log('WP-74', 'Nonce security check failed for eascompliance_nonce_calc, _POST is $POST', array('POST'=>$_POST));
 			}
 			else {
-				throw new Exception( EAS_TR( 'Security check, please <a id=error_security_check href="./">reload</a> page.' ) );
+				throw new Exception( 'Security check' );
 			}
 		};
 
@@ -3228,6 +3230,12 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
         if (empty($calc_jreq_saved)) {
             throw new Exception('WP-42 $calc_jreq_saved cannot be empty');
         }
+		if ( !(array_key_exists('order_breakdown', $calc_jreq_saved) ) )
+		{
+			eascompliance_log('place_order','order_breakdown key is not present in $calc_jreq_saved '.print_r($calc_jreq_saved, true));
+			eascompliance_unset();
+			throw new Exception( EAS_TR( 'PLEASE RE-CALCULATE CUSTOMS DUTIES' ) );
+		}
 
 		$calc_jreq_new = eascompliance_make_eas_api_request_json(false);
 
@@ -3245,9 +3253,11 @@ function eascompliance_woocommerce_checkout_create_order( $order ) {
 		}
 
         // paranoid check that order_breakdown key is present
-        if ( !(array_key_exists('order_breakdown', $calc_jreq_saved) && array_key_exists('order_breakdown', $calc_jreq_new)) )
+        if ( !array_key_exists('order_breakdown', $calc_jreq_new))
 		{
-			eascompliance_log('place_order','order_breakdown key is not present in $calc_jreq_saved '.print_r($calc_jreq_saved, true).'\n\n\n or $calc_jreq_new'.print_r($calc_jreq_new, true));
+			eascompliance_log('place_order','order_breakdown key is not present in $calc_jreq_new '.print_r($calc_jreq_new, true));
+			eascompliance_unset();
+			throw new Exception( EAS_TR( 'PLEASE RE-CALCULATE CUSTOMS DUTIES' ) );
         }
 
         foreach( $calc_jreq_new['order_breakdown'] as $k=>&$item ) {
