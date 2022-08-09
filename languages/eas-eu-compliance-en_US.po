@@ -240,7 +240,7 @@ msgid ""
 "0 for items to be returned and try again. "
 msgstr ""
 "Refund $refund_id cancelled due to the fact that EAS return management "
-"service  being temporary unavailable. Please try to create Refund later"
+"service  being temporary unavailable. Please try to create Refund later. "
 
 #: EAScompliance.php:3934
 msgid ""
@@ -256,7 +256,7 @@ msgstr ""
 
 #: EAScompliance.php:3980
 msgid "Refund confirm failed: "
-msgstr "Refund could not be created:"
+msgstr "Refund could not be created: "
 
 #: EAScompliance.php:4003
 msgid "Log EAS order data"
