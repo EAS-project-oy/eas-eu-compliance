@@ -20,7 +20,7 @@ msgstr ""
 
 #: EAScompliance.php:164
 msgid "Plugin activation request failed"
-msgstr ""
+msgstr "La demande d'activation du plug-in a échoué"
 
 #: EAScompliance.php:194
 msgid "No tax rate found, please check plugin settings"
@@ -34,6 +34,8 @@ msgstr "Frais fiscaux et douaniers"
 #: EAScompliance.php:301
 msgid "Please calculate taxes and duties to proceed with order payment"
 msgstr ""
+"Veuillez calculer les taxes et les droits pour procéder au paiement de la "
+"commande"
 
 #: EAScompliance.php:490
 msgid ""
@@ -82,11 +84,11 @@ msgstr "Vérification standard"
 
 #: EAScompliance.php:499
 msgid "reload"
-msgstr ""
+msgstr "recharger"
 
 #: EAScompliance.php:500
 msgid "Security check, please reload page. "
-msgstr ""
+msgstr "Contrôle de sécurité, veuillez recharger la page. "
 
 #: EAScompliance.php:580 EAScompliance.php:634
 msgid "Unable to set required fields"
@@ -114,31 +116,41 @@ msgstr ""
 
 #: EAScompliance.php:1071
 msgid "Multiple coupons not supported, please contact support"
-msgstr ""
+msgstr "Plusieurs coupons non pris en charge, veuillez contacter le support"
 
 #: EAScompliance.php:1090
 msgid "Selected coupon type is not supported, please contact support"
 msgstr ""
+"Le type de coupon sélectionné n'est pas pris en charge, veuillez contacter "
+"l'assistance"
 
 #: EAScompliance.php:1112
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
 msgstr ""
+"Nous ne pouvons pas procéder au calcul du coût au débarquement car le champ "
+"d'adresse de livraison requis '$field_name' est désactivé. Veuillez "
+"contacter l'assistance pour résoudre le problème."
 
 #: EAScompliance.php:1115
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is empty."
 msgstr ""
+"Nous ne pouvons pas procéder au calcul du coût au débarquement car le champ "
+"d'adresse de livraison requis '$field_name' est vide."
 
 #: EAScompliance.php:1350
 msgid "Field $fields is required, please enter $fields and try again."
 msgstr ""
+"Le champ $fields est obligatoire, veuillez saisir $fields et réessayer."
 
 #: EAScompliance.php:1352
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
+"Les champs [$fields] sont obligatoires, veuillez saisir [$fields] et "
+"réessayer."
 
 #: EAScompliance.php:2118
 msgid ""
@@ -158,15 +170,19 @@ msgstr "Ordre de vente reçu, mise à jour de la commande $order_id"
 
 #: EAScompliance.php:2250
 msgid "createpostsaleorder failed"
-msgstr ""
+msgstr "createpostsaleorder failed"
 
 #: EAScompliance.php:2449
 msgid "number of order_items does not match number of items in cart"
 msgstr ""
+"le nombre de order_items ne correspond pas au nombre d'articles dans le "
+"panier"
 
 #: EAScompliance.php:2822
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr ""
+"Les prix sont hors TVA, vous pourriez être obligé de payer la TVA à la "
+"livraison"
 
 #: EAScompliance.php:3224
 msgid ""
@@ -208,12 +224,16 @@ msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
 msgstr ""
+"Conformité EAS EU : commande créée. Impossible d'effectuer des envois car "
+"S10 n'est pas fourni. Connectez-vous au tableau de bord pour créer des envois"
 
 #: EAScompliance.php:3864
 msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
 msgstr ""
+"Refund is cancelled. This order was created by different EM from that is "
+"configured in EAS EU compliance plugin."
 
 #: EAScompliance.php:3879
 msgid "Refund create failed: "
@@ -247,20 +267,24 @@ msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
+"Remboursement $refund_id annulé et supprimé. Veuillez saisir une quantité "
+"supérieure à 0 pour les articles à retourner et réessayer. "
 
 #: EAScompliance.php:3944
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
+"Remboursement $refund_id annulé et supprimé. Le total du remboursement ne "
+"peut pas être supérieur au total de la commande."
 
 #: EAScompliance.php:3985
 msgid "Refund confirmed to EAS"
-msgstr ""
+msgstr "Remboursement confirmé à EAS"
 
 #: EAScompliance.php:3990
 msgid "Refund confirm failed: "
-msgstr ""
+msgstr "Échec de la confirmation du remboursement: "
 
 #: EAScompliance.php:4013
 msgid "Log EAS order data"
@@ -372,6 +396,8 @@ msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
 msgstr ""
+"Déduire la TVA nationale pour les livraisons dans les pays où les calculs de "
+"taxes ne sont pas pris en charge"
 
 #: EAScompliance.php:4264
 msgid "Shipping methods by post"

@@ -20,7 +20,7 @@ msgstr ""
 
 #: EAScompliance.php:164
 msgid "Plugin activation request failed"
-msgstr ""
+msgstr "Begäran om aktivering av plugin misslyckades"
 
 #: EAScompliance.php:194
 msgid "No tax rate found, please check plugin settings"
@@ -33,7 +33,7 @@ msgstr "Skatter och tull"
 
 #: EAScompliance.php:301
 msgid "Please calculate taxes and duties to proceed with order payment"
-msgstr ""
+msgstr "Beräkna skatter och avgifter för att fortsätta med orderbetalningen"
 
 #: EAScompliance.php:490
 msgid ""
@@ -81,11 +81,11 @@ msgstr "Standardkassa"
 
 #: EAScompliance.php:499
 msgid "reload"
-msgstr ""
+msgstr "ladda om"
 
 #: EAScompliance.php:500
 msgid "Security check, please reload page. "
-msgstr ""
+msgstr "Säkerhetskontroll, vänligen ladda om sidan. "
 
 #: EAScompliance.php:580 EAScompliance.php:634
 msgid "Unable to set required fields"
@@ -113,31 +113,37 @@ msgstr ""
 
 #: EAScompliance.php:1071
 msgid "Multiple coupons not supported, please contact support"
-msgstr ""
+msgstr "Flera kuponger stöds inte, kontakta supporten"
 
 #: EAScompliance.php:1090
 msgid "Selected coupon type is not supported, please contact support"
-msgstr ""
+msgstr "Vald kupongtyp stöds inte, kontakta supporten"
 
 #: EAScompliance.php:1112
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
 msgstr ""
+"Vi kan inte fortsätta beräkningen av landad kostnad eftersom det "
+"obligatoriska leveransadressfältet '$field_name' är inaktiverat. Kontakta "
+"supporten för att åtgärda problemet."
 
 #: EAScompliance.php:1115
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is empty."
 msgstr ""
+"Vi kan inte fortsätta beräkningen av landad kostnad eftersom det "
+"obligatoriska leveransadressfältet '$field_name' är tomt."
 
 #: EAScompliance.php:1350
 msgid "Field $fields is required, please enter $fields and try again."
-msgstr ""
+msgstr "Fältet $fields är obligatoriskt. Ange $fields och försök igen."
 
 #: EAScompliance.php:1352
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
+"Fält [$fields] är obligatoriska, vänligen ange [$fields] och försök igen."
 
 #: EAScompliance.php:2118
 msgid ""
@@ -161,11 +167,12 @@ msgstr "createpostsaleorder  misslyckas"
 
 #: EAScompliance.php:2449
 msgid "number of order_items does not match number of items in cart"
-msgstr ""
+msgstr "antal order_items matchar inte antalet varor i kundvagnen"
 
 #: EAScompliance.php:2822
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr ""
+"Priserna är exklusive moms, du kan bli skyldig att betala moms vid leverans"
 
 #: EAScompliance.php:3224
 msgid ""
@@ -199,13 +206,16 @@ msgstr "Anmälan om ändring av orderstatus misslyckades: "
 
 #: EAScompliance.php:3535
 msgid "Order $order_id payment notified to EAS"
-msgstr ""
+msgstr "Order $order_id betalning anmäld till EAS"
 
 #: EAScompliance.php:3545
 msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
 msgstr ""
+"EAS EU-efterlevnad: Beställning skapad. Kan inte göra försändelser eftersom "
+"S10 inte tillhandahålls. Logga in på instrumentpanelen för att skapa "
+"försändelser"
 
 #: EAScompliance.php:3864
 msgid ""
@@ -244,20 +254,24 @@ msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
+"Återbetalningen $refund_id avbröts och togs bort. Vänligen ange kvantitet "
+"större än 0 för varor som ska returneras och försök igen."
 
 #: EAScompliance.php:3944
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
+"Återbetalningen $refund_id avbröts och togs bort. Återbetalningssumman kan "
+"inte vara mer än beställningssumman."
 
 #: EAScompliance.php:3985
 msgid "Refund confirmed to EAS"
-msgstr ""
+msgstr "Återbetalning bekräftad till EAS"
 
 #: EAScompliance.php:3990
 msgid "Refund confirm failed: "
-msgstr ""
+msgstr "Återbetalning bekräfta misslyckades:"
 
 #: EAScompliance.php:4013
 msgid "Log EAS order data"
@@ -273,7 +287,7 @@ msgstr "Info"
 
 #: EAScompliance.php:4171
 msgid "Error"
-msgstr ""
+msgstr "Error"
 
 #: EAScompliance.php:4186
 msgid "Settings"
@@ -368,6 +382,7 @@ msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
 msgstr ""
+"Dra av hemmoms för leveranser till länder där skatteberäkningar inte stöds"
 
 #: EAScompliance.php:4264
 msgid "Shipping methods by post"

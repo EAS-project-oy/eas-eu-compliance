@@ -20,7 +20,7 @@ msgstr ""
 
 #: EAScompliance.php:164
 msgid "Plugin activation request failed"
-msgstr ""
+msgstr "Laajennuksen aktivointipyyntö epäonnistui"
 
 #: EAScompliance.php:194
 msgid "No tax rate found, please check plugin settings"
@@ -79,16 +79,11 @@ msgstr "Oletus Checkout"
 
 #: EAScompliance.php:499
 msgid "reload"
-msgstr ""
+msgstr "lataa"
 
 #: EAScompliance.php:500
-#, fuzzy
-#| msgid ""
-#| "Security check, please <a id=error_security_check href=\"./\">reload</a> "
-#| "page."
 msgid "Security check, please reload page. "
-msgstr ""
-"Turvatarkastus: <a id=error_security_check href=\"./\">reload</a> page."
+msgstr "Turvatarkastus: lataa sivu uudelleen. "
 
 #: EAScompliance.php:580 EAScompliance.php:634
 msgid "Unable to set required fields"
@@ -112,11 +107,11 @@ msgstr "Tarkista EAS Client ID ja EAS client secret."
 
 #: EAScompliance.php:1071
 msgid "Multiple coupons not supported, please contact support"
-msgstr ""
+msgstr "Valittua kuponkityyppiä ei tueta, ottakaa yhteyttä tukeen"
 
 #: EAScompliance.php:1090
 msgid "Selected coupon type is not supported, please contact support"
-msgstr ""
+msgstr "Useita kuponkeja ei tueta, ottakaa yhteyttä tukeen"
 
 #: EAScompliance.php:1112
 msgid ""
