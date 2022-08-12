@@ -3581,14 +3581,14 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
-		
-		$auth_token = eascompliance_get_oauth_token();
 
+		// Ignore orders without EAS token (STANDARD_CHECKOUT or orders nor related to EAS) //.
 		$confirmation_token = $order->get_meta( '_easproj_token' );
-		// JWT token is not present during STANDARD_CHECKOUT //.
 		if ( '' === $confirmation_token ) {
 			return;
 		}
+
+		$auth_token = eascompliance_get_oauth_token();
 
 		$payload_j = $order->get_meta( 'easproj_payload' );
 
@@ -3817,6 +3817,8 @@ function eascompliance_woocommerce_create_refund( $refund, $args ) {
 			$refund->add_meta_data('_easproj_refund_invalid', '1', true);
 		}
 		else {
+			$refund->add_meta_data('_easproj_refund_invalid', '6', true);
+
             /*
 
             Примеры ошибок
@@ -3904,6 +3906,11 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
 	try {
 		set_error_handler( 'eascompliance_error_handler' );
 
+		// Ignore orders without EAS token
+		$confirmation_token = $order->get_meta( '_easproj_token' );
+		if ( '' === $confirmation_token ) {
+			return;
+		}
 
         $reason = $refund->get_meta('_easproj_refund_invalid');
 
@@ -3942,6 +3949,14 @@ function eascompliance_woocommerce_order_refunded( $order_id, $refund_id ) {
             wp_delete_post( $refund_id, true );
 
 			$order->add_order_note(  eascompliance_format(EAS_TR( 'Refund $refund_id cancelled and removed. Refund total cannot be more than order total.' ), array('$refund_id'=>$refund_id) ));
+            return;
+        }
+
+        // Delete refund when /create_return_with_lc request status is not OK //.
+        if ( '6' === $reason ) {
+            wp_delete_post( $refund_id, true );
+
+			$order->add_order_note(  eascompliance_format(EAS_TR( 'Refund $refund_id cancelled and removed. Refund response status is not OK.' ), array('$refund_id'=>$refund_id) ));
             return;
         }
 
