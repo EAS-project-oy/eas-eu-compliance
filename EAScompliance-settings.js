@@ -2,6 +2,28 @@ const PLUGIN_NAME = 'EAS EU compliance';
 
 jQuery(document).ready(function($) {
 
+
+    //// block, unblock UI when request is processed
+    var unblock = function( $node ) {
+        $node.removeClass( 'processing' ).unblock();
+    };
+
+    var is_blocked = function( $node ) {
+        return $node.is( '.processing' ) || $node.parents( '.processing' ).length;
+    };
+
+    var block = function( $node ) {
+        if ( ! is_blocked( $node ) ) {
+            $node.addClass( 'processing' ).block( {
+                message: null,
+                overlayCSS: {
+                    background: '#fff',
+                    opacity: 0.6
+                }
+            } );
+        }
+    };
+
     // replace standard window.prompt with hacked version to support masked input of HS6CODE attribute
     // Lookup WC sources: meta-boxes-product.js:407 $( '.product_attributes' ).on( 'click', 'button.add_new_attribute'))
     old_prompt = window.prompt
@@ -34,7 +56,9 @@ jQuery(document).ready(function($) {
     }
 
     // Admin Order view button 'Calculate Taxes & Duties EAS'
-    $('.eascompliance-recalculate').on('click', async function () {
+
+    $( '#woocommerce-order-items').on('click', '.eascompliance-recalculate', async function () {
+        block($('.woocommerce_order_items_wrapper'))
         j = (await new Promise ( function(resolve) {$.post({
             url: plugin_ajax_object.ajax_url
             , data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
@@ -43,6 +67,7 @@ jQuery(document).ready(function($) {
                 resolve(j);
             }
         })}));
+        unblock($('.woocommerce_order_items_wrapper'))
 
         if ( 'ok' !== j.status) {
             window.alert('Calculate Taxes & Duties EAS failed. '+j.message)
@@ -53,7 +78,8 @@ jQuery(document).ready(function($) {
     } )
 
     // Admin Order view button 'Log EAS order data'
-    $('.eascompliance-orderdata').on('click', async function () {
+    $( '#woocommerce-order-items').on('click', '.eascompliance-orderdata' ,async function () {
+        block($('.woocommerce_order_items_wrapper'))
         j = (await new Promise ( function(resolve) {$.post({
             url: plugin_ajax_object.ajax_url
             , data: {'action': 'eascompliance_logorderdata_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
@@ -62,6 +88,7 @@ jQuery(document).ready(function($) {
                 resolve(j);
             }
         })}));
+        unblock($('.woocommerce_order_items_wrapper'))
 
         if ( 'ok' !== j.status) {
             window.alert('EAS Order data log failed'+j.message)

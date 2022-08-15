@@ -2282,6 +2282,10 @@ function eascompliance_woocommerce_after_order_object_save( $order ) {
 			return;
 		}
 
+        if ( count($order->get_items()) == 0) {
+            return;
+        }
+
 		if ( $order->get_meta('_easproj_api_save_notification_started') === 'yes') {
 			return;
 		}
