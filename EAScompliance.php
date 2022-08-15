@@ -2818,6 +2818,13 @@ function eascompliance_woocommerce_cart_totals_order_total_html2( $value ) {
 
         $html = '<strong>' . wc_price( wc_format_decimal( $total, wc_get_price_decimals() ) ) . '</strong> ';
 
+        // Display incl taxes when WC setting 'Display prices during cart and checkout' is set to 'Including tax'
+        if (eascompliance_is_set() && WC()->cart->get_tax_price_display_mode() === 'incl') {
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+			$total_taxes = eascompliance_woocommerce_cart_get_taxes( array("$tax_rate_id0" => 0));
+            $html .= EAS_TR('Incl. Taxes & Duties: ') . wc_price( wc_format_decimal( $total_taxes[$tax_rate_id0], wc_get_price_decimals() ));
+        }
+
 		if (eascompliance_is_deduct_vat_outside_eu()) {
 			$html .= EAS_TR('Prices are VAT exclusive, you might be obligated to pay VAT on delivery');
 		}
