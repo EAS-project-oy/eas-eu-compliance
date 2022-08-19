@@ -3573,6 +3573,78 @@ function eascompliance_woocommerce_order_status_changed2( $order_id, $status_fro
 
 
 
+
+if ( eascompliance_is_active() ) {
+	add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4 );
+}
+/**
+ * When order status becomes Cancelled and EAS token present, try to notify EAS and ignore errors
+ *
+ * @param int    $order_id order_id.
+ * @param string $status_from status_from.
+ * @param string $status_to status_to.
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_order_status_changed3( $order_id, $status_from, $status_to, $order ) {
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler( 'eascompliance_error_handler' );
+
+		if ( ! ( 'cancelled' === $status_to  ) ) {
+			return;
+		}
+
+		$auth_token         = eascompliance_get_oauth_token();
+		$confirmation_token = $order->get_meta( '_easproj_token' );
+
+		if ( '' === $confirmation_token ) {
+			return;
+		}
+
+		$payment_jreq = array(
+			'order_token'               => $confirmation_token,
+		);
+
+		$options = array(
+			'method'=>'POST',
+			'headers'=>array(
+				'Content-type'=>'application/json',
+				'Authorization'=>'Bearer '.$auth_token,
+			),
+			'body'=>json_encode( $payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR ),
+			'sslverify'=>false,
+		);
+
+		$payment_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirmpostsaleorder';
+		$payment_response = (new WP_Http)->request( $payment_url, $options );
+		if ( is_wp_error($payment_response) ) {
+			throw new Exception( $payment_response->get_error_message());
+		}
+
+		$payment_status = (string) $payment_response['response']['code'];
+
+		if ( '200' === $payment_status ) {
+			$order->add_order_note( EAS_TR( 'Order status changed to Canceled. EAS API notified.' ));
+			$order->save();
+		}
+        else {
+            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r'=>$payment_response));
+			throw new Exception( $payment_status . ' '. $payment_response['response']['message'] );
+		}
+
+		eascompliance_log('info', eascompliance_format("Order $order_id Cancelled notification successful", array('$order_id'=>$order_id) ));
+	} catch ( Exception $ex ) {
+		eascompliance_log('error', $ex);
+	} finally {
+				restore_error_handler();
+	}
+
+}
+
+
+
 if ( eascompliance_is_active() ) {
 	add_action( 'woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2 );
 }
