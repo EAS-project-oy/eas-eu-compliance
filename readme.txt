@@ -104,14 +104,14 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 == Changelog ==
 
 = 1.4.0 =
-* Delivery option support inhanced
+* Delivery options support inhanced
 * Refund management inhanced
 * WPML multicurrency support inhanced
 * Support for smart coupons implemented
-* Additional shpping attributes supported
-* Administrative UI refactored
-* Bulk update and AI assignment of Hormonized system codes for Products implemented
+* Additional shipping attributes supported
 * Support for customized Themes inhanced 
+* Logic for different settings for displaying of taxes at Cart and Checkout steps changed 
+* Translations updated
 
 = 1.3.38 =
 * Woocommerce multy currency impelmented
