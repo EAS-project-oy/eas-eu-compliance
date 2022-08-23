@@ -3603,9 +3603,12 @@ function eascompliance_woocommerce_order_status_changed3( $order_id, $status_fro
 			return;
 		}
 
-		$payment_jreq = array(
-			'order_token'               => $confirmation_token,
-		);
+		$payload_j = $order->get_meta( 'easproj_payload' );
+		$return_breakdown = array();
+		foreach($payload_j['items'] as $payload_item) {
+			$return_breakdown_item = array('id_provided_by_em'=>$payload_item['item_id'], 'quantity'=> $payload_item['quantity']);
+			$return_breakdown[] = $return_breakdown_item;
+		}
 
 		$options = array(
 			'method'=>'POST',
@@ -3613,25 +3616,30 @@ function eascompliance_woocommerce_order_status_changed3( $order_id, $status_fro
 				'Content-type'=>'application/json',
 				'Authorization'=>'Bearer '.$auth_token,
 			),
-			'body'=>json_encode( $payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR ),
+			'body'=>json_encode( array('token'=>$confirmation_token,
+                'return_breakdown'=>$return_breakdown,
+                'return_date'=>date_format(new DateTime(), 'Y-m-d'),
+                'confirmed'=>false,
+                'precalculation'=>false,
+                ), EASCOMPLIANCE_JSON_THROW_ON_ERROR ),
 			'sslverify'=>false,
 		);
 
-		$payment_url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/confirmpostsaleorder';
-		$payment_response = (new WP_Http)->request( $payment_url, $options );
-		if ( is_wp_error($payment_response) ) {
-			throw new Exception( $payment_response->get_error_message());
+		$url  = eascompliance_woocommerce_settings_get_option_sql( 'easproj_eas_api_url' ) . '/create_return_with_lc';
+		$response = (new WP_Http)->request( $url, $options );
+		if ( is_wp_error($response) ) {
+			throw new Exception( $response->get_error_message());
 		}
 
-		$payment_status = (string) $payment_response['response']['code'];
+		$response_status = (string) $response['response']['code'];
 
-		if ( '200' === $payment_status ) {
+		if ( '200' === $response_status ) {
 			$order->add_order_note( EAS_TR( 'Order status changed to Canceled. EAS API notified.' ));
 			$order->save();
 		}
         else {
-            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r'=>$payment_response));
-			throw new Exception( $payment_status . ' '. $payment_response['response']['message'] );
+            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r'=>$response));
+			throw new Exception( $response_status . ' '. $response['response']['message'] );
 		}
 
 		eascompliance_log('info', eascompliance_format("Order $order_id Cancelled notification successful", array('$order_id'=>$order_id) ));
