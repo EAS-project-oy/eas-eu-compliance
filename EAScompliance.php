@@ -4484,6 +4484,10 @@ function eascompliance_woocommerce_settings_start() {
 			WC_Admin_Settings::add_message( EAS_TR('Attention! EAS plugin detected gift card Product type(s),  please if you are selling Gift cards please enter Product type(s) in relevant configuration settings' ));
         }
 
+		if ( 'hidden' === get_option( 'woocommerce_checkout_phone_field') ) {
+			WC_Admin_Settings::add_error( EAS_TR('We can’t proceed landed cost calculation because required delivery Phone field is disabled. Please contact support to fix the issue.' ));
+		}
+
 	} catch ( Exception $ex ) {
 		eascompliance_log('error', $ex);
 		throw $ex;
