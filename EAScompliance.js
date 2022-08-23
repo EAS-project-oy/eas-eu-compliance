@@ -7,6 +7,9 @@ jQuery(document).ready(function($) {
 
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '')
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $(PLACE_ORDER_BUTTON).offset().top-50
+            }, 2000);
         }
         else {
             $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000')
