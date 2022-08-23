@@ -235,6 +235,12 @@ jQuery(document).ready(function($) {
         $('.button_calc').css(button_styles[i],$('#place_order').css(button_styles[i]));
     }
 
+    // Change button styles from plugin settings
 
+    if (plugin_css_settings.button_font_color || plugin_css_settings.button_background_color || plugin_css_settings.button_font_size  ) {
+        $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px');
+        $('.button_calc').css('color', plugin_css_settings.button_font_color);
+        $('.button_calc').css('background-color', plugin_css_settings.button_background_color);
+    }
 
 })

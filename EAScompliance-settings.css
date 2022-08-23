@@ -1,17 +1,22 @@
 :root {
-  --settings-fg-color: #004368;
-  --settings-bg-color: #e4ebf2;
+    --settings-fg-color: #004368;
+    --settings-bg-color: #e4ebf2;
 }
 
-[id^="easproj_"], [class^="easproj_"], [for^="easproj_"], [name^="easproj_"]
-{
-  color: var(--settings-fg-color) !important;
+[id^="easproj_"], [class^="easproj_"], [for^="easproj_"], [name^="easproj_"] {
+    color: var(--settings-fg-color) !important;
 }
 
 select[name^="easproj_"] option {
-  background-color: var(--settings-bg-color) !important;
+    background-color: var(--settings-bg-color) !important;
 }
 
 .easproject_settings .titledesc {
-  color: var(--settings-fg-color) !important;
+    color: var(--settings-fg-color) !important;
+}
+
+label[for="eas_design_label"] {
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 20px;
 }

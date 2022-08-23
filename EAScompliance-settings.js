@@ -136,5 +136,9 @@ jQuery(document).ready(function($) {
             $('#easproj_deduct_vat_outside_eu').val('')
         }
     })
+    // Add colorpicker for admin panel
+
+    $('#eas_button_text_color').wpColorPicker();
+    $('#eas_button_background_color').wpColorPicker();
 
 })
