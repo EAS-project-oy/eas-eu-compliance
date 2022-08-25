@@ -462,6 +462,15 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         $txt = $level . ' ' . print_r($message, true);
     }
 
+	$user_id = WC()->session->get_customer_id();
+    if ( 't_' === substr($user_id, 0, 2) ) {
+        $user_id = 'session_' . substr($user_id, -6);
+    }
+    else {
+        $user_id = 'user_' . $user_id;
+    }
+    $txt = $user_id . ' ' . $txt;
+
     if ($callstack) {
         $ex = new Exception();
         ob_start();
