@@ -1532,6 +1532,7 @@ function eascompliance_ajaxhandler()
         $jdebug['step'] = 'prepare EAS API /calculate request';
         $options = array(
             'method' => 'POST',
+			'timeout'=> 10,
             'headers' => array(
                 'Content-type' => 'application/json',
                 'Authorization' => 'Bearer ' . $auth_token,
