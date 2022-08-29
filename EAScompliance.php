@@ -462,14 +462,18 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         $txt = $level . ' ' . print_r($message, true);
     }
 
-	$user_id = WC()->session->get_customer_id();
-    if ( 't_' === substr($user_id, 0, 2) ) {
-        $user_id = 'session_' . substr($user_id, -6);
+    if (!is_null(WC()->session)) {
+        $user_id = WC()->session->get_customer_id();
+        if ( 't_' === substr($user_id, 0, 2) ) {
+            $user_id = 'session_' . substr($user_id, -6);
+        }
+        else {
+            $user_id = 'user_' . $user_id;
+        }
+        $txt = $user_id . ' ' . $txt;
+    } else {
+		$txt =  'no_session ' . $txt;
     }
-    else {
-        $user_id = 'user_' . $user_id;
-    }
-    $txt = $user_id . ' ' . $txt;
 
     if ($callstack) {
         $ex = new Exception();
@@ -4834,10 +4838,19 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
             update_option('easproj_deduct_vat_outside_eu', '');
         }
 
-
-        // add tax rate //.
         global $wpdb;
-        $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
+
+		// delete legacy tax rate
+		$legacy_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance' "), ARRAY_A);
+		$legacy_rate_id = eascompliance_array_get($legacy_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
+        eascompliance_log('debug', 'saving');
+		if ($legacy_rate_id) {
+			WC_Tax::_delete_tax_rate($legacy_rate_id);
+			eascompliance_log('debug', 'deleted');
+		}
+
+		// add tax rate //.
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
         $tax_rate_id = eascompliance_array_get($tax_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
 
         if (!$tax_rate_id) {
