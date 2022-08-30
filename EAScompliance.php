@@ -931,7 +931,7 @@ function eascompliance_woocommerce_review_order_before_payment()
  */
 function eascompliance_get_oauth_token()
 {
-    eascompliance_log('oauth', 'entering ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
@@ -1009,7 +1009,7 @@ function eascompliance_get_oauth_token()
  */
 function eascompliance_make_eas_api_request_json($currency_conversion = true)
 {
-    eascompliance_log('request', 'entering ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $jdebug = array();
 
@@ -1316,7 +1316,7 @@ function eascompliance_product_attribute_or_meta($product, $settings_key)
  */
 function eascompliance_make_eas_api_request_json_from_order($order_id)
 {
-    eascompliance_log('request', 'entering ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $order = wc_get_order($order_id);
 
@@ -2387,48 +2387,12 @@ function eascompliance_woocommerce_after_order_object_save($order)
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
+		$order->add_order_note($ex->getMessage());
     } finally {
         restore_error_handler();
     }
 }
 
-
-if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
-}
-/**
- * Admin Order method to recalculate EAS fees
- *
- * @throws Exception May throw exception.
- */
-function eascompliance_recalculate_ajax()
-{
-    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
-
-    try {
-        set_error_handler('eascompliance_error_handler');
-
-        if (!current_user_can('edit_shop_orders')) {
-            wp_send_json(array('status' => 'error', 'message' => 'no permission'));
-        }
-
-        $order_id = absint($_POST['order_id']);
-
-        $order = wc_get_order($order_id);
-
-        eascompliance_order_createpostsaleorder($order);
-
-        eascompliance_log('info', "Sales order $order_id update successful");
-
-        wp_send_json(array('status' => 'ok'));
-
-    } catch (Exception $ex) {
-        eascompliance_log('error', $ex);
-        wp_send_json(array('status' => 'error', 'message' => $ex->getMessage()));;
-    } finally {
-        restore_error_handler();
-    }
-}
 
 if (eascompliance_is_active()) {
     add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');

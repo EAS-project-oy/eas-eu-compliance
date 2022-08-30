@@ -59,26 +59,11 @@ jQuery(document).ready(function($) {
 
     $( '#woocommerce-order-items').on('click', '.eascompliance-recalculate', async function () {
         $node = $('.woocommerce_order_items_wrapper')
-        block($node)
         if (is_blocked($node)) {
             return
         }
-        j = (await new Promise ( function(resolve) {$.post({
-            url: plugin_ajax_object.ajax_url
-            , data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
-            , dataType: 'json'
-            , success: function (j) {
-                resolve(j);
-            }
-        })}));
-        unblock($node)
-
-        if ( 'ok' !== j.status) {
-            window.alert('Calculate Taxes & Duties EAS failed. '+j.message)
-        } else {
-            window.alert('Taxes & Duties EAS recalculated. Reloading page...')
-            window.location.reload();
-        }
+        block($node)
+        $('button.save_order').click()
     } )
 
     // Admin Order view button 'Log EAS order data'
