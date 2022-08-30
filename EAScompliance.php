@@ -2380,6 +2380,9 @@ function eascompliance_woocommerce_after_order_object_save($order)
 
         eascompliance_order_createpostsaleorder($order);
 
+		$order->add_meta_data('_easproj_api_save_notification_started', 'done', true);
+		$order->save_meta_data();
+
         $order_id = $order->get_id();
 
         eascompliance_log('info', "EAS createpostsaleorder successful for order $order_id update successful");
