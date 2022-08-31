@@ -7,9 +7,9 @@ jQuery(document).ready(function($) {
 
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '')
-            $([document.documentElement, document.body]).animate({
-                scrollTop: $(PLACE_ORDER_BUTTON).offset().top-50
-            }, 2000);
+            if ($('.eascompliance_status').text() == 'present') {
+                $(PLACE_ORDER_BUTTON)[0].scrollIntoView()
+            }
         }
         else {
             $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000')
@@ -40,9 +40,7 @@ jQuery(document).ready(function($) {
     var show_error = function( error_message ) {
         $el = $('<div class="woocommerce-error">').text(error_message);
         $('.woocommerce-notices-wrapper:first').prepend($el);
-        $([document.documentElement, document.body]).animate({
-            scrollTop: $('.woocommerce-notices-wrapper:first').offset().top-50
-        }, 2000);
+        $('.woocommerce-notices-wrapper:first')[0].scrollIntoView({behavior: 'smooth'})
         // Add reload link to Security check error message
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
@@ -204,6 +202,9 @@ jQuery(document).ready(function($) {
                 resolve(j);
             }
         })})).needs_recalculate;
+        if (needs_recalculate && $('.eascompliance_status').text() == 'present') {
+            $('.eascompliance_status').text('not present')
+        }
 
         if
         (
