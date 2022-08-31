@@ -834,6 +834,10 @@ function eascompliance_woocommerce_review_order_before_payment()
             $item = $cart->get_cart_contents()[$k];
             $checkout_form_data = eascompliance_array_get($item, 'CHECKOUT FORM DATA', '');
 
+            // reset calculation when Cart Abandonment Link is opened
+        	if ($_SERVER['REQUEST_METHOD'] == 'GET' && preg_match('/[\?&]wcf_ac_token=/', $_SERVER['REQUEST_URI'])) {
+        		eascompliance_unset();
+        	}
 
             //reset calculation when WC Payments currency changes
             if (function_exists('WC_Payments_Multi_Currency')) {
