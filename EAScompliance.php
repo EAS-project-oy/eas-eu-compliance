@@ -1062,11 +1062,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $jdebug['step'] = 'Fill json request with checkout data';
 
     if (!wp_verify_nonce(strval(eascompliance_array_get($_POST, 'eascompliance_nonce_calc', '')), 'eascompliance_nonce_calc')) {
-        if (eascompliance_log_level('WP-74')) {
-            eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_POST is $POST', array('POST' => $_POST));
-        } else {
-            throw new Exception('Security check');
-        }
+            eascompliance_log('warning', 'Security check');
     }
 
     // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
@@ -1702,11 +1698,7 @@ function eascompliance_redirect_confirm()
 
         $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
         if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
-            if (eascompliance_log_level('WP-74')) {
-                eascompliance_log('error', 'Nonce security check failed for eascompliance_nonce_api, $_GET is $GET', array('GET' => $_GET));
-            } else {
-                throw new Exception('Security check');
-            }
+			eascompliance_log('warning', 'Security check');
         };
 
         if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -3281,11 +3273,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         set_error_handler('eascompliance_error_handler');
 
         if (!wp_verify_nonce(strval(eascompliance_array_get($_POST, 'eascompliance_nonce_calc', '')), 'eascompliance_nonce_calc')) {
-            if (eascompliance_log_level('WP-74')) {
-                eascompliance_log('WP-74', 'Nonce security check failed for eascompliance_nonce_calc, _POST is $POST', array('POST' => $_POST));
-            } else {
-                throw new Exception('Security check');
-            }
+			eascompliance_log('warning', 'Security check');
         };
 
         // only work for European countries //.
