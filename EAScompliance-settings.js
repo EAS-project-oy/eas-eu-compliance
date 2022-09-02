@@ -58,12 +58,40 @@ jQuery(document).ready(function($) {
     // Admin Order view button 'Calculate Taxes & Duties EAS'
 
     $( '#woocommerce-order-items').on('click', '.eascompliance-recalculate', async function () {
+        // only process created orders
+        if ($('button.save_order').val() == 'Create') {
+            window.alert('Please create order before processing to EAS VAT calculation. Press Create button and then Calculate Taxes & Duties EAS')
+            return
+        }
+
+        if (!window.confirm('Before processing to VAT calculation be sure to save changes to the order. Order changes saved?')) {
+            return
+        }
+
+
         $node = $('.woocommerce_order_items_wrapper')
         if (is_blocked($node)) {
             return
         }
         block($node)
-        $('button.save_order').click()
+
+
+        j = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })}));
+        unblock($node)
+
+        if ( 'ok' !== j.status) {
+            window.alert('Calculate Taxes & Duties EAS failed. '+j.message)
+        } else {
+            window.alert('Taxes & Duties EAS recalculated. Reloading page...')
+            window.location.reload();
+        }
     } )
 
     // Admin Order view button 'Log EAS order data'
@@ -84,7 +112,7 @@ jQuery(document).ready(function($) {
         unblock($node)
 
         if ( 'ok' !== j.status) {
-            window.alert('EAS Order data log failed'+j.message)
+            window.alert('EAS Order data log failed: '+j.message)
         } else {
             window.alert('EAS Order data logged')
         }

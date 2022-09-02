@@ -1382,17 +1382,39 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 
     $calc_jreq['is_delivery_to_person'] = $order->get_shipping_company() === '';
 
+    //take shipping from billing address when shipping address is empty
+    $shipping_first_name = $order->get_shipping_first_name();
+    $shipping_last_name = $order->get_shipping_last_name();
+    $shipping_company = $order->get_shipping_company();
+    $shipping_address_1 = $order->get_shipping_address_1();
+    $shipping_address_2 = $order->get_shipping_address_2();
+    $shipping_city = $order->get_shipping_city();
+    $shipping_postal_code = $order->get_shipping_postcode();
+    $shipping_country = $order->get_shipping_country();
+    
+    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+		$shipping_first_name = $order->get_billing_first_name();
+		$shipping_last_name = $order->get_billing_last_name();
+		$shipping_company = $order->get_billing_company();
+		$shipping_address_1 = $order->get_billing_address_1();
+		$shipping_address_2 = $order->get_billing_address_2();
+		$shipping_city = $order->get_billing_city();
+		$shipping_postal_code = $order->get_billing_postcode();
+		$shipping_country = $order->get_billing_country();
+		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
+    }
+
     $calc_jreq['recipient_title'] = 'Mr.';
-    $calc_jreq['recipient_first_name'] = $order->get_shipping_first_name();
-    $calc_jreq['recipient_last_name'] = $order->get_shipping_last_name();
-    $calc_jreq['recipient_company_name'] = $order->get_shipping_company() === '' ? 'No company' : $order->get_shipping_company();
+    $calc_jreq['recipient_first_name'] = $shipping_first_name;
+    $calc_jreq['recipient_last_name'] = $shipping_last_name;
+    $calc_jreq['recipient_company_name'] = $shipping_company === '' ? 'No company' : $shipping_company;
     $calc_jreq['recipient_company_vat'] = '';
-    $calc_jreq['delivery_address_line_1'] = $order->get_shipping_address_1();
-    $calc_jreq['delivery_address_line_2'] = $order->get_shipping_address_2();
-    $calc_jreq['delivery_city'] = $order->get_shipping_city();
+    $calc_jreq['delivery_address_line_1'] = $shipping_address_1;
+    $calc_jreq['delivery_address_line_2'] = $shipping_address_2;
+    $calc_jreq['delivery_city'] = $shipping_city;
     $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
-    $calc_jreq['delivery_postal_code'] = $order->get_shipping_postcode();
-    $calc_jreq['delivery_country'] = $order->get_shipping_country();
+    $calc_jreq['delivery_postal_code'] = $shipping_postal_code;
+    $calc_jreq['delivery_country'] = $shipping_country;
     $calc_jreq['delivery_phone'] = $order->get_billing_phone();
     $calc_jreq['delivery_email'] = $order->get_billing_email();
     $countries = array_flip(WORLD_COUNTRIES);
@@ -2189,15 +2211,35 @@ function eascompliance_order_createpostsaleorder($order)
 
     $order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
 
+	//take shipping from billing when shipping address is empty
+	$shipping_first_name = $order->get_shipping_first_name();
+	$shipping_last_name = $order->get_shipping_last_name();
+	$shipping_address_1 = $order->get_shipping_address_1();
+	$shipping_address_2 = $order->get_shipping_address_2();
+	$shipping_city = $order->get_shipping_city();
+	$shipping_postal_code = $order->get_shipping_postcode();
+	$shipping_country = $order->get_shipping_country();
+
+	if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+		$shipping_first_name = $order->get_billing_first_name();
+		$shipping_last_name = $order->get_billing_last_name();
+		$shipping_address_1 = $order->get_billing_address_1();
+		$shipping_address_2 = $order->get_billing_address_2();
+		$shipping_city = $order->get_billing_city();
+		$shipping_postal_code = $order->get_billing_postcode();
+		$shipping_country = $order->get_billing_country();
+		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
+	}
+
     // check requirements for calculate request //.
-    if ('' === $order->get_shipping_first_name()
-        || '' === $order->get_shipping_last_name()
-        || '' === $order->get_shipping_country()
-        || '' === $order->get_shipping_address_1()) {
+    if ('' === $shipping_first_name
+        || '' === $shipping_last_name
+        || '' === $shipping_country
+        || '' === $shipping_address_1) {
         throw new Exception(EAS_TR('Landed cost calculation can’t be processed until Delivery Name and address provided'));
     }
 
-    if (!in_array($order->get_shipping_country(), EUROPEAN_COUNTRIES)) {
+    if (!in_array($shipping_country, EUROPEAN_COUNTRIES)) {
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
     }
 
@@ -2327,6 +2369,10 @@ function eascompliance_order_createpostsaleorder($order)
         $order->set_shipping_tax($payload_j['delivery_charge_vat']);
 
     } else {
+        // if error happened, then remove notification_started flag to allow calculating again
+		$order->add_meta_data('_easproj_api_save_notification_started', '', true);
+		$order->save_meta_data();
+
         eascompliance_log('error', 'sales_order response is $s', array('$s' => $sales_order_response));
         throw new Exception(EAS_TR('createpostsaleorder failed'));
     }
@@ -2356,6 +2402,10 @@ function eascompliance_woocommerce_after_order_object_save($order)
             return;
         }
 
+        if ($order->get_created_via() === 'admin') {
+            return;
+        }
+
         if ($order->get_created_via() === 'checkout') {
             return;
         }
@@ -2376,9 +2426,6 @@ function eascompliance_woocommerce_after_order_object_save($order)
 
         eascompliance_order_createpostsaleorder($order);
 
-		$order->add_meta_data('_easproj_api_save_notification_started', 'done', true);
-		$order->save_meta_data();
-
         $order_id = $order->get_id();
 
         eascompliance_log('info', "EAS createpostsaleorder successful for order $order_id update successful");
@@ -2390,6 +2437,44 @@ function eascompliance_woocommerce_after_order_object_save($order)
     } finally {
         restore_error_handler();
     }
+}
+
+
+if (eascompliance_is_active()) {
+	add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
+}
+/**
+ * Admin Order method to recalculate EAS fees
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_recalculate_ajax()
+{
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+		if (!current_user_can('edit_shop_orders')) {
+			wp_send_json(array('status' => 'error', 'message' => 'no permission'));
+		}
+
+		$order_id = absint($_POST['order_id']);
+
+		$order = wc_get_order($order_id);
+
+		eascompliance_order_createpostsaleorder($order);
+
+		eascompliance_log('info', "Sales order $order_id update successful");
+
+		wp_send_json(array('status' => 'ok'));
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		wp_send_json(array('status' => 'error', 'message' => $ex->getMessage()));;
+	} finally {
+		restore_error_handler();
+	}
 }
 
 
@@ -4186,6 +4271,27 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
                 class="button button-primary eascompliance-recalculate"><?php esc_html_e('Calculate Taxes & Duties EAS', 'woocommerce'); ?></button>
         <?php
     }
+}
+
+
+if (eascompliance_is_active()) {
+    add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
+}
+/**
+ * Admin Order must not be editable when calculations already present
+ *
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_wc_order_is_editable($is_editable, $order)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+	if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
+		return false;
+	}
+
+    return $is_editable;
 }
 
 
