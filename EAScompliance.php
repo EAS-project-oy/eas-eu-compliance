@@ -2501,10 +2501,16 @@ function eascompliance_logorderdata_ajax()
 
         $order = wc_get_order($order_id);
 
+        $refund_tokens = '';
+        foreach($order->get_refunds() as $refund) {
+            $refund_tokens .= eascompliance_format('refund $r token $t;', array('$r'=>$refund->get_id(), '$t'=>$refund->get_meta('_easproj_refund_return_token')));
+        }
+
         eascompliance_logger()->info('EAS Order data' . print_r(array(
                 'order_id' => $order_id,
                 '_easproj_token' => $order->get_meta('_easproj_token'),
                 'easproj_payload' => $order->get_meta('easproj_payload'),
+                'refunds' => $refund_tokens,
                 '_easproj_order_json' => $order->get_meta('_easproj_order_json'),
                 '_easproj_order_number_notified' => $order->get_meta('_easproj_order_number_notified'),
                 '_easproj_payment_processed' => $order->get_meta('_easproj_payment_processed'),
