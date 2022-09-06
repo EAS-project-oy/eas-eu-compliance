@@ -4123,7 +4123,7 @@ function eascompliance_woocommerce_create_refund($refund, $args)
 
             eascompliance_log('refund', 'refund total is $rt, order total is $ot', array('$rt' => $refund_total, '$ot' => $order->get_total()));
 
-            if (abs($refund_total) > $order->get_total()) {
+            if ( abs($refund_total) - 0.014 > $order->get_total() ) {
                 $refund->add_meta_data('_easproj_refund_invalid', '5', true);
                 $refund->save();
                 return;
