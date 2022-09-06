@@ -6,13 +6,13 @@ jQuery(document).ready(function($) {
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
 
         if (is_visible) {
-            $(PLACE_ORDER_BUTTON).show().css('z-index', '')
+            $(PLACE_ORDER_BUTTON).show().css('z-index', '').css('opacity', '')
             if ($('.eascompliance_status').text() == 'present') {
                 $(PLACE_ORDER_BUTTON)[0].scrollIntoView()
             }
         }
         else {
-            $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000')
+            $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000').css('opacity', '0')
         }
     }
 
