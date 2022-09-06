@@ -3763,7 +3763,7 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
             'body' => json_encode(array('token' => $confirmation_token,
                 'return_breakdown' => $return_breakdown,
                 'return_date' => date_format(new DateTime(), 'Y-m-d'),
-                'confirmed' => false,
+                'confirmed' => true,
                 'precalculation' => false,
             ), EASCOMPLIANCE_JSON_THROW_ON_ERROR),
             'sslverify' => false,
