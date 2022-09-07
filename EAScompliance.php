@@ -4789,7 +4789,7 @@ function eascompliance_woocommerce_settings_start()
         }
 
         if ('hidden' === get_option('woocommerce_checkout_phone_field')) {
-            WC_Admin_Settings::add_error(EAS_TR('We can’t proceed landed cost calculation because required delivery Phone field is disabled. Please contact support to fix the issue.'));
+            WC_Admin_Settings::add_error(EAS_TR('We can’t proceed landed cost calculation because required delivery Phone field is disabled. Please visit Appearance → Customize page, '));
         }
 
     } catch (Exception $ex) {
