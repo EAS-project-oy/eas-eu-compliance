@@ -1228,7 +1228,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
             'id_provided_by_em' => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
-            'quantity' => $cart_item['quantity'],
+            'quantity' => (int) $cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
             'hs6p_received' => eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'),
