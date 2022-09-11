@@ -40,7 +40,6 @@ jQuery(document).ready(function ($) {
         $el = $('<div class="woocommerce-error">').text(error_message);
         $('.woocommerce-notices-wrapper:first').prepend($el);
         $('.woocommerce-notices-wrapper:first')[0].scrollIntoView({behavior: 'smooth'})
-        $('.woocommerce-notices-wrapper:first')[0].scrollIntoView({behavior: 'smooth'})
         // Add reload link to Security check error message
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
@@ -212,18 +211,15 @@ jQuery(document).ready(function ($) {
         european_countries = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE'.split(' ')
 
         //take needs-recalculate from server because it may change without checkout page reloading
-        needs_recalculate = (await new Promise(function (resolve) {
-            $.post({
-                url: plugin_ajax_object.ajax_url
-                , data: {'action': 'eascompliance_needs_recalculate_ajax'}
-                , dataType: 'json'
-                , success: function (j) {
-                    resolve(j);
-                }
-            })
-        })).needs_recalculate;
-
-        if(needs_recalculate && $('.eascompliance_status').text() == 'present') {
+        needs_recalculate = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_needs_recalculate_ajax'}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })})).needs_recalculate;
+        if (needs_recalculate && $('.eascompliance_status').text() == 'present') {
             $('.eascompliance_status').text('not present')
         }
 

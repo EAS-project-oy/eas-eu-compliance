@@ -1,26 +1,28 @@
 const PLUGIN_NAME = 'EAS EU compliance';
 
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function($) {
+
 
     //// block, unblock UI when request is processed
-    var unblock = function ($node) {
-        $node.removeClass('processing').unblock();
+    var unblock = function( $node ) {
+        $node.removeClass( 'processing' ).unblock();
     };
-    var is_blocked = function ($node) {
-        return $node.is('.processing') || $node.parents('.processing').length;
+
+    var is_blocked = function( $node ) {
+        return $node.is( '.processing' ) || $node.parents( '.processing' ).length;
     };
-    var block = function ($node) {
-        if (!is_blocked($node)) {
-            $node.addClass('processing').block({
+
+    var block = function( $node ) {
+        if ( ! is_blocked( $node ) ) {
+            $node.addClass( 'processing' ).block( {
                 message: null,
                 overlayCSS: {
                     background: '#fff',
                     opacity: 0.6
                 }
-            });
+            } );
         }
     };
-
 
     // replace standard window.prompt with hacked version to support masked input of HS6CODE attribute
     // Lookup WC sources: meta-boxes-product.js:407 $( '.product_attributes' ).on( 'click', 'button.add_new_attribute'))
@@ -35,7 +37,8 @@ jQuery(document).ready(function ($) {
                 if (res.match(/[0-9]{4,10}/)) return res
             }
             return res
-        } else return old_prompt(what, def)
+        }
+        else return old_prompt(what, def)
     }
 
 
@@ -53,120 +56,110 @@ jQuery(document).ready(function ($) {
     }
 
     // Admin Order view button 'Calculate Taxes & Duties EAS'
-    $('.eascompliance-recalculate').on('click', async function () {
-        $('#woocommerce-order-items').on('click', '.eascompliance-recalculate', async function () {
-            // only process created orders
-            if ($('button.save_order').val() == 'Create') {
-                window.alert('Please create order before processing to EAS VAT calculation. Press Create button and then Calculate Taxes & Duties EAS')
-                return
-            }
-            if (!window.confirm('Before processing to VAT calculation be sure to save changes to the order. Order changes saved?')) {
-                return
-            }
-            $node = $('.woocommerce_order_items_wrapper')
-            if (is_blocked($node)) {
-                return
-            }
-            block($node)
-            j = (await new Promise(function (resolve) {
-                $.post({
-                    url: plugin_ajax_object.ajax_url
-                    ,
-                    data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
-                    ,
-                    dataType: 'json'
-                    ,
-                    success: function (j) {
-                        resolve(j);
-                    }
-                })
-            }));
-            unblock($node)
 
-            if ('ok' !== j.status) {
-                window.alert('Calculate Taxes & Duties EAS failed. ' + j.message)
-            } else {
-                window.alert('Taxes & Duties EAS recalculated. Reloading page...')
-                window.location.reload();
-            }
-        })
+    $( '#woocommerce-order-items').on('click', '.eascompliance-recalculate', async function () {
+        // only process created orders
+        if ($('button.save_order').val() == 'Create') {
+            window.alert('Please create order before processing to EAS VAT calculation. Press Create button and then Calculate Taxes & Duties EAS')
+            return
+        }
 
-        // Admin Order view button 'Log EAS order data'
-        $('#woocommerce-order-items').on('click', '.eascompliance-orderdata', async function () {
-            $node = $('.woocommerce_order_items_wrapper');
-            if (is_blocked($node)) {
-                return
-            }
-            block($node)
-            j = (await new Promise(function (resolve) {
-                $.post({
-                    url: plugin_ajax_object.ajax_url
-                    ,
-                    data: {
-                        'action': 'eascompliance_logorderdata_ajax',
-                        'order_id': woocommerce_admin_meta_boxes.post_id
-                    }
-                    ,
-                    dataType: 'json'
-                    ,
-                    success: function (j) {
-                        resolve(j);
-                    }
-                })
-            }));
-            unblock($node)
-
-            if ('ok' !== j.status) {
-                window.alert('EAS Order data log failed: ' + j.message)
-            } else {
-                window.alert('EAS Order data logged')
-            }
-        })
-
-        // enable tags for easproj_debug options
-        $("#easproj_debug").select2({
-            tags: true,
-            tokenSeparators: [',', ' ']
-        })
+        if (!window.confirm('Before processing to VAT calculation be sure to save changes to the order. Order changes saved?')) {
+            return
+        }
 
 
-        // checkbox for deduct_vat_outside_eu option
-        $('#easproj_deduct_vat_outside_eu').parent().prepend($('<input type=checkbox id="easproj_deduct_vat_outside_eu_checkbox">'))
+        $node = $('.woocommerce_order_items_wrapper')
+        if (is_blocked($node)) {
+            return
+        }
+        block($node)
+
+
+        j = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_recalculate_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })}));
+        unblock($node)
+
+        if ( 'ok' !== j.status) {
+            window.alert('Calculate Taxes & Duties EAS failed. '+j.message)
+        } else {
+            window.alert('Taxes & Duties EAS recalculated. Reloading page...')
+            window.location.reload();
+        }
+    } )
+
+    // Admin Order view button 'Log EAS order data'
+    $( '#woocommerce-order-items').on('click', '.eascompliance-orderdata' ,async function () {
+        $node = $('.woocommerce_order_items_wrapper');
+        if (is_blocked($node)) {
+            return
+        }
+        block($node)
+        j = (await new Promise ( function(resolve) {$.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_logorderdata_ajax', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+            , success: function (j) {
+                resolve(j);
+            }
+        })}));
+        unblock($node)
+
+        if ( 'ok' !== j.status) {
+            window.alert('EAS Order data log failed: '+j.message)
+        } else {
+            window.alert('EAS Order data logged')
+        }
+    } )
+
+    // enable tags for easproj_debug options
+    $("#easproj_debug").select2({
+        tags: true,
+        tokenSeparators: [',', ' ']
+    })
+
+
+    // checkbox for deduct_vat_outside_eu option
+    $('#easproj_deduct_vat_outside_eu').parent().prepend($('<input type=checkbox id="easproj_deduct_vat_outside_eu_checkbox">'))
+    $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
+    $('#easproj_deduct_vat_outside_eu').prop('readonly', $('#easproj_deduct_vat_outside_eu').val() === '')
+    //disable checkbox and input if WC prices are tax exclusive
+    if ($('#easproj_deduct_vat_outside_eu').attr('prices_include_tax') === 'no') {
+        $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', false)
+        $('#easproj_deduct_vat_outside_eu_checkbox').prop('disabled', true)
+        $('#easproj_deduct_vat_outside_eu').prop('readonly', true)
+        $('#easproj_deduct_vat_outside_eu').val('')
+    }
+
+    $('#easproj_deduct_vat_outside_eu').on( 'input', function() {
         $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
-        $('#easproj_deduct_vat_outside_eu').prop('readonly', $('#easproj_deduct_vat_outside_eu').val() === '')
-        //disable checkbox and input if WC prices are tax exclusive
-        if ($('#easproj_deduct_vat_outside_eu').attr('prices_include_tax') === 'no') {
-            $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', false)
-            $('#easproj_deduct_vat_outside_eu_checkbox').prop('disabled', true)
+    })
+
+    $('#easproj_deduct_vat_outside_eu_checkbox').on( 'change', function() {
+        if ( $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked') ) {
+            $('#easproj_deduct_vat_outside_eu').prop('readonly', false)
+        } else {
             $('#easproj_deduct_vat_outside_eu').prop('readonly', true)
             $('#easproj_deduct_vat_outside_eu').val('')
         }
+    })
+    // Add colorpicker for admin panel
 
-        $('#easproj_deduct_vat_outside_eu').on('input', function () {
-            $('#easproj_deduct_vat_outside_eu_checkbox').prop('checked', $('#easproj_deduct_vat_outside_eu').val() !== '')
-        })
+    $('#eas_button_text_color').wpColorPicker();
+    $('#eas_button_background_color').wpColorPicker();
+    $('#eas_button_background_color_hover').wpColorPicker();
+    $('#eas_button_text_color_hover').wpColorPicker();
 
-        $('#easproj_deduct_vat_outside_eu_checkbox').on('change', function () {
-            if ($('#easproj_deduct_vat_outside_eu_checkbox').prop('checked')) {
-                $('#easproj_deduct_vat_outside_eu').prop('readonly', false)
-            } else {
-                $('#easproj_deduct_vat_outside_eu').prop('readonly', true)
-                $('#easproj_deduct_vat_outside_eu').val('')
-            }
-        })
+    //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
+    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+    for (i = 0; i < button_styles.length; i++) {
+        $('.button_calc_test').css(button_styles[i], $('#place_order').css(button_styles[i]));
+    }
 
-        // Add colorpicker for admin panel
-
-        $('#eas_button_text_color').wpColorPicker();
-        $('#eas_button_background_color').wpColorPicker();
-        $('#eas_button_background_color_hover').wpColorPicker();
-        $('#eas_button_text_color_hover').wpColorPicker();
-
-        //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
-        button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
-        for (i = 0; i < button_styles.length; i++) {
-            $('.button_calc_test').css(button_styles[i], $('#place_order').css(button_styles[i]));
-        }
-
-    });
-});
+})

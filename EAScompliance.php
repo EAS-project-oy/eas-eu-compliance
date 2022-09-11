@@ -833,6 +833,7 @@ function eascompliance_woocommerce_review_order_before_payment()
             $checkout_form_data = eascompliance_array_get($item, 'CHECKOUT FORM DATA', '');
 
             // reset calculation when Cart Abandonment Link is opened
+            
             if ($_SERVER['REQUEST_METHOD'] == 'GET' && preg_match('/[\?&]wcf_ac_token=/', $_SERVER['REQUEST_URI'])) {
                 eascompliance_unset();
             }
@@ -1401,6 +1402,28 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
     }
 
+    //take shipping from billing address when shipping address is empty
+    $shipping_first_name = $order->get_shipping_first_name();
+    $shipping_last_name = $order->get_shipping_last_name();
+    $shipping_company = $order->get_shipping_company();
+    $shipping_address_1 = $order->get_shipping_address_1();
+    $shipping_address_2 = $order->get_shipping_address_2();
+    $shipping_city = $order->get_shipping_city();
+    $shipping_postal_code = $order->get_shipping_postcode();
+    $shipping_country = $order->get_shipping_country();
+    
+    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+		$shipping_first_name = $order->get_billing_first_name();
+		$shipping_last_name = $order->get_billing_last_name();
+		$shipping_company = $order->get_billing_company();
+		$shipping_address_1 = $order->get_billing_address_1();
+		$shipping_address_2 = $order->get_billing_address_2();
+		$shipping_city = $order->get_billing_city();
+		$shipping_postal_code = $order->get_billing_postcode();
+		$shipping_country = $order->get_billing_country();
+		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
+    }
+
     $calc_jreq['recipient_title'] = 'Mr.';
     $calc_jreq['recipient_first_name'] = $shipping_first_name;
     $calc_jreq['recipient_last_name'] = $shipping_last_name;
@@ -1718,7 +1741,7 @@ function eascompliance_redirect_confirm()
 
         $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
         if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
-            eascompliance_log('warning', 'Security check');
+			    eascompliance_log('warning', 'Security check');
         };
 
         if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -2208,7 +2231,6 @@ function eascompliance_order_createpostsaleorder($order)
     $auth_token = eascompliance_get_oauth_token();
 
     $order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
-
     //take shipping from billing when shipping address is empty
     $shipping_first_name = $order->get_shipping_first_name();
     $shipping_last_name = $order->get_shipping_last_name();
@@ -2228,8 +2250,7 @@ function eascompliance_order_createpostsaleorder($order)
         $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
     }
 
-    // check requirements for calculate request //.
-    // check requirements for calculate request //.
+    // check requirements for calculate request /
     if ('' === $shipping_first_name
         || '' === $shipping_last_name
         || '' === $shipping_country
@@ -2368,9 +2389,9 @@ function eascompliance_order_createpostsaleorder($order)
 
     } else {
         // if error happened, then remove notification_started flag to allow calculating again
-        $order->add_meta_data('_easproj_api_save_notification_started', '', true);
-        $order->save_meta_data();
-        eascompliance_log('error', 'sales_order response is $s', array('$s' => $sales_order_response));		        eascompliance_log('error', 'sales_order response is $s', array('$s' => $sales_order_response));
+		    $order->add_meta_data('_easproj_api_save_notification_started', '', true);
+		    $order->save_meta_data();
+        eascompliance_log('error', 'sales_order response is $s', array('$s' => $sales_order_response));
         throw new Exception(EAS_TR('createpostsaleorder failed'));
     }
 
@@ -2459,65 +2480,66 @@ function eascompliance_woocommerce_after_order_object_save2($order)
             return;
         }
 
-        if ($order->get_meta('_eascompliance_asendia_tracking_number_notified') === $asendia_tracking_no) {
-            return;
-        }
+		if ($order->get_meta('_eascompliance_asendia_tracking_number_notified') === $asendia_tracking_no) {
+			return;
+		}
 
-        if ($order->get_meta('_easproj_token') === '') {
-            return;
-        }
+		if ($order->get_meta('_easproj_token') === '') {
+			return;
+		}
 
-        // EAS shipment can only be created for paid orders
-        if ($order->get_meta('_easproj_payment_processed') !== 'yes') {
-            return;
-        }
+		// EAS shipment can only be created for paid orders
+		if ($order->get_meta('_easproj_payment_processed') !== 'yes') {
+			return;
+		}
 
-        $auth_token = eascompliance_get_oauth_token();
+		$auth_token = eascompliance_get_oauth_token();
 
-        $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/shipment/create_shipment';
+		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/shipment/create_shipment';
 
-        $json = array(
-            's10_code' => $asendia_tracking_no,
-            'order_token' => $order->get_meta('_easproj_token'),
-        );
+		$json = array(
+			's10_code' => $asendia_tracking_no,
+			'order_token' => $order->get_meta('_easproj_token'),
+		);
 
-        $options = array(
-            'method' => 'POST',
-            'headers' => array(
-                'Content-type' => 'application/json',
-                'Authorization' => 'Bearer ' . $auth_token,
-            ),
-            'body' => json_encode($json, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
-            'sslverify' => false,
-        );
+		$options = array(
+			'method' => 'POST',
+			'headers' => array(
+				'Content-type' => 'application/json',
+				'Authorization' => 'Bearer ' . $auth_token,
+			),
+			'body' => json_encode($json, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
+			'sslverify' => false,
+		);
 
         $order_id = $order->get_id();
 
-        $response = (new WP_Http)->request($url, $options);
-        if (is_wp_error($response)) {
-            throw new Exception($response->get_error_message());
-        }
+		$response = (new WP_Http)->request($url, $options);
+		if (is_wp_error($response)) {
+			throw new Exception($response->get_error_message());
+		}
 
-        $status = (string)$response['response']['code'];
-        if ('200' === $status) {
-            $order->add_meta_data('_eascompliance_asendia_tracking_number_notified', $asendia_tracking_no, true);
-            $order->add_order_note(EAS_TR( eascompliance_format('Asendia tracking number notify successful for order $o', array('$o'=>$order_id))));
-            eascompliance_log('info', 'Asendia tracking number notify successful for order $o', array('$o'=>$order_id));
-        }
+		$status = (string)$response['response']['code'];
+		if ('200' === $status) {
+			$order->add_meta_data('_eascompliance_asendia_tracking_number_notified', $asendia_tracking_no, true);
+			$order->add_order_note(EAS_TR( eascompliance_format('Asendia tracking number notify successful for order $o', array('$o'=>$order_id))));
+			eascompliance_log('info', 'Asendia tracking number notify successful for order $o', array('$o'=>$order_id));
+		}
         else {
-            eascompliance_log('error', 'Asendia tracking number notify response is $s', array('$s' => $response));
-            throw new Exception(EAS_TR(eascompliance_format('Asendia tracking number notify failed for order $o', array('$o'=>$order_id))));
-        }
+			eascompliance_log('error', 'Asendia tracking number notify response is $s', array('$s' => $response));
+			throw new Exception(EAS_TR(eascompliance_format('Asendia tracking number notify failed for order $o', array('$o'=>$order_id))));
+		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-        $order->add_order_note($ex->getMessage());
+		$order->add_order_note($ex->getMessage());
     } finally {
         restore_error_handler();
     }
 }
 
+
 if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
+	add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
 }
 /**
  * Admin Order method to recalculate EAS fees
@@ -2526,32 +2548,33 @@ if (eascompliance_is_active()) {
  */
 function eascompliance_recalculate_ajax()
 {
-    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
-    try {
-        set_error_handler('eascompliance_error_handler');
+	try {
+		set_error_handler('eascompliance_error_handler');
 
-        if (!current_user_can('edit_shop_orders')) {
-            wp_send_json(array('status' => 'error', 'message' => 'no permission'));
-        }
+		if (!current_user_can('edit_shop_orders')) {
+			wp_send_json(array('status' => 'error', 'message' => 'no permission'));
+		}
 
-        $order_id = absint($_POST['order_id']);
+		$order_id = absint($_POST['order_id']);
 
-        $order = wc_get_order($order_id);
+		$order = wc_get_order($order_id);
 
-        eascompliance_order_createpostsaleorder($order);
+		eascompliance_order_createpostsaleorder($order);
 
-        eascompliance_log('info', "Sales order $order_id update successful");
+		eascompliance_log('info', "Sales order $order_id update successful");
 
-        wp_send_json(array('status' => 'ok'));
+		wp_send_json(array('status' => 'ok'));
 
-    } catch (Exception $ex) {
-        eascompliance_log('error', $ex);
-        wp_send_json(array('status' => 'error', 'message' => $ex->getMessage()));;
-    } finally {
-        restore_error_handler();
-    }
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		wp_send_json(array('status' => 'error', 'message' => $ex->getMessage()));;
+	} finally {
+		restore_error_handler();
+	}
 }
+
 
 if (eascompliance_is_active()) {
     add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
@@ -4125,7 +4148,7 @@ function eascompliance_woocommerce_create_refund($refund, $args)
 
             eascompliance_log('refund', 'refund total is $rt, order total is $ot', array('$rt' => $refund_total, '$ot' => $order->get_total()));
 
-            if (abs($refund_total) - 0.014 > $order->get_total()) {
+            if ( abs($refund_total) - 0.014 > $order->get_total() ) {
                 $refund->add_meta_data('_easproj_refund_invalid', '5', true);
                 $refund->save();
                 return;
@@ -4375,9 +4398,10 @@ if (eascompliance_is_active()) {
 function eascompliance_wc_order_is_editable($is_editable, $order)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
-    if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
-        return false;
-    }
+	if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
+		return false;
+	}
+
     return $is_editable;
 }
 
@@ -4837,7 +4861,8 @@ function eascompliance_woocommerce_settings_start()
         }
 
         if ('hidden' === get_option('woocommerce_checkout_phone_field')) {
-            WC_Admin_Settings::add_error(EAS_TR('Landed cost calculation will be prohibbited for EU on checkout because required delivery Phone field is disabled. Please visit Appearance → Customize page. Select "WooCommerce" then "Checkout" and change settings for the Phone field settings to Optional or Required.'));        }
+            WC_Admin_Settings::add_error(EAS_TR('Landed cost calculation will be prohibbited for EU on checkout because required delivery Phone field is disabled. Please visit Appearance → Customize page. Select "WooCommerce" then "Checkout" and change settings for the Phone field settings to Optional or Required.'));
+        }
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -5124,18 +5149,18 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
         }
 
         global $wpdb;
-
-        // delete legacy tax rate
-        $legacy_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance' "), ARRAY_A);
-        $legacy_rate_id = eascompliance_array_get($legacy_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
+        
+		// delete legacy tax rate
+		$legacy_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance' "), ARRAY_A);
+		$legacy_rate_id = eascompliance_array_get($legacy_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
         eascompliance_log('debug', 'saving');
-        if ($legacy_rate_id) {
-            WC_Tax::_delete_tax_rate($legacy_rate_id);
-            eascompliance_log('debug', 'deleted');
-        }
+		if ($legacy_rate_id) {
+			WC_Tax::_delete_tax_rate($legacy_rate_id);
+			eascompliance_log('debug', 'deleted');
+		}
 
-        // add tax rate //.
-        $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
+		// add tax rate //.
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
         $tax_rate_id = eascompliance_array_get($tax_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
 
         if (!$tax_rate_id) {
