@@ -153,5 +153,13 @@ jQuery(document).ready(function($) {
 
     $('#eas_button_text_color').wpColorPicker();
     $('#eas_button_background_color').wpColorPicker();
+    $('#eas_button_background_color_hover').wpColorPicker();
+    $('#eas_button_text_color_hover').wpColorPicker();
+
+    //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
+    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+    for (i = 0; i < button_styles.length; i++) {
+        $('.button_calc_test').css(button_styles[i], $('#place_order').css(button_styles[i]));
+    }
 
 })

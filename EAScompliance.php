@@ -72,8 +72,7 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
 /**
  * Add settings page on Plugin list
  */
-
-add_filter('plugin_action_links', 'eascompliance_settings_link');
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'eascompliance_settings_link');
 function eascompliance_settings_link($links)
 {
     $url = esc_url(add_query_arg(
@@ -472,7 +471,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         }
         $txt = $user_id . ' ' . $txt;
     } else {
-		$txt =  'no_session ' . $txt;
+        $txt =  'no_session ' . $txt;
     }
 
     if ($callstack) {
@@ -548,7 +547,9 @@ function eascompliance_javascript()
         array(
             'button_font_size' => eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size'),
             'button_font_color' => eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color'),
-            'button_background_color' => eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color')
+            'button_background_color' => eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color'),
+            'button_background_color_hover' => eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color_hover'),
+            'button_font_color_hover' => eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color_hover')
         )
     );
 
@@ -578,9 +579,6 @@ function eascompliance_settings_scripts()
     wp_localize_script('EAScompliance', 'plugin_ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
 
 }
-
-;
-
 
 if (eascompliance_is_active()) {
     add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
@@ -835,9 +833,10 @@ function eascompliance_woocommerce_review_order_before_payment()
             $checkout_form_data = eascompliance_array_get($item, 'CHECKOUT FORM DATA', '');
 
             // reset calculation when Cart Abandonment Link is opened
-        	if ($_SERVER['REQUEST_METHOD'] == 'GET' && preg_match('/[\?&]wcf_ac_token=/', $_SERVER['REQUEST_URI'])) {
-        		eascompliance_unset();
-        	}
+            
+            if ($_SERVER['REQUEST_METHOD'] == 'GET' && preg_match('/[\?&]wcf_ac_token=/', $_SERVER['REQUEST_URI'])) {
+                eascompliance_unset();
+            }
 
             //reset calculation when WC Payments currency changes
             if (function_exists('WC_Payments_Multi_Currency')) {
@@ -1062,7 +1061,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $jdebug['step'] = 'Fill json request with checkout data';
 
     if (!wp_verify_nonce(strval(eascompliance_array_get($_POST, 'eascompliance_nonce_calc', '')), 'eascompliance_nonce_calc')) {
-            eascompliance_log('warning', 'Security check');
+        eascompliance_log('warning', 'Security check');
     }
 
     // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
@@ -1228,7 +1227,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
             'id_provided_by_em' => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
-            'quantity' => (int) $cart_item['quantity'],
+            'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
             'hs6p_received' => eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'),
@@ -1381,6 +1380,27 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
     $calc_jreq['payment_currency'] = $order->get_currency();
 
     $calc_jreq['is_delivery_to_person'] = $order->get_shipping_company() === '';
+    //take shipping from billing address when shipping address is empty
+    $shipping_first_name = $order->get_shipping_first_name();
+    $shipping_last_name = $order->get_shipping_last_name();
+    $shipping_company = $order->get_shipping_company();
+    $shipping_address_1 = $order->get_shipping_address_1();
+    $shipping_address_2 = $order->get_shipping_address_2();
+    $shipping_city = $order->get_shipping_city();
+    $shipping_postal_code = $order->get_shipping_postcode();
+    $shipping_country = $order->get_shipping_country();
+
+    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+        $shipping_first_name = $order->get_billing_first_name();
+        $shipping_last_name = $order->get_billing_last_name();
+        $shipping_company = $order->get_billing_company();
+        $shipping_address_1 = $order->get_billing_address_1();
+        $shipping_address_2 = $order->get_billing_address_2();
+        $shipping_city = $order->get_billing_city();
+        $shipping_postal_code = $order->get_billing_postcode();
+        $shipping_country = $order->get_billing_country();
+        $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
+    }
 
     //take shipping from billing address when shipping address is empty
     $shipping_first_name = $order->get_shipping_first_name();
@@ -1567,11 +1587,12 @@ function eascompliance_ajaxhandler()
         $jdebug['step'] = 'prepare EAS API /calculate request';
         $options = array(
             'method' => 'POST',
-			'timeout'=> 10,
+            'timeout'=> 10,
             'headers' => array(
                 'Content-type' => 'application/json',
                 'Authorization' => 'Bearer ' . $auth_token,
                 'x-redirect-uri' => $redirect_uri,
+
             ),
             'body' => json_encode($calc_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
             'sslverify' => false,
@@ -1720,7 +1741,7 @@ function eascompliance_redirect_confirm()
 
         $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
         if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
-			eascompliance_log('warning', 'Security check');
+			    eascompliance_log('warning', 'Security check');
         };
 
         if (!array_key_exists('eas_checkout_token', $_GET)) {
@@ -2210,28 +2231,26 @@ function eascompliance_order_createpostsaleorder($order)
     $auth_token = eascompliance_get_oauth_token();
 
     $order_json = eascompliance_make_eas_api_request_json_from_order($order_id);
+    //take shipping from billing when shipping address is empty
+    $shipping_first_name = $order->get_shipping_first_name();
+    $shipping_last_name = $order->get_shipping_last_name();
+    $shipping_address_1 = $order->get_shipping_address_1();
+    $shipping_address_2 = $order->get_shipping_address_2();
+    $shipping_city = $order->get_shipping_city();
+    $shipping_postal_code = $order->get_shipping_postcode();
+    $shipping_country = $order->get_shipping_country();
+    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+        $shipping_first_name = $order->get_billing_first_name();
+        $shipping_last_name = $order->get_billing_last_name();
+        $shipping_address_1 = $order->get_billing_address_1();
+        $shipping_address_2 = $order->get_billing_address_2();
+        $shipping_city = $order->get_billing_city();
+        $shipping_postal_code = $order->get_billing_postcode();
+        $shipping_country = $order->get_billing_country();
+        $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
+    }
 
-	//take shipping from billing when shipping address is empty
-	$shipping_first_name = $order->get_shipping_first_name();
-	$shipping_last_name = $order->get_shipping_last_name();
-	$shipping_address_1 = $order->get_shipping_address_1();
-	$shipping_address_2 = $order->get_shipping_address_2();
-	$shipping_city = $order->get_shipping_city();
-	$shipping_postal_code = $order->get_shipping_postcode();
-	$shipping_country = $order->get_shipping_country();
-
-	if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
-		$shipping_first_name = $order->get_billing_first_name();
-		$shipping_last_name = $order->get_billing_last_name();
-		$shipping_address_1 = $order->get_billing_address_1();
-		$shipping_address_2 = $order->get_billing_address_2();
-		$shipping_city = $order->get_billing_city();
-		$shipping_postal_code = $order->get_billing_postcode();
-		$shipping_country = $order->get_billing_country();
-		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
-	}
-
-    // check requirements for calculate request //.
+    // check requirements for calculate request /
     if ('' === $shipping_first_name
         || '' === $shipping_last_name
         || '' === $shipping_country
@@ -2370,9 +2389,8 @@ function eascompliance_order_createpostsaleorder($order)
 
     } else {
         // if error happened, then remove notification_started flag to allow calculating again
-		$order->add_meta_data('_easproj_api_save_notification_started', '', true);
-		$order->save_meta_data();
-
+		    $order->add_meta_data('_easproj_api_save_notification_started', '', true);
+		    $order->save_meta_data();
         eascompliance_log('error', 'sales_order response is $s', array('$s' => $sales_order_response));
         throw new Exception(EAS_TR('createpostsaleorder failed'));
     }
@@ -2433,7 +2451,7 @@ function eascompliance_woocommerce_after_order_object_save($order)
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-		$order->add_order_note($ex->getMessage());
+        $order->add_order_note($ex->getMessage());
     } finally {
         restore_error_handler();
     }
@@ -3444,7 +3462,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         set_error_handler('eascompliance_error_handler');
 
         if (!wp_verify_nonce(strval(eascompliance_array_get($_POST, 'eascompliance_nonce_calc', '')), 'eascompliance_nonce_calc')) {
-			eascompliance_log('warning', 'Security check');
+            eascompliance_log('warning', 'Security check');
         };
 
         // only work for European countries //.
@@ -3619,6 +3637,7 @@ function eascompliance_woocommerce_checkout_order_created($order)
 if (eascompliance_is_active()) {
     add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
 }
+
 /**
  * When Order status changes from Pending to Processing, send payment verification
  *
@@ -3630,6 +3649,7 @@ if (eascompliance_is_active()) {
  */
 function eascompliance_woocommerce_order_status_changed($order_id, $status_from, $status_to, $order)
 {
+
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
     if ($status_to === 'completed') {
         eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id' => $order_id, '$from' => $status_from, '$to' => $status_to));
@@ -3651,59 +3671,64 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
 
         // process order once when status becomes completed/processing
+        $paid_statuses = get_option('easproj_paid_statuses');
+        eascompliance_log('error' , $paid_statuses);
+
         if (!(('completed' === $status_to || 'processing' === $status_to) && !($order->get_meta('_easproj_payment_processed') === 'yes'))) {
             return;
         }
+        if (in_array($status_to, $paid_statuses)) {
 
-        $auth_token = eascompliance_get_oauth_token();
-        $confirmation_token = $order->get_meta('_easproj_token');
-        // JWT token is not present during STANDARD_CHECKOUT //.
-        if ('' === $confirmation_token) {
-            return;
-        }
+            $auth_token = eascompliance_get_oauth_token();
+            $confirmation_token = $order->get_meta('_easproj_token');
+            // JWT token is not present during STANDARD_CHECKOUT //.
+            if ('' === $confirmation_token) {
+                return;
+            }
 
-        $payment_jreq = array(
-            'token' => $confirmation_token,
-            'checkout_payment_id' => 'order_' . $order_id,
-        );
-
-        $options = array(
-            'method' => 'POST',
-            'headers' => array(
-                'Content-type' => 'application/json',
-                'Authorization' => 'Bearer ' . $auth_token,
-            ),
-            'body' => json_encode($payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
-            'sslverify' => false,
-        );
-
-        $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
-        $payment_response = (new WP_Http)->request($payment_url, $options);
-        if (is_wp_error($payment_response)) {
-            throw new Exception($payment_response->get_error_message());
-        }
-
-        $payment_status = (string)$payment_response['response']['code'];
-
-        if ('200' === $payment_status) {
-            $order->add_order_note(
-                eascompliance_format(
-                    EAS_TR('Order status changed from $status_from to $status_to .  EAS API payment notified'),
-                    array(
-                        'status_from' => $status_from,
-                        'status_to' => $status_to,
-                    )
-                )
+            $payment_jreq = array(
+                'token' => $confirmation_token,
+                'checkout_payment_id' => 'order_' . $order_id,
             );
-        } else {
-            eascompliance_log('error', 'Order status change failed response is $r', array('$r' => $payment_response));
-            throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
+
+            $options = array(
+                'method' => 'POST',
+                'headers' => array(
+                    'Content-type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $auth_token,
+                ),
+                'body' => json_encode($payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
+                'sslverify' => false,
+            );
+
+            $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
+            $payment_response = (new WP_Http)->request($payment_url, $options);
+            if (is_wp_error($payment_response)) {
+                throw new Exception($payment_response->get_error_message());
+            }
+
+            $payment_status = (string)$payment_response['response']['code'];
+
+            if ('200' === $payment_status) {
+                $order->add_order_note(
+                    eascompliance_format(
+                        EAS_TR('Order status changed from $status_from to $status_to .  EAS API payment notified'),
+                        array(
+                            'status_from' => $status_from,
+                            'status_to' => $status_to,
+                        )
+                    )
+                );
+            } else {
+                eascompliance_log('error', 'Order status change failed response is $r', array('$r' => $payment_response));
+                throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
+            }
+
+            $order->add_meta_data('_easproj_payment_processed', 'yes', true);
+            $order->save();
+
+            eascompliance_log('info', "Notify Order $order_id status change successful");
         }
-
-        $order->add_meta_data('_easproj_payment_processed', 'yes', true);
-        $order->save();
-
-        eascompliance_log('info', "Notify Order $order_id status change successful");
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
@@ -4363,6 +4388,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
 if (eascompliance_is_active()) {
     add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
 }
+
 /**
  * Admin Order must not be editable when calculations already present
  *
@@ -4372,14 +4398,12 @@ if (eascompliance_is_active()) {
 function eascompliance_wc_order_is_editable($is_editable, $order)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
-
 	if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
 		return false;
 	}
 
     return $is_editable;
 }
-
 
 if (eascompliance_is_active()) {
     add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
@@ -4482,9 +4506,8 @@ function eascompliance_ds_admin_theme_style()
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
-    /**
-     * Add colorpicker
-     */
+    // Include WP Colorpicker styles and scripts
+    wp_enqueue_script('wp-color-picker');
     wp_enqueue_style('wp-color-picker');
 
     global $current_tab;
@@ -4495,6 +4518,9 @@ function eascompliance_ds_admin_theme_style()
         echo '<style> .notice { display: none !important; } .wp-submenu [href="admin.php?page=eas-settings"] { color:#fff !important; font-weight: 600 !important; } .wp-submenu [href="admin.php?page=wc-settings"] { color: rgba(240,246,252,.7) !important; font-weight: normal !important; } .submit button { display: none!important; } </style>';
     }
     if ($current_tab === 'settings_tab_logs') {
+        echo '<style> .notice { display: none !important; } .wp-submenu [href="admin.php?page=eas-settings"] { color:#fff !important; font-weight: 600 !important; } .wp-submenu [href="admin.php?page=wc-settings"] { color: rgba(240,246,252,.7) !important; font-weight: normal !important; } .submit button { display: none!important; } </style>';
+    }
+    if ($current_tab === 'settings_tab_connection_status') {
         echo '<style> .notice { display: none !important; } .wp-submenu [href="admin.php?page=eas-settings"] { color:#fff !important; font-weight: 600 !important; } .wp-submenu [href="admin.php?page=wc-settings"] { color: rgba(240,246,252,.7) !important; font-weight: normal !important; } .submit button { display: none!important; } </style>';
     }
 }
@@ -4516,6 +4542,19 @@ function eascompliance_settings()
     foreach (wc_get_product_types() as $id => $label) {
         $product_types[$id] = $label;
     }
+
+    // order statuses
+
+    $order_statuses = array();
+    $order_status = wc_get_order_statuses();
+    $new_order_status = str_replace('wc-', '', array_keys($order_status));
+    $order_status = array_combine($new_order_status, $order_status);
+    $order_status = \array_diff($order_status, array('Refunded', 'Draft', 'Cancelled'));
+
+    foreach ($order_status as $id => $label) {
+        $order_statuses[$id] = $label;
+    }
+
 
     global $wpdb;
     $res = $wpdb->get_results('SELECT * FROM wplm_woocommerce_attribute_taxonomies att', ARRAY_A);
@@ -4553,6 +4592,7 @@ function eascompliance_settings()
             }
         }
     }
+
 
     return array(
         'section_title' => array(
@@ -4641,6 +4681,15 @@ function eascompliance_settings()
             'id' => 'easproj_shipping_method_postal',
             'options' => $shipping_methods,
         ),
+        'orders_been_paid' => array(
+            'name' => EAS_TR('Paid order statuses'),
+            'type' => 'multiselect',
+            'class' => 'wc-enhanced-select',
+            'desc' => EAS_TR('Status(es) denoting orders which have been paid for'),
+            'id' => 'easproj_paid_statuses',
+            'default' => array('wc-processing', 'wc-completed'),
+            'options' => $order_statuses,
+        ),
         'shipping_methods_latest' => array(
             'name' => '',
             'type' => 'multiselect',
@@ -4720,6 +4769,7 @@ function eascompliance_settings()
             'type' => 'text',
             'id' => 'eas_design_label',
             'css' => 'font-size:20px;background-color: grey;display:none',
+            'desc' => '<p class="design_desc">' . EAS_TR('If empty values are left, default colors and font size will be applied to the button (Red background and White font color)') . '</p>'
         ),
 
         'eas_button_text' => array(
@@ -4748,13 +4798,35 @@ function eascompliance_settings()
             'id' => 'eas_button_background_color',
             'desc' => EAS_TR('Please select background color'),
         ),
+
+        'eas_button_background_color_hover' => array(
+            'name' => EAS_TR('Button background color on mouse over'),
+            'type' => 'text',
+            'id' => 'eas_button_background_color_hover',
+            'desc' => EAS_TR('Please select background color on mouse over'),
+        ),
+
+        'eas_button_text_color_hover' => array(
+            'name' => EAS_TR('Font color on mouse over'),
+            'type' => 'text',
+            'id' => 'eas_button_text_color_hover',
+            'desc' => EAS_TR('Please select mouse over color for text on button'),
+        ),
+
+
+        'eas_check_button_attributes' => array(
+            'name' => EAS_TR('Button Example'),
+            'type' => 'text',
+            'class' => 'eas_button_template',
+            'id' => 'eas_button_template',
+            'css' => 'font-size:20px;background-color: grey;display:none',
+            'desc' => '<button class="button_calc_test" style="background-color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color') . ';color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color') . ';font-size:' . eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size') . 'px;" disabled="disabled">' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text') . '</button>'
+        ),
         'section_end' => array(
             'type' => 'sectionend',
         ),
     );
 }
-
-;
 
 
 add_filter('woocommerce_settings_start', 'eascompliance_woocommerce_settings_start');
@@ -4816,8 +4888,8 @@ function eascompliance_woocommerce_settings_tabs_array($settings_tabs)
         set_error_handler('eascompliance_error_handler');
 
         global $current_tab;
-        if ($current_tab === 'settings_tab_compliance' || $current_tab === 'settings_tab_merchant' || $current_tab === 'settings_tab_logs') {
-            return array('settings_tab_compliance' => EASCOMPLIANCE_PLUGIN_NAME, 'settings_tab_merchant' => EAS_TR('EAS MPM'), 'settings_tab_logs' => EAS_TR('EAS Logs'));
+        if ($current_tab === 'settings_tab_compliance' || $current_tab === 'settings_tab_merchant' || $current_tab === 'settings_tab_logs' || $current_tab == 'settings_tab_connection_status') {
+            return array('settings_tab_compliance' => EASCOMPLIANCE_PLUGIN_NAME, 'settings_tab_merchant' => EAS_TR('EAS MPM'), 'settings_tab_logs' => EAS_TR('EAS Logs'), 'settings_tab_connection_status' => EAS_TR('Connection status'));
         } else {
             unset($settings_tabs['settings_tab_compliance'], $settings_tabs['settings_tab_merchant'], $settings_tabs['settings_tab_logs']);
             return $settings_tabs;
@@ -4825,6 +4897,7 @@ function eascompliance_woocommerce_settings_tabs_array($settings_tabs)
 
         $settings_tabs['settings_tab_compliance'] = EASCOMPLIANCE_PLUGIN_NAME;
         $settings_tabs['settings_tab_merchant'] = EAS_TR('EAS MPM');
+        $settings_tabs['settings_tab_logs'] = EAS_TR('Connection status');
         $settings_tabs['settings_tab_logs'] = EAS_TR('EAS Logs');
 
         return $settings_tabs;
@@ -4913,6 +4986,72 @@ function eascompliance_settings_logs_tab()
     </div>
 <?php }
 
+/**
+ * Render EAS Connection status page
+ */
+function eascompliance_settings_connection_status_page()
+{
+    $auth_token = eascompliance_get_oauth_token();
+
+    $options = array(
+        'method' => 'GET',
+        'headers' => array(
+            'Content-type' => 'application/json',
+            'Authorization' => 'Bearer ' . $auth_token,
+        ),
+        'sslverify' => false,
+    );
+    $status_request = woocommerce_settings_get_option('easproj_eas_api_url') . '/user/self/';
+    $response = (new WP_Http)->request($status_request, $options);
+    if (is_wp_error($response)) {
+        throw new Exception($response->get_error_message());
+    }
+    $status_request_code = (string)$response['response']['code'];
+    if ('200' === $status_request_code) {
+        $client_details = json_decode($response['body']);
+
+
+        echo '<h2>' . EAS_TR('Connection status') . '</h2>
+            <div id="--description">';
+        foreach ($client_details as $key => $client_detail) {
+            echo '<ul>';
+            switch ($key) {
+                case 'identifier' :
+                    $key = EAS_TR('Your EAS Identifier:');
+                    break;
+                case 'legal_status':
+                    $key = EAS_TR('EM legal status:');
+                    break;
+                case 'is_ei':
+                    $key = EAS_TR('In EAS EM  registered as:');
+                    break;
+                case 'oss_registered':
+                    $key = EAS_TR('OSS Registered:');
+                    break;
+                case 'product_description_language':
+                    $key = EAS_TR('Product Description language:');
+                    break;
+            }
+
+            // is_ei
+            if ($client_details->is_ei = true) {
+                $client_details->is_ei = EAS_TR('Electronic Interface');
+            } else {
+                $client_details->is_ei = EAS_TR('Not electronic Interface');
+            }
+
+            // oss_registered
+            if ($client_details->oss_registered = true) {
+                $client_details->oss_registered = EAS_TR('YES');
+            } else {
+                $client_details->oss_registered = EAS_TR('NO');
+            }
+            echo '<li><b>' . $key . '</b>  - ' . $client_detail . '</li>';
+
+        }
+        echo '</ul></div>';
+    }
+}
 
 add_action('woocommerce_settings_tabs_settings_tab_merchant', 'eascompliance_woocommerce_settings_tabs_settings_tab_merchant');
 /**
@@ -4956,6 +5095,26 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_logs()
     }
 }
 
+add_action('woocommerce_settings_tabs_settings_tab_connection_status', 'eascompliance_woocommerce_settings_tab_settings_tab_connection_status');
+/**
+ * Connection status setting page
+ */
+function eascompliance_woocommerce_settings_tab_settings_tab_connection_status()
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+        eascompliance_settings_connection_status_page();
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
 add_action('woocommerce_update_options_settings_tab_compliance', 'eascompliance_woocommerce_update_options_settings_tab_compliance');
 /**
  * Settings Save and Plugin Setup
@@ -4990,7 +5149,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
         }
 
         global $wpdb;
-
+        
 		// delete legacy tax rate
 		$legacy_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = 'EAScompliance' "), ARRAY_A);
 		$legacy_rate_id = eascompliance_array_get($legacy_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
@@ -5315,6 +5474,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
     }
 }
 
+
 /**
  * Utility function to format strings
  *
@@ -5368,3 +5528,84 @@ function eascompliance_array_key_first2(array $arr)
 
 
 restore_error_handler();
+
+/**
+ * Add "EAS processed" column to Woocommerce order list
+ *
+ */
+add_filter('manage_edit-shop_order_columns', 'eascompliance_order_column', 20);
+function eascompliance_order_column($columns)
+{
+    $reordered_columns = array();
+    foreach ($columns as $key => $column) {
+        $reordered_columns[$key] = $column;
+        if ($key == 'order_status') {
+            $reordered_columns['eas-processed'] = EAS_TR('EAS processed');
+        }
+    }
+    return $reordered_columns;
+}
+
+/**
+ * Fill "EAS processed column"
+ *
+ */
+add_action('manage_shop_order_posts_custom_column', 'eascompliance_order_column_value', 20, 2);
+function eascompliance_order_column_value($column, $post_id)
+{
+    switch ($column) {
+        case 'eas-processed' :
+            $order_payload = get_post_meta($post_id, 'easproj_payload', true);
+            if (isset($order_payload) && !empty($order_payload)) {
+                echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
+            }
+            break;
+    }
+}
+
+/**
+ * Make "EAS processed column" sortable
+ *
+ */
+function eascompliance_manage_edit_shop_order_sortable_columns($columns)
+{
+    return wp_parse_args(array('eas-processed' => 'easproj_payload'), $columns);
+}
+
+add_filter('manage_edit-shop_order_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1);
+
+
+/**
+ * Sort by "EAS processed" column
+ *
+ */
+add_action('pre_get_posts', 'eascompliance_sort_by_order_column', 10, 1);
+function eascompliance_sort_by_order_column($query)
+{
+
+    if (!is_admin()) return;
+
+    global $pagenow;
+
+    // Compare
+    if ($pagenow === 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] === 'shop_order') {
+        $orderby = $query->get('orderby');
+
+        // Set query
+        if ('easproj_payload' == $orderby) {
+
+            $query->set('meta_query', array(
+                'relation' => 'OR',
+                array(
+                    'key' => 'easproj_payload',
+                    'compare' => 'NOT EXISTS',
+                ),
+                array(
+                    'key' => 'easproj_payload',
+                    'compare' => '!=',
+                    'value' => ''
+                )
+            ));
+        }
+    }
+}

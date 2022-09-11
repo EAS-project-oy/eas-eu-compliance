@@ -1,19 +1,13 @@
 .eascompliance button {
     min-width: 155px !important;
     margin-bottom: 20px;
-    background-color: #cf2020;
 }
 
 .eascompliance_status {
     display: none;
 }
-
-
 .eascompliance {
-     display: block;
+    display: block;
     text-align: center;
     float: initial;
-    
 }
-
-
