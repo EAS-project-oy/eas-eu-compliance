@@ -1,4 +1,4 @@
-<?php
+    <?php
 /**
  * Plugin Name: EAS EU compliance
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
@@ -3672,9 +3672,12 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
         // process order once when status becomes completed/processing
         $paid_statuses = get_option('easproj_paid_statuses');
-        eascompliance_log('error' , $paid_statuses);
 
-        if (!(('completed' === $status_to || 'processing' === $status_to) && !($order->get_meta('_easproj_payment_processed') === 'yes'))) {
+        //nee to support default WC statuses, even if user deleted it from settings
+        array_push($paid_statuses, 'completed', 'processing');
+        eascompliance_log('place_order' , $paid_statuses);
+
+        if (!((in_array($status_to, $paid_statuses)) && !($order->get_meta('_easproj_payment_processed') === 'yes'))) {
             return;
         }
         if (in_array($status_to, $paid_statuses)) {

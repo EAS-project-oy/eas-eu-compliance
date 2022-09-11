@@ -246,17 +246,18 @@ jQuery(document).ready(function ($) {
     });
 
     //bazaar theme styles 'submit' buttons only so we copy some styles from #place_order
-    button_styles = 'font-family position display vertical-align width outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+    button_styles = 'font-family position display vertical-align outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (i = 0; i < button_styles.length; i++) {
         $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]));
     }
 
-    if (plugin_css_settings.button_font_color || plugin_css_settings.button_background_color || plugin_css_settings.button_font_size) {
-        $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px');
-        $('.button_calc').css('color', plugin_css_settings.button_font_color);
-        $('.button_calc').css('background-color', plugin_css_settings.button_background_color);
-        $(".button_calc").mouseenter(function () {
-            $(this).css("background", plugin_css_settings.button_background_color_hover).css("color" , plugin_css_settings.button_font_color_hover);
+if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color);
+    if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color);
+    if (plugin_css_settings.button_font_size) $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px');
+    if (plugin_css_settings.button_font_color || plugin_css_settings.button_font_size || plugin_css_settings.button_background_color )   
+    {     
+    $(".button_calc").mouseenter(function () {
+            $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"));
         }).mouseleave(function () {
             $(this).css("background", plugin_css_settings.button_background_color).css('color', plugin_css_settings.button_font_color);
         });
