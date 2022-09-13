@@ -2462,7 +2462,7 @@ if (eascompliance_is_active()) {
     add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
 }
 /**
- * Asendia tracking number notify
+ * Shipment tracking number notification from various plugins
  *
  * @param object $order order.
  * @throws Exception May throw exception.
@@ -2474,13 +2474,23 @@ function eascompliance_woocommerce_after_order_object_save2($order)
     try {
         set_error_handler('eascompliance_error_handler');
 
-        $asendia_tracking_no = $order->get_meta('_asendia_tracking_number');
+        $tracking_numbers = array();
 
-        if ($asendia_tracking_no === '') {
+		$tracking_numbers[] = $order->get_meta('_asendia_tracking_number');
+
+        if ($order->get_meta('_wc_shipment_tracking_items') !== '') {
+            foreach($order->get_meta('_wc_shipment_tracking_items') as $tracking_item) {
+				$tracking_numbers[] = $tracking_item['tracking_number'];
+            }
+        }
+
+		$tracking_no =  join(';', array_filter($tracking_numbers));
+
+        if ($tracking_no === '') {
             return;
         }
 
-		if ($order->get_meta('_eascompliance_asendia_tracking_number_notified') === $asendia_tracking_no) {
+		if ($order->get_meta('_eascompliance_tracking_number_notified') === $tracking_no) {
 			return;
 		}
 
@@ -2498,7 +2508,7 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/shipment/create_shipment';
 
 		$json = array(
-			's10_code' => $asendia_tracking_no,
+			's10_code' => $tracking_no,
 			'order_token' => $order->get_meta('_easproj_token'),
 		);
 
@@ -2521,13 +2531,13 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 
 		$status = (string)$response['response']['code'];
 		if ('200' === $status) {
-			$order->add_meta_data('_eascompliance_asendia_tracking_number_notified', $asendia_tracking_no, true);
-			$order->add_order_note(EAS_TR( eascompliance_format('Asendia tracking number notify successful for order $o', array('$o'=>$order_id))));
-			eascompliance_log('info', 'Asendia tracking number notify successful for order $o', array('$o'=>$order_id));
+			$order->add_meta_data('_eascompliance_tracking_number_notified', $tracking_no, true);
+			$order->add_order_note(EAS_TR( eascompliance_format('Tracking number notify successful for order $o', array('$o'=>$order_id))));
+			eascompliance_log('info', 'Tracking number notify successful for order $o', array('$o'=>$order_id));
 		}
         else {
-			eascompliance_log('error', 'Asendia tracking number notify response is $s', array('$s' => $response));
-			throw new Exception(EAS_TR(eascompliance_format('Asendia tracking number notify failed for order $o', array('$o'=>$order_id))));
+			eascompliance_log('error', 'Tracking number notify response is $s', array('$s' => $response));
+			throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order_id))));
 		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
