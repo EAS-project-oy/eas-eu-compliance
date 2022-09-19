@@ -162,4 +162,18 @@ jQuery(document).ready(function($) {
         $('.button_calc_test').css(button_styles[i], $('#place_order').css(button_styles[i]));
     }
 
+    // confirm order status change to cancelled
+    $('#order_status').on('select2:selecting', function () {
+        $(this).data( 'current', $(this).val());
+
+    })
+    $('#order_status').on('change', function () {
+        $e = $(this);
+        if ($e.val() == 'wc-cancelled') {
+            if (!window.confirm('You are trying to Cancel the order. If order was paid, EAS EU compliance will create refund for the order automatically in EAS Dashboard. This operation can’t be revoked. Please confirm that order cancellation is intentional.')) {
+                $e.val($.data(this, 'current')).trigger('change');
+            }
+        }
+    })
+
 })
