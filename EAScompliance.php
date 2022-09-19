@@ -61,8 +61,11 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
 
     $mo_file = dirname(__FILE__) . '/languages/' . $textdomain . '-' . $locale . '.mo';
     if (!file_exists($mo_file)) {
+		eascompliance_log('lang', 'mo_file not found: $mo', array('mo'=>$mo_file));
+
         $mo_file = dirname(__FILE__) . '/languages/eas-eu-compliance-en_US.mo';
     }
+    eascompliance_log('lang', 'plugin lang set to $pl, current locale is $loc loading mo_file $mo', array('pl'=>$plugin_lang,'mo'=>$mo_file, 'loc'=>get_locale()));
     load_textdomain($textdomain, $mo_file);
 
     return translate($text, $textdomain);
