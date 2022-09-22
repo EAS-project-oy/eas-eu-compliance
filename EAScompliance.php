@@ -522,10 +522,10 @@ function eascompliance_javascript()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     // include css //.
-    wp_enqueue_style('EAScompliance-css', plugins_url('/EAScompliance.css', __FILE__), array(), filemtime(dirname(__FILE__) . '/EAScompliance.css'));
+    wp_enqueue_style('EAScompliance-css', plugins_url('/assets/css/EAScompliance.css', __FILE__), array(), filemtime(dirname(__FILE__) . '/assets/css/EAScompliance.css'));
 
     // include javascript //.
-    wp_enqueue_script('EAScompliance', plugins_url('/EAScompliance.js', __FILE__), array('jquery'), filemtime(dirname(__FILE__) . '/EAScompliance.js'), true);
+    wp_enqueue_script('EAScompliance', plugins_url('/assets/js/EAScompliance.js', __FILE__), array('jquery'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance.js'), true);
 
     wp_localize_script(
         'EAScompliance',
@@ -573,10 +573,10 @@ function eascompliance_settings_scripts()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     // include css //.
-    wp_enqueue_style('EAScompliance', plugins_url('/EAScompliance-settings.css', __FILE__), array(), filemtime(dirname(__FILE__) . '/EAScompliance-settings.css'));
+    wp_enqueue_style('EAScompliance', plugins_url('/assets/css/EAScompliance-settings.css', __FILE__), array(), filemtime(dirname(__FILE__) . '/assets/css/EAScompliance-settings.css'));
 
     // include javascript //.
-    wp_enqueue_script('EAScompliance', plugins_url('/EAScompliance-settings.js', __FILE__), array('jquery'), filemtime(dirname(__FILE__) . '/EAScompliance-settings.js'), true);
+    wp_enqueue_script('EAScompliance', plugins_url('/assets/js/EAScompliance-settings.js', __FILE__), array('jquery'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-settings.js'), true);
 
     // Pass ajax_url to javascript //.
     wp_localize_script('EAScompliance', 'plugin_ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
