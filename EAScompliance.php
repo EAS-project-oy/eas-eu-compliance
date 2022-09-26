@@ -1262,6 +1262,19 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     }
 
     if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
+		// item cost includes discount proportional to quantity when Smart Coupons plugin is not used, so we must add it back
+		if (class_exists('Wt_Smart_Coupon')) {
+			eascompliance_log('request', 'Smart Coupons For WooCommerce is present, no discount correction');
+		}
+		else {
+			eascompliance_log('request', 'adjusting cost_provided_by_em for coupon discount');
+			foreach ($order_breakdown_items as &$item) {
+				$item_discount = $d * $item['quantity'] / $q;
+				$item['cost_provided_by_em'] += $item_discount;
+				$t += $item_discount;
+			}
+		}
+
         foreach ($order_breakdown_items as &$item) {
             $q1 = $item['quantity'];
             $p1 = $item['cost_provided_by_em'];
@@ -1270,7 +1283,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
             // p1 * q1 + p2 * q2 = t                              //.
             // x1 * q1 + x2 * q2 = t - d                          //.
             // x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
-            $item['cost_provided_by_em'] = $p1 * ($t - $d) / $t;
+            $item['cost_provided_by_em'] = round($p1 * ($t - $d) / $t, 2);
             eascompliance_log('request', "\$t $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em " . $item['cost_provided_by_em']);
         }
     }
