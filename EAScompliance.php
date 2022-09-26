@@ -1133,6 +1133,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $wcml_enabled = eascompliance_is_wcml_enabled();
     if ($wcml_enabled) {
         global $woocommerce_wpml;
+
+		eascompliance_log('debug', 'WCML storage currency is $d', array('d'=>wcml_user_store_get( WCML_Multi_Currency::CURRENCY_STORAGE_KEY)));
+
         $currency = $woocommerce_wpml->multi_currency->get_client_currency();
 
         // WCML breaks $cart->get_discount_total() so we re-calculcate it
