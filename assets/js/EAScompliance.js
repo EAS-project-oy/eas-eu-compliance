@@ -246,7 +246,7 @@ jQuery(document).ready(function ($) {
     });
 
     //for most of themes styles 'submit' buttons we copy some styles from #place_order
-    button_styles = 'backgroud-color font-family position display vertical-align outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+    button_styles = 'background-color font-family position display vertical-align outline line-height letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (i = 0; i < button_styles.length; i++) {
         $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]));
     }
@@ -259,7 +259,7 @@ if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin
     $(".button_calc").mouseenter(function () {
             $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"));
         }).mouseleave(function () {
-            $(this).css("background", plugin_css_settings.button_background_color).css('color', plugin_css_settings.button_font_color);
+           $(this).css("background", (plugin_css_settings.button_background_color) ? plugin_css_settings.button_background_color: $('#place_order').css("background") ).css('color', (plugin_css_settings.button_font_color) ? plugin_css_settings.button_font_color: $('#place_order').css("color")  );
         });
     }
 });
