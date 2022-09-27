@@ -4802,7 +4802,7 @@ function eascompliance_settings()
             'type' => 'text',
             'id' => 'eas_design_label',
             'css' => 'font-size:20px;background-color: grey;display:none',
-            'desc' => '<p class="design_desc">' . EAS_TR('If empty values are left, default colors and font size will be applied to the button (Red background and White font color)') . '</p>'
+            'desc' => '<p class="design_desc">' . EAS_TR('If empty values are left, default colors and font size will be applied to the button.') . '</p>'
         ),
 
         'eas_button_text' => array(
