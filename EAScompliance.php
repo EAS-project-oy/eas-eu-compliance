@@ -4853,7 +4853,7 @@ function eascompliance_settings()
             'class' => 'eas_button_template',
             'id' => 'eas_button_template',
             'css' => 'font-size:20px;background-color: grey;display:none',
-            'desc' => '<button class="button_calc_test" style="background-color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color') . ';color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color') . ';font-size:' . eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size') . 'px;" disabled="disabled">' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text') . '</button>'
+            'desc' => '<button class="button_calc_test" style="background-color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color') . ';color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color') . ';font-size:' . eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size') . 'px;" disabled="disabled">' . (eascompliance_woocommerce_settings_get_option_sql('eas_button_text') ? eascompliance_woocommerce_settings_get_option_sql('eas_button_text') : EAS_TR('Calculate Taxes and Duties')) . '</button>'
         ),
         'section_end' => array(
             'type' => 'sectionend',
