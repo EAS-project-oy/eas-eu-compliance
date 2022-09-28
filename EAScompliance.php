@@ -1265,9 +1265,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     }
 
     if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
-		// item cost includes discount proportional to quantity when Smart Coupons plugin is not used, so we must add it back
-		if (class_exists('Wt_Smart_Coupon')) {
-			eascompliance_log('request', 'Smart Coupons For WooCommerce is present, no discount correction');
+		// item cost includes discount proportional to quantity when WCML is not used, so we must add it back
+		if (eascompliance_is_wcml_enabled()) {
+			eascompliance_log('request', 'WCML is present, no discount correction');
 		}
 		else {
 			eascompliance_log('request', 'adjusting cost_provided_by_em for coupon discount');
