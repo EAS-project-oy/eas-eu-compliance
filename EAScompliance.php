@@ -214,7 +214,7 @@ function eascompliance_plugin_activation()
  *
  * @throws Exception May throw exception.
  */
-register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
+//register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
 function eascompliance_plugin_upgrade()
 {
 
