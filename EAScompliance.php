@@ -1300,42 +1300,34 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     }
 
     eascompliance_log('request', '$items before discount ' . print_r($order_breakdown_items, true));
-    // split cart discount proportionally between items
-    // making and solving equation to get new item price //.
-    $d = $cart_discount; // discount d    //.
-    $t = 0; // cart total  t = p1*q1 + p2*q2           //.
-    $q = 0; // total quantity q = q1 + q2              //.
-    foreach ($order_breakdown_items as $item) {
-        $t += $item['quantity'] * $item['cost_provided_by_em'];
-        $q += $item['quantity'];
-    }
 
-    if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
-		// item cost includes discount proportional to quantity when WCML is not used, so we must add it back
-		if (eascompliance_is_wcml_enabled()) {
-			eascompliance_log('request', 'WCML is present, no discount correction');
+	if (eascompliance_is_wcml_enabled()) {
+		eascompliance_log('request', 'WCML is present, using price*qnty proportion to distribute coupons over items');
+
+		// split cart discount proportionally between items
+		// making and solving equation to get new item price //.
+		$d = $cart_discount; // discount d    //.
+		$t = 0; // cart total  t = p1*q1 + p2*q2           //.
+		$q = 0; // total quantity q = q1 + q2              //.
+		foreach ($order_breakdown_items as $item) {
+			$t += $item['quantity'] * $item['cost_provided_by_em'];
+			$q += $item['quantity'];
 		}
-		else {
-			eascompliance_log('request', 'adjusting cost_provided_by_em for coupon discount');
+
+		if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
 			foreach ($order_breakdown_items as &$item) {
-				$item_discount = $d * $item['quantity'] / $q;
-				$item['cost_provided_by_em'] += $item_discount;
-				$t += $item_discount;
+				$q1 = $item['quantity'];
+				$p1 = $item['cost_provided_by_em'];
+
+				// Equation: cart total is sum of price*qnty of each item, new price*qnty relates to original price*qnty same as p*q of first item relates to p*q of others //.
+				// p1 * q1 + p2 * q2 = t                              //.
+				// x1 * q1 + x2 * q2 = t - d                          //.
+				// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
+				$item['cost_provided_by_em'] = round($p1 * ($t - $d) / $t, 2);
+				eascompliance_log('request', "\$t $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em " . $item['cost_provided_by_em']);
 			}
 		}
-
-        foreach ($order_breakdown_items as &$item) {
-            $q1 = $item['quantity'];
-            $p1 = $item['cost_provided_by_em'];
-
-            // Equation: cart total is sum of price*qnty of each item, new price*qnty relates to original price*qnty same as p*q of first item relates to p*q of others //.
-            // p1 * q1 + p2 * q2 = t                              //.
-            // x1 * q1 + x2 * q2 = t - d                          //.
-            // x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
-            $item['cost_provided_by_em'] = round($p1 * ($t - $d) / $t, 2);
-            eascompliance_log('request', "\$t $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em " . $item['cost_provided_by_em']);
-        }
-    }
+	}
     $calc_jreq['order_breakdown'] = $order_breakdown_items;
 
     eascompliance_log('request', 'request is $r', array('$r' => $calc_jreq));
