@@ -1,4 +1,4 @@
-    <?php
+<?php
 /**
  * Plugin Name: EAS EU compliance
  * Description: EAS EU compliance plugin is a comprehensive fully automated EU VAT and customs solution for new special VAT schemes.  The solution provides complete tax determination and reporting needed for unimpeded EU market access.
@@ -200,6 +200,52 @@ function eascompliance_plugin_activation()
             eascompliance_log('error', 'plugin activation notification failed: $r', array('$r' => $activate_response));
         }
 
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+/**
+ * Plugin upgrades and migrations
+ *
+ * @throws Exception May throw exception.
+ */
+register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
+function eascompliance_plugin_upgrade()
+{
+
+    try {
+
+        set_error_handler('eascompliance_error_handler');
+
+		$available_upgrades = array(
+                'init'
+        );
+
+        $applied_upgrades = (array)get_option('eascompliance_applied_upgrades');
+
+		$upgrades = array_filter(array_diff($available_upgrades, $applied_upgrades));
+
+        if (empty($upgrades)) {
+            return;
+        }
+
+        eascompliance_log('info', 'applying upgrades: $u',  array('u'=>join(',', $upgrades)));
+
+		require_once dirname(__FILE__).'/upgrade.php';
+
+        foreach ($upgrades as $upgrade) {
+			call_user_func("eascompliance_upgrade_" . $upgrade);
+
+			$applied_upgrades[] = $upgrade;
+
+			update_option('eascompliance_applied_upgrades', $applied_upgrades);
+			eascompliance_log('info', 'upgrade applied: $u', array('u'=>$upgrade));
+        }
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
