@@ -112,7 +112,7 @@ function eascompliance_error_handler($severity, $message, $file, $line)
     throw new ErrorException($message, 0, $severity, $file, $line);
 }
 
-set_error_handler('eascompliance_error_handler');
+set_error_handler('eascompliance_error_handler', E_ERROR);
 
 
 /**
@@ -162,7 +162,7 @@ function eascompliance_plugin_activation()
 {
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $activate_url = 'https://woo-info.easproject.com/api/data';
 
@@ -220,7 +220,7 @@ function eascompliance_plugin_upgrade()
 
     try {
 
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
 		$available_upgrades = array(
                 'init'
@@ -288,7 +288,7 @@ function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($tax_totals as $code => &$tax) {
@@ -322,7 +322,7 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $show_payment_methods = false;
 
@@ -372,7 +372,7 @@ function eascompliance_woocommerce_no_available_payment_methods_message($message
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         return EAS_TR('Please calculate taxes and duties to proceed with order payment');
 
@@ -400,7 +400,7 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($tax_totals as $code => &$tax) {
@@ -644,7 +644,7 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!in_array($country, EUROPEAN_COUNTRIES)) {
             return $address_fields;
@@ -708,7 +708,7 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!in_array($country, EUROPEAN_COUNTRIES)) {
             return $address_fields;
@@ -964,7 +964,7 @@ function eascompliance_woocommerce_review_order_before_payment()
 //
 //		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
 //
-//		set_error_handler('eascompliance_error_handler');
+//		set_error_handler('eascompliance_error_handler', E_ERROR);
 //		$jres = print_r(eval($debug_input), true);
 //	} catch (Exception $ex) {
 //		eascompliance_log('eval', $ex);
@@ -986,7 +986,7 @@ function eascompliance_get_oauth_token()
     eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $jdebug = array();
 
@@ -1000,6 +1000,7 @@ function eascompliance_get_oauth_token()
         $options = array(
             'method' => 'POST',
             'headers' => array('Content-type' => 'application/x-www-form-urlencoded'),
+            'cookies' => array(),
             'body' => array(
                 'client_id' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_id'),
                 'client_secret' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_secret'),
@@ -1346,7 +1347,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 function eascompliance_product_attribute_or_meta($product, $settings_key)
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $key_name = eascompliance_woocommerce_settings_get_option_sql($settings_key);
 
@@ -1607,7 +1608,7 @@ function eascompliance_ajaxhandler()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         $jdebug = array();
 
         $jdebug['step'] = 'get OAUTH token';
@@ -1791,7 +1792,7 @@ function eascompliance_redirect_confirm()
     $jdebug = array();
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         global $woocommerce;
         $cart = WC()->cart;
@@ -2048,7 +2049,7 @@ function eascompliance_redirect_confirm()
 function eascompliance_is_set()
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $cart = WC()->cart;
         if (is_null($cart)) {
@@ -2118,7 +2119,7 @@ function eascompliance_unset()
 function eascompliance_is_standard_checkout()
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $cart = WC()->cart;
         if (is_null($cart)) {
@@ -2156,7 +2157,7 @@ function eascompliance_is_standard_checkout()
 function eascompliance_is_wcml_enabled()
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $wcml_enabled = false;
         if (function_exists('wcml_is_multi_currency_on')) {
@@ -2187,7 +2188,7 @@ function eascompliance_is_wcml_enabled()
 function eascompliance_is_deduct_vat_outside_eu()
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $deduct_vat_outside_eu = get_option('easproj_deduct_vat_outside_eu', '');
         if ($deduct_vat_outside_eu === '') {
@@ -2219,7 +2220,7 @@ function eascompliance_is_deduct_vat_outside_eu()
 function eascompliance_needs_recalculate()
 {
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $cart = WC()->cart;
         if (is_null($cart)) {
@@ -2259,7 +2260,7 @@ function eascompliance_needs_recalculate_ajax()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $needs_recalculate = eascompliance_needs_recalculate();
         wp_send_json(array('needs_recalculate' => $needs_recalculate));
@@ -2471,7 +2472,7 @@ function eascompliance_woocommerce_after_order_object_save($order)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
 
         if (eascompliance_woocommerce_settings_get_option_sql('easproj_process_imported_orders') !== 'yes') {
@@ -2530,7 +2531,7 @@ function eascompliance_woocommerce_after_order_object_save2($order)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $tracking_numbers = array();
 
@@ -2619,7 +2620,7 @@ function eascompliance_recalculate_ajax()
 	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
 	try {
-		set_error_handler('eascompliance_error_handler');
+		set_error_handler('eascompliance_error_handler', E_ERROR);
 
 		if (!current_user_can('edit_shop_orders')) {
 			wp_send_json(array('status' => 'error', 'message' => 'no permission'));
@@ -2657,7 +2658,7 @@ function eascompliance_logorderdata_ajax()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!current_user_can('edit_shop_orders')) {
             wp_send_json(array('status' => 'error', 'message' => 'no permission'));
@@ -2711,7 +2712,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         $tax_rate_id0 = eascompliance_tax_rate_id();
 
         // no taxes for deducted VAT outside EU
@@ -2919,7 +2920,7 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $cart_total = eascompliance_cart_total($cart_total);
 
@@ -2947,7 +2948,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             eascompliance_log('cart_total', 'no tax changes for deduct vat outside EU, total cart tax is $t', array('$t' => $total_taxes));
@@ -3007,7 +3008,7 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
@@ -3047,7 +3048,7 @@ function eascompliance_wcml_update_coupon_percent_discount()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (eascompliance_is_wcml_enabled() && !eascompliance_is_set()) {
             $cart = WC()->cart;
@@ -3084,7 +3085,7 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
@@ -3131,7 +3132,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $total = eascompliance_cart_total();
 
@@ -3174,7 +3175,7 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $cart_item = WC()->cart->get_cart()[$cart_item_key];
@@ -3220,7 +3221,7 @@ function eascompliance_klarna_settings_fix($kp_settings)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $customer = WC()->customer;
         if (!$customer) {
@@ -3263,7 +3264,7 @@ function eascompliance_woocommerce_cart_totals_get_item_tax_rates($item_tax_rate
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!eascompliance_is_set()) {
             return $item_tax_rates;
@@ -3306,7 +3307,7 @@ function eascompliance_kp_wc_api_order_lines($klarna_order_lines, $order_id)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!eascompliance_is_set()) {
             return $klarna_order_lines;
@@ -3389,7 +3390,7 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         // Recalculate process must set taxes from order_item meta-data 'Customs duties' //.
         $tax_rate_id0 = eascompliance_tax_rate_id();
 
@@ -3427,7 +3428,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
@@ -3527,7 +3528,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
     eascompliance_log('place_order', 'entered ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!wp_verify_nonce(strval(eascompliance_array_get($_POST, 'eascompliance_nonce_calc', '')), 'eascompliance_nonce_calc')) {
             eascompliance_log('warning', 'Security check');
@@ -3652,7 +3653,7 @@ function eascompliance_woocommerce_checkout_order_created($order)
     $order_id = $order->get_id();
     eascompliance_log('place_order', 'order $order_id created ', array('$order_id' => $order_id));
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         $auth_token = eascompliance_get_oauth_token();
         $confirmation_token = $order->get_meta('_easproj_token');
@@ -3724,7 +3725,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
     }
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         // log order status change
         eascompliance_log('info', eascompliance_format('Order $order changes status from $from to $to',
@@ -3827,7 +3828,7 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         // process order once when status becomes completed/processing
         if (!('completed' === $status_to || 'processing' === $status_to)) {
@@ -3916,7 +3917,7 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         if (!('cancelled' === $status_to)) {
             return;
@@ -3996,7 +3997,7 @@ function eascompliance_woocommerce_create_refund($refund, $args)
     $order = wc_get_order($order_id);
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         // Ignore orders without EAS token (STANDARD_CHECKOUT or orders nor related to EAS) //.
         $confirmation_token = $order->get_meta('_easproj_token');
@@ -4321,7 +4322,7 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
     $refund = wc_get_order($refund_id);
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         // Ignore orders without EAS token
         $confirmation_token = $order->get_meta('_easproj_token');
@@ -4911,7 +4912,7 @@ function eascompliance_woocommerce_settings_start()
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         // if new shipping method found, display admin notification to update settings //.
         $shipping_methods_latest = array_keys(WC_Shipping::instance()->get_shipping_methods());
@@ -4956,7 +4957,7 @@ function eascompliance_woocommerce_settings_tabs_array($settings_tabs)
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         global $current_tab;
         if ($current_tab === 'settings_tab_compliance' || $current_tab === 'settings_tab_merchant' || $current_tab === 'settings_tab_logs' || $current_tab == 'settings_tab_connection_status') {
@@ -4994,7 +4995,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         woocommerce_admin_fields(eascompliance_settings());
     } catch (Exception $ex) {
@@ -5135,7 +5136,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_merchant()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         eascompliance_settings_merchant_module_tab();
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -5156,7 +5157,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_logs()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         eascompliance_settings_logs_tab();
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -5175,7 +5176,7 @@ function eascompliance_woocommerce_settings_tab_settings_tab_connection_status()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
         eascompliance_settings_connection_status_page();
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -5197,7 +5198,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        set_error_handler('eascompliance_error_handler');
+        set_error_handler('eascompliance_error_handler', E_ERROR);
 
         woocommerce_update_options(eascompliance_settings());
         // taxes must be enabled to see taxes at order //.
