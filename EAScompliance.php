@@ -109,7 +109,9 @@ if (!defined('ABSPATH')) {
  */
 function eascompliance_error_handler($severity, $message, $file, $line)
 {
-    throw new ErrorException($message, 0, $severity, $file, $line);
+    if ($severity === E_ERROR) {
+		throw new ErrorException($message, 0, $severity, $file, $line);
+	}
 }
 
 set_error_handler('eascompliance_error_handler');
