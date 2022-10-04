@@ -2893,7 +2893,8 @@ function eascompliance_cart_total($current_total = null)
         }
 
         // check that payload total_order_amount equals Order total //.
-        if (round((float)$payload_total_order_amount, 2) != round((float)$total, 2)) {
+		$margin = abs((float)$payload_total_order_amount -(float)$total);
+        if ($margin > 0.014 ) {
             eascompliance_log('error',
                 eascompliance_format('$payload_total_order_amount $a not equal order total $b',
                     array('a' => $payload_total_order_amount, 'b' => $total)
