@@ -1625,6 +1625,7 @@ function eascompliance_ajaxhandler()
         $cart_discount = (float)$cart->get_discount_total();
         if (eascompliance_is_wcml_enabled()) {
             $cart_discount = (float)WC()->session->get('EAS CART DISCOUNT');
+			eascompliance_log('debug', 'WCML is present, cart discount re-set to $cd', array('cd'=>$cart_discount));
         }
         WC()->session->set('EAS CART DISCOUNT', $cart_discount);
 
@@ -1994,9 +1995,11 @@ function eascompliance_redirect_confirm()
             $item['EAScompliance quantity'] = $payload_item['quantity'];
             $item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
             $item['EAScompliance item price'] = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
-            // add back discounted value to item price //.
-            if ($discount > 0 && $total_price > 0) {
-                $item['EAScompliance item price'] += $discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price;
+            if (eascompliance_is_wcml_enabled()) {
+				// WCML add back discounted value to item price //.
+				if ($discount > 0 && $total_price > 0) {
+					$item['EAScompliance item price'] += $discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price;
+				}
             }
 
             $item['EAScompliance VAT'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
@@ -2879,8 +2882,10 @@ function eascompliance_cart_total($current_total = null)
 
             $total += eascompliance_array_get($cart_item, 'EAScompliance item_duties_and_taxes', 0) + eascompliance_array_get($cart_item, 'EAScompliance item price', 0);
         }
-        $discount = WC()->session->get('EAS CART DISCOUNT');
-        $total -= $discount;
+        if (eascompliance_is_wcml_enabled()) {
+			$discount = WC()->session->get('EAS CART DISCOUNT');
+			$total -= $discount;
+        }
 
         // PW Gift Cards plugin fix: take discounts of gift cards //.
         if (defined('PWGC_SESSION_KEY')) {
