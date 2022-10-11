@@ -809,6 +809,43 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
     }
 }
 
+if (eascompliance_is_active()) {
+    add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review2', 10, 1);
+}
+/**
+ *  WCML save currency calculated at checkout
+ */
+function eascompliance_woocommerce_checkout_update_order_review2($post_data)
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
+        if (!eascompliance_is_wcml_enabled()) {
+            return;
+        }
+
+        global $woocommerce_wpml;
+        $currency = $woocommerce_wpml->multi_currency->get_client_currency();
+
+        $k0 = eascompliance_array_key_first2(WC()->cart->get_cart());
+        if ($k0 === null) {
+            return;
+        }
+
+        // saving WCML currency
+        global $woocommerce;
+        $cart_item0 = &$woocommerce->cart->cart_contents[$k0];
+        $cart_item0['EAScompliance WCML currency'] = $currency;
+        $woocommerce->cart->set_session();   // when in ajax calls, saves it //.
+
+        eascompliance_log('request', 'WCML saved client currency $c', array('$c'=>$currency));
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    }
+}
+
 
 if (eascompliance_is_active()) {
     add_action('wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1);
@@ -1185,6 +1222,21 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 		eascompliance_log('debug', 'WCML storage currency is $d', array('d'=>wcml_user_store_get( WCML_Multi_Currency::CURRENCY_STORAGE_KEY)));
 
         $currency = $woocommerce_wpml->multi_currency->get_client_currency();
+
+        // set client currency when it differs from currency last saved during checkout
+		$k0 = eascompliance_array_key_first2(WC()->cart->get_cart());
+		if ($k0 !== null) {
+			global $woocommerce;
+			$cart_item0 = &$woocommerce->cart->cart_contents[$k0];
+
+			$saved_currency = $cart_item0['EAScompliance WCML currency'];
+            if ($saved_currency && $saved_currency !== $currency) {
+				eascompliance_log('request', 'WCML update currency from $pc to $c', array('pc'=>$currency,'$c'=>$saved_currency));
+				$woocommerce_wpml->multi_currency->set_client_currency($saved_currency);
+				$currency = $saved_currency;
+            }
+		}
+
 
         // WCML breaks $cart->get_discount_total() so we re-calculcate it
         $cart_discount = (float)0;
