@@ -5740,3 +5740,87 @@ function eascompliance_sort_by_order_column($query)
         }
     }
 }
+
+if (eascompliance_is_active()) {
+    add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
+}
+/**
+ * Rest API route for bulk attribute update
+ */
+function eascompliance_bulk_update_rest_route()
+{
+
+    register_rest_route('eascompliance/v1', '/bulk-update', array(
+        'methods' => 'POST',
+        'callback' => 'eascompliance_bulk_update',
+    ));
+}
+
+/**
+ * Rest route callback
+ */
+function eascompliance_bulk_update($request)
+{
+    //Get HTTP request headers
+    $auth = apache_request_headers();
+
+    //Get only Authorization header
+    $auth_token = $auth['Authorization'];
+
+    if (empty($auth_token)) {
+        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
+    }
+
+    // Base64 Decode Consumer_key:Consumer_secret
+    $credential_token = base64_decode(preg_replace("/Basic/", '', $auth_token));
+
+    // Get only Consumer_secret
+    $consumer_secret = preg_replace('/\S+:/', '', $credential_token);
+
+    if (empty($consumer_secret)) {
+        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
+    }
+
+    // Check credentials on WP DB
+    global $wpdb;
+    $check_access = $wpdb->query($wpdb->prepare("SELECT * FROM `wp_woocommerce_api_keys` WHERE `permissions` = 'read_write' AND `consumer_secret` = '$consumer_secret'"));
+
+    if (empty($check_access)) {
+        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
+    }
+
+    // Get request body
+    $data = $request->get_body();
+    $updates = json_decode($data, true);
+    foreach ($updates['updates'] as $update) {
+        $item_ids = $update['itemids'];
+        $attributes_json = $update['attribute'];
+        $attribute_value = $attributes_json['value'];
+        $attribute_slug = 'pa_' . wc_sanitize_taxonomy_name($attributes_json['id']);
+        foreach ($item_ids as $item_id) {
+            //Check taxonomy term
+            $check_taxonomy = $wpdb->query($wpdb->prepare("SELECT * FROM `wp_terms` WHERE `name` = '$attribute_value'"));
+            if ($check_taxonomy == 0) {
+                $wpdb->query($wpdb->prepare("INSERT INTO wp_terms(name, slug) VALUES ('$attribute_value','$attribute_value')"));
+                $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_taxonomy`(`term_id`, `taxonomy`,`parent`, description) VALUES ('$wpdb->insert_id','$attribute_slug','0','')"));
+            }
+
+            // Check post meta and insert new value if needed
+            $product_postmeta = get_post_meta($item_id, '_product_attributes', true);
+            if (empty($product_postmeta[$attribute_slug])) {
+                $attributes = array();
+                $attributes[$attribute_slug] = array(
+                    'name' => $attribute_slug,
+                    'value' => $attributes_json['value'],
+                    'is_visible' => 1,
+                    'is_variation' => 0,
+                    'is_taxonomy' => 1
+                );
+                update_post_meta($item_id, '_product_attributes', array_merge($attributes, $product_postmeta));
+            }
+            // Clear attributes value and insert new
+            $wpdb->query($wpdb->prepare("delete from wp_term_relationships where term_taxonomy_id in ( SELECT `term_taxonomy_id` FROM wp_term_taxonomy where taxonomy = '$attribute_slug') and object_id = $item_id"));
+            $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_relationships`(`object_id`, `term_taxonomy_id`) VALUES ($item_id ,(SELECT term_taxonomy_id FROM wp_terms t left join wp_term_taxonomy tt on tt.term_id = t.term_id where taxonomy = '$attribute_slug' and t.name ='$attribute_value' limit 1));"));
+        }
+    }
+}
