@@ -5792,7 +5792,7 @@ function eascompliance_bulk_update($request)
     // Get request body
     $data = $request->get_body();
     $updates = json_decode($data, true);
-    foreach ($updates['updates'] as $update) {
+    foreach ($updates['updates'] as $key => $update) {
         $item_ids = $update['itemids'];
         $attributes_json = $update['attribute'];
         $attribute_value = $attributes_json['value'];
@@ -5803,6 +5803,11 @@ function eascompliance_bulk_update($request)
             if ($check_taxonomy == 0) {
                 $wpdb->query($wpdb->prepare("INSERT INTO wp_terms(name, slug) VALUES ('$attribute_value','$attribute_value')"));
                 $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_taxonomy`(`term_id`, `taxonomy`,`parent`, description) VALUES ('$wpdb->insert_id','$attribute_slug','0','')"));
+            } else {
+                $taxonomy_id = $wpdb->get_col($wpdb->prepare("SELECT * FROM `wp_terms` WHERE `name` = '$attribute_value'"));
+                if (!empty($taxonomy_id)) {
+                    $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_taxonomy`(`term_id`, `taxonomy`,`parent`, description) VALUES ('$taxonomy_id[0]','$attribute_slug','0','')"));
+                }
             }
 
             // Check post meta and insert new value if needed
