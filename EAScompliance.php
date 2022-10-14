@@ -1999,16 +1999,21 @@ function eascompliance_redirect_confirm()
 
         // calculate $total_price and $most_expensive_item //.
         $total_price = 0;
+        $total_qnty = 0;
         $most_expensive_item = &$payload_items[0];
         $total_item_duties_and_taxes = 0;
         foreach ($payload_items as $k => &$payload_item) {
             $total_price += $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+            $total_qnty += $payload_item['quantity'];
             $total_item_duties_and_taxes += $payload_item['item_duties_and_taxes'];
 
             if ($payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] > $most_expensive_item['quantity'] * $most_expensive_item['unit_cost_excl_vat']) {
                 $most_expensive_item = &$payload_item;
             }
         }
+
+        $discount_remainder = $discount;
+        $qnty_remainder = $total_qnty;
 
         // calculate cart_total that should later match eascompliance_cart_total()
         // when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat //.
@@ -2022,8 +2027,8 @@ function eascompliance_redirect_confirm()
             $total_price -= $margin;
         }
 
-        foreach ($woocommerce->cart->cart_contents as $k => &$item) {
-            $product_id = $item['variation_id'] ?: $item['product_id'];
+        foreach ($woocommerce->cart->cart_contents as $k => &$cart_item) {
+            $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
             $sku = wc_get_product($product_id)->get_sku();
             $found = false;
             foreach ($payload_items as &$payload_item) {
@@ -2043,20 +2048,36 @@ function eascompliance_redirect_confirm()
 
             $tax_rates = WC_Tax::get_rates();
             $tax_rate_id = array_keys($tax_rates)[array_search('EAScompliance', array_column($tax_rates, 'label'), true)];
-            $item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
-            $item['EAScompliance quantity'] = $payload_item['quantity'];
-            $item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
-            $item['EAScompliance item price'] = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
-            if (eascompliance_is_wcml_enabled()) {
-				// WCML add back discounted value to item price //.
-				if ($discount > 0 && $total_price > 0) {
-					$item['EAScompliance item price'] += $discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price;
+            $cart_item['EAScompliance item_duties_and_taxes'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
+            $cart_item['EAScompliance quantity'] = $payload_item['quantity'];
+            $cart_item['EAScompliance unit_cost'] = $payload_item['unit_cost_excl_vat'];
+            $cart_item['EAScompliance item price'] = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+
+            if ($discount > 0 && $total_price > 0) {
+				if (eascompliance_is_wcml_enabled()) {
+					// WCML add back discounted value to item price //.
+					{
+						$cart_item['EAScompliance item price'] += $discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price;
+					}
+
 				}
+                else {
+                    //add back discount proportionally to cart item quantity, set last item discount to discount remainder for sum of rounded items discounts to equal total discount
+                    $cart_item_discount = round($discount * $payload_item['quantity'] / $total_qnty, 2);
+                    if ( 0 < ($qnty_remainder - $payload_item['quantity'])) {
+						$cart_item['EAScompliance item price'] += $cart_item_discount;
+
+                    } else {
+						$cart_item['EAScompliance item price'] += $discount_remainder;
+                    }
+                    $discount_remainder -= $cart_item_discount;
+                    $qnty_remainder -= $payload_item['quantity'];
+                }
             }
 
-            $item['EAScompliance VAT'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
-            $item['EAScompliance ITEM'] = $payload_item;
-            $item['EAScompliance SET'] = true;
+            $cart_item['EAScompliance VAT'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
+            $cart_item['EAScompliance ITEM'] = $payload_item;
+            $cart_item['EAScompliance SET'] = true;
         }
         // throw new Exception('debug'); //.
 
@@ -2934,10 +2955,9 @@ function eascompliance_cart_total($current_total = null)
 
             $total += eascompliance_array_get($cart_item, 'EAScompliance item_duties_and_taxes', 0) + eascompliance_array_get($cart_item, 'EAScompliance item price', 0);
         }
-        if (eascompliance_is_wcml_enabled()) {
-			$discount = WC()->session->get('EAS CART DISCOUNT');
-			$total -= $discount;
-        }
+
+        $discount = WC()->session->get('EAS CART DISCOUNT');
+        $total -= $discount;
 
         // PW Gift Cards plugin fix: take discounts of gift cards //.
         if (defined('PWGC_SESSION_KEY')) {
