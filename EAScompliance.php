@@ -1699,7 +1699,7 @@ function eascompliance_ajaxhandler()
         $jdebug['step'] = 'prepare EAS API /calculate request';
         $options = array(
             'method' => 'POST',
-            'timeout' => 10,
+            'timeout' => 15,
             'headers' => array(
                 'Content-type' => 'application/json',
                 'Authorization' => 'Bearer ' . $auth_token,
@@ -2410,7 +2410,7 @@ function eascompliance_order_createpostsaleorder($order)
             'Content-type' => 'application/json',
             'Authorization' => 'Bearer ' . $auth_token,
         ),
-        'timeout' => 10,
+        'timeout' => 15,
         'body' => json_encode($sales_order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
         'sslverify' => false,
     );

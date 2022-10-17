@@ -4,9 +4,9 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 6.7.0
+WC tested up to: 6.9.4
 Tested up to: 6.0
-Stable tag: 1.4.8
+Stable tag: 1.4.20
 Last updated time: 10.07.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -63,6 +63,7 @@ The following currency switcher plugins are supported:
 
 * WooCommerce Currency Switcher from WooCommerce Payments by Automattic
 * WPML WooCommerce Multi-currency by OnTheGoSystems
+* WC Currency Switcher by realmag777
 
 = EAS EU compliance Features =
 
@@ -102,20 +103,20 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
-= 1.4.8 =
+
+= 1.4.20 =
 * Administrative part of the plugin enhanced
-* Design of the Calculate button might be changed in the Configuration section
+* Configuratoin of Design of the Calculate button added
 * Support of custom order Statuses implemented
 * Support of refunds enhanced
 * Support of tracking numbers by Ascendia implemented
 * Support of cart abandonment plugins implemented
 * Translations updated
 * Tracking of canceled orders implemented
-* Some UI changes implemented as per users requests.
-
+* Support of coupons enhanced (including WooCommerce Multilingual & Multicurrency logic)
 
 = 1.4.1 =
-* some function from PHP8.* were replaced by equivalent
+* Some functions from PHP v8.* were detected and replaced by replaced with analogues
 
 = 1.4.0 =
 * Delivery options support inhanced
@@ -193,8 +194,3 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 = 1.0.0 =
 * Initial release
-
-
-
-
-
