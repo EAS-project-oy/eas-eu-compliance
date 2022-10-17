@@ -1315,7 +1315,13 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
         $originating_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_originating_country'), '');
         $seller_registration_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_seller_reg_country'), '');
 
-        $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+        $product_is_virtual = $product->is_virtual();
+		// Plugin 'WooCommerce Product Bundles'
+		if ($product->get_type() === 'bundle') {
+			$product_is_virtual = $product->get_virtual_bundle();
+		}
+        $type_of_goods = $product_is_virtual ? 'TBE' : 'GOODS';
+
         $giftcard_product_types = WC_Admin_Settings::get_option('easproj_giftcard_product_types', array());
         if (in_array($product->get_type(), $giftcard_product_types, true)) {
             $type_of_goods = 'GIFTCARD';
