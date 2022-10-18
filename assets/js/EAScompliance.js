@@ -203,12 +203,11 @@ jQuery(document).ready(function ($) {
     });
 
     $(document.body).on("updated_checkout checkout_error", async function () {
-        // only work in European countries
+        // only work in supported countries
         delivery_country = $('#shipping_country').val();
         if (!$('#ship-to-different-address-checkbox').prop('checked')) {
             delivery_country = $('#billing_country').val();
         }
-        european_countries = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE'.split(' ')
 
         //take needs-recalculate from server because it may change without checkout page reloading
         needs_recalculate = (await new Promise ( function(resolve) {$.post({
@@ -225,7 +224,7 @@ jQuery(document).ready(function ($) {
 
         if
         (
-            european_countries.indexOf(delivery_country) < 0
+            plugin_ajax_object.supported_countries.indexOf(delivery_country) < 0
             ||
             (
                 $('.eascompliance_status').text() == 'present'

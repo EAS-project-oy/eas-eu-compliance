@@ -338,7 +338,7 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
         } else {
             // non-EU countries
             $delivery_country = WC()->customer->get_shipping_country();
-            if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
+            if (!array_key_exists($delivery_country, array_flip(eascompliance_supported_countries()))) {
                 $show_payment_methods = true;
             }
         }
@@ -357,6 +357,30 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
         restore_error_handler();
     }
 }
+
+/**
+ * List of supported countries
+ *
+ * @returns array List of countries codes.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_supported_countries()
+{
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+		return array_merge(EUROPEAN_COUNTRIES, get_option('easproj_supported_countries_outside_eu'));
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
 
 
 if (eascompliance_is_active()) {
@@ -605,7 +629,13 @@ function eascompliance_javascript()
     );
 
     // Pass ajax_url to javascript //.
-    wp_localize_script('EAScompliance', 'plugin_ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+    wp_localize_script('EAScompliance'
+        , 'plugin_ajax_object'
+        , array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'supported_countries' =>  eascompliance_supported_countries(),
+         )
+    );
 }
 
 ;
@@ -648,7 +678,7 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
     try {
         set_error_handler('eascompliance_error_handler');
 
-        if (!in_array($country, EUROPEAN_COUNTRIES)) {
+        if (!in_array($country, eascompliance_supported_countries())) {
             return $address_fields;
         }
 
@@ -712,7 +742,7 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
     try {
         set_error_handler('eascompliance_error_handler');
 
-        if (!in_array($country, EUROPEAN_COUNTRIES)) {
+        if (!in_array($country, eascompliance_supported_countries())) {
             return $address_fields;
         }
 
@@ -782,8 +812,8 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             $new_shipping_country = $new_billing_country;
         }
 
-        // if country changes to non-EU and taxes were set then reset calculations
-        if (!in_array($new_shipping_country, EUROPEAN_COUNTRIES) && eascompliance_is_set()) {
+        // if country changes to non-supported and taxes were set then reset calculations
+        if (!in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
             eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
 
             eascompliance_unset();
@@ -2281,7 +2311,7 @@ function eascompliance_is_deduct_vat_outside_eu()
         $store_country = explode(':', get_option('woocommerce_default_country'))[0];
         $shipping_country = WC()->customer->get_shipping_country();
 
-        if ($shipping_country === $store_country || in_array($shipping_country, EUROPEAN_COUNTRIES)) {
+        if ($shipping_country === $store_country || in_array($shipping_country, eascompliance_supported_countries())) {
             return false;
         }
 
@@ -2399,7 +2429,7 @@ function eascompliance_order_createpostsaleorder($order)
         throw new Exception(EAS_TR('Landed cost calculation can’t be processed until Delivery Name and address provided'));
     }
 
-    if (!in_array($shipping_country, EUROPEAN_COUNTRIES)) {
+    if (!in_array($shipping_country, eascompliance_supported_countries())) {
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
     }
 
@@ -3619,13 +3649,13 @@ function eascompliance_woocommerce_checkout_create_order($order)
             eascompliance_log('warning', 'Security check');
         };
 
-        // only work for European countries //.
+        // only work for supported countries //.
         $delivery_country = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_country', sanitize_text_field(eascompliance_array_get($_POST, 'billing_country', 'XX'))));
         $ship_to_different_address = sanitize_text_field(eascompliance_array_get($_POST, 'ship_to_different_address', ''));
         if (!('true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
             $delivery_country = eascompliance_array_get($_POST, 'billing_country', 'XX');
         }
-        if (!array_key_exists($delivery_country, array_flip(EUROPEAN_COUNTRIES))) {
+        if (!array_key_exists($delivery_country, array_flip(eascompliance_supported_countries()))) {
             return;
         }
 
@@ -4750,6 +4780,7 @@ function eascompliance_settings()
         }
     }
 
+    $countries_outside_eu = array_diff_key(WORLD_COUNTRIES, EUROPEAN_COUNTRIES);
 
     return array(
         'section_title' => array(
@@ -4829,6 +4860,15 @@ function eascompliance_settings()
             'id' => 'easproj_deduct_vat_outside_eu',
             'default' => '',
             'custom_attributes' => array('min' => 0, 'max' => 100, 'step' => 0.01, 'prices_include_tax' => get_option('woocommerce_prices_include_tax')),
+        ),
+        'supported_countries_outside_eu' => array(
+			'name' => EAS_TR('Non-EU Countries support'),
+			'type' => 'multiselect',
+			'class' => 'wc-enhanced-select',
+			'desc' => 'Supported countries outside EU',
+			'id' => 'easproj_supported_countries_outside_eu',
+			'default' => array(),
+			'options' => $countries_outside_eu,
         ),
         'shipping_methods_postal' => array(
             'name' => EAS_TR('Shipping methods by post'),
@@ -5586,8 +5626,8 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
         if (woocommerce_settings_get_option('easproj_active') === 'yes') {
             try {
                 eascompliance_get_oauth_token();
-                // there must be no EU tax rates except for EASCOMPLIANCE_TAX_RATE_NAME //.
-                foreach (EUROPEAN_COUNTRIES as $c) {
+                // there must be no tax rates for supported countries except for EASCOMPLIANCE_TAX_RATE_NAME //.
+                foreach (eascompliance_supported_countries() as $c) {
                     foreach (WC_Tax::find_rates(array('country' => $c)) as $tax_rate) {
                         if (EASCOMPLIANCE_TAX_RATE_NAME !== $tax_rate['label']) {
                             throw new Exception(
