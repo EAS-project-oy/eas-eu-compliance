@@ -42,7 +42,7 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
     $plugin_lang = eascompliance_woocommerce_settings_get_option_sql('easproj_language');
     $locale = 'en_US';
     if ('Default' === $plugin_lang) {
-        $locale = get_locale();
+        $locale = eascompliance_get_locale();
     } elseif ('EN' === $plugin_lang) {
         $locale = 'en_US';
     } elseif ('FI' === $plugin_lang) {
@@ -65,7 +65,7 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
 
         $mo_file = dirname(__FILE__) . '/languages/eas-eu-compliance-en_US.mo';
     }
-    eascompliance_log('lang', 'plugin lang set to $pl, current locale is $loc loading mo_file $mo', array('pl'=>$plugin_lang,'mo'=>$mo_file, 'loc'=>get_locale()));
+    eascompliance_log('lang', 'plugin lang set to $pl, current locale is $loc loading mo_file $mo', array('pl'=>$plugin_lang,'mo'=>$mo_file, 'loc'=>eascompliance_get_locale()));
     load_textdomain($textdomain, $mo_file);
 
     return translate($text, $textdomain);
@@ -2292,6 +2292,30 @@ function eascompliance_is_wcml_enabled()
     }
 }
 
+/**
+ * Check if WCML/WPML plugin is enabled
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_is_wpml_enabled()
+{
+    try {
+         $wpml_enabled = false;
+        set_error_handler('eascompliance_error_handler');
+           if (function_exists('wpml_mlo_init')) {
+                $wpml_enabled = true;
+               eascompliance_log('lang', 'fuck');
+           }
+        
+        return $wpml_enabled;
+    }
+    catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+          restore_error_handler();
+    }
+}
 
 /**
  * Check if it is VAT deductible outside EU
@@ -4569,6 +4593,35 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
                 class="button button-primary eascompliance-recalculate"><?php esc_html_e('Calculate Taxes & Duties EAS', 'woocommerce'); ?></button>
         <?php
     }
+}
+
+/**
+ * WPML response with wrong locale this will fix it
+ * 
+ */
+function eascompliance_get_locale()
+{
+    $locale = get_locale();
+    $wpml_enabled = eascompliance_is_wpml_enabled();
+    if ($wpml_enabled) {
+        $locale = strtoupper(apply_filters( 'wpml_current_language', NULL ));
+        if ('EN' === $locale) {
+            $locale = 'en_US';
+        } elseif ('FI' === $locale) {
+            $locale = 'fi';
+        } elseif ('FR' === $locale) {
+            $locale = 'fr';
+        } elseif ('DE' === $locale) {
+            $locale = 'de_DE';
+        } elseif ('IT' === $locale) {
+            $locale = 'it_IT';
+        } elseif ('NL' === $locale) {
+            $locale = 'nl_NL';
+        } elseif ('SE' === $locale) {
+            $locale = 'se_SE';
+        }      
+    } 
+    return($locale);
 }
 
 
