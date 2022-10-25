@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 6.9.4
 Tested up to: 6.0
-Stable tag: 1.4.20
+Stable tag: 1.4.22
 Last updated time: 10.07.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -98,11 +98,16 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Screenshots ==
 
-1. Only few configuation options to be set up on main configuration screen contains.
+1. Only few configuation options to be set up on the main configuration screen.
 2. EAS calculates EU taxes and uses reduced VAT rates.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.22 =
+* United Kingdom (UK) orders support implemented
+* Support of currency switcher implemented
+* WPML advanced locales code supported
 
 = 1.4.20 =
 * Administrative part of the plugin enhanced
