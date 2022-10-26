@@ -238,7 +238,7 @@ function eascompliance_plugin_upgrade()
 
         eascompliance_log('info', 'applying upgrades: $u',  array('u'=>join(',', $upgrades)));
 
-		require_once dirname(__FILE__).'/upgrade.php';
+		require_once dirname(__FILE__).'/include/upgrade.php';
 
         foreach ($upgrades as $upgrade) {
 			call_user_func("eascompliance_upgrade_" . $upgrade);
