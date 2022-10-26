@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.4.23
+ * Version: 1.4.24
  * Tested up to 6.0
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -371,7 +371,7 @@ function eascompliance_supported_countries()
 	try {
 		set_error_handler('eascompliance_error_handler');
 
-		return array_merge(EUROPEAN_COUNTRIES, get_option('easproj_supported_countries_outside_eu'));
+		return array_merge(EUROPEAN_COUNTRIES, (array)get_option('easproj_supported_countries_outside_eu'));
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -3879,7 +3879,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
 
         // process order once when status becomes completed/processing
-        $paid_statuses = get_option('easproj_paid_statuses');
+        $paid_statuses = (array)get_option('easproj_paid_statuses');
 
         //nee to support default WC statuses, even if user deleted it from settings
         array_push($paid_statuses, 'completed', 'processing');
@@ -5930,7 +5930,7 @@ function eascompliance_bulk_update($request)
             }
 
             // Check post meta and insert new value if needed
-            $product_postmeta = get_post_meta($item_id, '_product_attributes', true);
+            $product_postmeta = (array)get_post_meta($item_id, '_product_attributes', true);
             if (empty($product_postmeta[$attribute_slug])) {
                 $attributes = array();
                 $attributes[$attribute_slug] = array(
