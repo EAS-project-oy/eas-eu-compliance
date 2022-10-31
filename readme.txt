@@ -4,44 +4,60 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 6.9.4
-Tested up to: 6.0
-Stable tag: 1.4.22
+WC tested up to: 7.0.0
+Tested up to: 6.1
+Stable tag: 1.4.24
 Last updated time: 10.07.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 
-EAS solution automates the complicated EU VAT, IOSS, OSS and customs compliance. With the comprehensive solution and full automation, you can focus on the important - sales.
+EAS solution automates the complicated EU VAT, IOSS, OSS and UK VAT and customs compliance. With the comprehensive solution and full automation, you can focus on the important - sales.
  
 == Description ==
 
-__Note!__ EAS Registration is required. Register at
-[https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY")
+__Note!__ EAS Registration is required. Register at [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY")
 
-**Easy EU sales with IOSS & OSS automation** 
+**IOSS, OSS, Non-Union OSS and UK VAT - EAS automates your EU & UK VAT and Customs compliance.** 
 
-EAS is an all-inclusive IOSS & OSS solution. EAS automates everything from IOSS registration and Smart VAT calculations to IOSS/OSS reporting and filing.
+With EAS selling to all EU countries and UK is just as easy as your domestic sales, oreven easier!
 
-**IOSS registration**
+EAS removes all the tax and customs compliance barriers preventing your sales throughout the whole EU!
 
-EAS registers companies for IOSS and acts as an intermediary. EAS has no starting or monthly fees.
+**How to get started?**
 
-**30-minute onboarding / How to get started**
+Getting started is easy!  EAS makes you EU and UK compliant within minutes.
 
-Getting started is easy! EAS makes you EU compliant within minutes.
-
-1. Start by registering at  [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
+1. Register at  [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
 2. Install the EAS Plugin, or request free EAS installation assistance
-3. If you decide to install the plugin yourself, please follow setup instructions at the [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide  "EAS Help Centre").
+3. If you decide to install the plugin your self, please follow setup instructions at the [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide  "EAS Help Centre").
 
-**Sell throughout the whole EU with EAS comprehensive, powerful VAT compliance.**
+**EAS tool provides you with:**
 
-Whether you deliver from outside of the EU or intra-EU, EAS automates VAT compliance, from Smart calculation to preparing the ready-for-filing reports or production of accountant-friendly data. And of course, we utilise the 600k reduced rates when calculating VAT providing you more margin or lower prices to customers. We know the VAT compliance, you don’t have to.
+*	Better customer experience for EU and UK consumers
+*	The best full landed cost calculator on the market
+*	Reduced VAT rates for better margins
+*	IOSS registration without ﬁxed fees or minimum volumes
+*	Fully automated EU-wide VAT reporting
+*	HS6 codes assigning
+*	Blockchain data security
 
-**All automatic and without stress.** 
+**IOSS registration without registration, monthly fees or minimum volumes**
 
-You have spent time and effort building your store, which is why EAS Solution supports all functionalities serious e-merchants need, such as multi-warehouse, discounts types, HS codes and returns.
+EAS all-inclusive IOSS service is transaction fee based only. The service includes IOSS 	registration, IOSS intermediary service, WooCommerce Plugin, IOSS reporting and IOSS ﬁling. EAS handles the complex, so you can focus on your customers.
+
+**Introducing UK extension - fully automated UK sales**
+
+
+With the new UK extension + EAS EU Compliance, you can cover more than half a billion consumers with one APP. EAS makes UK sales easier than ever. The EAS APP calculates UK VAT, creates VAT reports, ﬁles the reports, and invoices and pays the required VAT.
+
+**OSS and Non-Union OSS**
+
+EAS tool supports all the EU VAT schemes, even if you are warehousing your products in multiple countries.
+
+Everything is automated, and no manual use of the EAS tool is required.
+
+Start by installing the EAS compliance plugin and registering at [https://easproject.com](https://easproject.com/ "Get credentials by registering to EAS project OY"), or contact us via email or visitthe EAS website and book a meeting.
 
 **Transparent and clear pricing** 
 
@@ -64,12 +80,14 @@ The following currency switcher plugins are supported:
 * WooCommerce Currency Switcher from WooCommerce Payments by Automattic
 * WPML WooCommerce Multi-currency by OnTheGoSystems
 * WC Currency Switcher by realmag777
+* Multi Currency for WooCommerce by VillaTheme
 
 = EAS EU compliance Features =
 
 * Smart VAT calculator: all 600.000+ reduced rates in use. Your customer knows the whole amount due (including VAT and all applicable customs duties) on purchase and you provide a better customer experience. 
 * Registration for **OSS / IOSS special schemes** with intermediary services when needed
 * VAT filing and payment management and support
+* UK VAT compliance with intermediary services when needed
 * Compliance with all schemes, Domestic, B2B, Import, Union and Non-Union schemes. EAS Solution supports all business models, including multi-warehouse. 
 * Access to EAS Merchant dashboard that contains all invoices and reports
 * Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
@@ -104,6 +122,9 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
+= 1.4.24 =
+* Support of Wordpress 6.1 revision implemented
+
 = 1.4.22 =
 * United Kingdom (UK) orders support implemented
 * Support of currency switcher implemented
@@ -121,7 +142,7 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 * Support of coupons enhanced (including WooCommerce Multilingual & Multicurrency logic)
 
 = 1.4.1 =
-* Some functions from PHP v8.* were detected and replaced by replaced with analogues
+* Some functions from PHP v8.* were detected and replaced by analogues
 
 = 1.4.0 =
 * Delivery options support inhanced

@@ -7,7 +7,7 @@
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
  * Version: 1.4.24
- * Tested up to 6.0
+ * Tested up to 6.1
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
  * WC tested up to: 7.0.0
@@ -2304,8 +2304,7 @@ function eascompliance_is_wpml_enabled()
         set_error_handler('eascompliance_error_handler');
            if (function_exists('wpml_mlo_init')) {
                 $wpml_enabled = true;
-               eascompliance_log('lang', 'fuck');
-           }
+            }
         
         return $wpml_enabled;
     }

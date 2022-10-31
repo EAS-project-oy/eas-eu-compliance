@@ -3,6 +3,28 @@
 
 == Changelog ==
 
+22-10-31 - version 1.4.24
+* Wordpress revision 6.1 support implemented
+
+22-10-25 - version 1.4.22
+* United Kingdom (UK) orders support implemented
+* Support of currency switcher implemented
+* WPML advanced locales code supported
+
+22-10-10 - version 1.4.20
+* Administrative part of the plugin enhanced
+* Configuratoin of Design of the Calculate button added
+* Support of custom order Statuses implemented
+* Support of refunds enhanced
+* Support of tracking numbers by Ascendia implemented
+* Support of cart abandonment plugins implemented
+* Translations updated
+* Tracking of canceled orders implemented
+* Support of coupons enhanced (including WooCommerce Multilingual & Multicurrency logic)
+
+22-08-15 - version 1.4.1 
+* Some functions from PHP v8.* were detected and replaced by analogues
+
 22-08-05 - version 1.4.0
 * Delivery option support inhanced
 * Refund management inhanced
