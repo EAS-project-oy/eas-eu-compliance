@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.4.24
+ * Version: 1.4.25
  * Tested up to 6.1
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -4848,15 +4848,7 @@ function eascompliance_settings()
             'id' => 'easproj_active',
             'default' => 'no',
         ),
-        'debug' => array(
-            'name' => EAS_TR('Log levels'),
-            'type' => 'multiselect',
-            'class' => 'wc-enhanced-select',
-            'desc' => 'Debug messages levels',
-            'id' => 'easproj_debug',
-            'default' => array('info', 'error'),
-            'options' => $easproj_debug_options,
-        ),
+        
         'process_imported_orders' => array(
             'name' => EAS_TR('Process imported orders'),
             'type' => 'checkbox',
@@ -4939,16 +4931,30 @@ function eascompliance_settings()
             'default' => array('wc-processing', 'wc-completed'),
             'options' => $order_statuses,
         ),
+        
+            'giftcard_product_types' => array(
+            'name' => EAS_TR('Giftcard product types'),
+            'type' => 'multiselect',
+            'class' => 'wc-enhanced-select',
+            'desc' => EAS_TR('Product type(s) used for Gift cards management'),
+            'id' => 'easproj_giftcard_product_types',
+            'options' => $product_types,
+        ),
         'shipping_methods_latest' => array(
             'name' => '',
             'type' => 'multiselect',
             'desc' => '',
             'id' => 'easproj_shipping_methods_latest',
             'options' => $shipping_methods,
-            // , 'default' => array_keys($shipping_methods)
-
             'css' => 'background-color: grey;display:none',
             'value' => array_keys($shipping_methods),
+        ),
+        'eas_special_attributes_label' => array(
+            'text' => '<div style="font-size:18px;">'.EAS_TR('Additional products attributes settings').'</div>',
+            'type' => 'info',
+            'id' => 'eas_design_label',
+            'css' => 'font-weight: bold;'
+          
         ),
         'HSCode_field' => array(
             'name' => EAS_TR('HSCODE'),
@@ -5004,13 +5010,14 @@ function eascompliance_settings()
             'default' => 'easproj_originating_country',
             'options' => $attributes,
         ),
-        'giftcard_product_types' => array(
-            'name' => EAS_TR('Giftcard product types'),
+        'debug' => array(
+            'name' => EAS_TR('Log levels'),
             'type' => 'multiselect',
             'class' => 'wc-enhanced-select',
-            'desc' => EAS_TR('Product type(s) used for Gift cards management'),
-            'id' => 'easproj_giftcard_product_types',
-            'options' => $product_types,
+            'desc' => 'Debug messages levels',
+            'id' => 'easproj_debug',
+            'default' => array('info', 'error'),
+            'options' => $easproj_debug_options,
         ),
 
         'eas_design_label' => array(

@@ -18,5 +18,5 @@ select[name^="easproj_"] option {
 label[for="eas_design_label"] {
     font-size: 18px;
     font-weight: bold;
-    padding-top: 20px;
-}
+  }
+  
