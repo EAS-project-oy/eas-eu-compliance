@@ -5,7 +5,7 @@ function eascompliance_upgrade_init()
 	global $wpdb;
 
 	$wpdb->query("
-        CREATE TABLE {$wpdb->prefix}eascompliance_product_locations 
+        CREATE TABLE IF NOT EXISTS {$wpdb->prefix}eascompliance_product_locations 
         (
               product_id int NOT NULL
             , location_id int NOT NULL
@@ -17,7 +17,7 @@ function eascompliance_upgrade_init()
 	}
 
 	$wpdb->query("
-        CREATE TABLE {$wpdb->prefix}eascompliance_locations (
+        CREATE TABLE IF NOT EXISTS {$wpdb->prefix}eascompliance_locations (
               location_id int NOT NULL AUTO_INCREMENT
             , location_name varchar(100)
             , location_country varchar(2) NOT NULL
@@ -30,5 +30,17 @@ function eascompliance_upgrade_init()
 	if ($wpdb->last_error) {
 		throw new Exception($wpdb->last_error);
 	}
+}
 
+function eascompliance_upgrade_wp135_location_delivery_countries()
+{
+	global $wpdb;
+
+	$wpdb->query("
+        ALTER TABLE {$wpdb->prefix}eascompliance_locations MODIFY location_delivery_countries varchar(10000)
+    ");
+
+	if ($wpdb->last_error) {
+		throw new Exception($wpdb->last_error);
+	}
 }

@@ -216,7 +216,7 @@ function eascompliance_plugin_activation()
  *
  * @throws Exception May throw exception.
  */
-//register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
+register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
 function eascompliance_plugin_upgrade()
 {
 
@@ -225,7 +225,8 @@ function eascompliance_plugin_upgrade()
         set_error_handler('eascompliance_error_handler');
 
 		$available_upgrades = array(
-                'init'
+                'init',
+                'wp135_location_delivery_countries',
         );
 
         $applied_upgrades = (array)get_option('eascompliance_applied_upgrades');
