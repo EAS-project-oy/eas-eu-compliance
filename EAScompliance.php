@@ -5235,7 +5235,7 @@ function eascompliance_settings_logs_tab()
 { ?>
     <h2><?php echo EAS_TR('EAS Logs'); ?></h2>
     <div id="-description">
-        <?php echo EAS_TR('Please, choose required log file with the following name template eascomplience YEAR-MONTH-DAY in upper right corner and press "View" in the
+        <?php echo EAS_TR('EAS EU compliance plugin stores logs to the WooCommerce default logging folder.<br><br> To see logs, please choose required log file with the following name template <b>eascomplience-YEAR-MONTH-DAY-UniqueID.log</b> from dropdown in upper right corner and press "View" in the
             <a href="/wp-admin/admin.php?page=wc-status&tab=logs
 ">Logs page</a>'); ?>
 
