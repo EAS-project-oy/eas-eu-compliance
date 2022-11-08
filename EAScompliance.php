@@ -3874,72 +3874,79 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
         // ignore orders created with createpostsaleorder
         if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
+			eascompliance_log('payment', 'verification cancelled due to order created with createpostsaleorder');
             return;
         }
-
 
         // process order once when status becomes completed/processing
         $paid_statuses = (array)get_option('easproj_paid_statuses');
 
-        //nee to support default WC statuses, even if user deleted it from settings
+        //need to support default WC statuses, even if user deleted it from settings
         array_push($paid_statuses, 'completed', 'processing');
-        eascompliance_log('place_order' , $paid_statuses);
 
-        if (!((in_array($status_to, $paid_statuses)) && !($order->get_meta('_easproj_payment_processed') === 'yes'))) {
+        if ( !in_array($status_to, $paid_statuses) ) {
+			eascompliance_log('payment', 'verification cancelled due to not paid status');
             return;
         }
-        if (in_array($status_to, $paid_statuses)) {
 
-            $auth_token = eascompliance_get_oauth_token();
-            $confirmation_token = $order->get_meta('_easproj_token');
-            // JWT token is not present during STANDARD_CHECKOUT //.
-            if ('' === $confirmation_token) {
-                return;
-            }
-
-            $payment_jreq = array(
-                'token' => $confirmation_token,
-                'checkout_payment_id' => 'order_' . $order_id,
-            );
-
-            $options = array(
-                'method' => 'POST',
-                'headers' => array(
-                    'Content-type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $auth_token,
-                ),
-                'body' => json_encode($payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
-                'sslverify' => false,
-            );
-
-            $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
-            $payment_response = (new WP_Http)->request($payment_url, $options);
-            if (is_wp_error($payment_response)) {
-                throw new Exception($payment_response->get_error_message());
-            }
-
-            $payment_status = (string)$payment_response['response']['code'];
-
-            if ('200' === $payment_status) {
-                $order->add_order_note(
-                    eascompliance_format(
-                        EAS_TR('Order status changed from $status_from to $status_to .  EAS API payment notified'),
-                        array(
-                            'status_from' => $status_from,
-                            'status_to' => $status_to,
-                        )
-                    )
-                );
-            } else {
-                eascompliance_log('error', 'Order status change failed response is $r', array('$r' => $payment_response));
-                throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
-            }
-
-            $order->add_meta_data('_easproj_payment_processed', 'yes', true);
-            $order->save();
-
-            eascompliance_log('info', "Notify Order $order_id status change successful");
+       if ( 'yes' === $order->get_meta('_easproj_payment_processed') ) {
+			eascompliance_log('payment', 'verification cancelled due to payment processed');
+            return;
         }
+
+
+        $auth_token = eascompliance_get_oauth_token();
+        $confirmation_token = $order->get_meta('_easproj_token');
+        // JWT token is not present during STANDARD_CHECKOUT //.
+        if ('' === $confirmation_token) {
+            eascompliance_log('payment', 'verification cancelled due to token not found');
+            return;
+        }
+
+        $payment_jreq = array(
+            'token' => $confirmation_token,
+            'checkout_payment_id' => 'order_' . $order_id,
+        );
+
+        $options = array(
+            'method' => 'POST',
+            'headers' => array(
+                'Content-type' => 'application/json',
+                'Authorization' => 'Bearer ' . $auth_token,
+            ),
+            'body' => json_encode($payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
+            'sslverify' => false,
+        );
+
+        $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
+        $payment_response = (new WP_Http)->request($payment_url, $options);
+        if (is_wp_error($payment_response)) {
+            throw new Exception($payment_response->get_error_message());
+        }
+
+        $payment_status = (string)$payment_response['response']['code'];
+
+        if ('200' === $payment_status) {
+            eascompliance_log('payment', 'verification successful');
+            $order->add_order_note(
+                eascompliance_format(
+                    EAS_TR('Order status changed from $status_from to $status_to .  EAS API payment notified'),
+                    array(
+                        'status_from' => $status_from,
+                        'status_to' => $status_to,
+                    )
+                )
+            );
+        } else {
+            eascompliance_log('error', 'Order status change failed response is $r', array('$r' => $payment_response));
+            throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
+        }
+
+        $order->add_meta_data('_easproj_payment_processed', 'yes', true);
+        $order->save();
+
+        eascompliance_log('info', "Notify Order $order_id status change successful");
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
