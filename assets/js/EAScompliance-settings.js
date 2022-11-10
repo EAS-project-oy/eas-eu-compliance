@@ -149,6 +149,24 @@ jQuery(document).ready(function($) {
             $('#easproj_deduct_vat_outside_eu').val('')
         }
     })
+
+
+    //disable easproj_process_imported_orders if easproj_standard_mode is enabled
+    if ($('#easproj_standard_mode').prop('checked')) {
+        $('#easproj_process_imported_orders').prop('checked', false)
+        $('#easproj_process_imported_orders').prop('disabled', true)
+    }
+
+    $('#easproj_standard_mode').on( 'change', function() {
+        if ($('#easproj_standard_mode').prop('checked') ) {
+            $('#easproj_process_imported_orders').prop('checked', false)
+            $('#easproj_process_imported_orders').prop('disabled', true)
+        } else {
+            $('#easproj_process_imported_orders').prop('disabled', false)
+        }
+    })
+
+
     // Add colorpicker for admin panel
 
     $('#eas_button_text_color').wpColorPicker();

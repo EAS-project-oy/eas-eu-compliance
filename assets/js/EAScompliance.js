@@ -234,6 +234,9 @@ jQuery(document).ready(function ($) {
             ||
             (
                 $('.eascompliance_status').text() == 'standard_checkout'
+            )            ||
+            (
+                $('.eascompliance_status').text() == 'standard_mode'
             )
         ) {
             $('.button_calc').hide();
