@@ -1364,10 +1364,16 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
         $originating_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_originating_country'), '');
         $seller_registration_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_seller_reg_country'), '');
 
+        // when we can get product type (physical or virtual/downloadable) from product/bundle then use this information, otherwise use default value from settings
         $product_is_virtual = $product->is_virtual();
 		// Plugin 'WooCommerce Product Bundles'
-		if ($product->get_type() === 'bundle') {
-			$product_is_virtual = $product->get_virtual_bundle();
+		if ( $product->get_type() === 'bundle' ) {
+            if ( method_exists($product, 'get_virtual_bundle') ) {
+				$product_is_virtual = $product->get_virtual_bundle();
+            }
+            else {
+				$product_is_virtual = get_option('easproj_default_product_type') === 'virtual';
+            }
 		}
         $type_of_goods = $product_is_virtual ? 'TBE' : 'GOODS';
 
@@ -5475,6 +5481,14 @@ function eascompliance_settings()
             'id' => 'easproj_shipping_method_postal',
             'options' => $shipping_methods,
         ),
+		'default_product_type' => array(
+			'name' => EAS_TR('Default product type'),
+			'type' => 'select',
+			'desc' => EAS_TR('Default product type'),
+			'id' => 'easproj_default_product_type',
+			'default' => 'physical',
+			'options' => array('physical'=> EAS_TR('Physical goods'), 'virtual'=>'Downloadable'),
+		),
         'orders_been_paid' => array(
             'name' => EAS_TR('Paid order statuses'),
             'type' => 'multiselect',
@@ -5484,7 +5498,6 @@ function eascompliance_settings()
             'default' => array('wc-processing', 'wc-completed'),
             'options' => $order_statuses,
         ),
-        
             'giftcard_product_types' => array(
             'name' => EAS_TR('Giftcard product types'),
             'type' => 'multiselect',
