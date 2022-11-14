@@ -2150,7 +2150,10 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 			throw new Exception('JWT verification failed: ' . $verified);
 		}
 
-		return json_decode($jwt_payload, true);
+        $payload_j = json_decode($jwt_payload, true);
+		eascompliance_log('request', 'token payload json is $j', array('$j'=>$payload_j));
+
+	return $payload_j;
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -2174,8 +2177,6 @@ function eascompliance_redirect_confirm()
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
-    $jdebug = array();
-
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -2188,7 +2189,7 @@ function eascompliance_redirect_confirm()
         };
 
         if (!array_key_exists('eas_checkout_token', $_GET)) {
-            $jdebug['step'] = 'confirmation was declined';
+            // confirmation was declined
             $k = eascompliance_array_key_first2($cart->get_cart());
             // pass by reference is required here //.
             $item = &$woocommerce->cart->cart_contents[$k];
@@ -2198,13 +2199,9 @@ function eascompliance_redirect_confirm()
             exit();
         }
 
-        $jdebug['step'] = 'receive checkout token';
         $eas_checkout_token = strval(eascompliance_array_get($_GET, 'eas_checkout_token', ''));
-
         $payload_j = eascompliance_checkout_token_payload($eas_checkout_token);
-        $jdebug['$payload_j'] = $payload_j;
 
-        eascompliance_log('confirm', 'received EAS payload ' . print_r($payload_j, true));
 
         /*
 		Sample $payload_j json:
@@ -2281,7 +2278,7 @@ function eascompliance_redirect_confirm()
 
         $payload_items = $payload_j['items'];
 
-        $jdebug['step'] = 'update cart items with payload items fees';
+        // update cart items with payload items fees
         // needs global $woocommerce: https://stackoverflow.com/questions/33322805/how-to-update-cart-item-meta-woocommerce/33322859#33322859    //.
         global $woocommerce;
         $cart = WC()->cart;
@@ -2310,9 +2307,9 @@ function eascompliance_redirect_confirm()
         // when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat //.
         $cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'];
         $margin = $cart_total - $payload_j['total_order_amount'];
-        eascompliance_log('confirm', '$cart_total is ' . $cart_total . '  payload total_order_amount is ' . $payload_j['total_order_amount']);
+        eascompliance_log('request', '$cart_total is ' . $cart_total . '  payload total_order_amount is ' . $payload_j['total_order_amount']);
         if (0 < abs($margin) && abs($margin) < 0.10) { // only process when there is margin and is small //.
-            eascompliance_log('confirm', "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin");
+            eascompliance_log('request', "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin");
             $most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
 
             $total_price -= $margin;
@@ -2378,7 +2375,6 @@ function eascompliance_redirect_confirm()
         $cart_item0 = &$woocommerce->cart->cart_contents[$k0];
         $cart_item0['EASPROJ API CONFIRMATION TOKEN'] = $eas_checkout_token;
         $cart_item0['EASPROJ API PAYLOAD'] = $payload_j;
-        $cart_item0['EASPROJ API JWT KEY'] = $jwt_key;
         $cart_item0['EAScompliance HEAD'] = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
         $cart_item0['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
         $cart_item0['EAScompliance NEEDS RECALCULATE'] = false;
@@ -2738,40 +2734,8 @@ function eascompliance_order_createpostsaleorder($order)
 
     $sales_order_status = (string)$sales_order_response['response']['code'];
     if ('200' === $sales_order_status) {
-        // validate token in $sales_order_body
-        $jwt_key_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/auth/keys';
-        $options = array(
-            'method' => 'GET',
-            'sslverify' => false,
-        );
-
-        $jwt_key_response = (new WP_Http)->request($jwt_key_url, $options);
-        if (is_wp_error($jwt_key_response)) {
-            $jres['message'] = 'AUTH KEY error: ' . $jwt_key_response->get_error_message();
-            throw new Exception($jwt_key_response->get_error_message());
-        }
-        $jwt_key_j = json_decode($jwt_key_response['http_response']->get_data(), true);
-        $jwt_key = $jwt_key_j['default'];
-
-        //TODO can this JWT validation and getting payload can be replaced with eascompliance_checkout_token_payload() ?
-        $arr = preg_split('/[.]/', trim($sales_order_response['http_response']->get_data(), '"'), 3);
-
-        // JWT signature is base64 encoded binary without '==' and alternative characters for '+' and '/'   //.
-        $jwt_signature = base64_decode(str_replace(array('-', '_'), array('+', '/'), $arr[2]) . '==', true);
-
-        // Validate JWT token signed with key //.
-        $verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
-        if (!(1 === $verified)) {
-            throw new Exception('JWT verification failed: ' . $verified);
-        }
-
-
-        $order->add_order_note(eascompliance_format(EAS_TR('Sales order received, updating order $order_id'), array('order_id' => $order_id)));
-
-        //updating order with data received from EAS
-        $jwt_header = base64_decode($arr[0], false); // {"alg":"RS256","typ":"JWT","kid":"default"}
-        $jwt_payload = base64_decode($arr[1], false); // // {"eas_fee":1.86,"merchandise_cost":18,"delivery_charge":0,"order_id":"1a1f118de41b1536d914568be9fb9490","taxes_and_duties":1.986,"id":324,"iat":1616569331,"exp":1616655731,"aud":"checkout_26","iss":"@eas/auth","sub":"checkout","jti":"a9aa4975-5c89-4b2f-81dc-44325881f7dd"}
-        $payload_j = json_decode($jwt_payload, true);
+		$eas_checkout_token = trim($sales_order_response['http_response']->get_data(), '"');
+		$payload_j = eascompliance_checkout_token_payload($eas_checkout_token);
 
         $order->add_meta_data('_easproj_token', trim($sales_order_response['http_response']->get_data(), '"'), true);
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
