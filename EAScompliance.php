@@ -1439,7 +1439,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 	}
     $calc_jreq['order_breakdown'] = $order_breakdown_items;
 
-    eascompliance_log('request', 'request is $r', array('$r' => $calc_jreq));
+	eascompliance_log('request', 'api request json is $j ', array('$j'=>$calc_jreq));
 
     return $calc_jreq;
 }
@@ -1657,25 +1657,9 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         );
     }
 
-    eascompliance_log('request', '$items before discount ' . print_r($items, true));
-    $d = $order->get_discount_total(); // discount d    //.
-    $t = 0; // cart total  T = p1*q1 + p2*q2           //.
-    $q = 0; // total quantity Q = q1 + q2              //.
-    foreach ($items as $item) {
-        $t += $item['quantity'] * $item['cost_provided_by_em'];
-        $q += $item['quantity'];
-    }
-
-    if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
-        foreach ($items as &$item) {
-            $q1 = $item['quantity'];
-            $p1 = $item['cost_provided_by_em'];
-
-            $item['cost_provided_by_em'] = $p1 * ($t - $d) / $t;
-        }
-    }
     $calc_jreq['order_breakdown'] = $items;
-    eascompliance_log('request', '$items after discount ' . print_r($items, true));  //.
+
+	eascompliance_log('request', 'api request json from order $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order_id));
 
     return $calc_jreq;
 }
@@ -1900,11 +1884,10 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         $ix++;
     }
 
-    //TODO should discount behavior here be taken from eascompliance_make_eas_api_request_json_from_order() ?
-
     $calc_jreq['order_breakdown'] = $items;
     $calc_jreq['total_order_amount'] = round( (float)$order->get_total(), 2);
 
+	eascompliance_log('request', 'api request json from order2 $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order_id));
     return $calc_jreq;
 }
 
