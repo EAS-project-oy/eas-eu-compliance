@@ -5351,11 +5351,9 @@ function eascompliance_settings()
     $countries_outside_eu = array_diff_key(WORLD_COUNTRIES, EUROPEAN_COUNTRIES);
 
     return array(
-        'section_title' => array(
-            'name' => EAS_TR('Settings'),
+        'section_general' => array(
+            'title' => EAS_TR('General'),
             'type' => 'title',
-            'desc' => '<div style="float:left;"><img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 100px;vertical-align: top;"></div><div style="margin-top:15px;float:left;margin-left:20px;vertical-align: middle;width:600px;font-size:1.3em;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;">EAS solution settings page. Please refer to <a href="' . plugins_url('doc/Installation and Setup guide 1.1.pdf', __FILE__) . '">Installation and configuration guide</a> for detailed instructions.<p style="margin-top:10px;font-size:1em;"><b>Current version</b>:  ' . $version . '</p></div>',
-
         ),
         'active' => array(
             'name' => EAS_TR('Enable/Disable'),
@@ -5364,6 +5362,23 @@ function eascompliance_settings()
             'id' => 'easproj_active',
             'default' => 'no',
         ),
+		'language' => array(
+			'name' => EAS_TR('Language'),
+			'type' => 'select',
+			'desc' => EAS_TR('Choose language for user interface of plugin'),
+			'id' => 'easproj_language',
+			'default' => EAS_TR('Default'),
+			'options' => array(
+				'Default' => EAS_TR('Store Default'),
+				'EN' => EAS_TR('English'),
+				'FI' => EAS_TR('Finnish'),
+				'FR' => EAS_TR('French'),
+				'DE' => EAS_TR('German'),
+				'IT' => EAS_TR('Italian'),
+				'NL' => EAS_TR('Netherlands'),
+				'SE' => EAS_TR('Swedish'),
+			),
+		),
         'EAS_API_URL' => array(
             'name' => EAS_TR('EAS API Base URL'),
             'type' => 'text',
@@ -5388,23 +5403,22 @@ function eascompliance_settings()
             'custom_attributes' => array('autocomplete' => 'off'),
 
         ),
-        'language' => array(
-            'name' => EAS_TR('Language'),
-            'type' => 'select',
-            'desc' => EAS_TR('Choose language for user interface of plugin'),
-            'id' => 'easproj_language',
-            'default' => EAS_TR('Default'),
-            'options' => array(
-                'Default' => EAS_TR('Store Default'),
-                'EN' => EAS_TR('English'),
-                'FI' => EAS_TR('Finnish'),
-                'FR' => EAS_TR('French'),
-                'DE' => EAS_TR('German'),
-                'IT' => EAS_TR('Italian'),
-                'NL' => EAS_TR('Netherlands'),
-                'SE' => EAS_TR('Swedish'),
-            ),
-        ),
+		'debug' => array(
+			'name' => EAS_TR('Log levels'),
+			'type' => 'multiselect',
+			'class' => 'wc-enhanced-select',
+			'desc' => 'Debug messages levels',
+			'id' => 'easproj_debug',
+			'default' => array('info', 'error'),
+			'options' => $easproj_debug_options,
+		),
+        'section_general_end' => array(
+			'type' => 'sectionend',
+		),
+		'section_vat' => array(
+			'type' => 'title',
+			'title' => EAS_TR('Taxation'),
+		),
 		'standard_mode' => array(
 			'name' => EAS_TR('Standard mode'),
 			'type' => 'checkbox',
@@ -5479,6 +5493,13 @@ function eascompliance_settings()
             'css' => 'background-color: grey;display:none',
             'value' => array_keys($shipping_methods),
         ),
+		'section_vat_end' => array(
+			'type' => 'sectionend',
+		),
+		'section_product_attributes' => array(
+			'type' => 'title',
+			'title' => EAS_TR('Product Attributes'),
+		),
         'eas_special_attributes_label' => array(
             'text' => '<div style="font-size:18px;">'.EAS_TR('Additional products attributes settings').'</div>',
             'type' => 'info',
@@ -5540,16 +5561,13 @@ function eascompliance_settings()
             'default' => 'easproj_originating_country',
             'options' => $attributes,
         ),
-        'debug' => array(
-            'name' => EAS_TR('Log levels'),
-            'type' => 'multiselect',
-            'class' => 'wc-enhanced-select',
-            'desc' => 'Debug messages levels',
-            'id' => 'easproj_debug',
-            'default' => array('info', 'error'),
-            'options' => $easproj_debug_options,
-        ),
-
+		'section_product_attributes_end' => array(
+			'type' => 'sectionend',
+		),
+		'section_design' => array(
+			'type' => 'title',
+			'title' => EAS_TR('Design'),
+		),
         'eas_design_label' => array(
             'name' => EAS_TR('Design'),
             'type' => 'text',
@@ -5608,9 +5626,9 @@ function eascompliance_settings()
             'css' => 'font-size:20px;background-color: grey;display:none',
             'desc' => '<button class="button_calc_test" style="background-color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color') . ';color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color') . ';font-size:' . eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size') . 'px;" disabled="disabled">' . (eascompliance_woocommerce_settings_get_option_sql('eas_button_text') ? eascompliance_woocommerce_settings_get_option_sql('eas_button_text') : EAS_TR('Calculate Taxes and Duties')) . '</button>'
         ),
-        'section_end' => array(
-            'type' => 'sectionend',
-        ),
+		'section_design_end' => array(
+			'type' => 'sectionend',
+		),
     );
 }
 
@@ -5711,6 +5729,20 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
     try {
         set_error_handler('eascompliance_error_handler');
 
+		$version = get_plugin_data(__FILE__, false, false)['Version'];
+
+        ?>
+
+        <div id="easproject_settings_label">
+            <img src="<?php echo plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) ?>" ">
+            <div>
+                EAS solution settings page<br>
+                Please refer to <a href="<?php echo plugins_url('doc/Installation and Setup guide 1.1.pdf', __FILE__) ?>">Installation and configuration guide</a> for detailed instructions.
+                <div style="font-size:1em;"><b>Current version</b>:  <?php echo $version ?></div>
+            </div>
+        </div>
+
+        <?php
         woocommerce_admin_fields(eascompliance_settings());
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);

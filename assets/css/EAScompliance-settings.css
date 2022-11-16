@@ -20,4 +20,29 @@ label[for="eas_design_label"] {
     font-weight: bold;
     font-style: italic;
   }
-  
+
+
+.easproject_settings h2 {
+    background: transparent;
+}
+
+.easproject_settings tr td {
+    vertical-align: top !important;
+}
+
+#easproject_settings_label {
+    font-size: 1.3em;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica Neue, sans-serif;
+    display: inline-block;
+    line-height: 1.8;
+}
+
+#easproject_settings_label > img {
+    width: 100px;
+    float: left;
+}
+#easproject_settings_label > div {
+    display: inline-block;
+    vertical-align: middle;
+}
+
