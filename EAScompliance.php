@@ -652,11 +652,7 @@ function eascompliance_javascript()
     );
 }
 
-;
-
-if (eascompliance_is_active()) {
-    add_action('admin_enqueue_scripts', 'eascompliance_settings_scripts');
-}
+add_action('admin_enqueue_scripts', 'eascompliance_settings_scripts');
 /**
  * Browser admin client scripts
  */
