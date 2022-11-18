@@ -26,6 +26,10 @@ label[for="eas_design_label"] {
     background: transparent;
 }
 
+.easproject_settings tr th {
+    padding: 20px;
+}
+
 .easproject_settings tr td {
     vertical-align: top !important;
 }
