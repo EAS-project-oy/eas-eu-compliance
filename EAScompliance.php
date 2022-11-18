@@ -1751,7 +1751,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
 
     $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_shipping_country(), array()), $order->get_shipping_state(), '') ?: $order->get_shipping_state();
 
-    $delivery_cost = round((float)($order->get_shipping_total()-$order->get_shipping_tax()), 2);
+    $delivery_cost = round((float)($order->get_shipping_total()), 2);
 	$delivery_vat = round((float)($order->get_shipping_tax()), 2);
 
     $calc_jreq['external_order_id'] = '' . $order->get_id();
@@ -1866,7 +1866,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
 			'type_of_goods' => $type_of_goods,
 			'location_warehouse_country' => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
             'vat_rate' => $tax_rate,
-			'unit_cost' => round((float)($order_item['line_total'] - $order_item['line_tax']) / $order_item['quantity'], 2),
+			'unit_cost' => round((float)($order_item['line_total']) / $order_item['quantity'], 2),
             'item_vat' => round((float)($order_item['line_tax']), 2),
             'item_delivery_charge' => 0,
             'item_delivery_charge_vat' => 0,
@@ -4558,9 +4558,10 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                 if ( 'successful' === $order_status) {
                     $eas_checkout_token = $order_json['checkout_token'];
                     $order->add_meta_data('_easproj_token', $eas_checkout_token);
+					$token_payload = eascompliance_checkout_token_payload($eas_checkout_token);
+					$order->add_meta_data('easproj_payload', $token_payload, true);
                     $order->save_meta_data();
 
-                    $token_payload = eascompliance_checkout_token_payload($order_json['checkout_token']);
                     $eas_id = $token_payload['id'];
 
                     // check and handle warnings
@@ -4578,10 +4579,13 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                 }
                 elseif ( 'partial' === $order_status) {
                     $eas_checkout_token = $order_json['checkout_token'];
+					$token_payload = eascompliance_checkout_token_payload($eas_checkout_token);
+
                     $order->add_meta_data('_easproj_token', $eas_checkout_token);
+					$order->add_meta_data('easproj_payload', $token_payload, true);
+                    $order->add_meta_data('', $eas_checkout_token);
                     $order->save_meta_data();
 
-                    $token_payload = eascompliance_checkout_token_payload($order_json['checkout_token']);
                     $eas_id = $token_payload['id'];
 
                     $msg = $order_json['error']['message'];
