@@ -45,6 +45,13 @@ jQuery(document).ready(function($) {
     if ($('.nav-tab-active').text() === PLUGIN_NAME) {
         $('#mainform').addClass('easproject_settings')
 
+        $('.easproject_settings').accordion({
+            'header': 'h2',
+            'collapsible': true,
+            'active': false,
+            'animate': false,
+        })
+
     } else {
         //hiding title, because it is rendered when 'General' tab is active
         $('.woocommerce-layout__header-heading:contains(\'' + PLUGIN_NAME + '\')').hide()
