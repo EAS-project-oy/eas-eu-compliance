@@ -5850,28 +5850,30 @@ function eascompliance_settings_connection_status_page()
                     break;
                 case 'is_ei':
                     $key = EAS_TR('In EAS EM  registered as:');
+                    // is_ei
+                    if ($client_details->is_ei == true) {
+                      $client_detail = EAS_TR('Electronic Interface');
+                    } 
+                    else {
+                      $client_detail = EAS_TR('Not electronic Interface');
+                    }
                     break;
                 case 'oss_registered':
                     $key = EAS_TR('OSS Registered:');
+                    // oss_registered
+                    if ($client_details->oss_registered == true) {
+                       $client_detail = EAS_TR('YES');
+                    } else {
+                      $client_detail = EAS_TR('NO');
+                    }
                     break;
                 case 'product_description_language':
                     $key = EAS_TR('Product Description language:');
                     break;
             }
 
-            // is_ei
-            if ($client_details->is_ei = true) {
-                $client_details->is_ei = EAS_TR('Electronic Interface');
-            } else {
-                $client_details->is_ei = EAS_TR('Not electronic Interface');
-            }
+          
 
-            // oss_registered
-            if ($client_details->oss_registered = true) {
-                $client_details->oss_registered = EAS_TR('YES');
-            } else {
-                $client_details->oss_registered = EAS_TR('NO');
-            }
             echo '<li><b>' . $key . '</b>  - ' . $client_detail . '</li>';
 
         }
