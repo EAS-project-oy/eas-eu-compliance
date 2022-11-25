@@ -818,17 +818,6 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             }
         }
 
-        if (!(true === $ship_to_different_address || 'true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
-            $new_shipping_country = $new_billing_country;
-        }
-
-        // if country changes to non-supported and taxes were set then reset calculations
-        if (!in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
-            eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
-
-            eascompliance_unset();
-        }
-
         // В идеале мы хотим сбрасывать расчёты каждый раз, когда обновляется чекаут. Но есть момент, когда чекаут обновляется не пользователем, а кодом после Calculate или после возврата на страницу чекаута. В этом случае сбрасывать расчёты нельзя. В яваскрипте Calculate надо отметить момент, когда updated_checkout не должен приводить к сбросу расчётов. Это делается передачей is_user_checkout==false в POST-запросе на updated_checkout.
         //when checkout was not initiated by user, is_user_checkout will be 'false'
         $is_user_checkout = true;
@@ -838,6 +827,17 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
                 $is_user_checkout = false;
             }
         }
+
+		if ($is_user_checkout && !(true === $ship_to_different_address || 'true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
+			$new_shipping_country = $new_billing_country;
+		}
+
+		// if country changes to non-supported and taxes were set then reset calculations
+		if (!in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
+			eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
+
+			eascompliance_unset();
+		}
 
         if ($is_user_checkout && eascompliance_is_set()) {
             eascompliance_unset();
