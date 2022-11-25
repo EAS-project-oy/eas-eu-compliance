@@ -5414,6 +5414,13 @@ function eascompliance_settings()
             'custom_attributes' => array('autocomplete' => 'off'),
 
         ),
+        'standard_mode' => array(
+            'name' => EAS_TR('Standard mode'),
+            'type' => 'checkbox',
+            'desc' => 'This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.',
+            'id' => 'easproj_standard_mode',
+            'default' => 'no',
+        ),
 		'debug' => array(
 			'name' => EAS_TR('Log levels'),
 			'type' => 'multiselect',
@@ -5430,13 +5437,7 @@ function eascompliance_settings()
 			'type' => 'title',
 			'title' => EAS_TR('Taxation'),
 		),
-		'standard_mode' => array(
-			'name' => EAS_TR('Standard mode'),
-			'type' => 'checkbox',
-			'desc' => 'This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.',
-			'id' => 'easproj_standard_mode',
-			'default' => 'no',
-		),
+		
 		'process_imported_orders' => array(
 			'name' => EAS_TR('Process imported orders'),
 			'type' => 'checkbox',
