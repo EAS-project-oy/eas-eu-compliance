@@ -3189,6 +3189,10 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
 function eascompliance_convert_price_to_selected_currency($price)
 {
     eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
+
+	// price conversion rules currently disabled, but function may be needed later
+	return $price;
+
     $price_old = $price;
     if (function_exists('WC_Payments_Multi_Currency')) {
         $multi_currency = WC_Payments_Multi_Currency();
