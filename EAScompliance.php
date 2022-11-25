@@ -1373,10 +1373,13 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 		}
         $type_of_goods = $product_is_virtual ? 'TBE' : 'GOODS';
 
+		// check if product or its parent type belong to gift card types
         $giftcard_product_types = WC_Admin_Settings::get_option('easproj_giftcard_product_types', array());
-        if (in_array($product->get_type(), $giftcard_product_types, true)) {
-            $type_of_goods = 'GIFTCARD';
-        }
+		if ( in_array($product->get_type(), $giftcard_product_types, true)
+			|| ( $product->get_parent_id() && in_array(wc_get_product($product->get_parent_id())->get_type(), $giftcard_product_types, true) )
+		) {
+			$type_of_goods = 'GIFTCARD';
+		}
 
         $cost_provided_by_em = round((float)$cart_item['line_total'] / $cart_item['quantity'], 2);
         if ($wcml_enabled) {
@@ -1635,10 +1638,14 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $seller_registration_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_seller_reg_country'), '');
 
         $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+
+		// check if product or its parent type belong to gift card types
         $giftcard_product_types = WC_Admin_Settings::get_option('easproj_giftcard_product_types', array());
-        if (in_array($product->get_type(), $giftcard_product_types, true)) {
-            $type_of_goods = 'GIFTCARD';
-        }
+		if ( in_array($product->get_type(), $giftcard_product_types, true)
+			|| ( $product->get_parent_id() && in_array(wc_get_product($product->get_parent_id())->get_type(), $giftcard_product_types, true) )
+		) {
+			$type_of_goods = 'GIFTCARD';
+		}
 
         $items[] = array(
             'short_description' => $product->get_name(),
@@ -1852,8 +1859,12 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         $seller_registration_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_seller_reg_country'), '');
 
         $type_of_goods = $product->is_virtual() ? 'TBE' : 'GOODS';
+
+		// check if product or its parent type belong to gift card types
         $giftcard_product_types = WC_Admin_Settings::get_option('easproj_giftcard_product_types', array());
-        if (in_array($product->get_type(), $giftcard_product_types, true)) {
+        if ( in_array($product->get_type(), $giftcard_product_types, true)
+                || ( $product->get_parent_id() && in_array(wc_get_product($product->get_parent_id())->get_type(), $giftcard_product_types, true) )
+        ) {
             $type_of_goods = 'GIFTCARD';
         }
 
