@@ -6224,7 +6224,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
 				FROM wplm_terms t
 				JOIN wplm_term_taxonomy tt ON tt.term_id = t.term_id
 				JOIN wplm_woocommerce_attribute_taxonomies att ON CONCAT('pa_', att.attribute_name) = tt.taxonomy
-				WHERE att.attribute_name = 'country'
+				WHERE att.attribute_name = 'easproj_warehouse_country'
 						", ARRAY_A);
 				$txt = implode("\t", array_keys($res[0])) . "\n";
 						foreach ($res as $row) {
@@ -6476,75 +6476,139 @@ function eascompliance_bulk_update_rest_route()
 }
 
 /**
- * Rest route callback
+ * Rest route callback to mass-update product attributes
  */
 function eascompliance_bulk_update($request)
 {
-    //Get HTTP request headers
-    $auth = apache_request_headers();
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
-    //Get only Authorization header
-    $auth_token = $auth['Authorization'];
+	global $wpdb;
 
-    if (empty($auth_token)) {
-        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
-    }
+	try {
+		set_error_handler('eascompliance_error_handler');
 
-    // Base64 Decode Consumer_key:Consumer_secret
-    $credential_token = base64_decode(preg_replace("/Basic/", '', $auth_token));
+        //Get HTTP request headers
+        $auth = apache_request_headers();
 
-    // Get only Consumer_secret
-    $consumer_secret = preg_replace('/\S+:/', '', $credential_token);
+        //Get only Authorization header
+        $auth_token = $auth['Authorization'];
 
-    if (empty($consumer_secret)) {
-        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
-    }
-
-    // Check credentials on WP DB
-    global $wpdb;
-    $check_access = $wpdb->query($wpdb->prepare("SELECT * FROM `wp_woocommerce_api_keys` WHERE `permissions` = 'read_write' AND `consumer_secret` = '$consumer_secret'"));
-
-    if (empty($check_access)) {
-        return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
-    }
-
-    // Get request body
-    $data = $request->get_body();
-    $updates = json_decode($data, true);
-    foreach ($updates['updates'] as $key => $update) {
-        $item_ids = $update['itemids'];
-        $attributes_json = $update['attribute'];
-        $attribute_value = $attributes_json['value'];
-        $attribute_slug = 'pa_' . wc_sanitize_taxonomy_name($attributes_json['id']);
-        foreach ($item_ids as $item_id) {
-            //Check taxonomy term
-            $check_taxonomy = $wpdb->query($wpdb->prepare("SELECT * FROM `wp_terms` WHERE `name` = '$attribute_value'"));
-            if ($check_taxonomy == 0) {
-                $wpdb->query($wpdb->prepare("INSERT INTO wp_terms(name, slug) VALUES ('$attribute_value','$attribute_value')"));
-                $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_taxonomy`(`term_id`, `taxonomy`,`parent`, description) VALUES ('$wpdb->insert_id','$attribute_slug','0','')"));
-            } else {
-                $taxonomy_id = $wpdb->get_col($wpdb->prepare("SELECT * FROM `wp_terms` WHERE `name` = '$attribute_value'"));
-                if (!empty($taxonomy_id)) {
-                    $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_taxonomy`(`term_id`, `taxonomy`,`parent`, description) VALUES ('$taxonomy_id[0]','$attribute_slug','0','')"));
-                }
-            }
-
-            // Check post meta and insert new value if needed
-            $product_postmeta = (array)get_post_meta($item_id, '_product_attributes', true);
-            if (empty($product_postmeta[$attribute_slug])) {
-                $attributes = array();
-                $attributes[$attribute_slug] = array(
-                    'name' => $attribute_slug,
-                    'value' => $attributes_json['value'],
-                    'is_visible' => 1,
-                    'is_variation' => 0,
-                    'is_taxonomy' => 1
-                );
-                update_post_meta($item_id, '_product_attributes', array_merge($attributes, $product_postmeta));
-            }
-            // Clear attributes value and insert new
-            $wpdb->query($wpdb->prepare("delete from wp_term_relationships where term_taxonomy_id in ( SELECT `term_taxonomy_id` FROM wp_term_taxonomy where taxonomy = '$attribute_slug') and object_id = $item_id"));
-            $wpdb->query($wpdb->prepare("INSERT INTO `wp_term_relationships`(`object_id`, `term_taxonomy_id`) VALUES ($item_id ,(SELECT term_taxonomy_id FROM wp_terms t left join wp_term_taxonomy tt on tt.term_id = t.term_id where taxonomy = '$attribute_slug' and t.name ='$attribute_value' limit 1));"));
+        if (empty($auth_token)) {
+            return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
         }
-    }
+
+        // Base64 Decode Consumer_key:Consumer_secret
+        $credential_token = base64_decode(preg_replace("/Basic/", '', $auth_token));
+
+        // Get only Consumer_secret
+        $consumer_secret = preg_replace('/\S+:/', '', $credential_token);
+
+        if (empty($consumer_secret)) {
+            return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
+        }
+
+		// Check credentials on WP DB
+		$check_access = $wpdb->get_results($wpdb->prepare("SELECT * FROM  {$wpdb->prefix}woocommerce_api_keys WHERE permissions = 'read_write' AND consumer_secret = %s", $consumer_secret), ARRAY_A);
+		if ($wpdb->last_error) {
+			throw new Exception($wpdb->last_error);
+		}
+
+		if (empty($check_access)) {
+			return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
+		}
+
+		//valid attributes names are taken from settings section_product_attributes
+		$valid_attributes = array();
+		foreach (array('easproj_hs6p_received', 'easproj_warehouse_country', 'easproj_reduced_vat_group', 'easproj_disclosed_agent', 'easproj_seller_reg_country', 'easproj_originating_country') as $option_name) {
+			$valid_name = eascompliance_woocommerce_settings_get_option_sql($option_name);
+			$valid_attributes[] = $valid_name;
+		}
+
+		$request_json = json_decode($request->get_body(), true);
+		eascompliance_log('bulk', 'requested updates are $j', array('j'=>$request_json));
+		foreach ($request_json['updates'] as $update) {
+			$product_ids = $update['itemids'];
+            $attribute_name = $update['attribute']['id']; // att-name
+			$attribute_value = (string)$update['attribute']['value'];
+
+            // skip invalid attribute names
+            if (!in_array($attribute_name, $valid_attributes)) {
+                eascompliance_log('bulk', 'ignoring non-existent attribute $a', array('a'=>$attribute_name));
+				continue;
+            }
+
+			$taxonomy = wc_attribute_taxonomy_name($attribute_name); // pa_att_name
+
+            // create taxonomy, silently fails when taxonomy exists
+			register_taxonomy(
+				$taxonomy,
+				array( 'product' ),
+				array(
+						'labels'       => array(
+							'name' => $attribute_name,
+						),
+						'hierarchical' => true,
+						'show_ui'      => false,
+						'query_var'    => true,
+						'rewrite'      => false,
+				)
+			);
+
+            // create taxonomy term for attribute value, silently fails when term exists
+			wp_insert_term($attribute_value, $taxonomy);
+			$term = get_term_by( 'name', $attribute_value, $taxonomy);
+            $term_id = (int)$term->term_id;
+
+            // set product attributes and term ids for each product
+			foreach ($product_ids as $product_id) {
+                $product = wc_get_product($product_id);
+
+                //skip non-existant  products
+                if ( !$product ) {
+					eascompliance_log('bulk', 'ignoring non-existent product id $p', array('p'=>$product_id));
+                    continue;
+                }
+
+                //take existing attributes and replace/append attribute with matching taxonomy name
+                $attributes = $product->get_attributes('edit');
+                if (array_key_exists($taxonomy, $attributes)) {
+					$attribute_old = $attributes[$taxonomy];
+
+                    // we have to create new attribute since otherwise it is not saved
+					$attribute = new WC_Product_Attribute();
+					$attribute->set_id( $attribute_old->get_id() );
+					$attribute->set_name( $attribute_old->get_name() );
+					$attribute->set_position( $attribute_old->get_position() );
+					$attribute->set_visible( $attribute_old->get_visible() );
+					$attribute->set_variation( $attribute_old->get_variation() );
+                }
+                else {
+					$attribute = new WC_Product_Attribute();
+
+					$taxonomy_id = wc_attribute_taxonomy_id_by_name( $attribute_name );
+					$attribute->set_id( $taxonomy_id );
+					$attribute->set_name( $taxonomy );
+					$attribute->set_position( 0 );
+					$attribute->set_visible( false );
+					$attribute->set_variation( false );
+                }
+
+                // for term-based attributes, its value is list of term ids
+				$attribute->set_options( array( $term_id ) );
+
+                $attributes[$taxonomy] = $attribute;
+
+				eascompliance_log('bulk','product id $p attributes to save are $a', array('p'=>$product_id, 'a'=>$attributes));
+				$product->set_attributes($attributes);
+
+                $product->save();
+			}
+		}
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		return new WP_Error('error', $ex->getMessage());
+	} finally {
+		restore_error_handler();
+	}
 }
