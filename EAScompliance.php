@@ -6523,7 +6523,7 @@ function eascompliance_bulk_update($request)
 		}
 
 		$request_json = json_decode($request->get_body(), true);
-		eascompliance_log('bulk', 'bulk update started');
+		eascompliance_log('info', 'bulk update started');
 
         // stats
         $updated_products = array();
@@ -6614,7 +6614,7 @@ function eascompliance_bulk_update($request)
 			}
         }
 
-		eascompliance_log('bulk', 'bulk update finished. $p products updated, $s products skipped, skipped attributes: $a'
+		eascompliance_log('info', 'bulk update finished. $p products updated, $s products skipped, skipped attributes: $a'
 			, array('$p'=>count($updated_products), '$s'=>count($skipped_products), '$a'=>count($skipped_attributes)==0?'none':join(', ', $skipped_attributes)));
 
 	} catch (Exception $ex) {
