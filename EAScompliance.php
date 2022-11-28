@@ -338,6 +338,13 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 			$show_payment_methods = true;
 		}
 
+		// order-pay page /checkout/order-pay/123
+		global $wp;
+		$order_pay = absint( $wp->query_vars['order-pay'] );
+		if ( $order_pay > 0 ) {
+			$show_payment_methods = true;
+		}
+
         // standard checkout or /calculate has been set
         if (eascompliance_is_standard_checkout() || (eascompliance_is_set() && !eascompliance_needs_recalculate())) {
             $show_payment_methods = true;
@@ -2122,15 +2129,6 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 
 		// request validation key
 		$jwt_key_url = get_option('easproj_eas_api_url') . '/auth/keys';
-		$options = array(
-			'http' => array(
-				'method' => 'GET',
-			),
-			'ssl' => array(
-				'verify_peer' => false,
-				'verify_peer_name' => false,
-			),
-		);
 		$options = array(
 			'method' => 'GET',
 			'sslverify' => false,
