@@ -5418,7 +5418,16 @@ function eascompliance_settings()
             'custom_attributes' => array('autocomplete' => 'off'),
 
         ),
-        'standard_mode' => array(
+        
+        'process_imported_orders' => array(
+            'name' => EAS_TR('Process imported orders'),
+            'type' => 'checkbox',
+            'desc' => 'Automatic processing of orders imported via API',
+            'id' => 'easproj_process_imported_orders',
+            'default' => 'yes',
+            'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
+        ),
+                'standard_mode' => array(
             'name' => EAS_TR('Standard mode'),
             'type' => 'checkbox',
             'desc' => 'This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.',
@@ -5440,15 +5449,6 @@ function eascompliance_settings()
 		'section_vat' => array(
 			'type' => 'title',
 			'title' => EAS_TR('Taxation'),
-		),
-		
-		'process_imported_orders' => array(
-			'name' => EAS_TR('Process imported orders'),
-			'type' => 'checkbox',
-			'desc' => 'Automatic processing of orders imported via API',
-			'id' => 'easproj_process_imported_orders',
-			'default' => 'yes',
-			'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
 		),
         'deduct_vat_outside_eu' => array(
             'name' => EAS_TR('Deduct home VAT for deliveries to countries where tax calculations are  not supported'),
