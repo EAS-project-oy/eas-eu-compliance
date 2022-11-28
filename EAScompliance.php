@@ -6525,7 +6525,13 @@ function eascompliance_bulk_update($request)
 		}
 
 		$request_json = json_decode($request->get_body(), true);
-		eascompliance_log('bulk', 'requested updates are $j', array('j'=>$request_json));
+		eascompliance_log('bulk', 'bulk update started');
+
+        // stats
+        $updated_products = array();
+        $skipped_products= array();
+        $skipped_attributes = array();
+
 		foreach ($request_json['updates'] as $update) {
 			$product_ids = $update['itemids'];
             $attribute_name = $update['attribute']['id']; // att-name
@@ -6533,7 +6539,7 @@ function eascompliance_bulk_update($request)
 
             // skip invalid attribute names
             if (!in_array($attribute_name, $valid_attributes)) {
-                eascompliance_log('bulk', 'ignoring non-existent attribute $a', array('a'=>$attribute_name));
+				$skipped_attributes[] = $attribute_name;
 				continue;
             }
 
@@ -6565,9 +6571,15 @@ function eascompliance_bulk_update($request)
 
                 //skip non-existant  products
                 if ( !$product ) {
-					eascompliance_log('bulk', 'ignoring non-existent product id $p', array('p'=>$product_id));
+                    if (!in_array($product_id, $skipped_products)) {
+						$skipped_products[] = $product_id;
+                    }
                     continue;
                 }
+
+				if (!in_array($product_id, $updated_products)) {
+					$updated_products[] = $product_id;
+				}
 
                 //take existing attributes and replace/append attribute with matching taxonomy name
                 $attributes = $product->get_attributes('edit');
@@ -6598,12 +6610,14 @@ function eascompliance_bulk_update($request)
 
                 $attributes[$taxonomy] = $attribute;
 
-				eascompliance_log('bulk','product id $p attributes to save are $a', array('p'=>$product_id, 'a'=>$attributes));
 				$product->set_attributes($attributes);
 
                 $product->save();
 			}
-		}
+        }
+
+		eascompliance_log('bulk', 'bulk update finished. $p products updated, $s products skipped, skipped attributes: $a'
+			, array('$p'=>count($updated_products), '$s'=>count($skipped_products), '$a'=>count($skipped_attributes)==0?'none':join(', ', $skipped_attributes)));
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
