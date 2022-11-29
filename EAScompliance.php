@@ -840,7 +840,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 		}
 
 		// if country changes to non-supported and taxes were set then reset calculations
-		if (!in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
+		if ( !empty($new_shipping_country) && !in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
 			eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
 
 			eascompliance_unset();
