@@ -6,8 +6,8 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.0.0
 Tested up to: 6.1
-Stable tag: 1.4.30
-Last updated time: 02.12.2022
+Stable tag: 1.4.24
+Last updated time: 01.12.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,10 +123,11 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 == Changelog ==
 
 =  1.4.30 =
-* New operation mode "Standard mode" implemented. Now plugin supports third party VAT calculators
+* New operational mode "Standard mode" implemented. Now plugin supports third party VAT calculators
 * Some minor bugs fixed with delivery options and delivery/billing addresses
-* Improved Merchadnise portal integration. Now it works 10 times faster
+* Improved Merchandise portal integration. Attributes processing works faster up 10 times
 * Minor changes to the Settings page implemented
+* Order creation process enhanced
 
 = 1.4.24 =
 * Support of Wordpress 6.1 revision implemented

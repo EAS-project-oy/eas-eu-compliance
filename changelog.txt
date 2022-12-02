@@ -1,0 +1,104 @@
+*** EAS EU compliance plugin Changelog ***
+
+
+== Changelog ==
+22-12-01 - version 1.4.30
+
+* New operational mode "Standard mode" implemented. Now plugin supports third party VAT calculators
+* Some minor bugs fixed with delivery options and delivery/billing addresses
+* Improved Merchandise portal integration. Attributes processing works faster up 10 times
+* Minor changes to the Settings page implemented
+* Order creation process enhanced
+
+22-10-31 - version 1.4.24
+* Wordpress revision 6.1 support implemented
+
+22-10-25 - version 1.4.22
+* United Kingdom (UK) orders support implemented
+* Support of currency switcher implemented
+* WPML advanced locales code supported
+
+22-10-10 - version 1.4.20
+* Administrative part of the plugin enhanced
+* Configuratoin of Design of the Calculate button added
+* Support of custom order Statuses implemented
+* Support of refunds enhanced
+* Support of tracking numbers by Ascendia implemented
+* Support of cart abandonment plugins implemented
+* Translations updated
+* Tracking of canceled orders implemented
+* Support of coupons enhanced (including WooCommerce Multilingual & Multicurrency logic)
+
+22-08-15 - version 1.4.1 
+* Some functions from PHP v8.* were detected and replaced by analogues
+
+22-08-05 - version 1.4.0
+* Delivery option support inhanced
+* Refund management inhanced
+* WPML multicurrency support inhanced
+* Support for smart coupons implemented
+* Administrative UI refactored
+* Additional product attributes management inhanced
+
+22-07-05 - version 1.3.36
+* Code review and refactoring done
+
+2022-06-30 - version 1.3.33
+* PayPal ans Avarda support implemented
+
+2022-06-27 - version 1.3.31
+* New method of checkout handling implemented
+* WPML supporting improved
+* Deduction of VAT from inclusive prices for the clients from non supported coutries implemented
+* Refund amount calculation improved
+
+2022-05-09 - version 1.3.10
+* Multicurrency support enhanced
+* Multilanguage support enhanced
+* Rounding issue in total cart fixed
+* Taxes and Duties handling rules changed
+
+2022-04-07 - version 1.3.5
+* Implemented Required field in delivery address management
+
+2022-04-07 - version 1.3.4
+* Implemented handling of orders created manually in admin section or via API methods
+
+2022-04-07 - version 1.3.3
+* Suomi language updated
+* English wordings improved
+
+2022-04-07 - version 1.3.2
+* Some bugs with differences in billing and shipping adresses fixed
+
+2022-04-07 - version 1.3.0
+* Gift cards support implemented
+* Checkout process improved
+* Refund and Cancelation improved
+* Multi currency support implemented
+* German language added
+
+2022-03-10 - version 1.2.4
+* SKU identification issue fixed
+* Code review for sanitizing input and output values
+* Bug fixed with TBE management
+
+2022-02-20 - version 1.2.0
+* Refund functionality implemented
+* Capons and points and rewards support implemented
+* Some minor issues were fixed
+* Rounding issue for total order amount fixed
+
+2022-01-31 - version 1.1.3
+* Multilingual support implemented
+* Suomi translation added
+* Delivery methods management enhanced
+* Some minor bugs were fixed
+* Fixed issue with custom theme support
+* Implemented support of renaming buttons of plugin
+
+2021-09-29 - version 1.0.5
+* Code review according to Woocommerce standard requirements
+
+2021-09-10 - version 1.0.0
+* Initial release
