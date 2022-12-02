@@ -674,7 +674,11 @@ function eascompliance_settings_scripts()
     wp_enqueue_script('EAScompliance', plugins_url('/assets/js/EAScompliance-settings.js', __FILE__), array('jquery'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-settings.js'), true);
 
     // Pass ajax_url to javascript //.
-    wp_localize_script('EAScompliance', 'plugin_ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+    wp_localize_script('EAScompliance', 'plugin_ajax_object', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'easproj_standard_mode' => eascompliance_woocommerce_settings_get_option_sql('easproj_standard_mode'),
+            'easproj_active' => eascompliance_woocommerce_settings_get_option_sql('easproj_active'),
+        ));
 
 }
 
