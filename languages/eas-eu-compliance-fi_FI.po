@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:86
@@ -311,7 +311,7 @@ msgstr "Virhe"
 
 #: EAScompliance.php:5355
 msgid "General"
-msgstr ""
+msgstr "Yleiset asetukset"
 
 #: EAScompliance.php:5359
 msgid "Enable/Disable"
@@ -419,7 +419,7 @@ msgstr ""
 
 #: EAScompliance.php:5446
 msgid "Non-EU Countries support"
-msgstr ""
+msgstr "EU:n ulkopuolisten maiden tuki"
 
 #: EAScompliance.php:5455
 msgid "Shipping methods by post"
@@ -437,15 +437,15 @@ msgstr "Lahjakortit"
 
 #: EAScompliance.php:5468
 msgid "Physical goods"
-msgstr ""
+msgstr "Fyysiset tavarat"
 
 #: EAScompliance.php:5471
 msgid "Paid order statuses"
-msgstr ""
+msgstr "Maksullisten tilausten tila"
 
 #: EAScompliance.php:5474
 msgid "Status(es) denoting orders which have been paid for"
-msgstr ""
+msgstr "Maksettujen tuotteiden tila"
 
 #: EAScompliance.php:5480
 msgid "Giftcard product types"
@@ -457,11 +457,11 @@ msgstr "Tuotetyypit mitä käytetään Lahjakorttien käsittelyyn"
 
 #: EAScompliance.php:5501
 msgid "Product Attributes"
-msgstr ""
+msgstr "Tuoteominaisuudet"
 
 #: EAScompliance.php:5504
 msgid "Additional products attributes settings"
-msgstr ""
+msgstr "Lisätuotteiden ominaisuuksien asetukset"
 
 #: EAScompliance.php:5511
 msgid "HSCODE"
@@ -521,61 +521,63 @@ msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole."
 
 #: EAScompliance.php:5569 EAScompliance.php:5572
 msgid "Design"
-msgstr ""
+msgstr "Muotoilu"
 
 #: EAScompliance.php:5576
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
 msgstr ""
+"Jos arvot jätetään tyhjiksi, painikkeessa käytetään oletusvärejä ja "
+"fonttikokoa"
 
 #: EAScompliance.php:5580
 msgid "Button text"
-msgstr ""
+msgstr "Painikkeen teksti"
 
 #: EAScompliance.php:5586
 msgid "Button font size"
-msgstr ""
+msgstr "Painikkeen fonttikoko"
 
 #: EAScompliance.php:5589
 msgid "Please select font size (without px , only number)"
-msgstr ""
+msgstr "Valitse fonttikoko (ilman px , vain numero)"
 
 #: EAScompliance.php:5593
 msgid "Button text color"
-msgstr ""
+msgstr "Painikkeen tekstin väri"
 
 #: EAScompliance.php:5596
 msgid "Please select color for text on button"
-msgstr ""
+msgstr "Valitse painikkeen tekstin väri"
 
 #: EAScompliance.php:5600
 msgid "Button background color"
-msgstr ""
+msgstr "Painikkeen taustaväri"
 
 #: EAScompliance.php:5603
 msgid "Please select background color"
-msgstr ""
+msgstr "Valitse taustaväri"
 
 #: EAScompliance.php:5607
 msgid "Button background color on mouse over"
-msgstr ""
+msgstr "Painikkeen taustaväri hiiren osoittaessa"
 
 #: EAScompliance.php:5610
 msgid "Please select background color on mouse over"
-msgstr ""
+msgstr "Valitse taustaväri hiiren osoittaessa painiketta"
 
 #: EAScompliance.php:5614
 msgid "Font color on mouse over"
-msgstr ""
+msgstr "Fontin väri hiiren osoittaessa"
 
 #: EAScompliance.php:5617
 msgid "Please select mouse over color for text on button"
-msgstr ""
+msgstr "Valitse fontin väri hiiren osoittaessa painiketta"
 
 #: EAScompliance.php:5622
 msgid "Button Example"
-msgstr ""
+msgstr "Esimerkki painikkeesta"
 
 #: EAScompliance.php:5664
 msgid ""
@@ -593,34 +595,38 @@ msgid ""
 "Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
 "for the Phone field settings to Optional or Required."
 msgstr ""
+"Maahantuontikustannusten laskeminen on kielletty EU:ssa kassa-valikossa, "
+"koska seuraava kenttä \"Puhelin\" on poistettu käytöstä. Siirry Ulkoasu → "
+"Mukauta -sivulle. Valitse \"WooCommerce\" ja sitten \"Checkout\" ja muuta "
+"\"Puhelin\"-kentän asetuksiksi Valinnainen tai Pakollinen."
 
 #: EAScompliance.php:5696 EAScompliance.php:5703
 msgid "EAS MPM"
-msgstr ""
+msgstr "EAS MPM"
 
 #: EAScompliance.php:5696 EAScompliance.php:5705 EAScompliance.php:5798
 msgid "EAS Logs"
-msgstr ""
+msgstr "EAS-loki"
 
 #: EAScompliance.php:5696 EAScompliance.php:5704 EAScompliance.php:5832
 msgid "Connection status"
-msgstr ""
+msgstr "Yhteyden tila"
 
 #: EAScompliance.php:5760
 msgid "EAS Merchandise module"
-msgstr ""
+msgstr "EAS Merchandise -moduuli"
 
 #: EAScompliance.php:5762
 msgid "To connect to the EAS Merchandise module, follow these steps:"
-msgstr ""
+msgstr "Voit muodostaa yhteyden EAS Merchandise -moduuliin seuraavasti:"
 
 #: EAScompliance.php:5764
 msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
-msgstr ""
+msgstr "Siirry WooCommerce → Asetukset → Lisäasetukset → REST API -valikkoon."
 
 #: EAScompliance.php:5765
 msgid "Press the button “Add key”."
-msgstr ""
+msgstr "Paina painiketta \"Lisää avain\"."
 
 #: EAScompliance.php:5766
 msgid ""
@@ -628,20 +634,25 @@ msgid ""
 "write. User field will be\n"
 "                filled automatically by the system, leave it as is."
 msgstr ""
+"Täytä avautuvassa ikkunassa \"Kuvaus\" millä tahansa nimellä, aseta oikeudet "
+"→ Luku/kirjoitus. Järjestelmä täyttää käyttäjäkentän automaattisesti, jätä "
+"se ennalleen."
 
 #: EAScompliance.php:5769
 msgid "Press the “Generate API key” button."
-msgstr ""
+msgstr "Paina \"Luo API-avain\" -painiketta."
 
 #: EAScompliance.php:5770
 msgid "A window with key details will appear. Leave it open."
-msgstr ""
+msgstr "Näkyviin tulee ikkuna, jossa on tärkeimmät tiedot. Jätä se auki."
 
 #: EAScompliance.php:5771
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 msgstr ""
+"Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
+"easproject.com/</a>"
 
 #: EAScompliance.php:5772
 msgid ""
@@ -649,11 +660,14 @@ msgid ""
 "Login and password are the\n"
 "                same as for EAS Dashboard."
 msgstr ""
+"Todenna syöttämällä kirjautumistunnuksesi ja salasanasi EAS Merchandise -"
+"moduuliin. Käyttäjätunnus ja salasana ovat samat kuin EAS Dashboardissa."
 
 #: EAScompliance.php:5774
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
+"Paina EAS Merchandise -moduulissa \"Luo\"-painiketta ja valitse WooCommerce."
 
 #: EAScompliance.php:5775
 msgid ""
@@ -662,6 +676,9 @@ msgid ""
 "                during step 4. Press Save. If inserted data is correct, the "
 "connection will be established."
 msgstr ""
+"Lisää avautuvaan ikkunaan seuraavat tiedot: Kaupan nimi, koko URL-osoite ja "
+"luodut API-avaimet vaiheessa 4. Paina Tallenna. Jos syötetyt tiedot ovat "
+"oikein, yhteys muodostetaan."
 
 #: EAScompliance.php:5778
 msgid ""
@@ -674,6 +691,20 @@ msgid ""
 "                        target=\"_blank\">https://easproject.zendesk.com/hc/"
 "en-us/articles/6152957985053-WooCommerce-full-manual"
 msgstr ""
+"Afterwards, the mapping process is initiated, a new window is opened. Map "
+"fields according to the\n"
+"                detailed instructions available in WC manual (Section 3.7). "
+"Please find the manual in our Help desk: <a\n"
+"                        href=\"https://easproject.zendesk.com/hc/en-us/"
+"articles/6152957985053-WooCommerce-full-manual\"\n"
+"                        target=\"_blank\">https://easproject.zendesk.com/hc/"
+"en-us/articles/6152957985053-WooCommerce-full-manualTämän jälkeen "
+"kartoitusprosessi käynnistetään ja uusi ikkuna avautuu. Kartoita kentät WC:n "
+"käsikirjassa olevien yksityiskohtaisten ohjeiden mukaan (kohta 3.7). Löydät "
+"oppaan Help keskuksestamme: <a href=\"https://easproject.zendesk.com/hc/en-"
+"us/articles/6152957985053-WooCommerce-full-manual\" target=\"_blank"
+"\">https://easproject .zendesk.com/hc/en-us/articles/6152957985053-"
+"WooCommerce-full-manual"
 
 #: EAScompliance.php:5782
 msgid ""
@@ -682,6 +713,9 @@ msgid ""
 "                Merchandise module. Parsing make take some time, depending "
 "on the number of SKUs in the Merchant store."
 msgstr ""
+"Kun olet kartoittanut, paina \"Aloita käsittely\" -painiketta jäsentääksesi "
+"SKU-tiedot kaupastasi Merchandise-moduuliin. Jäsentäminen kestää jonkin "
+"aikaa, riippuen kaupan käyttämien SKU:iden määrästä."
 
 #: EAScompliance.php:5785
 msgid ""
@@ -689,6 +723,8 @@ msgid ""
 "linked to EAS Merchandise\n"
 "                module."
 msgstr ""
+"Yhteys on nyt muodostettu ja kauppiaan myymälän tuotteet on linkitetty EAS "
+"Merchandise -moduuliin."
 
 #: EAScompliance.php:5800
 msgid ""
@@ -699,42 +735,47 @@ msgid ""
 "            <a href=\"/wp-admin/admin.php?page=wc-status&tab=logs\n"
 "\">Logs page</a>"
 msgstr ""
+"EAS EU compliance laajennus tallentaa lokit WooCommercen oletuslokikansioon."
+"<br><br> Nähdäksesi lokit, valitse tarvittava lokitiedosto seuraavalla "
+"nimimallilla <b>eascomplience-YEAR-MONTH-DAY-UniqueID.log</b> avattavasta "
+"valikosta oikeasta yläkulmasta ja paina \"Näytä\" <a href=\"/wp-admin/admin."
+"php?page=wc-status&tab=logs\">Lokit-sivulla</a>"
 
 #: EAScompliance.php:5838
 msgid "Your EAS Identifier:"
-msgstr ""
+msgstr "EAS-tunnuksesi:"
 
 #: EAScompliance.php:5841
 msgid "EM legal status:"
-msgstr ""
+msgstr "Online myyjän oikeudellinen asema:"
 
 #: EAScompliance.php:5844
 msgid "In EAS EM  registered as:"
-msgstr ""
+msgstr "EAS:ssa online myyjä rekisteröity nimellä:"
 
 #: EAScompliance.php:5847
 msgid "OSS Registered:"
-msgstr ""
+msgstr "OSS rekisteröity:"
 
 #: EAScompliance.php:5850
 msgid "Product Description language:"
-msgstr ""
+msgstr "Tuotteen kuvauksen kieli:"
 
 #: EAScompliance.php:5856
 msgid "Electronic Interface"
-msgstr ""
+msgstr "Online markkinapaikka"
 
 #: EAScompliance.php:5858
 msgid "Not electronic Interface"
-msgstr ""
+msgstr "Ei online markkinapaikka"
 
 #: EAScompliance.php:5863
 msgid "YES"
-msgstr ""
+msgstr "KYLLÄ"
 
 #: EAScompliance.php:5865
 msgid "NO"
-msgstr ""
+msgstr "EI"
 
 #: EAScompliance.php:5957
 msgid ""
@@ -760,7 +801,7 @@ msgstr "Tarkista EAS Client ID ja EAS client secret."
 
 #: EAScompliance.php:6375
 msgid "EAS processed"
-msgstr ""
+msgstr "EAS-käsittely"
 
 #~ msgid "Sales order received, updating order $order_id"
 #~ msgstr "Tilaus vastaanotettu, päivitetään $order_id"
