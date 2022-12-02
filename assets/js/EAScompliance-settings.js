@@ -203,9 +203,18 @@ jQuery(document).ready(function($) {
 
     // disable 'add fee' and 'add tax' in product items when plugin is active and not in standard mode
     if (plugin_ajax_object.easproj_active === 'yes' && plugin_ajax_object.easproj_standard_mode === 'no') {
-        $el = $('.button.add-order-fee,.button.add-order-tax')
-        $el.prop('disabled', true)
         $('#tiptip_content').css('max-width', '200px')
+
+        $el = $('.button.add-order-fee,.button.add-order-tax')
+
+        //disable buttons but allow hover events in Chrome
+        $el.css('color', 'grey')
+        $el.css('border-color', 'grey')
+        $el.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        })
+
         $el.tipTip( {
                 'content': 'Disabled by EAS EU compliance plugin',
                 'fadeIn': 50,
