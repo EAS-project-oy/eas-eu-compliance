@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:86
@@ -642,6 +642,8 @@ msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 msgstr ""
+"Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
+"easproject.com/</a>"
 
 #: EAScompliance.php:5772
 msgid ""
@@ -726,15 +728,15 @@ msgstr ""
 
 #: EAScompliance.php:5858
 msgid "Not electronic Interface"
-msgstr ""
+msgstr "Ei sähköinen Liitäntä"
 
 #: EAScompliance.php:5863
 msgid "YES"
-msgstr ""
+msgstr "KYLLÄ"
 
 #: EAScompliance.php:5865
 msgid "NO"
-msgstr ""
+msgstr "EI"
 
 #: EAScompliance.php:5957
 msgid ""
@@ -760,7 +762,7 @@ msgstr "Tarkista EAS Client ID ja EAS client secret."
 
 #: EAScompliance.php:6375
 msgid "EAS processed"
-msgstr ""
+msgstr "EAS-käsittely"
 
 #~ msgid "Sales order received, updating order $order_id"
 #~ msgstr "Tilaus vastaanotettu, päivitetään $order_id"

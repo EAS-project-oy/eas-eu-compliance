@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: ./EAScompliance.php\n"
 
 #: EAScompliance.php:86
@@ -238,6 +238,8 @@ msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
 msgstr ""
+"Återbetalning annulleras. Denna ordning skapades av olika EM från den som är "
+"konfigurerad i EAS EU compliance plugin."
 
 #: EAScompliance.php:4952
 msgid "Refund create failed: "
@@ -318,7 +320,7 @@ msgstr "Error"
 
 #: EAScompliance.php:5355
 msgid "General"
-msgstr ""
+msgstr "Allmänna"
 
 #: EAScompliance.php:5359
 msgid "Enable/Disable"
@@ -383,9 +385,8 @@ msgstr "EAS klient-ID"
 #: EAScompliance.php:5393
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
-"Använd det klient-ID som du fick från EAS Project Dashboard <a "
-"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
-"a>"
+"Använd det klient-ID som du fick från EAS Project Dashboard <a href="
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:5399
 msgid "EAS client secret"
@@ -426,7 +427,7 @@ msgstr ""
 
 #: EAScompliance.php:5446
 msgid "Non-EU Countries support"
-msgstr ""
+msgstr "Stöd från länder utanför EU"
 
 #: EAScompliance.php:5455
 msgid "Shipping methods by post"
@@ -444,15 +445,15 @@ msgstr "Produkttyper för presentkort"
 
 #: EAScompliance.php:5468
 msgid "Physical goods"
-msgstr ""
+msgstr "Fysiska varor"
 
 #: EAScompliance.php:5471
 msgid "Paid order statuses"
-msgstr ""
+msgstr "Betalda orderstatus"
 
 #: EAScompliance.php:5474
 msgid "Status(es) denoting orders which have been paid for"
-msgstr ""
+msgstr "Status  som anger order som har betalats för"
 
 #: EAScompliance.php:5480
 msgid "Giftcard product types"
@@ -464,11 +465,11 @@ msgstr "Produkttyp(er) som används för hantering av presentkort"
 
 #: EAScompliance.php:5501
 msgid "Product Attributes"
-msgstr ""
+msgstr "Produktattribut"
 
 #: EAScompliance.php:5504
 msgid "Additional products attributes settings"
-msgstr ""
+msgstr "Ytterligare produkter attribut inställningar"
 
 #: EAScompliance.php:5511
 msgid "HSCODE"
@@ -535,61 +536,63 @@ msgstr ""
 
 #: EAScompliance.php:5569 EAScompliance.php:5572
 msgid "Design"
-msgstr ""
+msgstr "Design"
 
 #: EAScompliance.php:5576
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
 msgstr ""
+"Om tomma värden finns kvar tillämpas standardfärger och teckenstorlek på "
+"knappen."
 
 #: EAScompliance.php:5580
 msgid "Button text"
-msgstr ""
+msgstr "Knapptext"
 
 #: EAScompliance.php:5586
 msgid "Button font size"
-msgstr ""
+msgstr "Knapp teckenstorlek"
 
 #: EAScompliance.php:5589
 msgid "Please select font size (without px , only number)"
-msgstr ""
+msgstr "Vänligen välj teckenstorlek (utan px, endast nummer)"
 
 #: EAScompliance.php:5593
 msgid "Button text color"
-msgstr ""
+msgstr "Knapp textfärg"
 
 #: EAScompliance.php:5596
 msgid "Please select color for text on button"
-msgstr ""
+msgstr "Välj färg för text på knappen"
 
 #: EAScompliance.php:5600
 msgid "Button background color"
-msgstr ""
+msgstr "Knapp bakgrundsfärg"
 
 #: EAScompliance.php:5603
 msgid "Please select background color"
-msgstr ""
+msgstr "Vänligen Välj bakgrundsfärg"
 
 #: EAScompliance.php:5607
 msgid "Button background color on mouse over"
-msgstr ""
+msgstr "Knapp bakgrundsfärg på musen över"
 
 #: EAScompliance.php:5610
 msgid "Please select background color on mouse over"
-msgstr ""
+msgstr "Vänligen Välj bakgrundsfärg på musen över"
 
 #: EAScompliance.php:5614
 msgid "Font color on mouse over"
-msgstr ""
+msgstr "Teckensnittsfärg på musen över"
 
 #: EAScompliance.php:5617
 msgid "Please select mouse over color for text on button"
-msgstr ""
+msgstr "Vänligen välj musen över färg för text på knappen"
 
 #: EAScompliance.php:5622
 msgid "Button Example"
-msgstr ""
+msgstr "Knapp Exempel"
 
 #: EAScompliance.php:5664
 msgid ""
@@ -608,34 +611,38 @@ msgid ""
 "Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
 "for the Phone field settings to Optional or Required."
 msgstr ""
+"Landade kostnadsberäkning kommer att förbjudas för EU på kassan eftersom "
+"krävs leverans telefon fältet är inaktiverat. Besök Utseende Anpassa sidan. "
+"Välj \"WooCommerce\" och sedan \"Checkout\" och ändra inställningar för "
+"Telefonfältinställningarna till valfritt eller obligatoriskt."
 
 #: EAScompliance.php:5696 EAScompliance.php:5703
 msgid "EAS MPM"
-msgstr ""
+msgstr "EAS MPM"
 
 #: EAScompliance.php:5696 EAScompliance.php:5705 EAScompliance.php:5798
 msgid "EAS Logs"
-msgstr ""
+msgstr "EAS loggar"
 
 #: EAScompliance.php:5696 EAScompliance.php:5704 EAScompliance.php:5832
 msgid "Connection status"
-msgstr ""
+msgstr "Anslutningsstatus"
 
 #: EAScompliance.php:5760
 msgid "EAS Merchandise module"
-msgstr ""
+msgstr "EAS Merchandise module"
 
 #: EAScompliance.php:5762
 msgid "To connect to the EAS Merchandise module, follow these steps:"
-msgstr ""
+msgstr "Följ dessa steg för att ansluta till EAs Merchandise-modulen:"
 
 #: EAScompliance.php:5764
 msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
-msgstr ""
+msgstr "Gå till WooCommerce →  Inställningar → Avancerat → REST API-menyn."
 
 #: EAScompliance.php:5765
 msgid "Press the button “Add key”."
-msgstr ""
+msgstr "Tryck på knappen \"Lägg till Nyckel\"."
 
 #: EAScompliance.php:5766
 msgid ""
@@ -643,20 +650,26 @@ msgid ""
 "write. User field will be\n"
 "                filled automatically by the system, leave it as is."
 msgstr ""
+"I det öppnade fönstret fyller du beskrivningen med vilket namn som helst, "
+"ställer in behörigheterna för att läsa/skriva för att läsa / skriva. "
+"Användarfältet kommer att vara\n"
+"              fylls automatiskt av systemet, lämna det som det är."
 
 #: EAScompliance.php:5769
 msgid "Press the “Generate API key” button."
-msgstr ""
+msgstr "Tryck på knappen \"Generera API-nyckel\"."
 
 #: EAScompliance.php:5770
 msgid "A window with key details will appear. Leave it open."
-msgstr ""
+msgstr "Ett fönster med viktiga detaljer visas. Låt det vara öppet."
 
 #: EAScompliance.php:5771
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 msgstr ""
+"Gå till <a target=\" _blank \" href=\"https://npm.öst project.com/ "
+"\">https://mpm.easproject.com/ </a>"
 
 #: EAScompliance.php:5772
 msgid ""
@@ -664,11 +677,16 @@ msgid ""
 "Login and password are the\n"
 "                same as for EAS Dashboard."
 msgstr ""
+"Autentisera med din inloggning och lösenord till EAs Merchandise-modulen. "
+"Inloggning och lösenord är\n"
+"                desamma som för EAS Dashboard."
 
 #: EAScompliance.php:5774
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
+"Inuti EAs Merchandise module, tryck på knappen \"Skapa\" och välj "
+"WooCommerce."
 
 #: EAScompliance.php:5775
 msgid ""
@@ -677,6 +695,10 @@ msgid ""
 "                during step 4. Press Save. If inserted data is correct, the "
 "connection will be established."
 msgstr ""
+"I det öppnade fönstret sätter du in följande data: Butikens namn, "
+"fullständig URL och genererade API-nycklar\n"
+"                under Steg 4. Tryck På Spara. Om infogade data är korrekta "
+"kommer anslutningen att upprättas."
 
 #: EAScompliance.php:5778
 msgid ""
@@ -689,6 +711,13 @@ msgid ""
 "                        target=\"_blank\">https://easproject.zendesk.com/hc/"
 "en-us/articles/6152957985053-WooCommerce-full-manual"
 msgstr ""
+"Därefter initieras kartläggningsprocessen, ett nytt fönster öppnas. Kartfält "
+"enligt detaljerade instruktioner \n"
+"            som finns i WC-manualen (avsnitt 3.7). Vänligen hitta manualen i "
+"vår Helpdesk: \n"
+"<a href=\"https://easy project.zendesk.com/hc/en-us/articles/6152957985053-"
+"WooCommerce-full-manual\" target= \"_blank\">https://easy project.zendesk."
+"com/hc/en-us/articles/6152957985053-WooCommerce-full-manual</a>"
 
 #: EAScompliance.php:5782
 msgid ""
@@ -697,6 +726,10 @@ msgid ""
 "                Merchandise module. Parsing make take some time, depending "
 "on the number of SKUs in the Merchant store."
 msgstr ""
+"Efter korrekt kartläggning, tryck på knappen \"Starta bearbetning\" för att "
+"analysera SKU-data från butiken till\n"
+"                Merchandise module. Parsning gör ta lite tid, beroende på "
+"antalet SKU i handelsbutiken."
 
 #: EAScompliance.php:5785
 msgid ""
@@ -704,6 +737,9 @@ msgid ""
 "linked to EAS Merchandise\n"
 "                module."
 msgstr ""
+"Anslutningen är nu etablerad och produkter från handlarens butik är kopplade "
+"till EAS Merchandise\n"
+"                modul."
 
 #: EAScompliance.php:5800
 msgid ""
@@ -714,42 +750,48 @@ msgid ""
 "            <a href=\"/wp-admin/admin.php?page=wc-status&tab=logs\n"
 "\">Logs page</a>"
 msgstr ""
+"EAs EU compliance plugin lagrar loggar till WooCommerce standard loggning "
+"mapp.<br><br> för att se loggar, välj önskad loggfil med följande namnmall "
+"<b>eascomplience-YEAR-MONTH-DAY-UniqueID.logga</b> från rullgardinsmenyn i "
+"övre högra hörnet och tryck på \"Visa\" i\n"
+"            <a href= \"/wp-admin/admin.php?page=WC-status&tab=logs\">Loggar "
+"sida</a>"
 
 #: EAScompliance.php:5838
 msgid "Your EAS Identifier:"
-msgstr ""
+msgstr "Din EAS-identifierare:"
 
 #: EAScompliance.php:5841
 msgid "EM legal status:"
-msgstr ""
+msgstr "EM juridisk status:"
 
 #: EAScompliance.php:5844
 msgid "In EAS EM  registered as:"
-msgstr ""
+msgstr "I EAS Kund registrerad som:"
 
 #: EAScompliance.php:5847
 msgid "OSS Registered:"
-msgstr ""
+msgstr "OSS registrerade:"
 
 #: EAScompliance.php:5850
 msgid "Product Description language:"
-msgstr ""
+msgstr "Produktbeskrivning språk:"
 
 #: EAScompliance.php:5856
 msgid "Electronic Interface"
-msgstr ""
+msgstr "Elektroniskt Gränssnitt"
 
 #: EAScompliance.php:5858
 msgid "Not electronic Interface"
-msgstr ""
+msgstr "Inte elektroniskt gränssnitt"
 
 #: EAScompliance.php:5863
 msgid "YES"
-msgstr ""
+msgstr "Ja"
 
 #: EAScompliance.php:5865
 msgid "NO"
-msgstr ""
+msgstr "Nej"
 
 #: EAScompliance.php:5957
 msgid ""
@@ -777,7 +819,7 @@ msgstr ""
 
 #: EAScompliance.php:6375
 msgid "EAS processed"
-msgstr ""
+msgstr "EAS bearbetade"
 
 #~ msgid "Sales order received, updating order $order_id"
 #~ msgstr "Mottagen försäljningsorder, uppdatering av order $order_id"

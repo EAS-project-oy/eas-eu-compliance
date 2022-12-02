@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: ./EAScompliance.php\n"
 
 #: EAScompliance.php:86
@@ -332,7 +332,7 @@ msgstr "Fehler"
 
 #: EAScompliance.php:5355
 msgid "General"
-msgstr ""
+msgstr "Allgemein"
 
 #: EAScompliance.php:5359
 msgid "Enable/Disable"
@@ -442,7 +442,7 @@ msgstr ""
 
 #: EAScompliance.php:5446
 msgid "Non-EU Countries support"
-msgstr ""
+msgstr "Unterstützung für Nicht-EU-Länder"
 
 #: EAScompliance.php:5455
 msgid "Shipping methods by post"
@@ -460,15 +460,15 @@ msgstr "Geschenkkarten Produktarten"
 
 #: EAScompliance.php:5468
 msgid "Physical goods"
-msgstr ""
+msgstr "Physische Güter"
 
 #: EAScompliance.php:5471
 msgid "Paid order statuses"
-msgstr ""
+msgstr "Status bezahlter Bestellungen"
 
 #: EAScompliance.php:5474
 msgid "Status(es) denoting orders which have been paid for"
-msgstr ""
+msgstr "Status(e) für Bestellungen, die bezahlt wurden"
 
 #: EAScompliance.php:5480
 msgid "Giftcard product types"
@@ -480,11 +480,11 @@ msgstr "Für die Verwaltung von Geschenkkarten verwendete(r) Produkttyp(en)"
 
 #: EAScompliance.php:5501
 msgid "Product Attributes"
-msgstr ""
+msgstr "Produkteigenschaften"
 
 #: EAScompliance.php:5504
 msgid "Additional products attributes settings"
-msgstr ""
+msgstr "Einstellungen für zusätzliche Produktattribute"
 
 #: EAScompliance.php:5511
 msgid "HSCODE"
@@ -553,61 +553,64 @@ msgstr ""
 
 #: EAScompliance.php:5569 EAScompliance.php:5572
 msgid "Design"
-msgstr ""
+msgstr "Design"
 
 #: EAScompliance.php:5576
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
 msgstr ""
+"Wenn leere Werte übrig bleiben, werden Standardfarben und Schriftgröße auf "
+"die Schaltfläche angewendet."
 
 #: EAScompliance.php:5580
 msgid "Button text"
-msgstr ""
+msgstr "Schaltflächentext"
 
 #: EAScompliance.php:5586
 msgid "Button font size"
-msgstr ""
+msgstr "Schriftgröße der Schaltfläche"
 
 #: EAScompliance.php:5589
 msgid "Please select font size (without px , only number)"
-msgstr ""
+msgstr "Bitte Schriftgröße auswählen (ohne px , nur Zahl)"
 
 #: EAScompliance.php:5593
 msgid "Button text color"
-msgstr ""
+msgstr "Textfarbe der Schaltfläche"
 
 #: EAScompliance.php:5596
 msgid "Please select color for text on button"
-msgstr ""
+msgstr "Bitte wählen Sie die Farbe für den Text auf der Schaltfläche"
 
 #: EAScompliance.php:5600
 msgid "Button background color"
-msgstr ""
+msgstr "Hintergrundfarbe der Schaltfläche"
 
 #: EAScompliance.php:5603
 msgid "Please select background color"
-msgstr ""
+msgstr "Bitte Hintergrundfarbe auswählen"
 
 #: EAScompliance.php:5607
 msgid "Button background color on mouse over"
-msgstr ""
+msgstr "Hintergrundfarbe der Schaltfläche bei Mauszeiger"
 
 #: EAScompliance.php:5610
 msgid "Please select background color on mouse over"
-msgstr ""
+msgstr "Bitte Hintergrundfarbe auswählen, wenn Sie mit der Maus darüber fahren"
 
 #: EAScompliance.php:5614
 msgid "Font color on mouse over"
-msgstr ""
+msgstr "Schriftfarbe bei Mouseover"
 
 #: EAScompliance.php:5617
 msgid "Please select mouse over color for text on button"
 msgstr ""
+"Bitte wählen Sie die Maus über die Farbe für den Text auf der Schaltfläche"
 
 #: EAScompliance.php:5622
 msgid "Button Example"
-msgstr ""
+msgstr "Beispiel für Schaltflächen"
 
 #: EAScompliance.php:5664
 msgid ""
@@ -626,34 +629,41 @@ msgid ""
 "Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
 "for the Phone field settings to Optional or Required."
 msgstr ""
+"Die Berechnung der Landkosten ist für die EU beim Checkout verboten, da das "
+"Feld für das erforderliche Liefertelefon deaktiviert ist. Bitte besuchen Sie "
+"die Seite Erscheinungsbild → Anpassen. Wählen Sie \"WooCommerce\" und dann "
+"\"Kasse\" und ändern Sie die Einstellungen für die Telefonfeldeinstellungen "
+"in Optional oder Erforderlich."
 
 #: EAScompliance.php:5696 EAScompliance.php:5703
 msgid "EAS MPM"
-msgstr ""
+msgstr "EAS MPM"
 
 #: EAScompliance.php:5696 EAScompliance.php:5705 EAScompliance.php:5798
 msgid "EAS Logs"
-msgstr ""
+msgstr "EAS-Protokolle"
 
 #: EAScompliance.php:5696 EAScompliance.php:5704 EAScompliance.php:5832
 msgid "Connection status"
-msgstr ""
+msgstr "Verbindungsstatus"
 
 #: EAScompliance.php:5760
 msgid "EAS Merchandise module"
-msgstr ""
+msgstr "EAS Merchandise Modul"
 
 #: EAScompliance.php:5762
 msgid "To connect to the EAS Merchandise module, follow these steps:"
 msgstr ""
+"Befolgen Sie diese Schritte, um eine Verbindung zum EAS-Warenmodul "
+"herzustellen:"
 
 #: EAScompliance.php:5764
 msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
-msgstr ""
+msgstr "Gehen Sie zu WooCommerce → Einstellungen → Erweitert → REST-API-Menü."
 
 #: EAScompliance.php:5765
 msgid "Press the button “Add key”."
-msgstr ""
+msgstr "Drücken Sie die Taste \"Schlüssel hinzufügen\"."
 
 #: EAScompliance.php:5766
 msgid ""
@@ -661,20 +671,26 @@ msgid ""
 "write. User field will be\n"
 "                filled automatically by the system, leave it as is."
 msgstr ""
+"Füllen Sie im geöffneten Fenster die Beschreibung mit einem beliebigen Namen "
+"aus und setzen Sie die Berechtigungen auf → Lesen / Schreiben. Das "
+"Benutzerfeld wird sein\n"
+"automatisch vom System ausgefüllt, lassen Sie es so wie es ist."
 
 #: EAScompliance.php:5769
 msgid "Press the “Generate API key” button."
-msgstr ""
+msgstr "Klicken Sie auf die Schaltfläche \"API-Schlüssel generieren\"."
 
 #: EAScompliance.php:5770
 msgid "A window with key details will appear. Leave it open."
-msgstr ""
+msgstr "Ein Fenster mit wichtigen Details wird angezeigt. Lass es offen."
 
 #: EAScompliance.php:5771
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 msgstr ""
+"Gehe zu <a target=\"_blank\" href=\"https://npm .osten project.com /"
+"\">https://npm.east project.com /</a>"
 
 #: EAScompliance.php:5772
 msgid ""
@@ -682,11 +698,16 @@ msgid ""
 "Login and password are the\n"
 "                same as for EAS Dashboard."
 msgstr ""
+"Authentifizieren Sie sich mit Ihrem Login und Passwort für das EAS "
+"Merchandise-Modul. Login und Passwort sind die\n"
+"das gleiche gilt für das EAS-Dashboard."
 
 #: EAScompliance.php:5774
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
+"Drücken Sie im EAS Merchandise-Modul die Taste \"Erstellen\" und wählen Sie "
+"WooCommerce."
 
 #: EAScompliance.php:5775
 msgid ""
@@ -695,6 +716,10 @@ msgid ""
 "                during step 4. Press Save. If inserted data is correct, the "
 "connection will be established."
 msgstr ""
+"Geben Sie im geöffneten Fenster die folgenden Daten ein: Name des Geschäfts, "
+"vollständige URL und generierte API-Schlüssel\n"
+"während Schritt 4. Drücken Sie Speichern. Wenn die eingegebenen Daten "
+"korrekt sind, wird die Verbindung hergestellt."
 
 #: EAScompliance.php:5778
 msgid ""
@@ -707,6 +732,13 @@ msgid ""
 "                        target=\"_blank\">https://easproject.zendesk.com/hc/"
 "en-us/articles/6152957985053-WooCommerce-full-manual"
 msgstr ""
+"Danach wird der Mapping-Prozess gestartet, ein neues Fenster wird geöffnet. "
+"Kartenfelder entsprechend der\n"
+"detaillierte Anweisungen finden Sie im WC-Handbuch (Abschnitt 3.7). Das "
+"Handbuch finden Sie in unserem Helpdesk: <a href=\"https://easy project."
+"zendesk.com/hc/en-us/articles/6152957985053-WooCommerce-full-manual \"\n"
+"target=\"_blank\">https://easproject.zendesk.com/hc/en-us/"
+"articles/6152957985053-WooCommerce-full-manual"
 
 #: EAScompliance.php:5782
 msgid ""
@@ -715,6 +747,10 @@ msgid ""
 "                Merchandise module. Parsing make take some time, depending "
 "on the number of SKUs in the Merchant store."
 msgstr ""
+"Klicken Sie nach dem ordnungsgemäßen Mapping auf die Schaltfläche "
+"\"Verarbeitung starten\", um die SKU-Daten aus dem Shop in die\n"
+"                Warenmodul. Das Parsen dauert einige Zeit, abhängig von der "
+"Anzahl der SKUs im Händlergeschäft."
 
 #: EAScompliance.php:5785
 msgid ""
@@ -722,6 +758,9 @@ msgid ""
 "linked to EAS Merchandise\n"
 "                module."
 msgstr ""
+"Die Verbindung ist nun hergestellt und Produkte aus dem Shop des Händlers "
+"sind mit EAS-Waren verknüpft\n"
+"Modul."
 
 #: EAScompliance.php:5800
 msgid ""
@@ -732,42 +771,48 @@ msgid ""
 "            <a href=\"/wp-admin/admin.php?page=wc-status&tab=logs\n"
 "\">Logs page</a>"
 msgstr ""
+"Das EAS EU-Konformitäts-Plugin speichert Protokolle im Standard-"
+"Protokollierungsordner von WooCommerce.<br><br> Um Protokolle anzuzeigen, "
+"wählen Sie bitte die erforderliche Protokolldatei mit dem folgenden Namen "
+"template <b>eascomplience-YEAR-MONTH-DAY-UniqueID.log</ b> aus der Dropdown-"
+"Liste in der oberen rechten Ecke und drücken Sie \"Ansicht\" in der\n"
+"<a href=\"/wp-admin/admin.php?page=wc-status&tab=logs\">Logs-Seite</a>"
 
 #: EAScompliance.php:5838
 msgid "Your EAS Identifier:"
-msgstr ""
+msgstr "Ihre EAS-Kennung:"
 
 #: EAScompliance.php:5841
 msgid "EM legal status:"
-msgstr ""
+msgstr "EM-Rechtsstatus:"
 
 #: EAScompliance.php:5844
 msgid "In EAS EM  registered as:"
-msgstr ""
+msgstr "In EAS EM registriert als:"
 
 #: EAScompliance.php:5847
 msgid "OSS Registered:"
-msgstr ""
+msgstr "OSS registriert:"
 
 #: EAScompliance.php:5850
 msgid "Product Description language:"
-msgstr ""
+msgstr "Produktbeschreibung Sprache:"
 
 #: EAScompliance.php:5856
 msgid "Electronic Interface"
-msgstr ""
+msgstr "Elektronische Schnittstelle"
 
 #: EAScompliance.php:5858
 msgid "Not electronic Interface"
-msgstr ""
+msgstr "Nicht elektronische Schnittstelle"
 
 #: EAScompliance.php:5863
 msgid "YES"
-msgstr ""
+msgstr "Ja"
 
 #: EAScompliance.php:5865
 msgid "NO"
-msgstr ""
+msgstr "Nein"
 
 #: EAScompliance.php:5957
 msgid ""
@@ -795,7 +840,7 @@ msgstr ""
 
 #: EAScompliance.php:6375
 msgid "EAS processed"
-msgstr ""
+msgstr "Verarbeitete EAS"
 
 #~ msgid "Sales order received, updating order $order_id"
 #~ msgstr "Kundenauftrag erhalten, Bestellung $order_id wird aktualisiert"

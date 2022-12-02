@@ -15,7 +15,7 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
 #: EAScompliance.php:86
@@ -372,9 +372,8 @@ msgstr ""
 #: EAScompliance.php:5401
 msgid "Use the secret you received from EAS Project"
 msgstr ""
-"Use the client secret you received from EAS Project Dashboard <a "
-"href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
-"a>"
+"Use the client secret you received from EAS Project Dashboard <a href="
+"\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
 #: EAScompliance.php:5407
 msgid "Log levels"
@@ -582,6 +581,10 @@ msgid ""
 "Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
 "for the Phone field settings to Optional or Required."
 msgstr ""
+"Landed cost calculation will be prohibited for EU on checkout because "
+"required delivery Phone field is disabled. Please visit Appearance → "
+"Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
+"for the Phone field settings to Optional or Required."
 
 #: EAScompliance.php:5696 EAScompliance.php:5703
 msgid "EAS MPM"
