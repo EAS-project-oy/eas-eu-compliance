@@ -4,7 +4,7 @@
 == Changelog ==
 22-12-20 - version 1.4.36
 
-* Minor baugs fixed in the Admin dashboard
+* Minor bugs fixed in the Admin dashboard
 * Added support for Advanced Dynamic Pricing for WooCommerce by AlgolPlus
 
 22-12-01 - version 1.4.30

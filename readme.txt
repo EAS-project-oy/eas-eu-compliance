@@ -124,7 +124,7 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 = 1.4.36 =
 
-* Minor baugs fixed in the Admin dashboard
+* Minor bugs fixed in the Admin dashboard
 * Added support for Advanced Dynamic Pricing for WooCommerce by AlgolPlus
 
 =  1.4.30 =
