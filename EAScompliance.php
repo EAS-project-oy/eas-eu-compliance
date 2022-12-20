@@ -2435,6 +2435,13 @@ function eascompliance_is_set()
 
         // check if 'EAScompliance SET' is set for every item in cart //.
         foreach ($cart->get_cart_contents() as $k => $item) {
+            // advanced-dynamic-pricing plugin fix: ignore free and auto added items
+            if (class_exists('ADP\BaseVersion\Includes\WC\WcCartItemFacade')) {
+				$facade  = new ADP\BaseVersion\Includes\WC\WcCartItemFacade(adp_context(), $item, $k);
+                if ($facade->isFreeItem() || $facade->isAutoAddItem()) {
+                    continue;
+                }
+            }
             if (!array_key_exists('EAScompliance SET', $item)) {
                 return false;
             }
