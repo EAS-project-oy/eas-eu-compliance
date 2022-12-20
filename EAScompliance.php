@@ -6481,6 +6481,7 @@ function eascompliance_bulk_update_rest_route()
     register_rest_route('eascompliance/v1', '/bulk-update', array(
         'methods' => 'POST',
         'callback' => 'eascompliance_bulk_update',
+		'permission_callback' => '__return_true',
     ));
 }
 
