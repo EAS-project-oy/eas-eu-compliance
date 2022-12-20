@@ -122,6 +122,11 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
+= 1.4.36 =
+
+* Minor baugs fixed in the Admin dashboard
+* Added support for Advanced Dynamic Pricing for WooCommerce by AlgolPlus
+
 =  1.4.30 =
 * New operational mode "Standard mode" implemented. Now plugin supports third party VAT calculators
 * Some minor bugs fixed with delivery options and delivery/billing addresses
