@@ -155,7 +155,11 @@ jQuery(document).ready(function ($) {
 
     //checkout data change happens when page loads, avoid calculate reset in such case
     $('form.checkout').append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
-    $('form.checkout').on('focusin', function () {
+    $('form.checkout').on('focusin', function (event) {
+        //ignore calculate button click
+        if ($(event.target).hasClass('button_calc')) {
+            return
+        }
         $('form.checkout #is_user_checkout').remove()
     })
 
@@ -229,7 +233,13 @@ jQuery(document).ready(function ($) {
             (
                 $('.eascompliance_status').text() == 'present'
                 && needs_recalculate === false
-                && $('.wc_payment_method').length > 0 // WP-75 Plugin fix 'WooCommerce Cart Abandonment Recovery' may restore cart from previous version which may lead to needs_recalculate to be false incorrectly. To overcome it, we rely on absence of payment methods on page
+                && (
+                    // WP-75 Plugin fix 'WooCommerce Cart Abandonment Recovery' may restore cart from previous version which may lead to needs_recalculate to be false incorrectly. To overcome it, we rely on absence of payment methods on page
+                    $('.wc_payment_method').length > 0
+                    ||
+                    // no payment methods and cart total is 0
+                    ($('.wc_payment_method').length === 0 && Number($('tr.order-total bdi').text().replace(',','.').replace(/[^0-9.]/g,'')) == 0)
+                )
             )
             ||
             (
