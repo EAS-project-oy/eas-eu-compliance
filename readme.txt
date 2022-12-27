@@ -122,7 +122,7 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
-= 1.4.36 =
+= 1.4.38 =
 
 * Minor bug fixed with processing orders without payment methods
 
