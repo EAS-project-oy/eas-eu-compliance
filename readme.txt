@@ -6,8 +6,8 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.0.0
 Tested up to: 6.1
-Stable tag: 1.4.24
-Last updated time: 01.12.2022
+Stable tag: 1.4.38
+Last updated time: 27.12.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ __Note!__ EAS Registration is required. Register at [https://easproject.com](htt
 
 **IOSS, OSS, Non-Union OSS and UK VAT - EAS automates your EU & UK VAT and Customs compliance.** 
 
-With EAS selling to all EU countries and UK is just as easy as your domestic sales, oreven easier!
+With EAS selling to all EU countries and UK is just as easy as your domestic sales, or even easier!
 
 EAS removes all the tax and customs compliance barriers preventing your sales throughout the whole EU!
 
@@ -121,6 +121,10 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.36 =
+
+* Minor bug fixed with processing orders without payment methods
 
 = 1.4.36 =
 
