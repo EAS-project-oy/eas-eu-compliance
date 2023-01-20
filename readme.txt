@@ -81,6 +81,7 @@ The following currency switcher plugins are supported:
 * WPML WooCommerce Multi-currency by OnTheGoSystems
 * WC Currency Switcher by realmag777
 * Multi Currency for WooCommerce by VillaTheme
+* Hyyan WC Polylang Integration
 
 = EAS EU compliance Features =
 
