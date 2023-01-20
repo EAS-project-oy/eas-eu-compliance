@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path:       /languages
- * Version: 1.4.38
+ * Version: 1.4.39
  * Tested up to 6.1
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -1264,6 +1264,10 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total()), 2);
+	if (get_option('woocommerce_tax_display_cart') === 'incl') {
+		$delivery_cost += round((float)($cart->get_shipping_tax()), 2);
+	}
+
     if ($currency_conversion) {
         $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
     }
@@ -1392,7 +1396,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 			$type_of_goods = 'GIFTCARD';
 		}
 
-        $cost_provided_by_em = round((float)$cart_item['line_total'] / $cart_item['quantity'], 2);
+        // line_tax is positive when other tax rates for supported countries present
+        $cost_provided_by_em = round((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
+
         if ($wcml_enabled) {
             global $woocommerce_wpml;
             $cost_provided_by_em = (float)$woocommerce_wpml->multi_currency->prices->get_product_price_in_currency($product_id, $currency);
@@ -3367,6 +3373,8 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
             return $total_taxes;
         }
 
+        // clean taxes from all other rates
+        $total_taxes = array();
         $total_taxes[$tax_rate_id0] = $total_tax;
         eascompliance_log('cart_total', 'cart total tax is $tax', array('$tax' => $total_tax));
 
@@ -3381,7 +3389,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
 
 
 if (eascompliance_is_active()) {
-    add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 10, 3);
+    add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
 }
 /**
  * Checkout Order review Item Subtotal
@@ -3410,6 +3418,9 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
         }
 
         $item_total = $cart_item['EAScompliance item price'];
+		if (get_option('woocommerce_tax_display_cart') === 'incl') {
+			$item_total += $cart_item['EAScompliance VAT'];
+		}
 
         // $item_total = eascompliance_convert_price_to_selected_currency($item_total);
         return wc_price($item_total);
@@ -3494,6 +3505,9 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
         $cart_items = array_values(WC()->cart->get_cart_contents());
         foreach ($cart_items as $cart_item) {
             $subtotal += $cart_item['EAScompliance item price'];
+			if (get_option('woocommerce_tax_display_cart') === 'incl') {
+				$subtotal += $cart_item['EAScompliance VAT'];
+			}
         }
 
         return wc_price($subtotal);
@@ -6286,19 +6300,15 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
 
 				//ignore countries check in standard_mode
                 if  (get_option('easproj_standard_mode') !== 'yes') {
-					// there must be no tax rates for supported countries except for EASCOMPLIANCE_TAX_RATE_NAME //.
+					// warn when other tax rates for supported countries present//.
 					foreach (eascompliance_supported_countries() as $c) {
 						foreach (WC_Tax::find_rates(array('country' => $c)) as $tax_rate) {
 							if (EASCOMPLIANCE_TAX_RATE_NAME !== $tax_rate['label']) {
-								throw new Exception(
-									eascompliance_format(
-										'There must be only $t tax rate for country $c',
-										array(
-											't' => EASCOMPLIANCE_TAX_RATE_NAME,
-											'c' => $c,
-										)
-									)
-								);
+								WC_Admin_Settings::add_message(EAS_TR(
+                                        'VAT rates for European countries detected in the WooCommerce Tax Settings. ' .
+                                        'EAS solution will consider all prices as VAT included. ' .
+                                        'Please contact EAS support at support@easproject.com to check that EAS solution is properly configured.')
+                                );
 							}
 						}
 					}

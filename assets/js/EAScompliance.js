@@ -44,6 +44,13 @@ jQuery(document).ready(function ($) {
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
 
+    // block calculate button during checkout update
+    $(document.body).on('update_checkout', function (ev) {
+        block($('.button_calc'))
+    })
+    $(document.body).on('updated_checkout', function (ev) {
+        unblock($('.button_calc'))
+    })
 
     //// send order information to EAS API and redirect to confirmation page
     $('.button_calc').on('click', function (ev) {
