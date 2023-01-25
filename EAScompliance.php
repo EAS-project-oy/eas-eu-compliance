@@ -3196,6 +3196,43 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
     }
 }
 
+if (eascompliance_is_active()) {
+    add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
+}
+/**
+ * Replace order_item taxes list with EAScompliance tax if calculation is present
+ *
+ * @param object $taxes current taxes.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (!eascompliance_is_set()) {
+            return $taxes;
+        }
+
+		$tax_rate_id0 = eascompliance_tax_rate_id();
+		$cart_items = array_values(WC()->cart->get_cart_contents());
+		$total_tax = 0;
+
+		foreach ($cart_items as $k => $cart_item) {
+			$total_tax += $cart_item['EAScompliance item_duties_and_taxes'];;
+		}
+        return array( $tax_rate_id0 => $total_tax );
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
 /**
  * Convert price to selected currency for WC Payments plugin
  *
