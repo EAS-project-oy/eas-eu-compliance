@@ -3954,6 +3954,9 @@ function eascompliance_woocommerce_shipping_packages($packages)
                     $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
                 $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
+				if (get_option('woocommerce_tax_display_cart') === 'incl') {
+					$delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+				}
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
 
                 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
