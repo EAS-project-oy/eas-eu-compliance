@@ -39,7 +39,7 @@ jQuery(document).ready(function ($) {
     var show_error = function (error_message) {
         $el = $('<div class="woocommerce-error">').text(error_message);
         $('.woocommerce-notices-wrapper:first').prepend($el);
-        $('.woocommerce-notices-wrapper:first')[0].scrollIntoView({behavior: 'smooth'})
+        $('.woocommerce-notices-wrapper:first')[0].scrollIntoView(false)
         // Add reload link to Security check error message
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
