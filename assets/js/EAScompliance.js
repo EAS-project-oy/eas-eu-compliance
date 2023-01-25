@@ -167,6 +167,11 @@ jQuery(document).ready(function ($) {
         if ($(event.target).hasClass('button_calc')) {
             return
         }
+
+        //ignore non user-generated events
+        if ( event.originalEvent?.isTrusted === false ) {
+            return
+        }
         $('form.checkout #is_user_checkout').remove()
     })
 
