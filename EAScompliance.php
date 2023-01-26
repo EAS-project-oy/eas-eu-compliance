@@ -1264,7 +1264,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total()), 2);
-	if (get_option('woocommerce_tax_display_cart') === 'incl') {
+	if (WC()->cart->get_tax_price_display_mode() === 'incl') {
 		$delivery_cost += round((float)($cart->get_shipping_tax()), 2);
 	}
 
@@ -3455,8 +3455,8 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
         }
 
         $item_total = $cart_item['EAScompliance item price'];
-		if (get_option('woocommerce_tax_display_cart') === 'incl') {
-			$item_total += $cart_item['EAScompliance VAT'];
+		if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+			$item_total += $cart_item['EAScompliance VAT'] + $cart_item['EAScompliance ITEM']['item_eas_fee'] + $cart_item['EAScompliance ITEM']['item_eas_fee_vat'];
 		}
 
         // $item_total = eascompliance_convert_price_to_selected_currency($item_total);
@@ -3542,12 +3542,18 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
         $cart_items = array_values(WC()->cart->get_cart_contents());
         foreach ($cart_items as $cart_item) {
             $subtotal += $cart_item['EAScompliance item price'];
-			if (get_option('woocommerce_tax_display_cart') === 'incl') {
-				$subtotal += $cart_item['EAScompliance VAT'];
+			if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+				$subtotal += $cart_item['EAScompliance VAT'] + $cart_item['EAScompliance ITEM']['item_eas_fee'] + $cart_item['EAScompliance ITEM']['item_eas_fee_vat'];
 			}
         }
 
-        return wc_price($subtotal);
+		$html = wc_price($subtotal);
+
+		if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+			$html .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
+		}
+
+        return $html;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -3954,7 +3960,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
                     $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
                 $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-				if (get_option('woocommerce_tax_display_cart') === 'incl') {
+				if (WC()->cart->get_tax_price_display_mode() === 'incl') {
 					$delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
 				}
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
