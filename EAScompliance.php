@@ -1264,6 +1264,8 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total()), 2);
+
+    // Account for WC setting 'Display prices during cart and checkout' woocommerce_tax_display_cart
 	if (WC()->cart->get_tax_price_display_mode() === 'incl') {
 		$delivery_cost += round((float)($cart->get_shipping_tax()), 2);
 	}
@@ -6036,17 +6038,6 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
         woocommerce_update_options(eascompliance_settings());
         // taxes must be enabled to see taxes at order //.
         update_option('woocommerce_calc_taxes', 'yes');
-
-        // update option woocommerce_tax_display_cart and inform if it was changed
-        $option_tax_display_cart = get_option('woocommerce_tax_display_cart');
-        if ('excl' !== $option_tax_display_cart) {
-            update_option('woocommerce_tax_display_cart', 'excl');
-            WC_Admin_Settings::add_message(eascompliance_format(EAS_TR('Due to correct display of Duties and Taxes for the client EAS compliance plugin changed setting $setting in the $tax_section')
-                , array(
-                    'setting' => EAS_TR('Display prices during cart and checkout', 'woocommerce'),
-                    'tax_section' => EAS_TR('Tax options', 'woocommerce'),
-                )));
-        }
 
         // reset easproj_deduct_vat_outside_eu if WC prices are tax exclusive
         if (get_option('woocommerce_prices_include_tax') === 'no') {
