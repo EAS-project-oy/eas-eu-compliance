@@ -38,6 +38,7 @@ jQuery(document).ready(function ($) {
 
     var show_error = function (error_message) {
         $el = $('<div class="woocommerce-error">').text(error_message);
+        $el.css('border-color','red');
         $('.woocommerce-notices-wrapper:first').prepend($el);
         $('.woocommerce-notices-wrapper:first')[0].scrollIntoView(false)
         // Add reload link to Security check error message
