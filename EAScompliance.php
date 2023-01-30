@@ -1263,17 +1263,12 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $delivery_state_province = eascompliance_array_get($checkout, 'shipping_state', '') === '' ? '' : '' . eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $checkout['shipping_country'], array()), $checkout['shipping_state'], $checkout['shipping_state']);
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
-    $delivery_cost = round((float)($cart->get_shipping_total()), 2);
-
-    // Account for WC setting 'Display prices during cart and checkout' woocommerce_tax_display_cart
-	if (WC()->cart->get_tax_price_display_mode() === 'incl') {
-		$delivery_cost += round((float)($cart->get_shipping_tax()), 2);
-	}
+    $delivery_cost = round((float)($cart->get_shipping_total() + $cart->get_shipping_tax()), 2);
 
     if ($currency_conversion) {
         $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
     }
-    $cart_discount = (float)$cart->get_discount_total();
+    $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
 
     $currency = get_woocommerce_currency();
 
@@ -1311,8 +1306,13 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
             } elseif ($coupon->get_discount_type() == 'fixed_product') {
                 $cart_discount += $cart->get_coupon_discount_amount($coupon->get_code(), WC()->cart->display_cart_ex_tax);
             } elseif ($coupon->get_discount_type() === 'percent') {
-                $cart_discount = WC()->session->get('EAS CART DISCOUNT');
-                eascompliance_log('request', 'WCML taking cart discount from session $c', array('$c' => $cart_discount));
+                if ( is_numeric(WC()->session->get('EAS CART DISCOUNT'))) {
+					$cart_discount = WC()->session->get('EAS CART DISCOUNT');
+					eascompliance_log('request', 'WCML taking cart discount from session $c', array('$c' => $cart_discount));
+                } else {
+					$cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
+					WC()->session->set('EAS CART DISCOUNT', $cart_discount);
+                }
                 if ($currency_conversion) {
                     $cart_discount = (float)$woocommerce_wpml->multi_currency->prices->unconvert_price_amount($cart_discount);
                 }
@@ -1972,7 +1972,7 @@ function eascompliance_ajaxhandler()
         WC()->session->set('EAS API REQUEST JSON', $calc_jreq);
 
         $cart = WC()->cart;
-        $cart_discount = (float)$cart->get_discount_total();
+        $cart_discount = (float)($cart->get_discount_total() + $cart->get_discount_tax());
         if (eascompliance_is_wcml_enabled()) {
             $cart_discount = (float)WC()->session->get('EAS CART DISCOUNT');
 			eascompliance_log('debug', 'WCML is present, cart discount re-set to $cd', array('cd'=>$cart_discount));
@@ -3962,9 +3962,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
                     $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
                 $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-				if (WC()->cart->get_tax_price_display_mode() === 'incl') {
-					$delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
-				}
+				$delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
 
                 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
