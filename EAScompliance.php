@@ -1972,7 +1972,7 @@ function eascompliance_ajaxhandler()
         WC()->session->set('EAS API REQUEST JSON', $calc_jreq);
 
         $cart = WC()->cart;
-        $cart_discount = (float)($cart->get_discount_total() + $cart->get_discount_tax());
+        $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
         if (eascompliance_is_wcml_enabled()) {
             $cart_discount = (float)WC()->session->get('EAS CART DISCOUNT');
 			eascompliance_log('debug', 'WCML is present, cart discount re-set to $cd', array('cd'=>$cart_discount));
@@ -3492,7 +3492,7 @@ function eascompliance_wcml_update_coupon_percent_discount()
             $cart = WC()->cart;
             foreach ($cart->get_coupons() as $coupon) {
                 $cart_discount_prev = WC()->session->get('EAS CART DISCOUNT');
-                $cart_discount = $cart->get_discount_total();
+                $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
                 eascompliance_log('request', 'WCML fix cart discount for coupons from $o to $n', array('$o' => $cart_discount_prev, '$n' => $cart_discount));
                 WC()->session->set('EAS CART DISCOUNT', $cart_discount);
                 break;
