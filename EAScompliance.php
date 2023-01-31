@@ -1483,10 +1483,16 @@ function eascompliance_product_attribute_or_meta($product, $settings_key)
 
         $key_name = eascompliance_woocommerce_settings_get_option_sql($settings_key);
 
-        if ( strpos( $key_name, 'meta_' ) === 0 ) {
-            return $product->get_meta(substr($key_name, 5));
+        // take attributes and meta_ from parent product when available
+		$parent_product = $product;
+		if ( $product->get_parent_id() > 0 ) {
+			$parent_product = wc_get_product($product->get_parent_id());
+		}
+
+		if ( strpos( $key_name, 'meta_' ) === 0 ) {
+            return $parent_product->get_meta(substr($key_name, 5));
         } else {
-            return $product->get_attribute($key_name);
+            return $parent_product->get_attribute($key_name);
         }
 
     } catch (Exception $ex) {
