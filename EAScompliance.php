@@ -3968,9 +3968,11 @@ function eascompliance_woocommerce_shipping_packages($packages)
                     $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
                 $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-				$delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+				    if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+                }
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
-
+                
                 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
             }
         }
@@ -6466,7 +6468,7 @@ function eascompliance_order_column_value($column, $post_id)
     switch ($column) {
         case 'eas-processed' :
             $order_payload = get_post_meta($post_id, 'easproj_payload', true);
-            if (isset($order_payload) && !empty($order_payload)) {
+            if ((isset($order_payload) && !empty($order_payload))||(get_post_meta($post_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)) {
                 echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
             }
             break;
