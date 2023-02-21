@@ -2,6 +2,16 @@
 
 
 == Changelog ==
+23-02-01 - version 1.4.44 
+
+* Fixed bugs in the front end UI
+* New feature implemented. Combined WooCommerce VAT calculation engine and EAS EU compliance Engine, that gives flexible configuration of Taxes. 
+
+22-12-25 - version  1.4.38 
+
+* Minor bug fixed with processing orders without payment methods
+
+
 22-12-20 - version 1.4.36
 
 * Minor bugs fixed in the Admin dashboard
