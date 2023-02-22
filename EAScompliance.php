@@ -3018,7 +3018,7 @@ function eascompliance_recalculate_ajax()
 
 		eascompliance_order_createpostsaleorder($order);
 
-		eascompliance_log('info', "Sales order $order_id update successful");
+		eascompliance_log('info', "Sales order $order_id update successful", array('$order_id'=>$order_id));
 
 		wp_send_json(array('status' => 'ok'));
 
@@ -3068,6 +3068,10 @@ function eascompliance_logorderdata_ajax()
                 '_easproj_order_number_notified' => $order->get_meta('_easproj_order_number_notified'),
                 '_easproj_payment_processed' => $order->get_meta('_easproj_payment_processed'),
                 '_easproj_api_save_notified' => $order->get_meta('_easproj_api_save_notified'),
+                '_easproj_order_sent_to_eas' => $order->get_meta('_easproj_order_sent_to_eas'),
+                '_eascompliance_tracking_number_notified' => $order->get_meta('_eascompliance_tracking_number_notified'),
+                '_easproj_api_save_notification_started' => $order->get_meta('_easproj_api_save_notification_started'),
+                '_easproj_order_created_with_createpostsaleorder' => $order->get_meta('_easproj_order_created_with_createpostsaleorder'),
                 '_easproj_create_post_sale_without_lc_orders_json' => $order->get_meta('_easproj_create_post_sale_without_lc_orders_json'),
             ), true));
 
@@ -4514,6 +4518,49 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			return;
 		}
 
+		// we can get here if order was tried for  to be sent before but failed
+		if ( $order->get_meta('_easproj_order_sent_to_eas') === '1' ) {
+
+            // check if order was already notified via /visualization/em_order_list
+            // if order is present, add a note and return, otherwise continue
+
+			$auth_token = eascompliance_get_oauth_token();
+			$options = array(
+				'method' => 'GET',
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $auth_token,
+				),
+				'timeout' => 15,
+				'sslverify' => false,
+			);
+			$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url')
+                . '/visualization/em_order_list?external_order_id='.$order_id;
+			$request = (new WP_Http)->request($url, $options);
+			if (is_wp_error($request)) {
+				eascompliance_log('error', 'order $o /visualization/em_order_list failed', array('$o'=>$order_id));
+				throw new Exception($request->get_error_message());
+			}
+
+			$response_status = (string)$request['response']['code'];
+
+			if ('200' === $response_status) {
+				$row_count = json_decode($request['http_response']->get_data(), true)['rowCount'];
+
+				//if order is present, add a note, enable processed EAS logo and return, otherwise continue to mass-sale
+                if ( $row_count != 0 ) {
+                    $order->add_order_note(EAS_TR('Order was processed by EAS solution, but returns should be handled in the EAS dashboard https:///dashaboard.easproject.com ') );
+					$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+					$order->save_meta_data();
+                    return;
+                }
+			} else {
+				eascompliance_log('error', 'Order $o /visualization/em_order_list failed, request $r', array('$o' => $order_id, '$r'=>$request));
+				throw new Exception($response_status . ' ' . $request['response']['message']);
+			}
+		}
+
+		$order->add_meta_data('_easproj_order_sent_to_eas', '1', true);
+
         $order_json = eascompliance_make_eas_api_request_json_from_order2($order_id);
 
         $request_json = array('order_list'=>array(array(
@@ -4533,6 +4580,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 				'Content-type' => 'multipart/form-data; boundary='.$boundary,
 				'Authorization' => 'Bearer ' . $auth_token,
 			),
+			'timeout' => 15,
 			'body' => $body,
 			'sslverify' => false,
 		);
@@ -4540,6 +4588,12 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/mass-sale/create_post_sale_without_lc_orders';
 		$request = (new WP_Http)->request($url, $options);
 		if (is_wp_error($request)) {
+
+            // if we could not receive job_id then log attempt and mark order for later attempt
+            eascompliance_log('payment', 'order $o /mass-sale/create_post_sale_without_lc_orders failed, job_id was not received, mark for later attempt');
+			$order->add_meta_data('_easproj_order_sent_to_eas', '1', true);
+			$order->save_meta_data();
+
 			throw new Exception($request->get_error_message());
 		}
 
@@ -4591,7 +4645,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
 
         $order = wc_get_order($order_id);
 		$order_sent_json = $order->get_meta('_easproj_create_post_sale_without_lc_orders_json');
-		eascompliance_log('debug', 'Starting payment processing by EAS. Order id $order_id, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
+		eascompliance_log('payment', 'Starting payment processing by EAS. Order id $order_id, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
 
         //check EAS job status
 		$auth_token = eascompliance_get_oauth_token();
