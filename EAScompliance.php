@@ -5352,7 +5352,7 @@ function eascompliance_settings()
 
 
     global $wpdb;
-    $res = $wpdb->get_results('SELECT * FROM wplm_woocommerce_attribute_taxonomies att', ARRAY_A);
+    $res = $wpdb->get_results('SELECT * FROM {$wpdb->prefix}woocommerce_attribute_taxonomies att', ARRAY_A);
 
     $attributes = array(
         'easproj_hs6p_received' => '(add new) - easproj_hs6p_received',
