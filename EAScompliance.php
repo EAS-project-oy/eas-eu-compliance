@@ -6288,11 +6288,12 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
         if (woocommerce_settings_get_option('easproj_active') === 'yes') {
             try {
                 eascompliance_get_oauth_token();
-
+                $notified = false;
 				//ignore countries check in standard_mode
                 if  (get_option('easproj_standard_mode') !== 'yes') {
 					// warn when other tax rates for supported countries present//.
 					foreach (eascompliance_supported_countries() as $c) {
+                        if (true === $notified) break;
 						foreach (WC_Tax::find_rates(array('country' => $c)) as $tax_rate) {
 							if (EASCOMPLIANCE_TAX_RATE_NAME !== $tax_rate['label']) {
 								WC_Admin_Settings::add_message(EAS_TR(
@@ -6300,6 +6301,8 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
                                         'EAS solution will consider all prices as VAT included. ' .
                                         'Please contact EAS support at support@easproject.com to check that EAS solution is properly configured.')
                                 );
+                                $notified = true;
+                                break;
 							}
 						}
 					}
