@@ -122,6 +122,11 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
+= 1.4.46 =
+* Fixed bug with doubled notifications
+* Fixed issue with discounts application
+* Mechanism for post sale orders processing enhanced  
+
 = 1.4.44 =
 
 * Fixed bugs in the front end UI
