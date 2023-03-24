@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.46
+ * Version: 1.4.48
  * Tested up to 6.1
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -2931,6 +2931,7 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 
 		$tracking_no =  join(';', array_filter($tracking_numbers));
 
+
         if ($tracking_no === '') {
             return;
         }
@@ -2942,7 +2943,7 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 		if ($order->get_meta('_easproj_token') === '') {
 			return;
 		}
-
+        
 		// EAS shipment can only be created for paid orders
 		if ($order->get_meta('_easproj_payment_processed') !== 'yes') {
 			return;
@@ -2977,16 +2978,18 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 		$status = (string)$response['response']['code'];
 		if ('200' === $status) {
 			$order->add_meta_data('_eascompliance_tracking_number_notified', $tracking_no, true);
-			$order->add_order_note(EAS_TR( eascompliance_format('Tracking number notify successful for order $o', array('$o'=>$order_id))));
-			eascompliance_log('info', 'Tracking number notify successful for order $o', array('$o'=>$order_id));
+			$order->add_order_note(EAS_TR( eascompliance_format('Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order_id))));
+			eascompliance_log('info', 'Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order_id));
+            $order->save();
 		}
         else {
-			eascompliance_log('error', 'Tracking number notify response is $s', array('$s' => $response));
+			eascompliance_log('error', 'Tracking number $tr notify response is $s', array('$tr'=>$tracking_no,'$s' => $response));
 			throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order_id))));
 		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
 		$order->add_order_note($ex->getMessage());
+        $order->save();
     } finally {
         restore_error_handler();
     }
@@ -3331,13 +3334,29 @@ function eascompliance_cart_total($current_total = null)
 
         // check that payload total_order_amount equals Order total //.
 		$margin = abs((float)$payload_total_order_amount -(float)$total);
+        if (!is_null(WC()->session)) {
+            $user_id = WC()->session->get_customer_id();
+            if ( 't_' === substr($user_id, 0, 2) ) {
+                $user_id = 'session_' . substr($user_id, -6);
+            }
+            else {
+                $user_id = 'user_' . $user_id;
+            }
+                $txt = $user_id . ' ' . $txt;
+        } 
+        else {
+            $txt =  'no_session ' . $txt;
+        }
         if ($margin > 0.014 ) {
-            eascompliance_log('error',
-                eascompliance_format('$payload_total_order_amount $a not equal order total $b',
+            if (is_null(WC()->session->get('EAS cart_total error notified')) || WC()->session->get('EAS cart_total error notified') !== $txt.'_'.$payload_total_order_amount.'-'.$total) {
+                eascompliance_log('error',
+                    eascompliance_format('$payload_total_order_amount $a not equal order total $b',
                     array('a' => $payload_total_order_amount, 'b' => $total)
                 )
-            );
-            eascompliance_log('cart_total', $payload);
+                );
+                WC()->session->set('EAS cart_total error notified', $txt.'_'.$payload_total_order_amount.'-'.$total);
+                eascompliance_log('cart_total', $payload);
+            }
         }
     }
     eascompliance_log('cart_total', 'cart total is $total', array('$total' => $total));
@@ -4367,7 +4386,7 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
             $order->add_order_note(EAS_TR('Order status changed to Canceled. EAS API notified.'));
             $order->save();
         } else {
-            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r' => $response));
+            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r' => $response['body']['message']));
             throw new Exception($response_status . ' ' . $response['response']['message']);
         }
 

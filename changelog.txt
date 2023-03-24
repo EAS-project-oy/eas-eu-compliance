@@ -2,6 +2,12 @@
 
 
 == Changelog ==
+23-03-23 - version 1.4.48
+
+* Error messages length reduced in the log
+* Languages updated
+* Fixed the issue with noitification of tracking number
+
 23-03-10 - version 1.4.46 
 
 * Fixed bug with doubled notifications

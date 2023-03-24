@@ -4,9 +4,9 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 7.2.0
+WC tested up to: 7.5.0
 Tested up to: 6.1
-Stable tag: 1.4.44
+Stable tag: 1.4.48
 Last updated time: 27.12.2022
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -121,6 +121,12 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.48 =
+* Error messages length reduced in the log
+* Languages updated
+* Fixed the issue with noitification of tracking number
+
 
 = 1.4.46 =
 * Fixed bug with doubled notifications
