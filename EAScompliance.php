@@ -3486,7 +3486,20 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
         }
 
         $item_total = $cart_item['EAScompliance item price'];
-		if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+        $price_inclusive = false;
+        if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
+            if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+               $price_inclusive = true;
+            }
+        }
+        else {
+                if (WC()->cart->tax_display_cart === 'incl') {
+                $price_inclusive = true;
+              
+            }
+        }
+
+		if ($price_inclusive===true) {
 			$item_total += $cart_item['EAScompliance VAT'] + $cart_item['EAScompliance ITEM']['item_eas_fee'] + $cart_item['EAScompliance ITEM']['item_eas_fee_vat'];
 		}
 
@@ -3571,16 +3584,30 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
 
         $subtotal = 0;
         $cart_items = array_values(WC()->cart->get_cart_contents());
+         $price_inclusive = false;
+        if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
+            if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+               $price_inclusive = true;
+            }
+        }
+        else {
+                if (WC()->cart->tax_display_cart === 'incl') {
+                $price_inclusive = true;
+              
+            }
+        }
+
         foreach ($cart_items as $cart_item) {
             $subtotal += $cart_item['EAScompliance item price'];
-			if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+
+			if ($price_inclusive===true) {
 				$subtotal += $cart_item['EAScompliance VAT'] + $cart_item['EAScompliance ITEM']['item_eas_fee'] + $cart_item['EAScompliance ITEM']['item_eas_fee_vat'];
 			}
         }
 
 		$html = wc_price($subtotal);
 
-		if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+		if ($price_inclusive===true) {
 			$html .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
 		}
 
@@ -3619,7 +3646,20 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
         $html = '<strong>' . wc_price(wc_format_decimal($total, wc_get_price_decimals())) . '</strong> ';
 
         // Display incl taxes when WC setting 'Display prices during cart and checkout' is set to 'Including tax'
-        if (eascompliance_is_set() && WC()->cart->get_tax_price_display_mode() === 'incl') {
+         $price_inclusive = false;
+        if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
+            if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+               $price_inclusive = true;
+            }
+        }
+        else {
+                if (WC()->cart->tax_display_cart === 'incl') {
+                $price_inclusive = true;
+              
+            }
+        }
+
+        if (eascompliance_is_set() && $price_inclusive===true) {
             $tax_rate_id0 = eascompliance_tax_rate_id();
             $total_taxes = eascompliance_woocommerce_cart_get_taxes(array("$tax_rate_id0" => 0));
             $html .= EAS_TR('Incl. Taxes & Duties: ') . wc_price(wc_format_decimal($total_taxes[$tax_rate_id0], wc_get_price_decimals()));
@@ -6304,50 +6344,72 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
             wp_insert_term('yes', $taxonomy, array('slug' => $slug . '_yes'));
         }
         // check EAS API connection / tax rates and deactivate plugin on failure //.
-        if (woocommerce_settings_get_option('easproj_active') === 'yes') {
-            try {
-                eascompliance_get_oauth_token();
-                $notified = false;
-				//ignore countries check in standard_mode
-                if  (get_option('easproj_standard_mode') !== 'yes') {
+
+        if ( version_compare(WC_VERSION, '4.0', '>=' ) ) {
+    
+            if (woocommerce_settings_get_option('easproj_active') === 'yes') {
+                try {
+                    eascompliance_get_oauth_token();
+                    $notified = false;
+				    //ignore countries check in standard_mode
+                    if  (get_option('easproj_standard_mode') !== 'yes') {
 					// warn when other tax rates for supported countries present//.
-					foreach (eascompliance_supported_countries() as $c) {
-                        if (true === $notified) break;
-						foreach (WC_Tax::find_rates(array('country' => $c)) as $tax_rate) {
-							if (EASCOMPLIANCE_TAX_RATE_NAME !== $tax_rate['label']) {
-								WC_Admin_Settings::add_message(EAS_TR(
+    					foreach (eascompliance_supported_countries() as $c) {
+                            if (true === $notified) break;
+		      				foreach (WC_Tax::find_rates(array('country' => $c)) as $tax_rate) {
+			     				if (EASCOMPLIANCE_TAX_RATE_NAME !== $tax_rate['label']) {
+		      						WC_Admin_Settings::add_message(EAS_TR(
                                         'VAT rates for European countries detected in the WooCommerce Tax Settings. ' .
                                         'EAS solution will consider all prices as VAT included. ' .
                                         'Please contact EAS support at support@easproject.com to check that EAS solution is properly configured.')
-                                );
-                                $notified = true;
-                                break;
-							}
-						}
-					}
-                }
+                                    );
+                                    $notified = true;
+                                    break;
+							     }
+						    }
+					   }
+                    }   
 
-            } catch (EAScomplianceAuthorizationFaliedException $ex) {
-                eascompliance_log('error', $ex);
-                WC_Admin_Settings::add_error(EAS_TR('Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.'));
-            } catch (Exception $ex) {
-                WC_Admin_Settings::save_fields(
-                    array(
+                } catch (EAScomplianceAuthorizationFaliedException $ex) {
+                    eascompliance_log('error', $ex);
+                    WC_Admin_Settings::add_error(EAS_TR('Authorisation failed, wrong credentials provided. Please check your Client ID and Client secret.'));
+                } catch (Exception $ex) {
+                    WC_Admin_Settings::save_fields(
+                        array(
                         'active' => array(
                             'name' => 'Active',
                             'type' => 'checkbox',
                             'desc' => 'Active',
                             'id' => 'easproj_active',
                             'default' => 'yes',
+                            ),
                         ),
-                    ),
-                    array('easproj_active' => 'no')
-                );
-                throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
+                        array('easproj_active' => 'no')
+                    );
+                    throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
+                }
             }
-        }
+        
 
         eascompliance_log('info', 'Plugin activated');
+        } 
+        else {
+            WC_Admin_Settings::add_error(EAS_TR('Sorry, your WooCommerce version "'.WC_VERSION.'" is not supported by EAS EU compliance plugin. Plugin is deactivated.'));
+            WC_Admin_Settings::save_fields(
+                array(
+                        'active' => array(
+                            'name' => 'Active',
+                            'type' => 'checkbox',
+                            'desc' => 'Active',
+                            'id' => 'easproj_active',
+                            'default' => 'yes',
+                    ),
+                ),
+                array('easproj_active' => 'no')
+                );
+            eascompliance_log('error', 'Plugin deactivated. Not supported WC version detected. Current WC version '.WC_VERSION.' is less then supported 4.8.0');
+        
+        }
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         WC_Admin_Settings::add_error($ex->getMessage());
