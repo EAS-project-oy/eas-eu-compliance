@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.48
+ * Version: 1.4.50
  * Tested up to 6.1
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -815,7 +815,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
     try {
 
         $post_data = urldecode($post_data);
-
+        $ship_to_different_address = false;
         foreach (explode('&', $post_data) as $chunk) {
             $param = explode("=", $chunk);
             if ($param[0] === 'billing_country') {
@@ -4386,6 +4386,10 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
         }
 
         $auth_token = eascompliance_get_oauth_token();
+         if (!is_object($order)) {
+            eascompliance_log('error', eascompliance_format("Order $order_id Cancelled notification unsuccessful. Not object provided!", array('$order_id' => $order_id)));
+        return;
+        }
         $confirmation_token = $order->get_meta('_easproj_token');
 
         if ('' === $confirmation_token) {
