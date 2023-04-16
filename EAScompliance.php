@@ -301,7 +301,9 @@ function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($tax_totals as $code => &$tax) {
             if ($tax->tax_rate_id === $tax_rate_id0) {
+                //clear all other taxes except EAS
                 $tax->label = EAS_TR('Taxes & Duties');
+                return array( $code => $tax);
             }
         }
 
@@ -452,7 +454,9 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($tax_totals as $code => &$tax) {
             if ($tax->rate_id === $tax_rate_id0) {
+                //clear all other taxes except EAS
                 $tax->label = EAS_TR('Taxes & Duties');
+                return array( $code => $tax);
             }
         }
 
@@ -3160,6 +3164,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
                 eascompliance_log('error', 'number of order_items $oi does not match number of items in cart $ci, please check', array('$oi' => count($order_items), '$ci' => count($cart_items)));
                 throw new Exception(EAS_TR('number of order_items does not match number of items in cart'));
             }
+            $delivery_charge_vat = 0;
             foreach ($order_items as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
 
@@ -3184,13 +3189,13 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
             }
             $order_item_tax->save();
 
-            //WP-61 fix: when shipping item tax is 0 and delivery_charge_vat is not, then re-set it again for first found shipping item
+            // set shipping item tax for first shipping item
             foreach ($order->get_items('shipping') as $shipping_item) {
-                if (0 == $shipping_item->get_total_tax() and 0 != $delivery_charge_vat) {
+                if (0 != $delivery_charge_vat) {
                     if ($deduct_vat_outside_eu > 0) {
                         $delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
                     }
-                    eascompliance_log('place_order', 'correct shipping item tax to $tax', array('$tax' => $delivery_charge_vat));
+                    eascompliance_log('place_order', 'correct shipping item tax from $t0 to $tax', array('$t0'=>$shipping_item->get_total_tax(), '$tax' => $delivery_charge_vat));
                     $shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat));
                 }
                 break;
@@ -4052,6 +4057,10 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // save payload in order metadata //.
         $payload = $item0['EASPROJ API PAYLOAD'];
         $order->add_meta_data('easproj_payload', $payload, true);
+
+        //fix coupon amount total to include tax
+        $order_discount = (float)$order->get_discount_total() + (float)$order->get_discount_tax();
+        $order->set_discount_total($order_discount);
 
         // save order json in order metadata //.
         $order_json = WC()->session->get('EAS API REQUEST JSON');
