@@ -122,6 +122,11 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
+= 1.4.52 =
+* Fixed known issue with Delivery taxation
+* WordPress 6.2 compatibility verified
+* Coupons taxation improved
+
 = 1.4.48 =
 * Error messages length reduced in the log
 * Languages updated
