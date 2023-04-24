@@ -4061,6 +4061,8 @@ function eascompliance_woocommerce_checkout_create_order($order)
         //fix coupon amount total to include tax
         $order_discount = (float)$order->get_discount_total() + (float)$order->get_discount_tax();
         $order->set_discount_total($order_discount);
+        $order->set_discount_tax(0);
+        $order->save();
 
         // save order json in order metadata //.
         $order_json = WC()->session->get('EAS API REQUEST JSON');
