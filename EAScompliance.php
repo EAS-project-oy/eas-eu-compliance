@@ -3950,6 +3950,112 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
 
 
 if (eascompliance_is_active()) {
+    add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
+}
+/**
+ * Replace chosen shipping method cost with $payload_j['delivery_charge_vat_excl']
+ *
+ * @param array $packages packages.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_shipping_packages($packages)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+		if ( 'yes' === get_option('easproj_standard_mode') ) {
+			return $packages;
+		}
+
+
+        if (eascompliance_is_deduct_vat_outside_eu()) {
+            $chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
+            if (!is_array($chosen_shipping_methods)) {
+                return $packages;
+            }
+
+            foreach ($packages as $px => &$p) {
+                foreach ($chosen_shipping_methods as $sx => $shm) {
+                    //WP-82 $shm can be non-string
+                    if (is_string($shm) && array_key_exists($shm, $packages[$px]['rates'])) {
+                        $shipping_rate = $packages[$px]['rates'][$shm];
+
+                        $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
+                        $shipping_cost = round($shipping_rate->cost / (1 + $deduct_vat_outside_eu / 100.0), 2);
+                        $shipping_rate->set_cost($shipping_cost);
+                        $shipping_rate->set_taxes(0);
+
+                    }
+
+                }
+            }
+            return $packages;
+        }
+
+        if (!eascompliance_is_set()) {
+            return $packages;
+        }
+
+        global $woocommerce;
+
+        // Sometimes we get here when chosen_shipping_methods are empty. If this happens, we reset calculation //.
+        $chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
+        if (!is_array($chosen_shipping_methods)) {
+            eascompliance_log('info', 'Chosen shipping method must not be empty! Resetting EASCompliance');
+            eascompliance_unset();
+            return $packages;
+        }
+
+        $tax_rate_id0 = eascompliance_tax_rate_id();
+        foreach ($packages as $px => &$p) {
+            $k0 = eascompliance_array_key_first2($woocommerce->cart->cart_contents);
+            $cart_item0 = $woocommerce->cart->cart_contents[$k0];
+
+            // Sometimes we get here when first item was removed. If this happens, we reset calculation //.
+            if (eascompliance_array_get($cart_item0, 'EAScompliance DELIVERY CHARGE', null) === null) {
+                eascompliance_log('info', 'EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance');
+                eascompliance_unset();
+                return $packages;
+            }
+            foreach ($chosen_shipping_methods as $sx => $shm) {
+                //WP-82 $shm can be non-string
+                if (is_string($shm) && array_key_exists($shm, $packages[$px]['rates'])) {
+                    $shipping_rate = $packages[$px]['rates'][$shm];
+                    $shipping_rate->set_cost($cart_item0['EAScompliance DELIVERY CHARGE']); // $payload_j['delivery_charge_vat_excl']; //.
+                    $shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'])); //$payload_j['delivery_charge_vat']; //.
+
+                }
+                // update $calc_jreq_saved with new delivery_cost //.
+                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+
+                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
+                if (empty($calc_jreq_saved)) {
+                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
+                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
+                }
+                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
+				    if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+                }
+                $calc_jreq_saved['delivery_cost'] = $delivery_cost;
+                
+                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
+            }
+        }
+
+        return $packages;
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+if (eascompliance_is_active()) {
     add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
 }
 /**
