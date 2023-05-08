@@ -4027,21 +4027,20 @@ function eascompliance_woocommerce_shipping_packages($packages)
                     $shipping_rate->set_taxes(array($tax_rate_id0 => $cart_item0['EAScompliance DELIVERY CHARGE VAT'])); //$payload_j['delivery_charge_vat']; //.
 
                 }
-                // update $calc_jreq_saved with new delivery_cost //.
-                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
-
-                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
-                if (empty($calc_jreq_saved)) {
-                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
-                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
-                }
-                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-				    if (WC()->cart->get_tax_price_display_mode() === 'incl') {
-                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
-                }
-                $calc_jreq_saved['delivery_cost'] = $delivery_cost;
-                
-                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
+//                // update $calc_jreq_saved with new delivery_cost //.
+//                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+//
+//                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
+//                if (empty($calc_jreq_saved)) {
+//                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
+//                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
+//                }
+//                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
+//                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+//
+//                $calc_jreq_saved['delivery_cost'] = $delivery_cost;
+//
+//                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
             }
         }
 
