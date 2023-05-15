@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.52
+ * Version: 1.4.53
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -4028,19 +4028,19 @@ function eascompliance_woocommerce_shipping_packages($packages)
 
                 }
 //                // update $calc_jreq_saved with new delivery_cost //.
-//                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
 //
 //                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
-//                if (empty($calc_jreq_saved)) {
-//                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
-//                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
-//                }
-//                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-//                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
-//
-//                $calc_jreq_saved['delivery_cost'] = $delivery_cost;
-//
-//                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
+                if (empty($calc_jreq_saved)) {
+                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
+                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
+                }
+                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
+                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+
+                $calc_jreq_saved['delivery_cost'] = $delivery_cost;
+
+                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
             }
         }
 
