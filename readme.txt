@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 7.5.0
+WC tested up to: 7.7.0
 Tested up to: 6.2
-Stable tag: 1.4.48
-Last updated time: 27.12.2022
+Stable tag: 1.4.53
+Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,8 +122,8 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
-= 1.4.52 =
-* Fixed known issue with Delivery taxation
+= 1.4.53 =
+* Fixed known issue with Delivery taxation desiplaying in the WooCommerce admin Dashboard
 * WordPress 6.2 compatibility verified
 * Coupons taxation improved
 

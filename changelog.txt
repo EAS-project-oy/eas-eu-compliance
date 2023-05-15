@@ -2,6 +2,13 @@
 
 
 == Changelog ==
+
+15-05-23 - version 1.4.53
+
+* Fixed known issue with Delivery taxation desiplaying in the WooCommerce admin Dashboard
+* WordPress 6.2 compatibility verified
+* Coupons taxation improved
+
 23-03-23 - version 1.4.48
 
 * Error messages length reduced in the log
