@@ -6,7 +6,7 @@ jQuery(document).ready(function ($) {
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '').css('opacity', '')
-            if ($('.eascompliance_status').text() == 'present') {
+                if (($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
                 $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false)
             }
         }
@@ -122,6 +122,7 @@ jQuery(document).ready(function ($) {
                             show_error(j['message']);
                             $('.button_calc').text(plugin_dictionary.standard_checkout)
                             $('.eascompliance_status').text('standard_checkout');
+                            $(".eascompliance_status").attr('eascompliance-p-content','standard_checkout');
 
                             $('.button_calc').hide()
                             $('#place_order').show();
@@ -188,7 +189,7 @@ jQuery(document).ready(function ($) {
     }
 
     $(document.body).one("updated_checkout", async function () {
-        if ($('.eascompliance_status').text() == 'present') {
+        if (($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
             // restore fields from what was submitted upon 'Calculate'
 
             $('.button_calc').text(plugin_dictionary.recalculate_taxes);
@@ -235,8 +236,9 @@ jQuery(document).ready(function ($) {
                 resolve(j);
             }
         })})).needs_recalculate;
-        if (needs_recalculate && $('.eascompliance_status').text() == 'present') {
-            $('.eascompliance_status').text('not present')
+        if (needs_recalculate && (($('.eascompliance_status').text() == 'present') ||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this')))) {
+            $('.eascompliance_status').text('not present');
+            $(".eascompliance_status").attr('eascompliance-p-content',"not present");
         }
 
         if
@@ -244,7 +246,7 @@ jQuery(document).ready(function ($) {
             plugin_ajax_object.supported_countries.indexOf(delivery_country) < 0
             ||
             (
-                $('.eascompliance_status').text() == 'present'
+                 (($('.eascompliance_status').text() == 'present') || (($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this')))
                 && needs_recalculate === false
                 && (
                     // WP-75 Plugin fix 'WooCommerce Cart Abandonment Recovery' may restore cart from previous version which may lead to needs_recalculate to be false incorrectly. To overcome it, we rely on absence of payment methods on page
@@ -256,10 +258,10 @@ jQuery(document).ready(function ($) {
             )
             ||
             (
-                $('.eascompliance_status').text() == 'standard_checkout'
+               ($('.eascompliance_status').text() == 'standard_checkout')||(($(".eascompliance_status").attr('eascompliance-p-content')=='standard_checkout')&&($('.eascompliance_status').text() == 'this'))
             )            ||
             (
-                $('.eascompliance_status').text() == 'standard_mode'
+                ($('.eascompliance_status').text() == 'standard_mode')||(($(".eascompliance_status").attr('eascompliance-p-content')=='standard_mode')&&($('.eascompliance_status').text() == 'this'))
             )
         ) {
             $('.button_calc').hide();
