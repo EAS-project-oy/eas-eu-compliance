@@ -236,9 +236,11 @@ jQuery(document).ready(function ($) {
                 resolve(j);
             }
         })})).needs_recalculate;
-        if (needs_recalculate && (($('.eascompliance_status').text() == 'present') ||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this')))) {
-            $('.eascompliance_status').text('not present');
-            $(".eascompliance_status").attr('eascompliance-p-content',"not present");
+
+        $status = $('.eascompliance_status').attr('data-eascompliance-status')
+        if ( needs_recalculate && $status === 'present' )  {
+            $status = 'not present'
+            $('.eascompliance_status').attr('data-eascompliance-status', $status);
         }
 
         if
@@ -246,7 +248,7 @@ jQuery(document).ready(function ($) {
             plugin_ajax_object.supported_countries.indexOf(delivery_country) < 0
             ||
             (
-                 (($('.eascompliance_status').text() == 'present') || (($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this')))
+                $status === 'present'
                 && needs_recalculate === false
                 && (
                     // WP-75 Plugin fix 'WooCommerce Cart Abandonment Recovery' may restore cart from previous version which may lead to needs_recalculate to be false incorrectly. To overcome it, we rely on absence of payment methods on page
@@ -258,10 +260,11 @@ jQuery(document).ready(function ($) {
             )
             ||
             (
-               ($('.eascompliance_status').text() == 'standard_checkout')||(($(".eascompliance_status").attr('eascompliance-p-content')=='standard_checkout')&&($('.eascompliance_status').text() == 'this'))
-            )            ||
+                $status === 'standard_checkout'
+            )
+            ||
             (
-                ($('.eascompliance_status').text() == 'standard_mode')||(($(".eascompliance_status").attr('eascompliance-p-content')=='standard_mode')&&($('.eascompliance_status').text() == 'this'))
+                $status === 'standard_mode'
             )
         ) {
             $('.button_calc').hide();

@@ -1023,8 +1023,12 @@ function eascompliance_woocommerce_review_order_before_payment()
             <button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
             <input type="hidden" id="eascompliance_nonce_calc" name="eascompliance_nonce_calc"
                    value="<?php echo esc_attr($nonce_calc); ?>"/></input>
-            <p class="eascompliance_status" checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>"
-               needs-recalculate="<?php echo esc_attr($needs_recalculate); ?>" eascompliance-p-content="<?php echo esc_attr($status); ?>"><?php echo esc_attr($status); ?></p>
+            <p class="eascompliance_status"
+               checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>"
+               needs-recalculate="<?php echo esc_attr($needs_recalculate); ?>"
+               data-eascompliance-status="<?php echo esc_attr($status); ?>"
+            >
+            </p>
             <?php
             if (eascompliance_log_level('eval')) {
                 ?>
