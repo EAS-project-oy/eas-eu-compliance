@@ -4798,6 +4798,8 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                     else {
                         eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful', array('$order_id'=>$order_id, '$job_id'=>$job_id));
                         $order->add_order_note("Order successfully processed by EAS solution, eas_id=$eas_id");
+						$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+						$order->save_meta_data();
                     }
                 }
                 elseif ( 'partial' === $order_status) {
