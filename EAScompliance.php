@@ -1911,6 +1911,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     }
 
 	$ix = 0;
+	$delivery_cost_ix = -1;
     foreach ($order->get_items() as $k => $order_item) {
         $product_id = $order_item['variation_id'] ?: $order_item['product_id'];
         $product = wc_get_product($product_id);
@@ -1949,14 +1950,20 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             'originating_country' => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
 
-        if ( 0 === $ix) {
-            $item['item_delivery_charge'] = $delivery_cost;
-            $item['item_delivery_charge_vat'] = $delivery_vat;
+        // put delivery cost to first GOODS type or first item
+        if ( $delivery_cost_ix == -1 && $type_of_goods == 'GOODS' ){
+			$delivery_cost_ix = $ix;
         }
 
         $items[] = $item;
         $ix++;
     }
+
+    if ($delivery_cost_ix == -1) {
+        $delivery_cost_ix = 0;
+    }
+    $items[$delivery_cost_ix]['item_delivery_charge'] = $delivery_cost;
+    $items[$delivery_cost_ix]['item_delivery_charge_vat'] = $delivery_vat;
 
     $calc_jreq['order_breakdown'] = $items;
     $calc_jreq['total_order_amount'] = round( (float)$order->get_total(), 2);
