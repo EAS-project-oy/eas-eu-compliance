@@ -211,6 +211,34 @@ function eascompliance_plugin_activation()
     }
 }
 
+
+/**
+ * Plugin disable for incompatible WC_VERSION
+ *
+ * @throws Exception May throw exception.
+ */
+add_action('plugins_loaded', 'eascompliance_plugins_loaded');
+function eascompliance_plugins_loaded()
+{
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+		if ( version_compare(WC_VERSION, '4.4.0' ) === -1 ) {
+			WC_Admin_Notices::add_custom_notice(   'eascompliance_wc_version_error',
+				eascompliance_format(EAS_TR('Plugin \'$plugin\' deactivated. Sorry we don’t support your WooCommerce version $wc. Please upgrade WooCommerce to latest version.')
+                    , array('$plugin'=>EASCOMPLIANCE_PLUGIN_NAME, '$wc'=>WC_VERSION))
+			);
+			deactivate_plugins(plugin_basename( __FILE__ ));
+			eascompliance_log('error', 'Incompatible WooCommerce version ' . WC_VERSION . '. Plugin deactivated');
+		}
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+	} finally {
+		restore_error_handler();
+	}
+}
+
 /**
  * Plugin upgrades and migrations
  *
