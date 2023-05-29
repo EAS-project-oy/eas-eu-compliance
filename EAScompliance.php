@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.54
+ * Version: 1.4.55
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -6671,7 +6671,9 @@ function eascompliance_order_column_value($column, $post_id)
     switch ($column) {
         case 'eas-processed' :
             $order_payload = get_post_meta($post_id, 'easproj_payload', true);
-            if ((isset($order_payload) && !empty($order_payload))||(get_post_meta($post_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)) {
+            $order_eas_token = get_post_meta($post_id, '_easproj_token', true);
+
+            if ((isset($order_payload) && !empty($order_payload))||((get_post_meta($post_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)&&isset($order_eas_token) && !empty($order_eas_token))) {
                 echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
             }
             break;
