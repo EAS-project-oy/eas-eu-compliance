@@ -6760,6 +6760,8 @@ function eascompliance_bulk_update($request)
 
         //Get only Authorization header
         $auth_token = $auth['Authorization'];
+        $auth_token_eas = $auth['AuthorizationEAS'];
+        $auth_token = (empty($auth_token) ? $auth_token_eas: $auth_token);
 
         if (empty($auth_token)) {
             return new WP_Error('missing_token', 'Missing auth token', array('status' => 401));
@@ -6836,9 +6838,9 @@ function eascompliance_bulk_update($request)
             // set product attributes and term ids for each product
 			foreach ($product_ids as $product_id) {
                 $product = wc_get_product($product_id);
-
-                //skip non-existant  products
-                if ( !$product ) {
+                $product_type = get_post_type( $product_id);
+                //skip non-existant  products or variants
+                if (( !$product )||($product_type == 'product_variation')) {
                     if (!in_array($product_id, $skipped_products)) {
 						$skipped_products[] = $product_id;
                     }
