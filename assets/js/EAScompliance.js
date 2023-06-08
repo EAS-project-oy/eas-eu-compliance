@@ -280,6 +280,11 @@ jQuery(document).ready(function ($) {
     for (i = 0; i < button_styles.length; i++) {
         $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]));
     }
+    div_styles = 'display flex-direction background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing transition padding font-size color border cursor z-index text-transform'.split(' ')
+    for (i = 0; i < div_styles.length; i++) {
+        $('.eascompliance').css(div_styles[i], $("#payment > div").css(div_styles[i]));
+    }
+    
 
 if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color);
     if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color);
