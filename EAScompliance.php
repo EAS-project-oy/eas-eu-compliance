@@ -1616,7 +1616,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 
     $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_shipping_country(), array()), $order->get_shipping_state(), '') ?: $order->get_shipping_state();
 
-    $calc_jreq['external_order_id'] = '' . $order->get_id();
+    $calc_jreq['external_order_id'] = '' . $order->get_order_number();
     $calc_jreq['delivery_method'] = $delivery_method;
     $calc_jreq['delivery_cost'] = round((float)($order->get_shipping_total()), 2);
     $calc_jreq['payment_currency'] = $order->get_currency();
@@ -1832,7 +1832,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $delivery_cost = round((float)($order->get_shipping_total()), 2);
 	$delivery_vat = round((float)($order->get_shipping_tax()), 2);
 
-    $calc_jreq['external_order_id'] = '' . $order->get_id();
+    $calc_jreq['external_order_id'] = '' . $order->>get_order_number();
     $calc_jreq['delivery_method'] = $delivery_method;
     $calc_jreq['delivery_cost'] = $delivery_cost;
     $calc_jreq['payment_currency'] = $order->get_currency();
@@ -2794,7 +2794,7 @@ function eascompliance_order_createpostsaleorder($order)
     $sales_order_json = array(
         'order' => $order_json,
         'sale_date' => date_format(new DateTime(), 'Y-m-d'),
-        's10_cod' => $order_json['external_order_id'],
+        's10_code' => $order_json['external_order_id'],
     );
 
 
@@ -4233,7 +4233,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
         // save order json in order metadata //.
         $order_json = WC()->session->get('EAS API REQUEST JSON');
-        $order_json['external_order_id'] = '' . $order->get_id();
+        $order_json['external_order_id'] = '' . $order->get_order_number();
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
 
         // saving token to notify EAS during order status change //.
@@ -4263,7 +4263,7 @@ function eascompliance_woocommerce_checkout_order_created($order)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     // notify EAS API on Order number //.
-    $order_id = $order->get_id();
+    $order_id = $order->get_order_number();
     eascompliance_log('place_order', 'order $order_id created ', array('$order_id' => $order_id));
     try {
         set_error_handler('eascompliance_error_handler');
@@ -4669,10 +4669,10 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 				'sslverify' => false,
 			);
 			$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url')
-                . '/visualization/em_order_list?external_order_id='.$order_id;
+                . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
 			$request = (new WP_Http)->request($url, $options);
 			if (is_wp_error($request)) {
-				eascompliance_log('error', 'order $o /visualization/em_order_list failed', array('$o'=>$order_id));
+				eascompliance_log('error', 'order $o /visualization/em_order_list failed', array('$o'=>$order->get_order_number()));
 				throw new Exception($request->get_error_message());
 			}
 
@@ -4689,7 +4689,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
                     return;
                 }
 			} else {
-				eascompliance_log('error', 'Order $o /visualization/em_order_list failed, request $r', array('$o' => $order_id, '$r'=>$request));
+				eascompliance_log('error', 'Order $o /visualization/em_order_list failed, request $r', array('$o' => $order->get_order_number(), '$r'=>$request));
 				throw new Exception($response_status . ' ' . $request['response']['message']);
 			}
 		}
@@ -4700,7 +4700,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 
         $request_json = array('order_list'=>array(array(
                 'order'=>$order_json,
-                's10_code'=>(string)$order->get_id(),
+                's10_code'=>(string)$order->get_order_number(),
                 'sale_date'=>date_format($order->get_date_paid(), 'Y-m-d\TH:i:sP'),
         )));
 
@@ -4779,8 +4779,9 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
 		set_error_handler('eascompliance_error_handler');
 
         $order = wc_get_order($order_id);
+        $order_num = $order->get_order_number();
 		$order_sent_json = $order->get_meta('_easproj_create_post_sale_without_lc_orders_json');
-		eascompliance_log('payment', 'Starting payment processing by EAS. Order id $order_id, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
+		eascompliance_log('payment', 'Starting payment processing by EAS. Order id $order_id, Order num $order_num, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$order_num'=>$order_num, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
 
         //check EAS job status
 		$auth_token = eascompliance_get_oauth_token();
@@ -4829,7 +4830,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
             $j = json_decode($request['http_response']->get_data(), true);
 
             foreach( $j['order_response_list'] as $order_json) {
-                if ($order_json['external_order_id'] !== (string)$order_id) {
+                if ($order_json['external_order_id'] !== (string)$order_num) {
                     throw new Exception('Order response cannot contain other orders');
                 }
 
@@ -4873,7 +4874,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
 
                     $msg = $order_json['error']['message'];
 
-                    eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution is partial with message: $msg', array('$order_id'=>$order_id, '$job_id'=>$job_id, '$msg'=>$msg));
+                    eascompliance_log('info', 'Order $order_id job $job_id  processed by EAS solution partially with message: $msg', array('$order_id'=>$order_num, '$job_id'=>$job_id, '$msg'=>$msg));
                     $order->add_order_note("Order successfully processed by EAS solution with notice '$msg', eas_id=$eas_id");
 
                 }
@@ -4883,7 +4884,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                         $order->add_order_note("EAS failed to process order with message: $msg");
                     }
                     elseif ( 'STANDARD_CHECKOUT' === $order_json['error']['type'] ) {
-                        eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution with STANDARD_CHECKOUT', array('$order_id'=>$order_id, '$job_id'=>$job_id));
+                        eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution with STANDARD_CHECKOUT', array('$order_id'=>$order_num, '$job_id'=>$job_id));
                     }
                     else {
 						eascompliance_log('error', 'Order payment processing by EAS solution failed due to unhandled rejected status type $status, order json: $j', array('$j'=>$order_json, '$status'=>$order_json['error']['type']));
@@ -4891,7 +4892,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                     }
                 }
                 else {
-                    eascompliance_log('error', 'Order $order_id job $job_id payment processed by EAS solution:  failed due to unhandled order status, order json is $j', array('$order_id' => $order_id, '$job_id' => $job_id, '$j' => $order_json));
+                    eascompliance_log('error', 'Order $order_id job $job_id payment processed by EAS solution:  failed due to unhandled order status, order json is $j', array('$order_id' => $order_num, '$job_id' => $job_id, '$j' => $order_json));
                 }
             }
         }
