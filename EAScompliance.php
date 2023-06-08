@@ -1739,7 +1739,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 
     $calc_jreq['order_breakdown'] = $items;
 
-	eascompliance_log('request', 'api request json from order $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order_id));
+	eascompliance_log('request', 'api request json from order $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order->get_order_number()));
 
     return $calc_jreq;
 }
@@ -1978,7 +1978,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $calc_jreq['order_breakdown'] = $items;
     $calc_jreq['total_order_amount'] = round( (float)$order->get_total(), 2);
 
-	eascompliance_log('request', 'api request json from order2 $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order_id));
+	eascompliance_log('request', 'api request json from order2 $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order->get_order_number()));
     return $calc_jreq;
 }
 
@@ -2944,8 +2944,9 @@ function eascompliance_woocommerce_after_order_object_save($order)
         eascompliance_order_createpostsaleorder($order);
 
         $order_id = $order->get_id();
+        $order_num = $order->get_order_number();
 
-        eascompliance_log('info', "EAS createpostsaleorder successful for order $order_id update successful");
+        eascompliance_log('info', "EAS createpostsaleorder successful for order $order_num update successful");
 
 
     } catch (Exception $ex) {
@@ -3032,13 +3033,13 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 		$status = (string)$response['response']['code'];
 		if ('200' === $status) {
 			$order->add_meta_data('_eascompliance_tracking_number_notified', $tracking_no, true);
-			$order->add_order_note(EAS_TR( eascompliance_format('Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order_id))));
-			eascompliance_log('info', 'Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order_id));
+			$order->add_order_note(EAS_TR( eascompliance_format('Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order->get_order_number()))));
+			eascompliance_log('info', 'Tracking number $tr notify successful for order $o', array('$tr'=>$tracking_no,'$o'=>$order->get_order_number()));
             $order->save();
 		}
         else {
 			eascompliance_log('error', 'Tracking number $tr notify response is $s', array('$tr'=>$tracking_no,'$s' => $response));
-			throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order_id))));
+			throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order->get_order_number()))));
 		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -3072,10 +3073,11 @@ function eascompliance_recalculate_ajax()
 		$order_id = absint($_POST['order_id']);
 
 		$order = wc_get_order($order_id);
+        $order_num = $order->get_order_number();
 
 		eascompliance_order_createpostsaleorder($order);
 
-		eascompliance_log('info', "Sales order $order_id update successful", array('$order_id'=>$order_id));
+		eascompliance_log('info', "Sales order $order_id update successful", array('$order_id'=>$order_num));
 
 		wp_send_json(array('status' => 'ok'));
 
@@ -4239,7 +4241,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // saving token to notify EAS during order status change //.
         $order->add_meta_data('_easproj_token', $item0['EASPROJ API CONFIRMATION TOKEN']);
 
-        eascompliance_log('place_order', 'order $order total is $o, tax is $t', array('$order' => $order->get_id(), '$o' => $order->get_total(), '$t' => $order->get_total_tax()));
+        eascompliance_log('place_order', 'order $order total is $o, tax is $t', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax()));
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -4361,7 +4363,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
     if ($status_to === 'completed') {
-        eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id' => $order_id, '$from' => $status_from, '$to' => $status_to));
+        eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id' => $order->get_order_number(), '$from' => $status_from, '$to' => $status_to));
     }
 
     try {
@@ -4369,7 +4371,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
         // log order status change
         eascompliance_log('info', eascompliance_format('Order $order changes status from $from to $to',
-            array('order' => $order_id,
+            array('order' => $order->get_order_number(),
                 'from' => $status_from,
                 'to' => $status_to)));
 
@@ -4440,7 +4442,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
         $order->add_meta_data('_easproj_payment_processed', 'yes', true);
         $order->save();
 
-        eascompliance_log('info', "Notify Order $order_id status change successful");
+        eascompliance_log('info', "Notify Order ".$order->get_order_number()." status change successful");
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -4514,7 +4516,7 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
                 eascompliance_format(
                     EAS_TR('Order $order_id payment notified to EAS'),
                     array(
-                        'order_id' => $order_id,
+                        'order_id' => $order->get_order_number(),
                     )
                 )
             );
@@ -4529,10 +4531,10 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
             throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
         }
 
-        eascompliance_log('info', "Order $order_id payment confirmed");
+        eascompliance_log('info', "Order ".$order->get_order_number()." payment confirmed");
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-        $order->add_order_note(EAS_TR("Order $order_id payment notification failed: ") . $ex->getMessage());
+        $order->add_order_note(EAS_TR("Order ".$order->get_order_number()." payment notification failed: ") . $ex->getMessage());
     } finally {
         restore_error_handler();
     }
@@ -4609,10 +4611,10 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
             $order->save();
         } else {
             //eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r' => $response['body']['message']));
-            throw new Exception($response_status . ' cancelation error detected. '.print_r($response['body'],true) );//. $response['response']['message']);
+            throw new Exception($response_status . ' cancellation error detected. '.print_r($response['body'],true) );//. $response['response']['message']);
         }
 
-        eascompliance_log('info', eascompliance_format("Order $order_id Cancelled notification successful", array('$order_id' => $order_id)));
+        eascompliance_log('info', eascompliance_format("Order $order_id Cancelled notification successful", array('$order_id' => $order->get_order_number())));
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
     } finally {
@@ -4725,7 +4727,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 		if (is_wp_error($request)) {
 
             // if we could not receive job_id then log attempt and mark order for later attempt
-            eascompliance_log('payment', 'order $o /mass-sale/create_post_sale_without_lc_orders failed, job_id was not received, mark for later attempt');
+            eascompliance_log('payment', 'order $o /mass-sale/create_post_sale_without_lc_orders failed, job_id was not received, mark for later attempt',array('$o' => $order->get_order_number()));
 			$order->add_meta_data('_easproj_order_sent_to_eas', '1', true);
 			$order->save_meta_data();
 
@@ -4754,7 +4756,8 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
-		$order->add_order_note(EAS_TR("Order $order_id payment notification failed: ") . $ex->getMessage());
+        $order_num = $order->get_order_number();
+		$order->add_order_note(EAS_TR("Order $order_num payment notification failed: ") . $ex->getMessage());
 	} finally {
 		restore_error_handler();
 	}
@@ -4781,7 +4784,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
         $order = wc_get_order($order_id);
         $order_num = $order->get_order_number();
 		$order_sent_json = $order->get_meta('_easproj_create_post_sale_without_lc_orders_json');
-		eascompliance_log('payment', 'Starting payment processing by EAS. Order id $order_id, Order num $order_num, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$order_num'=>$order_num, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
+		eascompliance_log('payment', 'Starting payment processing by EAS. Order id $order_id, Order# $order_num, job_id is $job_id, attempt no $c, order_send_json is $json', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$order_num'=>$order_num, '$c'=>$attempt_no, '$json'=> json_decode($order_sent_json, true)));
 
         //check EAS job status
 		$auth_token = eascompliance_get_oauth_token();
@@ -4905,12 +4908,12 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
         }
         else {
             // fail on too many attempts
-            throw new Exception('Job status check failed for order $order_id job_id $job_id after $c attempts', array('$job_id' =>$job_id, '$order_id'=>$order_id, '$c'=>$attempt_no));
+            throw new Exception('Job status check failed for order $order_id job_id $job_id after $c attempts', array('$job_id' =>$job_id, '$order_id'=>$order_num, '$c'=>$attempt_no));
         }
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
-		eascompliance_log('error', 'Order $order_id job $job_id payment processing by EAS solution failed due to above exception', array('$job_id' =>$job_id, '$order_id'=>$order_id));
+		eascompliance_log('error', 'Order $order_id job $job_id payment processing by EAS solution failed due to above exception', array('$job_id' =>$job_id, '$order_id'=>$order->get_order_number()));
 	} finally {
 		restore_error_handler();
 	}
@@ -5270,7 +5273,7 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
 
         $reason = $refund->get_meta('_easproj_refund_invalid');
 
-        eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id' => $order_id, '$refund_id' => $refund_id, '$reason' => $reason));
+        eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id' => $order->get_order_number(), '$refund_id' => $refund_id, '$reason' => $reason));
 
         // Delete refund that is invalid due to  insufficient remaining quantity //.
         if ('1' === $reason) {
