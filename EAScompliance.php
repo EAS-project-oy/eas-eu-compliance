@@ -1832,7 +1832,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $delivery_cost = round((float)($order->get_shipping_total()), 2);
 	$delivery_vat = round((float)($order->get_shipping_tax()), 2);
 
-    $calc_jreq['external_order_id'] = '' . $order->>get_order_number();
+    $calc_jreq['external_order_id'] = '' . $order->get_order_number();
     $calc_jreq['delivery_method'] = $delivery_method;
     $calc_jreq['delivery_cost'] = $delivery_cost;
     $calc_jreq['payment_currency'] = $order->get_currency();
@@ -4849,13 +4849,13 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                     // check and handle warnings
                     if (array_key_exists('warning_message_list', $order_json)) {
                         foreach($order_json['warning_message_list'] as $msg) {
-                            eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful with warning: $msg', array('$order_id'=>$order_id, '$job_id'=>$job_id, '$msg'=>$msg));
+                            eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful with warning: $msg', array('$order_id'=> $order_num, '$job_id'=>$job_id, '$msg'=>$msg));
                             $order->add_order_note("Order successfully processed by EAS solution with notice '$msg', eas_id=$eas_id");
                             break;
                         }
                     }
                     else {
-                        eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful', array('$order_id'=>$order_id, '$job_id'=>$job_id));
+                        eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful', array('$order_id'=> $order_num, '$job_id'=>$job_id));
                         $order->add_order_note("Order successfully processed by EAS solution, eas_id=$eas_id");
 						$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
 						$order->save_meta_data();
