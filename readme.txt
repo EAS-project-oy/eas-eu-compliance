@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.7.0
 Tested up to: 6.2
-Stable tag: 1.4.53
+Stable tag: 1.4.56
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -121,6 +121,9 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.4.56 =
+* Fixed issue with button positioning on th ceckout page
+* Enchanced support of WPML multicurrency
 
 = 1.4.53 =
 * Fixed known issue with Delivery taxation desiplaying in the WooCommerce admin Dashboard

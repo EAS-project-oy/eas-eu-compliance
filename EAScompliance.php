@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.55
+ * Version: 1.4.56
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -2285,8 +2285,8 @@ function eascompliance_redirect_confirm()
 			"delivery_charge_vat": 27.36,
 			"merchandise_cost_vat_excl": 3100,
 			"merchandise_cost": 3100,  // sum of items cost without VAT AND eas_fee
-			"delivery_charge": 100,  // delivery charge without VAT
-			"delivery_charge_vat_excl": 100,
+			"delivery_charge": 100,  // delivery charge with VAT
+			"delivery_charge_vat_excl": 100, / delivery charge without VAT
 			"delivery_country": "FI",
 			"payment_currency": "EUR",
 			"merchandise_vat": 754.08,
@@ -2456,6 +2456,7 @@ function eascompliance_redirect_confirm()
         $cart_item0['EAScompliance NEEDS RECALCULATE'] = false;
 
         $cart_item0['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
+        $cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'] = $payload_j['delivery_charge'];
         $cart_item0['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
         $cart_item0['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
         $cart_item0['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
@@ -4077,16 +4078,22 @@ function eascompliance_woocommerce_shipping_packages($packages)
 
                 }
 //                // update $calc_jreq_saved with new delivery_cost //.
-                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+                 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
 //
 //                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
                 if (empty($calc_jreq_saved)) {
                     eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
                     $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
                 }
-                $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
-                $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
 
+                if (round((float)$cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'],2)>round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2)) {
+                    $delivery_cost = round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2);
+                    $delivery_cost += $cart_item0['EAScompliance DELIVERY CHARGE VAT'];
+
+                }
+                else {
+                    $delivery_cost =round((float)$cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'],2);                    
+                }
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
 
                 WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
@@ -4161,6 +4168,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
 
         $calc_jreq_new = eascompliance_make_eas_api_request_json(false);
+      
 
         // exclude external_order_id because get_cart_hash is always different //.
         $calc_jreq_saved['external_order_id'] = '';
@@ -4182,6 +4190,11 @@ function eascompliance_woocommerce_checkout_create_order($order)
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
         }
 
+      /*$wcml_enabled = eascompliance_is_wcml_enabled();
+        if ($wcml_enabled) {
+            $calc_jreq_new['delivery_cost'] = $calc_jreq_saved['delivery_cost'];
+        }
+*/
         foreach ($calc_jreq_new['order_breakdown'] as $k => &$item) {
             $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
             $margin = abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em);
@@ -4590,13 +4603,13 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
         }
 
         $response_status = (string)$response['response']['code'];
-
+       
         if ('200' === $response_status) {
             $order->add_order_note(EAS_TR('Order status changed to Canceled. EAS API notified.'));
             $order->save();
         } else {
-            eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r' => $response['body']['message']));
-            throw new Exception($response_status . ' ' . $response['response']['message']);
+            //eascompliance_log('error', 'Order status changed to Canceled. Notify failed, response is $r', array('$r' => $response['body']['message']));
+            throw new Exception($response_status . ' cancelation error detected. '.print_r($response['body'],true) );//. $response['response']['message']);
         }
 
         eascompliance_log('info', eascompliance_format("Order $order_id Cancelled notification successful", array('$order_id' => $order_id)));
