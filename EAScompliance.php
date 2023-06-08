@@ -871,7 +871,6 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             }
         }
 
-        // В идеале мы хотим сбрасывать расчёты каждый раз, когда обновляется чекаут. Но есть момент, когда чекаут обновляется не пользователем, а кодом после Calculate или после возврата на страницу чекаута. В этом случае сбрасывать расчёты нельзя. В яваскрипте Calculate надо отметить момент, когда updated_checkout не должен приводить к сбросу расчётов. Это делается передачей is_user_checkout==false в POST-запросе на updated_checkout.
         //when checkout was not initiated by user, is_user_checkout will be 'false'
         $is_user_checkout = true;
         foreach (explode('&', $_POST['post_data']) as $chunk) {
@@ -5176,37 +5175,6 @@ function eascompliance_woocommerce_create_refund($refund, $args)
             $refund->add_meta_data('_easproj_refund_invalid', '1', true);
         } else {
             $refund->add_meta_data('_easproj_refund_invalid', '6', true);
-
-            /*
-
-            Примеры ошибок
-            {
-            "message": "Insufficient remaining quantity: 1 of item: FC_Rep_2 to support returned quantity",
-            "code": 400,
-            "retryable": false,
-            "nodeID": "eas-returns-6bb44b5cd-zbz2b-18"
-            }
-            {
-            "message": "Invalid Item ID: FC_Rep_21",
-            "code": 400,
-            "retryable": false,
-            "nodeID": "eas-returns-6bb44b5cd-zbz2b-18"
-            }
-            Следующую ошибку надо обрабатывать так "Order not found in EAS dashboard".
-            {
-            "message": "invalid token",
-            "name": "JsonWebTokenError",
-            "nodeID": "eas-auth-7f5764647c-9m59d-18"
-            }
-            (
-            [message] => Invalid ID Token
-            [code] => 400
-            [type] => CONTACT_ADMIN
-            [retryable] =>
-            [nodeID] => eas-returns-89db77958-jxs2d-17
-            )
-
-             */
 
             $refund_error = json_decode($refund_response['http_response']->get_data(), true);
             eascompliance_log('error', 'Refund return error. ' . print_r($refund_error, true));
