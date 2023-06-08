@@ -122,8 +122,10 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 = 1.4.56 =
-* Fixed issue with button positioning on th ceckout page
-* Enchanced support of WPML multicurrency
+* Fixed issue with button positioning on the checkout page
+* Enhanced support of WPML multicurrency
+* Order number notification issue fixed
+* Unnecessary reload of checkout page suppressed
 
 = 1.4.53 =
 * Fixed known issue with Delivery taxation desiplaying in the WooCommerce admin Dashboard
@@ -194,69 +196,3 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 * Logic for different settings for displaying of taxes at Cart and Checkout steps changed 
 * Translations updated
 
-= 1.3.38 =
-* Woocommerce multy currency impelmented
-* WPML multy currency implemented
-
-= 1.3.36 =
-* Code review and refactoring done
-* minor bugs fixed in checkout step
-
-= 1.3.33 =
-* PayPal and Avarda support implemented
-
-= 1.3.31 =
-* New method of checkout handling implemented
-* WPML supporting improved
-* Deduction of VAT from inclusive prices for the clients from non supported coutries implemented
-* Refund amount calculation improved
-
-= 1.3.10 =
-* Multicurrency support enhanced
-* Multilanguage support enhanced (WPML)
-* Rounding issue in total cart fixed
-* Taxes and Duties handling rules changed
-
-= 1.3.5 =
-* Implemented Required field in delivery address management
-
-= 1.3.4 =
-* Implemented handling of orders created manually in admin section or via API methods
-
-= 1.3.3 =
-* Suomi language updated
-* English wordings improved
-
-= 1.3.2 =
-* Some bugs with differences in billing and shipping adresses fixed
-
-= 1.3.0 =
-* Gift cards support implemented
-* Checkout process improved
-* Refund and Cancelation improved
-* Multi currency support implemented
-* German language added
-
-= 1.2.4 =
-* SKU identification issue fixed
-* Bug fixed with TBE management
-
-= 1.2.0 =
-* Refund functionality implemented
-* Capons and points and rewards support implemented
-* Some minor issues were fixed
-* Rounding issue for total order amount fixed
-
-= 1.1.3 =
-* Multilingual support implemented
-* Suomi translation added
-* Delivery methods management enhanced
-* Some minor bugs were fixed
-* Fixed issue with custom theme support
-* Implemented support of renaming buttons of plugin
-
-= 1.0.5 =
-* Code review according to Woocommerce standard requirements
-
-= 1.0.0 =
-* Initial release
