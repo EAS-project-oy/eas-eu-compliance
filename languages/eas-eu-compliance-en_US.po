@@ -72,7 +72,7 @@ msgstr "Calculating taxes and duties ..."
 
 #: EAScompliance.php:634
 msgid "Customs taxes and duties added..."
-msgstr ""
+msgstr "Taxes and Duties calculated..."
 
 #: EAScompliance.php:635
 msgid "Waiting for Customs Duties Calculation and confirmation details"
@@ -192,7 +192,7 @@ msgstr ""
 
 #: EAScompliance.php:4006 EAScompliance.php:4028 EAScompliance.php:4055
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
-msgstr ""
+msgstr "PLEASE RE-CALCULATE TAXES AND  DUTIES"
 
 #: EAScompliance.php:4132
 msgid "Notify Order number $order_id successful"
