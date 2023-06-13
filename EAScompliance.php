@@ -507,7 +507,6 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
     }
 }
 
-
 /**
  * Get woocommerce settings when woocommerce_settings_get_option is undefined
  *
@@ -2085,29 +2084,7 @@ function eascompliance_ajaxhandler()
             $jdebug['CALC response headers'] = $response['headers'];
             $jdebug['CALC response status'] = $calc_status;
             $error_message = $response['response']['message'];
-
-            /*
-			Parse error json and extract detailed error message
-			$sample_calc_error = '
-			{
-				"message": "Cannot determine originating country for goods item",
-				"code": 400,
-				"type": "ERR_INCOMPLETE_DATA",
-				"data": {
-					"field": "originating_country",
-					"message": "Valid originating country is required for goods item"
-				},
-				"retryable": false,
-				"nodeID": "eas-calculation-949969dd4-j7qfr-17"
-			}';
-			$sample_calc_error = '
-			{
-				errors: {
-					delivery_email: The \'delivery_email\' field must not be empty.
-				}
-			}';
-			*/
-
+ 
             $calc_error = json_decode($response['http_response']->get_data(), true);
             if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
 
@@ -2128,6 +2105,14 @@ function eascompliance_ajaxhandler()
             }
             if (array_key_exists('message', $calc_error)) {
                 $error_message = $calc_error['message'];
+                if (array_key_exists('data', $calc_error) && array_key_exists('field', $calc_error['data'])) {
+                    if('id_provided_by_em'==$calc_error['data']['field']){
+                      $error_message =  str_replace('Sorry, duplicate item Ids found for these items,',EAS_TR('Sorry, duplicate item Ids found for these items: '),$error_message);
+                      $error_message =  str_replace('Please correct the item Ids to be unique within the order and try again.',EAS_TR('Please correct the item Ids to be unique within the order and try again.'),$error_message);
+                      
+                    }
+
+                }
             }
             if (array_key_exists('errors', $calc_error)) {
                 $error_message = join(' ', array_values($calc_error['errors']));

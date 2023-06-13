@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: eascompliance\n"
-"POT-Creation-Date: 2023-04-18 15:25+0300\n"
+"POT-Creation-Date: 2023-06-13 10:38+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -18,52 +18,40 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
-#: EAScompliance.php:4
-msgid ""
-"EAS EU compliance plugin automates your EU & UK VAT and Customs compliance. "
-"EAS EU compliance  is a comprehensive fully automated solution of EU VAT and "
-"Customs for new special EU VAT schemes and UK VAT and Customs compiance.  "
-"With EAS selling to all EU countries and UK is just as easy as your domestic "
-"sales, oreven easier! EAS removes all the tax and customs compliance "
-"barriers preventing your sales throughout the whole EU and UK!"
-msgstr ""
-"EAS EU -vaatimustenmukaisuuslaajennus automatisoi EU:n ja Yhdistyneen "
-"kuningaskunnan ALV- ja tullivaatimusten noudattamisen. EAS EU Compliance on "
-"täydellinen täysin automatisoitu EU:n ALV- ja tulliratkaisu EU:n uusiin "
-"erityisiin ALV-järjestelmiin sekä Yhdistyneen kuningaskunnan arvonlisäveron "
-"ja tullin noudattamiseen. EAS:n avulla myynti kaikissa EU-maissa ja Isossa-"
-"Britanniassa on yhtä helppoa kuin kotimainen myynti, ellei helpompaa! EAS "
-"poistaa kaikki vero- ja tulliesteet, jotka estävät myyntiäsi kaikkialla EU:"
-"ssa ja Isossa-Britanniassa!"
-
-#: EAScompliance.php:86
+#: EAScompliance.php:87
 msgid "Settings"
 msgstr "Asetukset"
 
-#: EAScompliance.php:195
+#: EAScompliance.php:196
 msgid "Plugin activation request failed"
 msgstr "Laajennuksen aktivointipyyntö epäonnistui"
 
-#: EAScompliance.php:272
+#: EAScompliance.php:227
+msgid ""
+"Plugin '$plugin' deactivated. Sorry we don’t support your WooCommerce "
+"version $wc. Please upgrade WooCommerce to latest version."
+msgstr ""
+
+#: EAScompliance.php:310
 msgid "No tax rate found, please check plugin settings"
 msgstr "Verokantaa ei löytynyt, tarkista plugin asetukset"
 
-#: EAScompliance.php:305 EAScompliance.php:458
+#: EAScompliance.php:343 EAScompliance.php:496
 msgid "Taxes & Duties"
 msgstr "Verot"
 
-#: EAScompliance.php:422
+#: EAScompliance.php:460
 msgid "Please calculate taxes and duties to proceed with order payment"
 msgstr "Laske verot ja tullit edetäksesi maksuun"
 
-#: EAScompliance.php:631
+#: EAScompliance.php:669
 msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
 msgstr ""
 "Tarkista vaaditut tiedot. Kaikki pakolliset kentät tulee olla täytettynä."
 
-#: EAScompliance.php:632
+#: EAScompliance.php:670
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
@@ -71,71 +59,71 @@ msgstr ""
 "Tarkista vaaditut toimitustiedot. Kaikki pakolliset kentät tulee olla "
 "täytettynä."
 
-#: EAScompliance.php:633
+#: EAScompliance.php:671
 msgid "Calculating taxes and duties ..."
 msgstr "Laskee veroja ..."
 
-#: EAScompliance.php:634
+#: EAScompliance.php:672
 msgid "Customs taxes and duties added..."
 msgstr "Verot lisätty..."
 
-#: EAScompliance.php:635
+#: EAScompliance.php:673
 msgid "Waiting for Customs Duties Calculation and confirmation details"
 msgstr "Odottaa vero ja tullilaskelmaa"
 
-#: EAScompliance.php:636
+#: EAScompliance.php:674
 msgid "confirmation"
 msgstr "vahvistus"
 
-#: EAScompliance.php:637
+#: EAScompliance.php:675
 msgid "Sorry, didn't work, please try again"
 msgstr "Yritä uudelleen"
 
-#: EAScompliance.php:638
+#: EAScompliance.php:676
 msgid "Recalculate Taxes and Duties"
 msgstr "Laske verot uudelleen"
 
-#: EAScompliance.php:639
+#: EAScompliance.php:677
 msgid "Standard Checkout"
 msgstr "Oletus Checkout"
 
-#: EAScompliance.php:640
+#: EAScompliance.php:678
 msgid "reload"
 msgstr "lataa"
 
-#: EAScompliance.php:641
+#: EAScompliance.php:679
 msgid "Security check, please reload page. "
 msgstr "Turvatarkastus: lataa sivu uudelleen. "
 
-#: EAScompliance.php:740 EAScompliance.php:795
+#: EAScompliance.php:778 EAScompliance.php:833
 msgid "Unable to set required fields"
 msgstr "Pakollisia kenttiä ei voitu määrittää"
 
-#: EAScompliance.php:1006 EAScompliance.php:5740
+#: EAScompliance.php:1043 EAScompliance.php:5890
 msgid "Calculate Taxes and Duties"
 msgstr "Klikkaa jatkaaksesi tilausta"
 
-#: EAScompliance.php:1122 EAScompliance.php:1134 EAScompliance.php:1137
+#: EAScompliance.php:1163 EAScompliance.php:1175 EAScompliance.php:1178
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
 msgstr "EU ALV laskentapalvelu toistaiseksi poissa käytöstä."
 
-#: EAScompliance.php:1129
+#: EAScompliance.php:1170
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
 msgstr "Tarkista EAS Client ID ja EAS client secret."
 
-#: EAScompliance.php:1305
+#: EAScompliance.php:1346
 msgid "Multiple coupons not supported, please contact support"
 msgstr "Valittua kuponkityyppiä ei tueta, ottakaa yhteyttä tukeen"
 
-#: EAScompliance.php:1326
+#: EAScompliance.php:1367
 msgid "Selected coupon type is not supported, please contact support"
 msgstr "Useita kuponkeja ei tueta, ottakaa yhteyttä tukeen"
 
-#: EAScompliance.php:1348
+#: EAScompliance.php:1389
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
@@ -143,7 +131,7 @@ msgstr ""
 "Kokonaiskulua ei voi laskea koska toimitusosoite kenttä '$field_name' "
 "puuttuu kaupasta. Ota yhteyttä myyjään."
 
-#: EAScompliance.php:1351
+#: EAScompliance.php:1392
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is empty."
@@ -151,16 +139,25 @@ msgstr ""
 "Kokonaiskulua ei voi laskea koska toimitusosoite kenttä  '$field_name'  on "
 "tyhjä."
 
-#: EAScompliance.php:1655 EAScompliance.php:1871
+#: EAScompliance.php:1696 EAScompliance.php:1912
 msgid "Field $fields is required, please enter $fields and try again."
 msgstr "Kenttä $fields on pakollinen, täytä kenttä $fields ja yritä uudelleen."
 
-#: EAScompliance.php:1657 EAScompliance.php:1873
+#: EAScompliance.php:1698 EAScompliance.php:1914
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
 "Kenttä [$fields] on pakollinen, täytä kenttä [$fields] ja yritä uudelleen."
 
-#: EAScompliance.php:2737
+#: EAScompliance.php:2133
+msgid "Sorry, duplicate item Ids found for these items: "
+msgstr ""
+
+#: EAScompliance.php:2134
+msgid ""
+"Please correct the item Ids to be unique within the order and try again."
+msgstr ""
+
+#: EAScompliance.php:2793
 msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
@@ -168,47 +165,47 @@ msgstr ""
 "Kokonaissumman laskenta ei voi edetä ennen kuin Nimi ja toimistusosoite on "
 "syötetty"
 
-#: EAScompliance.php:2741
+#: EAScompliance.php:2797
 msgid "Order shipping country must be in EU"
 msgstr "Toimitusmaan tulee olla EUssa"
 
-#: EAScompliance.php:2844
+#: EAScompliance.php:2900
 msgid "createpostsaleorder failed"
 msgstr "createpostsaleorder epäonnistui"
 
-#: EAScompliance.php:3165
+#: EAScompliance.php:3223
 msgid "number of order_items does not match number of items in cart"
 msgstr "tilattujen tuotteiden määrä ei vastaa ostoskärryn tuotemäärää"
 
-#: EAScompliance.php:3670
+#: EAScompliance.php:3728
 #, fuzzy
 #| msgid "Taxes & Duties"
 msgid "Incl. Taxes & Duties: "
 msgstr "Verot"
 
-#: EAScompliance.php:3674
+#: EAScompliance.php:3732
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr "Hinnat eivät sisällä ALV:tä, ALV maksu toimituksen yhteydessä"
 
-#: EAScompliance.php:3994
+#: EAScompliance.php:4163
 msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
 msgstr "Tulli summa puuttuu, ostoskorissasi on virhe <a href=\"./\">reload</a>"
 
-#: EAScompliance.php:4006 EAScompliance.php:4028 EAScompliance.php:4055
+#: EAScompliance.php:4175 EAScompliance.php:4198 EAScompliance.php:4230
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "LASKE TULLIMAKSUT UUDELLEEN"
 
-#: EAScompliance.php:4132
+#: EAScompliance.php:4309
 msgid "Notify Order number $order_id successful"
 msgstr "Tilausnumero $order_id onnistui"
 
-#: EAScompliance.php:4144
+#: EAScompliance.php:4321
 msgid "Notify Order number $order_id failed: "
 msgstr "Tilanusnumero $order_id epäonnistui: "
 
-#: EAScompliance.php:4259
+#: EAScompliance.php:4436
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -216,15 +213,15 @@ msgstr ""
 "Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
 "payment ilmoitettu"
 
-#: EAScompliance.php:4278
+#: EAScompliance.php:4455
 msgid "Order status change notification failed: "
 msgstr "Tilauksen muutosilmoitus epäonnistui: "
 
-#: EAScompliance.php:4346
+#: EAScompliance.php:4523
 msgid "Order $order_id payment notified to EAS"
 msgstr "Tilauksen $order_id maksu ilmoitettu EAS:lle"
 
-#: EAScompliance.php:4356
+#: EAScompliance.php:4533
 msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
@@ -232,7 +229,11 @@ msgstr ""
 "EAS EU Compliance ratkaisu: Tilaus muodostettu. Lähetystä ei voitu muodostaa "
 "koska S10 puuttuu. Login EAS Dashboardiin muodostaaksesi lähetyksen"
 
-#: EAScompliance.php:4439
+#: EAScompliance.php:4543
+msgid "Order "
+msgstr ""
+
+#: EAScompliance.php:4616
 #, fuzzy
 #| msgid ""
 #| "Order status changed from $status_from to $status_to .  EAS API payment "
@@ -242,13 +243,13 @@ msgstr ""
 "Tilauksen tila muutettu tilasta $status_from tilaan $status_to . EAS API "
 "payment ilmoitettu"
 
-#: EAScompliance.php:4517
+#: EAScompliance.php:4694
 msgid ""
 "Order was processed by EAS solution, but returns should be handled in the "
 "EAS dashboard https:///dashaboard.easproject.com "
 msgstr ""
 
-#: EAScompliance.php:5049
+#: EAScompliance.php:5199
 msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
@@ -256,11 +257,11 @@ msgstr ""
 "Palautus on peruutettu. Tilauksen on tehnyt eri Client_ID kuin on "
 "rekisteröity EAS Compliance ratkaisuun."
 
-#: EAScompliance.php:5064
+#: EAScompliance.php:5214
 msgid "Refund create failed: "
 msgstr "Palautus epäonnistui "
 
-#: EAScompliance.php:5106
+#: EAScompliance.php:5256
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
@@ -268,13 +269,13 @@ msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin riittämättömän tuotemäärän "
 "vuoksi. "
 
-#: EAScompliance.php:5113
+#: EAScompliance.php:5263
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
 "Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
 "palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen. "
 
-#: EAScompliance.php:5120
+#: EAScompliance.php:5270
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
@@ -282,7 +283,7 @@ msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
 "on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
 
-#: EAScompliance.php:5127
+#: EAScompliance.php:5277
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
@@ -290,7 +291,7 @@ msgstr ""
 "Palautus $refund_id peruuntui ja poistettiin koska EAS palautusjärjestelmä "
 "on väliaikaisesti pois käytöstä. Yritä myöhemmin uudlleen "
 
-#: EAScompliance.php:5135
+#: EAScompliance.php:5285
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
@@ -298,7 +299,7 @@ msgstr ""
 "Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
 "palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen."
 
-#: EAScompliance.php:5143
+#: EAScompliance.php:5293
 #, fuzzy
 #| msgid ""
 #| "Refund $refund_id cancelled and removed. Refund total cannot be more than "
@@ -309,131 +310,131 @@ msgstr ""
 "Palautus $refund_id peruutettiin ja poistettiin koska lahjakorttia ei voi "
 "palauttaa. Poistakaa lahjakortti palautuksesta ja yrittäkää uudelleen."
 
-#: EAScompliance.php:5184
+#: EAScompliance.php:5334
 msgid "Refund confirmed to EAS"
 msgstr "Palautus vahvistettu EAS:lle"
 
-#: EAScompliance.php:5189
+#: EAScompliance.php:5339
 msgid "Refund confirm failed: "
 msgstr "Palautus epäonnistui: "
 
-#: EAScompliance.php:5213
+#: EAScompliance.php:5363
 msgid "Log EAS order data"
 msgstr "Vie EAS tilausdata"
 
-#: EAScompliance.php:5220
+#: EAScompliance.php:5370
 msgid "Calculate Taxes & Duties EAS"
 msgstr "Klikkaa jatkaaksesi tilausta"
 
-#: EAScompliance.php:5449
+#: EAScompliance.php:5599
 msgid "Info"
 msgstr "Info"
 
-#: EAScompliance.php:5450
+#: EAScompliance.php:5600
 msgid "Error"
 msgstr "Virhe"
 
-#: EAScompliance.php:5467
+#: EAScompliance.php:5617
 msgid "General"
 msgstr "Yleiset asetukset"
 
-#: EAScompliance.php:5471
+#: EAScompliance.php:5621
 msgid "Enable/Disable"
 msgstr "Ota käyttöön / poista käytöstä"
 
-#: EAScompliance.php:5478
+#: EAScompliance.php:5628
 msgid "Language"
 msgstr "Kieli"
 
-#: EAScompliance.php:5480
+#: EAScompliance.php:5630
 msgid "Choose language for user interface of plugin"
 msgstr "Valitse plugin kieli"
 
-#: EAScompliance.php:5482
+#: EAScompliance.php:5632
 msgid "Default"
 msgstr "Vakio"
 
-#: EAScompliance.php:5484
+#: EAScompliance.php:5634
 msgid "Store Default"
 msgstr "Kaupan vakioasetus"
 
-#: EAScompliance.php:5485
+#: EAScompliance.php:5635
 msgid "English"
 msgstr "Englanti"
 
-#: EAScompliance.php:5486
+#: EAScompliance.php:5636
 msgid "Finnish"
 msgstr "Suomi"
 
-#: EAScompliance.php:5487
+#: EAScompliance.php:5637
 msgid "French"
 msgstr "Français"
 
-#: EAScompliance.php:5488
+#: EAScompliance.php:5638
 msgid "German"
 msgstr "Deutsch"
 
-#: EAScompliance.php:5489
+#: EAScompliance.php:5639
 msgid "Italian"
 msgstr "Italiano"
 
-#: EAScompliance.php:5490
+#: EAScompliance.php:5640
 msgid "Netherlands"
 msgstr "Dutch"
 
-#: EAScompliance.php:5491
+#: EAScompliance.php:5641
 msgid "Swedish"
 msgstr "Svensk"
 
-#: EAScompliance.php:5495
+#: EAScompliance.php:5645
 msgid "EAS API Base URL"
 msgstr "EAS API Base URL"
 
-#: EAScompliance.php:5497
+#: EAScompliance.php:5647
 msgid "API URL"
 msgstr "API URL"
 
-#: EAScompliance.php:5503
+#: EAScompliance.php:5653
 msgid "EAS client ID"
 msgstr "EAS client ID"
 
-#: EAScompliance.php:5505
+#: EAScompliance.php:5655
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
 "easpoject.com\">https://dashboard.easpoject.com</a>"
 
-#: EAScompliance.php:5511
+#: EAScompliance.php:5661
 msgid "EAS client secret"
 msgstr "EAS client secret"
 
-#: EAScompliance.php:5513
+#: EAScompliance.php:5663
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Rekisteröidy tästä saadaksesi tunnukset: <a href=\"https://dashboard."
 "easpoject.com\">https://dashboard.easpoject.com/</a>"
 
-#: EAScompliance.php:5520
+#: EAScompliance.php:5670
 msgid "Process imported orders"
 msgstr "Tuo tilausdata (myynnin jälkeinen data)"
 
-#: EAScompliance.php:5528
+#: EAScompliance.php:5678
 #, fuzzy
 #| msgid "Standard Checkout"
 msgid "Standard mode"
 msgstr "Oletus Checkout"
 
-#: EAScompliance.php:5535
+#: EAScompliance.php:5685
 msgid "Log levels"
 msgstr "Lokitasot"
 
-#: EAScompliance.php:5548
+#: EAScompliance.php:5698
 #, fuzzy
 #| msgid "Tax options"
 msgid "Taxation"
 msgstr "Verovaihtoehdot"
 
-#: EAScompliance.php:5551
+#: EAScompliance.php:5701
 msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
@@ -441,71 +442,71 @@ msgstr ""
 "Vähennä kotimaan ALV toimituksista maihin missä verojen laskenta ei ole "
 "tuettu"
 
-#: EAScompliance.php:5559
+#: EAScompliance.php:5709
 msgid "Non-EU Countries support"
 msgstr "EU:n ulkopuolisten maiden tuki"
 
-#: EAScompliance.php:5568
+#: EAScompliance.php:5718
 msgid "Shipping methods by post"
 msgstr "Postitusvaihtoehdot"
 
-#: EAScompliance.php:5571
+#: EAScompliance.php:5721
 msgid "Select shipping methods for delivery by post"
 msgstr "Valitse postitusvaihtoehdot"
 
-#: EAScompliance.php:5576 EAScompliance.php:5578
+#: EAScompliance.php:5726 EAScompliance.php:5728
 #, fuzzy
 #| msgid "Giftcard product types"
 msgid "Default product type"
 msgstr "Lahjakortit"
 
-#: EAScompliance.php:5581
+#: EAScompliance.php:5731
 msgid "Physical goods"
 msgstr "Fyysiset tavarat"
 
-#: EAScompliance.php:5584
+#: EAScompliance.php:5734
 msgid "Paid order statuses"
 msgstr "Maksullisten tilausten tila"
 
-#: EAScompliance.php:5587
+#: EAScompliance.php:5737
 msgid "Status(es) denoting orders which have been paid for"
 msgstr "Maksettujen tuotteiden tila"
 
-#: EAScompliance.php:5593
+#: EAScompliance.php:5743
 msgid "Giftcard product types"
 msgstr "Lahjakortit"
 
-#: EAScompliance.php:5596
+#: EAScompliance.php:5746
 msgid "Product type(s) used for Gift cards management"
 msgstr "Tuotetyypit mitä käytetään Lahjakorttien käsittelyyn"
 
-#: EAScompliance.php:5614
+#: EAScompliance.php:5764
 msgid "Product Attributes"
 msgstr "Tuoteominaisuudet"
 
-#: EAScompliance.php:5617
+#: EAScompliance.php:5767
 msgid "Additional products attributes settings"
 msgstr "Lisätuotteiden ominaisuuksien asetukset"
 
-#: EAScompliance.php:5624
+#: EAScompliance.php:5774
 msgid "HSCODE"
 msgstr "HS-koodi"
 
-#: EAScompliance.php:5627
+#: EAScompliance.php:5777
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr "HS-koodi tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:5636
+#: EAScompliance.php:5786
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
 msgstr "Varastointimaan tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:5642
+#: EAScompliance.php:5792
 msgid "Reduced VAT for TBE"
 msgstr "Alennettu verokanta elektroniselle tuotteelle"
 
-#: EAScompliance.php:5645
+#: EAScompliance.php:5795
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
@@ -513,41 +514,41 @@ msgstr ""
 "Alennettu verokanta elektroniselle tuotteelle tunniste. Atribuutti luodaan "
 "jos sitä ei ole."
 
-#: EAScompliance.php:5651
+#: EAScompliance.php:5801
 msgid "Act as Disclosed Agent"
 msgstr "Toimi vapaana agenttina (Disclosed Agent)"
 
-#: EAScompliance.php:5654
+#: EAScompliance.php:5804
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
 msgstr "Toimi vapaana agenttina tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:5660
+#: EAScompliance.php:5810
 msgid "Seller registration country"
 msgstr "Maa johon myyjä on rekisteröitynyt"
 
-#: EAScompliance.php:5663
+#: EAScompliance.php:5813
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
 msgstr "Muujan rekisterimaa tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:5669
+#: EAScompliance.php:5819
 msgid "Originating Country"
 msgstr "Tuotteen alkuperämaa"
 
-#: EAScompliance.php:5672
+#: EAScompliance.php:5822
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr "Tuotteen alkuperämaa tunniste. Atribuutti luodaan jos sitä ei ole."
 
-#: EAScompliance.php:5682 EAScompliance.php:5685
+#: EAScompliance.php:5832 EAScompliance.php:5835
 msgid "Design"
 msgstr "Muotoilu"
 
-#: EAScompliance.php:5689
+#: EAScompliance.php:5839
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
@@ -555,55 +556,55 @@ msgstr ""
 "Jos arvot jätetään tyhjiksi, painikkeessa käytetään oletusvärejä ja "
 "fonttikokoa"
 
-#: EAScompliance.php:5693
+#: EAScompliance.php:5843
 msgid "Button text"
 msgstr "Painikkeen teksti"
 
-#: EAScompliance.php:5699
+#: EAScompliance.php:5849
 msgid "Button font size"
 msgstr "Painikkeen fonttikoko"
 
-#: EAScompliance.php:5702
+#: EAScompliance.php:5852
 msgid "Please select font size (without px , only number)"
 msgstr "Valitse fonttikoko (ilman px , vain numero)"
 
-#: EAScompliance.php:5706
+#: EAScompliance.php:5856
 msgid "Button text color"
 msgstr "Painikkeen tekstin väri"
 
-#: EAScompliance.php:5709
+#: EAScompliance.php:5859
 msgid "Please select color for text on button"
 msgstr "Valitse painikkeen tekstin väri"
 
-#: EAScompliance.php:5713
+#: EAScompliance.php:5863
 msgid "Button background color"
 msgstr "Painikkeen taustaväri"
 
-#: EAScompliance.php:5716
+#: EAScompliance.php:5866
 msgid "Please select background color"
 msgstr "Valitse taustaväri"
 
-#: EAScompliance.php:5720
+#: EAScompliance.php:5870
 msgid "Button background color on mouse over"
 msgstr "Painikkeen taustaväri hiiren osoittaessa"
 
-#: EAScompliance.php:5723
+#: EAScompliance.php:5873
 msgid "Please select background color on mouse over"
 msgstr "Valitse taustaväri hiiren osoittaessa painiketta"
 
-#: EAScompliance.php:5727
+#: EAScompliance.php:5877
 msgid "Font color on mouse over"
 msgstr "Fontin väri hiiren osoittaessa"
 
-#: EAScompliance.php:5730
+#: EAScompliance.php:5880
 msgid "Please select mouse over color for text on button"
 msgstr "Valitse fontin väri hiiren osoittaessa painiketta"
 
-#: EAScompliance.php:5735
+#: EAScompliance.php:5885
 msgid "Button Example"
 msgstr "Esimerkki painikkeesta"
 
-#: EAScompliance.php:5777
+#: EAScompliance.php:5927
 msgid ""
 "Attention! EAS plugin detected gift card Product type(s),  please if you are "
 "selling Gift cards please enter Product type(s) in relevant configuration "
@@ -612,7 +613,7 @@ msgstr ""
 "Huomio! EAS havaitsi Lahjakortti -tuotetyyppejä. Jos myyt Lahjakortteja, "
 "lisää tuotetyypit asetuksissa"
 
-#: EAScompliance.php:5781
+#: EAScompliance.php:5931
 msgid ""
 "Landed cost calculation will be prohibbited for EU on checkout because "
 "required delivery Phone field is disabled. Please visit Appearance → "
@@ -624,35 +625,35 @@ msgstr ""
 "Mukauta -sivulle. Valitse \"WooCommerce\" ja sitten \"Checkout\" ja muuta "
 "\"Puhelin\"-kentän asetuksiksi Valinnainen tai Pakollinen."
 
-#: EAScompliance.php:5809 EAScompliance.php:5816
+#: EAScompliance.php:5959 EAScompliance.php:5966
 msgid "EAS MPM"
 msgstr "EAS MPM"
 
-#: EAScompliance.php:5809 EAScompliance.php:5818 EAScompliance.php:5911
+#: EAScompliance.php:5959 EAScompliance.php:5968 EAScompliance.php:6061
 msgid "EAS Logs"
 msgstr "EAS-loki"
 
-#: EAScompliance.php:5809 EAScompliance.php:5817 EAScompliance.php:5945
+#: EAScompliance.php:5959 EAScompliance.php:5967 EAScompliance.php:6095
 msgid "Connection status"
 msgstr "Yhteyden tila"
 
-#: EAScompliance.php:5873
+#: EAScompliance.php:6023
 msgid "EAS Merchandise module"
 msgstr "EAS Merchandise -moduuli"
 
-#: EAScompliance.php:5875
+#: EAScompliance.php:6025
 msgid "To connect to the EAS Merchandise module, follow these steps:"
 msgstr "Voit muodostaa yhteyden EAS Merchandise -moduuliin seuraavasti:"
 
-#: EAScompliance.php:5877
+#: EAScompliance.php:6027
 msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
 msgstr "Siirry WooCommerce → Asetukset → Lisäasetukset → REST API -valikkoon."
 
-#: EAScompliance.php:5878
+#: EAScompliance.php:6028
 msgid "Press the button “Add key”."
 msgstr "Paina painiketta \"Lisää avain\"."
 
-#: EAScompliance.php:5879
+#: EAScompliance.php:6029
 msgid ""
 "In opened window, fill Description with any name, set permissions to → Read/"
 "write. User field will be\n"
@@ -662,15 +663,15 @@ msgstr ""
 "→ Luku/kirjoitus. Järjestelmä täyttää käyttäjäkentän automaattisesti, jätä "
 "se ennalleen."
 
-#: EAScompliance.php:5882
+#: EAScompliance.php:6032
 msgid "Press the “Generate API key” button."
 msgstr "Paina \"Luo API-avain\" -painiketta."
 
-#: EAScompliance.php:5883
+#: EAScompliance.php:6033
 msgid "A window with key details will appear. Leave it open."
 msgstr "Näkyviin tulee ikkuna, jossa on tärkeimmät tiedot. Jätä se auki."
 
-#: EAScompliance.php:5884
+#: EAScompliance.php:6034
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
@@ -678,7 +679,7 @@ msgstr ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 
-#: EAScompliance.php:5885
+#: EAScompliance.php:6035
 msgid ""
 "Authenticate using your login and password to the EAS Merchandise module. "
 "Login and password are the\n"
@@ -687,13 +688,13 @@ msgstr ""
 "Todenna syöttämällä kirjautumistunnuksesi ja salasanasi EAS Merchandise -"
 "moduuliin. Käyttäjätunnus ja salasana ovat samat kuin EAS Dashboardissa."
 
-#: EAScompliance.php:5887
+#: EAScompliance.php:6037
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
 "Paina EAS Merchandise -moduulissa \"Luo\"-painiketta ja valitse WooCommerce."
 
-#: EAScompliance.php:5888
+#: EAScompliance.php:6038
 msgid ""
 "In the opened window, insert the following data: Name of the Store, Full URL "
 "and generated API keys\n"
@@ -704,7 +705,7 @@ msgstr ""
 "luodut API-avaimet vaiheessa 4. Paina Tallenna. Jos syötetyt tiedot ovat "
 "oikein, yhteys muodostetaan."
 
-#: EAScompliance.php:5891
+#: EAScompliance.php:6041
 msgid ""
 "Afterwards, the mapping process is initiated, a new window is opened. Map "
 "fields according to the\n"
@@ -730,7 +731,7 @@ msgstr ""
 "\">https://easproject .zendesk.com/hc/en-us/articles/6152957985053-"
 "WooCommerce-full-manual"
 
-#: EAScompliance.php:5895
+#: EAScompliance.php:6045
 msgid ""
 "After proper mapping, Press the “Start processing” button to parse SKU data "
 "from the shop into the\n"
@@ -741,7 +742,7 @@ msgstr ""
 "SKU-tiedot kaupastasi Merchandise-moduuliin. Jäsentäminen kestää jonkin "
 "aikaa, riippuen kaupan käyttämien SKU:iden määrästä."
 
-#: EAScompliance.php:5898
+#: EAScompliance.php:6048
 msgid ""
 "The connection now is established and products from the Merchant’s store are "
 "linked to EAS Merchandise\n"
@@ -750,7 +751,7 @@ msgstr ""
 "Yhteys on nyt muodostettu ja kauppiaan myymälän tuotteet on linkitetty EAS "
 "Merchandise -moduuliin."
 
-#: EAScompliance.php:5913
+#: EAScompliance.php:6063
 msgid ""
 "EAS EU compliance plugin stores logs to the WooCommerce default logging "
 "folder.<br><br> To see logs, please choose required log file with the "
@@ -765,43 +766,43 @@ msgstr ""
 "valikosta oikeasta yläkulmasta ja paina \"Näytä\" <a href=\"/wp-admin/admin."
 "php?page=wc-status&tab=logs\">Lokit-sivulla</a>"
 
-#: EAScompliance.php:5951
+#: EAScompliance.php:6101
 msgid "Your EAS Identifier:"
 msgstr "EAS-tunnuksesi:"
 
-#: EAScompliance.php:5954
+#: EAScompliance.php:6104
 msgid "EM legal status:"
 msgstr "Online myyjän oikeudellinen asema:"
 
-#: EAScompliance.php:5957
+#: EAScompliance.php:6107
 msgid "In EAS EM  registered as:"
 msgstr "EAS:ssa online myyjä rekisteröity nimellä:"
 
-#: EAScompliance.php:5960
+#: EAScompliance.php:6110
 msgid "Electronic Interface"
 msgstr "Online markkinapaikka"
 
-#: EAScompliance.php:5963
+#: EAScompliance.php:6113
 msgid "Not electronic Interface"
 msgstr "Ei online markkinapaikka"
 
-#: EAScompliance.php:5967
+#: EAScompliance.php:6117
 msgid "OSS Registered:"
 msgstr "OSS rekisteröity:"
 
-#: EAScompliance.php:5970
+#: EAScompliance.php:6120
 msgid "YES"
 msgstr "KYLLÄ"
 
-#: EAScompliance.php:5972
+#: EAScompliance.php:6122
 msgid "NO"
 msgstr "EI"
 
-#: EAScompliance.php:5976
+#: EAScompliance.php:6126
 msgid "Product Description language:"
 msgstr "Tuotteen kuvauksen kieli:"
 
-#: EAScompliance.php:6375
+#: EAScompliance.php:6525
 msgid ""
 "VAT rates for European countries detected in the WooCommerce Tax Settings. "
 "EAS solution will consider all prices as VAT included. Please contact EAS "
@@ -809,19 +810,37 @@ msgid ""
 "configured."
 msgstr ""
 
-#: EAScompliance.php:6388
+#: EAScompliance.php:6538
 msgid ""
 "Authorisation failed, wrong credentials provided. Please check your Client "
 "ID and Client secret."
 msgstr "Tarkista EAS Client ID ja EAS client secret."
 
-#: EAScompliance.php:6410
+#: EAScompliance.php:6560
 msgid "Sorry, your WooCommerce version \""
 msgstr ""
 
-#: EAScompliance.php:6500
+#: EAScompliance.php:6650
 msgid "EAS processed"
 msgstr "EAS-käsittely"
+
+#~ msgid ""
+#~ "EAS EU compliance plugin automates your EU & UK VAT and Customs "
+#~ "compliance. EAS EU compliance  is a comprehensive fully automated "
+#~ "solution of EU VAT and Customs for new special EU VAT schemes and UK VAT "
+#~ "and Customs compiance.  With EAS selling to all EU countries and UK is "
+#~ "just as easy as your domestic sales, oreven easier! EAS removes all the "
+#~ "tax and customs compliance barriers preventing your sales throughout the "
+#~ "whole EU and UK!"
+#~ msgstr ""
+#~ "EAS EU -vaatimustenmukaisuuslaajennus automatisoi EU:n ja Yhdistyneen "
+#~ "kuningaskunnan ALV- ja tullivaatimusten noudattamisen. EAS EU Compliance "
+#~ "on täydellinen täysin automatisoitu EU:n ALV- ja tulliratkaisu EU:n "
+#~ "uusiin erityisiin ALV-järjestelmiin sekä Yhdistyneen kuningaskunnan "
+#~ "arvonlisäveron ja tullin noudattamiseen. EAS:n avulla myynti kaikissa EU-"
+#~ "maissa ja Isossa-Britanniassa on yhtä helppoa kuin kotimainen myynti, "
+#~ "ellei helpompaa! EAS poistaa kaikki vero- ja tulliesteet, jotka estävät "
+#~ "myyntiäsi kaikkialla EU:ssa ja Isossa-Britanniassa!"
 
 #~ msgid ""
 #~ "Due to correct display of Duties and Taxes for the client EAS compliance "
