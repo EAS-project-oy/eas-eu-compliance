@@ -255,7 +255,7 @@ jQuery(document).ready(function ($) {
                     $('.wc_payment_method').length > 0
                     ||
                     // no payment methods and cart total is 0
-                    ($('.wc_payment_method').length === 0 && Number($('tr.order-total bdi').text().replace(',','.').replace(/[^0-9.]/g,'')) == 0)
+                    ($('.wc_payment_method').length === 0 && Number($('tr.order-total bdi').text().replace(',','.').replace(/[^0-9.]/g,'').replace('000.','')) == 0)
                 )
             )
             ||
