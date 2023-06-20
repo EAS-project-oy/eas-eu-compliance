@@ -313,7 +313,7 @@ function eascompliance_tax_rate_id()
     return (int)$tax_rate_id0;
 }
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
 }
 
@@ -355,7 +355,7 @@ function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
 }
 
@@ -643,6 +643,16 @@ function eascompliance_is_active()
     // deactivate if disabled in Plugin Settings //.
     return eascompliance_woocommerce_settings_get_option_sql('easproj_active') === 'yes';
 }
+
+/**
+ * Return is plugin in standard mode
+ */
+function eascompliance_is_standard_mode()
+{
+       // deactivate if disabled in Plugin Settings //.
+    return 'yes' === get_option('easproj_standard_mode');
+}
+
 
 // // adding custom javascript file
 if (eascompliance_is_active()) {
@@ -2187,6 +2197,7 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 		$options = array(
 			'method' => 'GET',
 			'sslverify' => false,
+            'timeout' => 15,
 		);
 
 		$jwt_key_response = (new WP_Http)->request($jwt_key_url, $options);
@@ -2513,7 +2524,7 @@ function eascompliance_is_set()
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
 }
 /**
@@ -3252,7 +3263,7 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
     }
 }
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
 }
 /**
@@ -3405,7 +3416,7 @@ function eascompliance_cart_total($current_total = null)
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
 }
 /**
@@ -3433,7 +3444,7 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
 }
 /**
@@ -3497,7 +3508,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
 }
 /**
@@ -3554,7 +3565,7 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
     }
 }
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
     add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
     add_action('woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
@@ -3590,7 +3601,7 @@ function eascompliance_wcml_update_coupon_percent_discount()
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
 }
 /**
@@ -3662,7 +3673,7 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
 }
 /**
@@ -3807,7 +3818,7 @@ function eascompliance_klarna_settings_fix($kp_settings)
 }
 
 
-if (eascompliance_is_active()) {
+if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
     add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
 }
 /**
