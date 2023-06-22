@@ -10,7 +10,7 @@
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
- * WC tested up to: 7.0.0
+ * WC tested up to: 7.8.0
  * Requires PHP: 5.6
  * License: GPL2
  *
@@ -222,7 +222,7 @@ add_action('plugins_loaded', 'eascompliance_plugins_loaded');
 
 function eascompliance_plugins_loaded_with_error()
 {
-    eascompliance_log('error', 'We are here! version ' . WC_VERSION . '. Plugin deactivated');
+    eascompliance_log('error', 'Incompatible WooCommerce version ' . WC_VERSION . '. Plugin deactivated');
     $class = 'notice notice-error';
             $message = __(eascompliance_format(EAS_TR('Plugin \'$plugin\' deactivated. Sorry we don’t support your WooCommerce version $wc. Please upgrade WooCommerce to latest version.')
                     , array('$plugin'=>EASCOMPLIANCE_PLUGIN_NAME, '$wc'=>WC_VERSION)));
@@ -631,7 +631,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 }
 
 /**
- * Return activa setting
+ * Return active setting
  */
 function eascompliance_is_active()
 {
