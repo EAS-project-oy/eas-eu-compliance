@@ -1099,31 +1099,32 @@ function eascompliance_woocommerce_review_order_before_payment()
 
 
 // Debug Console //.
-//if (eascompliance_is_active()) {
-//	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
-//	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
-//}
-//function eascompliance_debug() {
-//	eascompliance_log('entry', 'action '.__FUNCTION__.'()');
-//
-//	try {
-//		if (!eascompliance_log_level('eval')) {
-//            return;
-//        }
-//
-//		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
-//
-//		set_error_handler('eascompliance_error_handler');
-//		$jres = print_r(eval($debug_input), true);
-//	} catch (Exception $ex) {
-//		eascompliance_log('eval', $ex);
-//		$jres = 'Error: ' . $ex->getMessage();
-//	} finally {
-//		restore_error_handler();
-//		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
-//	}
-//}
+/**
+ if (eascompliance_is_active()) {
+	add_action('wp_ajax_eascompliance_debug', 'eascompliance_debug');
+	add_action('wp_ajax_nopriv_eascompliance_debug', 'eascompliance_debug');
+}
+function eascompliance_debug() {
+	eascompliance_log('entry', 'action '.__FUNCTION__.'()');
 
+	try {
+		if (!eascompliance_log_level('eval')) {
+            return;
+        }
+
+		$debug_input = stripslashes(eascompliance_array_get($_POST, 'debug_input', ''));
+
+		set_error_handler('eascompliance_error_handler');
+		$jres = print_r(eval($debug_input), true);
+	} catch (Exception $ex) {
+		eascompliance_log('eval', $ex);
+		$jres = 'Error: ' . $ex->getMessage();
+	} finally {
+		restore_error_handler();
+		wp_send_json(array('debug_input' => $debug_input, 'eval_result'=>$jres));
+	}
+}
+**/
 
 /**
  * Get OAUTH token
@@ -2972,15 +2973,19 @@ function eascompliance_woocommerce_after_order_object_save2($order)
         $tracking_numbers = array();
 
 		$tracking_numbers[] = $order->get_meta('_asendia_tracking_number');
-
+        $order_id = $order->get_id();
+         
         if ($order->get_meta('_wc_shipment_tracking_items') !== '') {
             foreach($order->get_meta('_wc_shipment_tracking_items') as $tracking_item) {
 				$tracking_numbers[] = $tracking_item['tracking_number'];
+                if ($tracking_item['tracking_number']=='MP7'){
+                    return;
+                }
             }
         }
 
 		$tracking_no =  join(';', array_filter($tracking_numbers));
-
+      
 
         if ($tracking_no === '') {
             return;
@@ -3033,13 +3038,14 @@ function eascompliance_woocommerce_after_order_object_save2($order)
             $order->save();
 		}
         else {
-			eascompliance_log('error', 'Tracking number $tr notify response is $s', array('$tr'=>$tracking_no,'$s' => $response));
-			throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order->get_order_number()))));
+			eascompliance_log('error', 'Tracking number $tr notify response is $s', array('$tr'=>$tracking_no,'$s' => $response['body']));
+            throw new Exception(EAS_TR(eascompliance_format('Tracking number notify failed for order $o', array('$o'=>$order->get_order_number()))));
 		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-		$order->add_order_note($ex->getMessage());
-        $order->save();
+        //Let's skip adding this error message, due to unsolvable incompatibility with Shipstation
+		//$order->add_order_note($ex->getMessage());
+        //$order->save();
     } finally {
         restore_error_handler();
     }
