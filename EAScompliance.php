@@ -5634,6 +5634,9 @@ function eascompliance_settings()
 				'IT' => EAS_TR('Italian'),
 				'NL' => EAS_TR('Netherlands'),
 				'SE' => EAS_TR('Swedish'),
+                'CZ' => EAS_TR('Czech'),
+
+
 			),
 		),
         'EAS_API_URL' => array(
