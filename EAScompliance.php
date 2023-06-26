@@ -59,6 +59,10 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
     } elseif ('SE' === $plugin_lang) {
         $locale = 'se_SE';
     }
+    elseif ('CZ' === $plugin_lang) {
+        $locale = 'cs_CZ';
+    }
+
 
     $mo_file = dirname(__FILE__) . '/languages/' . $textdomain . '-' . $locale . '.mo';
     if (!file_exists($mo_file)) {

@@ -740,9 +740,9 @@ msgstr ""
 "enligt detaljerade instruktioner \n"
 "            som finns i WC-manualen (avsnitt 3.7). Vänligen hitta manualen i "
 "vår Helpdesk: \n"
-"<a href=\"https://easy project.zendesk.com/hc/en-us/articles/6152957985053-"
-"WooCommerce-full-manual\" target= \"_blank\">https://easy project.zendesk."
-"com/hc/en-us/articles/6152957985053-WooCommerce-full-manual</a>"
+"<a href=\"https://help.easproject.com/hc/en-us/articles/5910679291165-Quick-"
+"installation-guide\" target= \"_blank\">https://help.easproject.com/hc/en-us/"
+"articles/5910679291165-Quick-installation-guide"
 
 #: EAScompliance.php:6045
 msgid ""
