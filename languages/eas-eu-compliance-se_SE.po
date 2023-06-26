@@ -740,9 +740,8 @@ msgstr ""
 "enligt detaljerade instruktioner \n"
 "            som finns i WC-manualen (avsnitt 3.7). Vänligen hitta manualen i "
 "vår Helpdesk: \n"
-"<a href=\"https://help.easproject.com/hc/en-us/articles/5910679291165-Quick-"
-"installation-guide\" target= \"_blank\">https://help.easproject.com/hc/en-us/"
-"articles/5910679291165-Quick-installation-guide"
+"<a href=\"https://help.easproject.com/hc/en-us/articles/11829479851549\" "
+"target= \"_blank\">EAS Merchandise module, connecting and configuration"
 
 #: EAScompliance.php:6045
 msgid ""
