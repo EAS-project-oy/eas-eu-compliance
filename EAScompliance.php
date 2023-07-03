@@ -896,6 +896,9 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 		if ($is_user_checkout && !(true === $ship_to_different_address || 'true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
 			$new_shipping_country = $new_billing_country;
 		}
+        if (!($ship_to_different_address)&&($new_shipping_country != $new_billing_country) ){
+            $new_shipping_country = '';
+        }
 
 		// if country changes to non-supported and taxes were set then reset calculations
 		if ( !empty($new_shipping_country) && !in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
@@ -6790,6 +6793,7 @@ function eascompliance_bulk_update($request)
 
 		$request_json = json_decode($request->get_body(), true);
 		eascompliance_log('info', 'bulk update started');
+        eascompliance_log('info', print_r($request_json,true));
 
         // stats
         $updated_products = array();
@@ -6834,7 +6838,7 @@ function eascompliance_bulk_update($request)
                 $product = wc_get_product($product_id);
                 $product_type = get_post_type( $product_id);
                 //skip non-existant  products or variants
-                if (( !$product )||($product_type == 'product_variation')) {
+                 if (( !$product )||($product_type == 'product_variation')||(get_class($product)=='WC_Product_Variation')) {
                     if (!in_array($product_id, $skipped_products)) {
 						$skipped_products[] = $product_id;
                     }
@@ -6862,13 +6866,12 @@ function eascompliance_bulk_update($request)
 					$attribute = new WC_Product_Attribute();
 
 					$taxonomy_id = wc_attribute_taxonomy_id_by_name( $attribute_name );
-					$attribute->set_id( $taxonomy_id );
+                    $attribute->set_id( $taxonomy_id );
 					$attribute->set_name( $taxonomy );
 					$attribute->set_position( 0 );
 					$attribute->set_visible( false );
 					$attribute->set_variation( false );
                 }
-
                 // for term-based attributes, its value is list of term ids
 				$attribute->set_options( array( $term_id ) );
 
@@ -6880,7 +6883,7 @@ function eascompliance_bulk_update($request)
 			}
         }
 
-		eascompliance_log('info', 'bulk update finished. $p products updated, $s products skipped, skipped attributes: $a'
+		eascompliance_log('info', 'bulk update finished. $p products updated, $s products/variations skipped, skipped attributes: $a'
 			, array('$p'=>count($updated_products), '$s'=>count($skipped_products), '$a'=>count($skipped_attributes)==0?'none':join(', ', $skipped_attributes)));
 
 	} catch (Exception $ex) {
