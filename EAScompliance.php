@@ -3144,6 +3144,7 @@ function eascompliance_logorderdata_ajax()
 
         eascompliance_logger()->info('EAS Order data' . print_r(array(
                 'order_id' => $order_id,
+                'external_order_id' => $order->get_order_number(),
                 '_easproj_token' => $order->get_meta('_easproj_token'),
                 'easproj_payload' => $order->get_meta('easproj_payload'),
                 'refunds' => $refund_tokens,
