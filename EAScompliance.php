@@ -913,7 +913,9 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 		if ($is_user_checkout && !(true === $ship_to_different_address || 'true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
 			$new_shipping_country = $new_billing_country;
 		}
-        if (!($ship_to_different_address)&&($new_shipping_country != $new_billing_country) ){
+
+        // skip unset when billing/shipping countries differ while ship_to_different_address is false
+        if ( !$ship_to_different_address && ( $new_shipping_country != $new_billing_country ) ) {
             $new_shipping_country = '';
         }
 
