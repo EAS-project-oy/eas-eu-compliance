@@ -309,10 +309,10 @@ function eascompliance_plugin_upgrade()
 add_action(
 	'before_woocommerce_init',
 	function () {
-		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::allow_activating_plugins_with_incompatible_features();
-	        \Automattic\WooCommerce\Utilities\FeaturesUtil::allow_enabling_features_with_incompatible_plugins();
+		if ( class_exists( 'Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			Automattic\WooCommerce\Utilities\FeaturesUtil::allow_activating_plugins_with_incompatible_features();
+	        Automattic\WooCommerce\Utilities\FeaturesUtil::allow_enabling_features_with_incompatible_plugins();
 		}
 	}
 );
@@ -6656,15 +6656,29 @@ function eascompliance_array_key_first2(array $arr)
 }
 
 
-restore_error_handler();
+/**
+ * Check if WooCommerce HPOS is enabled
+ */
+function eascompliance_is_hpos_enabled()
+{
+
+	if ( version_compare( get_option( 'woocommerce_version' ), '7.1.0' ) < 0 ) {
+		return false;
+	}
+
+    if (Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+		return true;
+	}
+
+	return false;
+}
 
 /**
  * Add "EAS processed" column to Woocommerce order list
  *
  */
-use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
-add_filter( 'manage_woocommerce_page_wc-orders_columns', 'eascompliance_order_column' , 20 );
-add_filter('manage_edit-shop_order_columns', 'eascompliance_order_column', 20);
+add_filter('manage_edit-shop_order_columns', 'eascompliance_order_column');
+add_filter('manage_woocommerce_page_wc-orders_columns', 'eascompliance_order_column', 20); // HPOS
 function eascompliance_order_column($columns)
 {
     $reordered_columns = array();
@@ -6677,35 +6691,25 @@ function eascompliance_order_column($columns)
     return $reordered_columns;
 }
 
-/**
- * Fill "EAS processed column"
- *
- */
-add_action( 'manage_woocommerce_page_wc-orders_custom_column', 'eascompliance_order_column_value_hpos' , 20, 2 );
-function eascompliance_order_column_value_hpos($column, $order_id)
-{
-    switch ($column) {
-        case 'eas-processed' :
-			$order = wc_get_order( $order_id );
-            $order_payload = $order->get_meta('easproj_payload');
-            $order_eas_token = $order->get_meta('_easproj_token');
-
-            if ((isset($order_payload) && !empty($order_payload))||((get_post_meta($post_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)&&isset($order_eas_token) && !empty($order_eas_token))) {
-                echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
-            }
-            break;
-    }
-}
-
 add_action('manage_shop_order_posts_custom_column', 'eascompliance_order_column_value', 20, 2);
+add_action('manage_woocommerce_page_wc-orders_custom_column', 'eascompliance_order_column_value', 20, 2); // HPOS
 function eascompliance_order_column_value($column, $post_id)
 {
+    $order_id = $post_id;
+    if (eascompliance_is_hpos_enabled()) {
+        $order_id = $post_id->get_id();
+    }
+
     switch ($column) {
         case 'eas-processed' :
-            $order_payload = get_post_meta($post_id, 'easproj_payload', true);
-            $order_eas_token = get_post_meta($post_id, '_easproj_token', true);
+            $order_payload = get_post_meta($order_id, 'easproj_payload', true);
+            $order_eas_token = get_post_meta($order_id, '_easproj_token', true);
 
-            if ((isset($order_payload) && !empty($order_payload))||((get_post_meta($post_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)&&isset($order_eas_token) && !empty($order_eas_token))) {
+            if (
+                    (isset($order_payload) && !empty($order_payload))
+                    ||
+                    ((get_post_meta($order_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)&&isset($order_eas_token) && !empty($order_eas_token))
+            ) {
                 echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
             }
             break;
@@ -6717,21 +6721,14 @@ function eascompliance_order_column_value($column, $post_id)
  *
  */
 add_filter('manage_edit-shop_order_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1);
+add_action('woocommerce_shop_order_list_table_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1); // HPOS
 function eascompliance_manage_edit_shop_order_sortable_columns($columns)
 {
     return wp_parse_args(array('eas-processed' => 'easproj_payload'), $columns);
-
-}
-
-add_filter( 'manage_woocommerce_page_wc-orders_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns_hpos' , 20 );
-function eascompliance_manage_edit_shop_order_sortable_columns_hpos( $columns )
-{
-		$columns['eas-processed'] = 'easproj_payload';
-		return $columns;
 }
 
 /**
- * Sort by "EAS processed" column
+ * Sort by "EAS processed" column, does not work for HPOS
  *
  */
 add_action('pre_get_posts', 'eascompliance_sort_by_order_column', 10, 1);
@@ -6934,3 +6931,6 @@ function eascompliance_bulk_update($request)
 		restore_error_handler();
 	}
 }
+
+
+restore_error_handler();
