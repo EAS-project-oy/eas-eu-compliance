@@ -1430,7 +1430,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     }
 
 
-    $calc_jreq['is_delivery_to_person'] = eascompliance_array_get($checkout, 'shipping_company', '') === '';
+    $calc_jreq['is_delivery_to_person'] = in_array( eascompliance_array_get($checkout, 'shipping_company', ''), array('', 'false') );
 
     $calc_jreq['recipient_title'] = 'Mr.';
     $calc_jreq['recipient_first_name'] = $checkout['shipping_first_name'];
@@ -1656,7 +1656,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
     $calc_jreq['delivery_cost'] = round((float)($order->get_shipping_total()), 2);
     $calc_jreq['payment_currency'] = $order->get_currency();
 
-    $calc_jreq['is_delivery_to_person'] = $order->get_shipping_company() === '';
+    $calc_jreq['is_delivery_to_person'] = in_array( $order->get_shipping_company(), array('', 'false') );
     //take shipping from billing address when shipping address is empty
     $shipping_first_name = $order->get_shipping_first_name();
     $shipping_last_name = $order->get_shipping_last_name();
@@ -1872,7 +1872,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $calc_jreq['delivery_cost'] = $delivery_cost;
     $calc_jreq['payment_currency'] = $order->get_currency();
 
-    $calc_jreq['is_delivery_to_person'] = $order->get_shipping_company() === '';
+    $calc_jreq['is_delivery_to_person'] = in_array( $order->get_shipping_company(), array('', 'false') );
     //take shipping from billing address when shipping address is empty
     $shipping_first_name = $order->get_shipping_first_name();
     $shipping_last_name = $order->get_shipping_last_name();
