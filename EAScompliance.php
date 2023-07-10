@@ -3069,8 +3069,11 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 		}
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-		$order->add_order_note($ex->getMessage());
-        $order->save();
+        
+		  //Let's skip adding this error message, due to unsolvable incompatibility with Shipstation
+        //$order->add_order_note($ex->getMessage());
+        //$order->save();
+       
     } finally {
         restore_error_handler();
     }
