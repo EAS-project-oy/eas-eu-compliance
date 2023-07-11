@@ -4215,6 +4215,10 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 array('$delivery_cost' => $calc_jreq_new['delivery_cost'], '$saved_delivery_cost' => $saved_delivery_cost, '$margin' => $margin));
         }
 
+        // WP-178 fix: exclude delivery_cost from comparing jsons due to price fluctuation
+        $calc_jreq_saved['delivery_cost'] = '';
+        $calc_jreq_new['delivery_cost'] = '';
+
         // paranoid check that order_breakdown key is present
         if (!array_key_exists('order_breakdown', $calc_jreq_new)) {
             eascompliance_log('place_order', 'order_breakdown key is not present in $calc_jreq_new ' . print_r($calc_jreq_new, true));
