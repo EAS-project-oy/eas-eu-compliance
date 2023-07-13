@@ -10,7 +10,7 @@
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
- * WC tested up to: 7.8.0
+ * WC tested up to: 7.8.1
  * Requires PHP: 5.6
  * License: GPL2
  *

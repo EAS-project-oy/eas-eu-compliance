@@ -6,8 +6,8 @@ jQuery(document).ready(function ($) {
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '').css('opacity', '')
-                if (($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
-                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false)
+                if ($(".eascompliance_status").attr('data-eascompliance-status')=='present') {
+                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false);
             }
         }
         else {
