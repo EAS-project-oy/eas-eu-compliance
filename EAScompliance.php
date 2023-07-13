@@ -6819,7 +6819,7 @@ function eascompliance_bulk_update($request)
 
         //Get only Authorization header
         $auth_token = $auth['Authorization'];
-        $auth_token_eas = $auth['AuthorizationEAS'];
+        $auth_token_eas = $auth['Authorizationeas'];
         $auth_token = (empty($auth_token) ? $auth_token_eas: $auth_token);
 
         if (empty($auth_token)) {
@@ -6855,8 +6855,7 @@ function eascompliance_bulk_update($request)
 
 		$request_json = json_decode($request->get_body(), true);
 		eascompliance_log('info', 'bulk update started');
-        eascompliance_log('info', print_r($request_json,true));
-
+    
         // stats
         $updated_products = array();
         $skipped_products= array();
