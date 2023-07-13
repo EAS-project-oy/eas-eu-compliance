@@ -646,6 +646,8 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         eascompliance_logger()->info($txt);
     } elseif ($level === 'error') {
         eascompliance_logger()->error($txt);
+    } elseif ($level === 'warning') {
+        eascompliance_logger()->warning($txt);
     } else {
         eascompliance_logger()->debug($txt);
     }
@@ -4265,6 +4267,19 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $order_discount = (float)$order->get_discount_total() + (float)$order->get_discount_tax();
         $order->set_discount_total($order_discount);
         $order->set_discount_tax(0);
+
+        // fix duplicated tax rate
+        $ix = 0;
+        foreach( $order->get_items('tax') as $tax_item_id=>$tax_item ) {
+            if ( $tax_item->get_rate_id() == eascompliance_tax_rate_id() ) {
+                $ix++;
+                if ($ix > 1) {
+                    $order->remove_item($tax_item_id);
+                    eascompliance_log('warning', 'removed duplicated tax item from order number $o ', ['o'=>$order->get_order_number()]);
+                }
+            }
+
+        }
         $order->save();
 
         // save order json in order metadata //.
