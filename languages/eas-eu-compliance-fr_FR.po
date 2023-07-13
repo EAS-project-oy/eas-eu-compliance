@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: eascompliance\n"
-"POT-Creation-Date: 2023-06-13 10:38+0300\n"
+"POT-Creation-Date: 2023-07-13 15:50+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -18,36 +18,36 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "X-Poedit-SearchPath-0: EAScompliance.php\n"
 
-#: EAScompliance.php:87
+#: EAScompliance.php:91
 msgid "Settings"
 msgstr "Paramètres"
 
-#: EAScompliance.php:196
+#: EAScompliance.php:200
 msgid "Plugin activation request failed"
 msgstr "La demande d'activation du plug-in a échoué"
 
-#: EAScompliance.php:227
+#: EAScompliance.php:231
 msgid ""
 "Plugin '$plugin' deactivated. Sorry we don’t support your WooCommerce "
 "version $wc. Please upgrade WooCommerce to latest version."
 msgstr ""
 
-#: EAScompliance.php:310
+#: EAScompliance.php:331
 msgid "No tax rate found, please check plugin settings"
 msgstr ""
 "Aucun taux fiscal n'a été trouvé, veuillez vérifier les paramètres du plug-in"
 
-#: EAScompliance.php:343 EAScompliance.php:496
+#: EAScompliance.php:364 EAScompliance.php:517
 msgid "Taxes & Duties"
 msgstr "Frais fiscaux et douaniers"
 
-#: EAScompliance.php:460
+#: EAScompliance.php:481
 msgid "Please calculate taxes and duties to proceed with order payment"
 msgstr ""
 "Veuillez calculer les taxes et les droits pour procéder au paiement de la "
 "commande"
 
-#: EAScompliance.php:669
+#: EAScompliance.php:701
 msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
@@ -55,7 +55,7 @@ msgstr ""
 "Veuillez vérifier les détails de facturation requis. Tous les champs "
 "indiqués comme requis doivent être remplis."
 
-#: EAScompliance.php:670
+#: EAScompliance.php:702
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
@@ -63,52 +63,52 @@ msgstr ""
 "Veuillez vérifier les détails d’expédition requis. Tous les champs indiqués "
 "comme requis doivent être remplis."
 
-#: EAScompliance.php:671
+#: EAScompliance.php:703
 msgid "Calculating taxes and duties ..."
 msgstr "Frais fiscaux et douaniers ajoutés..."
 
-#: EAScompliance.php:672
+#: EAScompliance.php:704
 msgid "Customs taxes and duties added..."
 msgstr "Frais fiscaux et douaniers ajoutés..."
 
-#: EAScompliance.php:673
+#: EAScompliance.php:705
 msgid "Waiting for Customs Duties Calculation and confirmation details"
 msgstr ""
 "En attente du calcul des droits de douanes et des détails de confirmation"
 
-#: EAScompliance.php:674
+#: EAScompliance.php:706
 msgid "confirmation"
 msgstr "confirmation"
 
-#: EAScompliance.php:675
+#: EAScompliance.php:707
 msgid "Sorry, didn't work, please try again"
 msgstr "Désolé, cela n'a pas fonctionné, veuillez réessayer"
 
-#: EAScompliance.php:676
+#: EAScompliance.php:708
 msgid "Recalculate Taxes and Duties"
 msgstr "Recalculer les frais fiscaux et douaniers"
 
-#: EAScompliance.php:677
+#: EAScompliance.php:709
 msgid "Standard Checkout"
 msgstr "Vérification standard"
 
-#: EAScompliance.php:678
+#: EAScompliance.php:710
 msgid "reload"
 msgstr "recharger"
 
-#: EAScompliance.php:679
+#: EAScompliance.php:711
 msgid "Security check, please reload page. "
 msgstr "Contrôle de sécurité, veuillez recharger la page. "
 
-#: EAScompliance.php:778 EAScompliance.php:833
+#: EAScompliance.php:810 EAScompliance.php:865
 msgid "Unable to set required fields"
 msgstr "Impossible de paramétrer les champs requis"
 
-#: EAScompliance.php:1043 EAScompliance.php:5890
+#: EAScompliance.php:1080 EAScompliance.php:5936
 msgid "Calculate Taxes and Duties"
 msgstr "Calculer les frais fiscaux et douaniers"
 
-#: EAScompliance.php:1163 EAScompliance.php:1175 EAScompliance.php:1178
+#: EAScompliance.php:1201 EAScompliance.php:1213 EAScompliance.php:1216
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
@@ -116,7 +116,7 @@ msgstr ""
 "Service de calcul de la taxe intracommunautaire temporairement indisponible. "
 "Veuillez essayer de passer une commande plus tard."
 
-#: EAScompliance.php:1170
+#: EAScompliance.php:1208
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
@@ -124,17 +124,17 @@ msgstr ""
 "Identifiants fournis non valides. Veuillez vérifier votre identifiant client "
 "EAS et votre code secret EAS."
 
-#: EAScompliance.php:1346
+#: EAScompliance.php:1384
 msgid "Multiple coupons not supported, please contact support"
 msgstr "Plusieurs coupons non pris en charge, veuillez contacter le support"
 
-#: EAScompliance.php:1367
+#: EAScompliance.php:1405
 msgid "Selected coupon type is not supported, please contact support"
 msgstr ""
 "Le type de coupon sélectionné n'est pas pris en charge, veuillez contacter "
 "l'assistance"
 
-#: EAScompliance.php:1389
+#: EAScompliance.php:1427
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
@@ -143,7 +143,7 @@ msgstr ""
 "d'adresse de livraison requis '$field_name' est désactivé. Veuillez "
 "contacter l'assistance pour résoudre le problème."
 
-#: EAScompliance.php:1392
+#: EAScompliance.php:1430
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is empty."
@@ -151,27 +151,27 @@ msgstr ""
 "Nous ne pouvons pas procéder au calcul du coût au débarquement car le champ "
 "d'adresse de livraison requis '$field_name' est vide."
 
-#: EAScompliance.php:1696 EAScompliance.php:1912
+#: EAScompliance.php:1734 EAScompliance.php:1950
 msgid "Field $fields is required, please enter $fields and try again."
 msgstr ""
 "Le champ $fields est obligatoire, veuillez saisir $fields et réessayer."
 
-#: EAScompliance.php:1698 EAScompliance.php:1914
+#: EAScompliance.php:1736 EAScompliance.php:1952
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
 "Les champs [$fields] sont obligatoires, veuillez saisir [$fields] et "
 "réessayer."
 
-#: EAScompliance.php:2133
+#: EAScompliance.php:2149
 msgid "Sorry, duplicate item Ids found for these items: "
 msgstr ""
 
-#: EAScompliance.php:2134
+#: EAScompliance.php:2150
 msgid ""
 "Please correct the item Ids to be unique within the order and try again."
 msgstr ""
 
-#: EAScompliance.php:2793
+#: EAScompliance.php:2811
 msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
@@ -179,52 +179,52 @@ msgstr ""
 "Le calcul du coût en magasin ne peut pas être traité tant que le nom et "
 "l'adresse de livraison ne sont pas indiqués"
 
-#: EAScompliance.php:2797
+#: EAScompliance.php:2815
 msgid "Order shipping country must be in EU"
 msgstr "Le pays d'expédition de la commande doit être inclus dans l'UE"
 
-#: EAScompliance.php:2900
+#: EAScompliance.php:2918
 msgid "createpostsaleorder failed"
 msgstr "createpostsaleorder failed"
 
-#: EAScompliance.php:3223
+#: EAScompliance.php:3249
 msgid "number of order_items does not match number of items in cart"
 msgstr ""
 "le nombre de order_items ne correspond pas au nombre d'articles dans le "
 "panier"
 
-#: EAScompliance.php:3728
+#: EAScompliance.php:3754
 #, fuzzy
 #| msgid "Taxes & Duties"
 msgid "Incl. Taxes & Duties: "
 msgstr "Frais fiscaux et douaniers"
 
-#: EAScompliance.php:3732
+#: EAScompliance.php:3758
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr ""
 "Les prix sont hors TVA, vous pourriez être obligé de payer la TVA à la "
 "livraison"
 
-#: EAScompliance.php:4163
+#: EAScompliance.php:4189
 msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
 msgstr ""
 "DROITS DE DOUANE MANQUANTS. Please reload page. <a href=\"./\">reload</a>"
 
-#: EAScompliance.php:4175 EAScompliance.php:4198 EAScompliance.php:4230
+#: EAScompliance.php:4201 EAScompliance.php:4228 EAScompliance.php:4260
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "VEUILLEZ RECALCULER LES DROITS DE DOUANE"
 
-#: EAScompliance.php:4309
+#: EAScompliance.php:4352
 msgid "Notify Order number $order_id successful"
 msgstr "Notification réussie de la commande numéro $order_id"
 
-#: EAScompliance.php:4321
+#: EAScompliance.php:4364
 msgid "Notify Order number $order_id failed: "
 msgstr "Échec de la notification de l’ordre numéro $order_id : "
 
-#: EAScompliance.php:4436
+#: EAScompliance.php:4479
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -232,15 +232,15 @@ msgstr ""
 "Le statut de la commande est passé de $status_from à $status_to . "
 "Notification de paiement API EAS"
 
-#: EAScompliance.php:4455
+#: EAScompliance.php:4498
 msgid "Order status change notification failed: "
 msgstr "Échec de la notification de modification du statut de la commande : "
 
-#: EAScompliance.php:4523
+#: EAScompliance.php:4566
 msgid "Order $order_id payment notified to EAS"
 msgstr "Paiement de la commande $order_id transmis à EAS"
 
-#: EAScompliance.php:4533
+#: EAScompliance.php:4576
 msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
@@ -248,11 +248,11 @@ msgstr ""
 "Conformité EAS EU : commande créée. Impossible d'effectuer des envois car "
 "S10 n'est pas fourni. Connectez-vous au tableau de bord pour créer des envois"
 
-#: EAScompliance.php:4543
+#: EAScompliance.php:4586
 msgid "Order "
 msgstr ""
 
-#: EAScompliance.php:4616
+#: EAScompliance.php:4659
 #, fuzzy
 #| msgid ""
 #| "Order status changed from $status_from to $status_to .  EAS API payment "
@@ -262,13 +262,13 @@ msgstr ""
 "Le statut de la commande est passé de $status_from à $status_to . "
 "Notification de paiement API EAS"
 
-#: EAScompliance.php:4694
+#: EAScompliance.php:4737
 msgid ""
 "Order was processed by EAS solution, but returns should be handled in the "
 "EAS dashboard https:///dashaboard.easproject.com "
 msgstr ""
 
-#: EAScompliance.php:5199
+#: EAScompliance.php:5242
 msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
@@ -276,11 +276,11 @@ msgstr ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
 
-#: EAScompliance.php:5214
+#: EAScompliance.php:5257
 msgid "Refund create failed: "
 msgstr "Échec de la demande de remboursement "
 
-#: EAScompliance.php:5256
+#: EAScompliance.php:5299
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
@@ -288,13 +288,13 @@ msgstr ""
 "La demande de remboursement $refund_id a été annulée et supprimée en raison "
 "d'un nombre d'articles insuffisant. "
 
-#: EAScompliance.php:5263
+#: EAScompliance.php:5306
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
 "La demande de remboursement $refund_id a été annulée et supprimée en raison "
 "de la présence d'une carte cadeau. "
 
-#: EAScompliance.php:5270
+#: EAScompliance.php:5313
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
@@ -303,7 +303,7 @@ msgstr ""
 "service de gestion des remboursements est temporairement indisponible. "
 "Veuillez essayer de créer une demande de remboursement ultérieurement "
 
-#: EAScompliance.php:5277
+#: EAScompliance.php:5320
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
@@ -311,7 +311,7 @@ msgstr ""
 "Remboursement $refund_id annulé et supprimé. Veuillez saisir une quantité "
 "supérieure à 0 pour les articles à retourner et réessayer. "
 
-#: EAScompliance.php:5285
+#: EAScompliance.php:5328
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
@@ -319,7 +319,7 @@ msgstr ""
 "Remboursement $refund_id annulé et supprimé. Le total du remboursement ne "
 "peut pas être supérieur au total de la commande."
 
-#: EAScompliance.php:5293
+#: EAScompliance.php:5336
 #, fuzzy
 #| msgid ""
 #| "Refund $refund_id cancelled and removed. Refund total cannot be more than "
@@ -330,132 +330,136 @@ msgstr ""
 "Remboursement $refund_id annulé et supprimé. Le total du remboursement ne "
 "peut pas être supérieur au total de la commande."
 
-#: EAScompliance.php:5334
+#: EAScompliance.php:5377
 msgid "Refund confirmed to EAS"
 msgstr "Remboursement confirmé à EAS"
 
-#: EAScompliance.php:5339
+#: EAScompliance.php:5382
 msgid "Refund confirm failed: "
 msgstr "Échec de la confirmation du remboursement: "
 
-#: EAScompliance.php:5363
+#: EAScompliance.php:5406
 msgid "Log EAS order data"
 msgstr "Saisir les données de commande EAS"
 
-#: EAScompliance.php:5370
+#: EAScompliance.php:5413
 msgid "Calculate Taxes & Duties EAS"
 msgstr "Calculer les frais fiscaux et douaniers EAS"
 
-#: EAScompliance.php:5599
+#: EAScompliance.php:5642
 msgid "Info"
 msgstr "Info"
 
-#: EAScompliance.php:5600
+#: EAScompliance.php:5643
 msgid "Error"
 msgstr "Erreur"
 
-#: EAScompliance.php:5617
+#: EAScompliance.php:5660
 msgid "General"
 msgstr ""
 
-#: EAScompliance.php:5621
+#: EAScompliance.php:5664
 msgid "Enable/Disable"
 msgstr "Activer/Désactiver"
 
-#: EAScompliance.php:5628
+#: EAScompliance.php:5671
 msgid "Language"
 msgstr "Langue"
 
-#: EAScompliance.php:5630
+#: EAScompliance.php:5673
 msgid "Choose language for user interface of plugin"
 msgstr "Choisissez la langue pour l'interface utilisateur du plug-in"
 
-#: EAScompliance.php:5632
+#: EAScompliance.php:5675
 msgid "Default"
 msgstr "Par défaut"
 
-#: EAScompliance.php:5634
+#: EAScompliance.php:5677
 msgid "Store Default"
 msgstr "Boutique par défaut"
 
-#: EAScompliance.php:5635
+#: EAScompliance.php:5678
 msgid "English"
 msgstr "English"
 
-#: EAScompliance.php:5636
+#: EAScompliance.php:5679
 msgid "Finnish"
 msgstr "Suomi"
 
-#: EAScompliance.php:5637
+#: EAScompliance.php:5680
 msgid "French"
 msgstr "Français"
 
-#: EAScompliance.php:5638
+#: EAScompliance.php:5681
 msgid "German"
 msgstr "Deutsch"
 
-#: EAScompliance.php:5639
+#: EAScompliance.php:5682
 msgid "Italian"
 msgstr "Italiano"
 
-#: EAScompliance.php:5640
+#: EAScompliance.php:5683
 msgid "Netherlands"
 msgstr "Dutch"
 
-#: EAScompliance.php:5641
+#: EAScompliance.php:5684
 msgid "Swedish"
 msgstr "Svensk"
 
-#: EAScompliance.php:5645
+#: EAScompliance.php:5685
+msgid "Czech"
+msgstr "Češka"
+
+#: EAScompliance.php:5691
 msgid "EAS API Base URL"
 msgstr "URL de base API EAS"
 
-#: EAScompliance.php:5647
+#: EAScompliance.php:5693
 msgid "API URL"
 msgstr "URL API"
 
-#: EAScompliance.php:5653
+#: EAScompliance.php:5699
 msgid "EAS client ID"
 msgstr "Identifiant client EAS"
 
-#: EAScompliance.php:5655
+#: EAScompliance.php:5701
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Utilisez l'identifiant client que vous avez reçu de EAS Project Dashboard <a "
 "href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
 "a>"
 
-#: EAScompliance.php:5661
+#: EAScompliance.php:5707
 msgid "EAS client secret"
 msgstr "Code client secret EAS"
 
-#: EAScompliance.php:5663
+#: EAScompliance.php:5709
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Utilisez le code secret que vous avez reçu de EAS Project  Dashboard <a href="
 "\"https://dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
-#: EAScompliance.php:5670
+#: EAScompliance.php:5716
 msgid "Process imported orders"
 msgstr "Traitement des commandes importées"
 
-#: EAScompliance.php:5678
+#: EAScompliance.php:5724
 #, fuzzy
 #| msgid "Standard Checkout"
 msgid "Standard mode"
 msgstr "Vérification standard"
 
-#: EAScompliance.php:5685
+#: EAScompliance.php:5731
 msgid "Log levels"
 msgstr "Déboguer"
 
-#: EAScompliance.php:5698
+#: EAScompliance.php:5744
 #, fuzzy
 #| msgid "Tax options"
 msgid "Taxation"
 msgstr "Options fiscales"
 
-#: EAScompliance.php:5701
+#: EAScompliance.php:5747
 msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
@@ -463,64 +467,64 @@ msgstr ""
 "Déduire la TVA nationale pour les livraisons dans les pays où les calculs de "
 "taxes ne sont pas pris en charge"
 
-#: EAScompliance.php:5709
+#: EAScompliance.php:5755
 msgid "Non-EU Countries support"
 msgstr ""
 
-#: EAScompliance.php:5718
+#: EAScompliance.php:5764
 msgid "Shipping methods by post"
 msgstr "Méthodes d'expédition par voie postale"
 
-#: EAScompliance.php:5721
+#: EAScompliance.php:5767
 msgid "Select shipping methods for delivery by post"
 msgstr ""
 "Sélectionnez les méthodes d'expédition pour une livraison par voie postale"
 
-#: EAScompliance.php:5726 EAScompliance.php:5728
+#: EAScompliance.php:5772 EAScompliance.php:5774
 #, fuzzy
 #| msgid "Giftcard product types"
 msgid "Default product type"
 msgstr "Type(s) de produits relatifs aux cartes cadeaux"
 
-#: EAScompliance.php:5731
+#: EAScompliance.php:5777
 msgid "Physical goods"
 msgstr ""
 
-#: EAScompliance.php:5734
+#: EAScompliance.php:5780
 msgid "Paid order statuses"
 msgstr ""
 
-#: EAScompliance.php:5737
+#: EAScompliance.php:5783
 msgid "Status(es) denoting orders which have been paid for"
 msgstr ""
 
-#: EAScompliance.php:5743
+#: EAScompliance.php:5789
 msgid "Giftcard product types"
 msgstr "Type(s) de produits relatifs aux cartes cadeaux"
 
-#: EAScompliance.php:5746
+#: EAScompliance.php:5792
 msgid "Product type(s) used for Gift cards management"
 msgstr "Type(s) de produits utilisés pour la gestion des cartes cadeaux"
 
-#: EAScompliance.php:5764
+#: EAScompliance.php:5810
 msgid "Product Attributes"
 msgstr ""
 
-#: EAScompliance.php:5767
+#: EAScompliance.php:5813
 msgid "Additional products attributes settings"
 msgstr ""
 
-#: EAScompliance.php:5774
+#: EAScompliance.php:5820
 msgid "HSCODE"
 msgstr "CODEHS"
 
-#: EAScompliance.php:5777
+#: EAScompliance.php:5823
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr ""
 "Caractéristique de la ligne de code HS. Une caractéristique sera créée si "
 "elle n'existe pas."
 
-#: EAScompliance.php:5786
+#: EAScompliance.php:5832
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
@@ -528,11 +532,11 @@ msgstr ""
 "Caractéristique de localisation du pays d'entreposage de la ligne de code. "
 "Une caractéristique sera créée si elle n'existe pas."
 
-#: EAScompliance.php:5792
+#: EAScompliance.php:5838
 msgid "Reduced VAT for TBE"
 msgstr "TVA réduite pour TBE"
 
-#: EAScompliance.php:5795
+#: EAScompliance.php:5841
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
@@ -540,11 +544,11 @@ msgstr ""
 "Caractéristique de TVA réduite pour le titulaire de TBE de la ligne de code. "
 "Une caractéristique sera créée si elle n'existe pas."
 
-#: EAScompliance.php:5801
+#: EAScompliance.php:5847
 msgid "Act as Disclosed Agent"
 msgstr "Agit en tant que mandataire principal"
 
-#: EAScompliance.php:5804
+#: EAScompliance.php:5850
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
@@ -552,11 +556,11 @@ msgstr ""
 "Agit en tant que mandataire principal du titulaire de la ligne de code. Une "
 "caractéristique sera créée si elle n'existe pas."
 
-#: EAScompliance.php:5810
+#: EAScompliance.php:5856
 msgid "Seller registration country"
 msgstr "Pays d'immatriculation du vendeur"
 
-#: EAScompliance.php:5813
+#: EAScompliance.php:5859
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
@@ -564,11 +568,11 @@ msgstr ""
 "Pays d'immatriculation du vendeur titulaire de la ligne de code. Une "
 "caractéristique sera créée si elle n'existe pas."
 
-#: EAScompliance.php:5819
+#: EAScompliance.php:5865
 msgid "Originating Country"
 msgstr "Pays d'origine"
 
-#: EAScompliance.php:5822
+#: EAScompliance.php:5868
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
@@ -576,65 +580,65 @@ msgstr ""
 "Caractéristique du pays d'origine du titulaire de la ligne de code. Une "
 "caractéristique sera créée si elle n'existe pas."
 
-#: EAScompliance.php:5832 EAScompliance.php:5835
+#: EAScompliance.php:5878 EAScompliance.php:5881
 msgid "Design"
 msgstr ""
 
-#: EAScompliance.php:5839
+#: EAScompliance.php:5885
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
 msgstr ""
 
-#: EAScompliance.php:5843
+#: EAScompliance.php:5889
 msgid "Button text"
 msgstr ""
 
-#: EAScompliance.php:5849
+#: EAScompliance.php:5895
 msgid "Button font size"
 msgstr ""
 
-#: EAScompliance.php:5852
+#: EAScompliance.php:5898
 msgid "Please select font size (without px , only number)"
 msgstr ""
 
-#: EAScompliance.php:5856
+#: EAScompliance.php:5902
 msgid "Button text color"
 msgstr ""
 
-#: EAScompliance.php:5859
+#: EAScompliance.php:5905
 msgid "Please select color for text on button"
 msgstr ""
 
-#: EAScompliance.php:5863
+#: EAScompliance.php:5909
 msgid "Button background color"
 msgstr ""
 
-#: EAScompliance.php:5866
+#: EAScompliance.php:5912
 msgid "Please select background color"
 msgstr ""
 
-#: EAScompliance.php:5870
+#: EAScompliance.php:5916
 msgid "Button background color on mouse over"
 msgstr ""
 
-#: EAScompliance.php:5873
+#: EAScompliance.php:5919
 msgid "Please select background color on mouse over"
 msgstr ""
 
-#: EAScompliance.php:5877
+#: EAScompliance.php:5923
 msgid "Font color on mouse over"
 msgstr ""
 
-#: EAScompliance.php:5880
+#: EAScompliance.php:5926
 msgid "Please select mouse over color for text on button"
 msgstr ""
 
-#: EAScompliance.php:5885
+#: EAScompliance.php:5931
 msgid "Button Example"
 msgstr ""
 
-#: EAScompliance.php:5927
+#: EAScompliance.php:5973
 msgid ""
 "Attention! EAS plugin detected gift card Product type(s),  please if you are "
 "selling Gift cards please enter Product type(s) in relevant configuration "
@@ -645,76 +649,76 @@ msgstr ""
 "type(s) de produits relatifs aux cartes cadeaux dans les paramètres de "
 "configuration pertinents"
 
-#: EAScompliance.php:5931
+#: EAScompliance.php:5977
 msgid ""
-"Landed cost calculation will be prohibbited for EU on checkout because "
-"required delivery Phone field is disabled. Please visit Appearance → "
+"Landed cost calculation will be prohibited for EU on checkout because "
+"required delivery Phone field is disabled. Please visit Appearance > "
 "Customize page. Select \"WooCommerce\" then \"Checkout\" and change settings "
 "for the Phone field settings to Optional or Required."
 msgstr ""
 
-#: EAScompliance.php:5959 EAScompliance.php:5966
+#: EAScompliance.php:6005 EAScompliance.php:6012
 msgid "EAS MPM"
 msgstr ""
 
-#: EAScompliance.php:5959 EAScompliance.php:5968 EAScompliance.php:6061
+#: EAScompliance.php:6005 EAScompliance.php:6014 EAScompliance.php:6107
 msgid "EAS Logs"
 msgstr ""
 
-#: EAScompliance.php:5959 EAScompliance.php:5967 EAScompliance.php:6095
+#: EAScompliance.php:6005 EAScompliance.php:6013 EAScompliance.php:6141
 msgid "Connection status"
 msgstr ""
 
-#: EAScompliance.php:6023
+#: EAScompliance.php:6069
 msgid "EAS Merchandise module"
 msgstr ""
 
-#: EAScompliance.php:6025
+#: EAScompliance.php:6071
 msgid "To connect to the EAS Merchandise module, follow these steps:"
 msgstr ""
 
-#: EAScompliance.php:6027
-msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
+#: EAScompliance.php:6073
+msgid "Go to WooCommerce > Settings > Advanced > REST API menu."
 msgstr ""
 
-#: EAScompliance.php:6028
+#: EAScompliance.php:6074
 msgid "Press the button “Add key”."
 msgstr ""
 
-#: EAScompliance.php:6029
+#: EAScompliance.php:6075
 msgid ""
-"In opened window, fill Description with any name, set permissions to → Read/"
+"In opened window, fill Description with any name, set permissions to > Read/"
 "write. User field will be\n"
 "                filled automatically by the system, leave it as is."
 msgstr ""
 
-#: EAScompliance.php:6032
+#: EAScompliance.php:6078
 msgid "Press the “Generate API key” button."
 msgstr ""
 
-#: EAScompliance.php:6033
+#: EAScompliance.php:6079
 msgid "A window with key details will appear. Leave it open."
 msgstr ""
 
-#: EAScompliance.php:6034
+#: EAScompliance.php:6080
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
 msgstr ""
 
-#: EAScompliance.php:6035
+#: EAScompliance.php:6081
 msgid ""
 "Authenticate using your login and password to the EAS Merchandise module. "
 "Login and password are the\n"
 "                same as for EAS Dashboard."
 msgstr ""
 
-#: EAScompliance.php:6037
+#: EAScompliance.php:6083
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
 
-#: EAScompliance.php:6038
+#: EAScompliance.php:6084
 msgid ""
 "In the opened window, insert the following data: Name of the Store, Full URL "
 "and generated API keys\n"
@@ -722,7 +726,7 @@ msgid ""
 "connection will be established."
 msgstr ""
 
-#: EAScompliance.php:6041
+#: EAScompliance.php:6087
 msgid ""
 "Afterwards, the mapping process is initiated, a new window is opened. Map "
 "fields according to the\n"
@@ -742,7 +746,7 @@ msgstr ""
 "                        target=\"_blank\">EAS Merchandise module, connecting "
 "and configuration"
 
-#: EAScompliance.php:6045
+#: EAScompliance.php:6091
 msgid ""
 "After proper mapping, Press the “Start processing” button to parse SKU data "
 "from the shop into the\n"
@@ -750,14 +754,14 @@ msgid ""
 "on the number of SKUs in the Merchant store."
 msgstr ""
 
-#: EAScompliance.php:6048
+#: EAScompliance.php:6094
 msgid ""
 "The connection now is established and products from the Merchant’s store are "
 "linked to EAS Merchandise\n"
 "                module."
 msgstr ""
 
-#: EAScompliance.php:6063
+#: EAScompliance.php:6109
 msgid ""
 "EAS EU compliance plugin stores logs to the WooCommerce default logging "
 "folder.<br><br> To see logs, please choose required log file with the "
@@ -767,43 +771,43 @@ msgid ""
 "\">Logs page</a>"
 msgstr ""
 
-#: EAScompliance.php:6101
+#: EAScompliance.php:6147
 msgid "Your EAS Identifier:"
 msgstr ""
 
-#: EAScompliance.php:6104
+#: EAScompliance.php:6150
 msgid "EM legal status:"
 msgstr ""
 
-#: EAScompliance.php:6107
+#: EAScompliance.php:6153
 msgid "In EAS EM  registered as:"
 msgstr ""
 
-#: EAScompliance.php:6110
+#: EAScompliance.php:6156
 msgid "Electronic Interface"
 msgstr ""
 
-#: EAScompliance.php:6113
+#: EAScompliance.php:6159
 msgid "Not electronic Interface"
 msgstr ""
 
-#: EAScompliance.php:6117
+#: EAScompliance.php:6163
 msgid "OSS Registered:"
 msgstr ""
 
-#: EAScompliance.php:6120
+#: EAScompliance.php:6166
 msgid "YES"
 msgstr ""
 
-#: EAScompliance.php:6122
+#: EAScompliance.php:6168
 msgid "NO"
 msgstr ""
 
-#: EAScompliance.php:6126
+#: EAScompliance.php:6172
 msgid "Product Description language:"
 msgstr ""
 
-#: EAScompliance.php:6525
+#: EAScompliance.php:6571
 msgid ""
 "VAT rates for European countries detected in the WooCommerce Tax Settings. "
 "EAS solution will consider all prices as VAT included. Please contact EAS "
@@ -811,7 +815,7 @@ msgid ""
 "configured."
 msgstr ""
 
-#: EAScompliance.php:6538
+#: EAScompliance.php:6584
 msgid ""
 "Authorisation failed, wrong credentials provided. Please check your Client "
 "ID and Client secret."
@@ -819,11 +823,11 @@ msgstr ""
 "Échec de l'autorisation, les mauvais identifiants ont été fournis. Veuillez "
 "vérifier votre identifiant client et votre code client secret."
 
-#: EAScompliance.php:6560
+#: EAScompliance.php:6606
 msgid "Sorry, your WooCommerce version \""
 msgstr ""
 
-#: EAScompliance.php:6650
+#: EAScompliance.php:6712
 msgid "EAS processed"
 msgstr ""
 

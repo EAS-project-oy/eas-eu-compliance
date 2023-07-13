@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.8.0
 Tested up to: 6.2
-Stable tag: 1.4.56
+Stable tag: 1.4.59
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -74,6 +74,7 @@ Available in the following languages:
 * German
 * Italian
 * Swedish
+* Czech
 
 The following currency switcher plugins are supported:
 
@@ -92,6 +93,7 @@ The following currency switcher plugins are supported:
 * Access to EAS Merchant dashboard that contains all invoices and reports
 * Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
 * All the data available in accountant friendly format, further reducing the need for manual work. 
+* WooCommerce High-Performance Order Storage (HPOS) supported
 
 
 
@@ -121,11 +123,15 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
-= 1.4.56 =
+= 1.4.59 =
 * Fixed issue with button positioning on the checkout page
 * Enhanced support of WPML multicurrency
 * Order number notification issue fixed
 * Unnecessary reload of checkout page suppressed
+* Return management improved
+* Fixed issue with duplicated notifications in the orders
+* WooCommerce High-Performance Order Storage (HPOS)  support verified
+* New translation to Czech added
 
 = 1.4.53 =
 * Fixed known issue with Delivery taxation desiplaying in the WooCommerce admin Dashboard

@@ -3,12 +3,15 @@
 
 == Changelog ==
 
-10-06-23 - version 1.4.56 
+13-07-23 - version 1.4.59 
 
 * Fixed issue with button positioning on the checkout page
 * Enhanced support of WPML multicurrency
 * Order number notification issue fixed
 * Unnecessary reload of checkout page suppressed
+* Return management improved
+* Fixed issue with duplicated notifications in the orders
+* WooCommerce High-Performance Order Storage (HPOS)  support verified
 
 15-05-23 - version 1.4.53
 
