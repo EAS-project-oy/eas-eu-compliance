@@ -2496,6 +2496,7 @@ function eascompliance_redirect_confirm()
         $cart_item0['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
 
 		if ( get_option('easproj_limit_ioss_sales') == 'yes'
+            && !empty($payload_j['FID'])
             && $payload_j['merchandise_vat'] == 0
 			&& $payload_j['merchandise_cost_vat_excl'] > 0
 			&& in_array($payload_j['delivery_country'], EUROPEAN_COUNTRIES)
