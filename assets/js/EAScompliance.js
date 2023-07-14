@@ -266,9 +266,19 @@ jQuery(document).ready(function ($) {
             (
                 $status === 'standard_mode'
             )
+            ||
+            (
+                $status === 'limit_ioss_sales'
+            )
         ) {
             $('.button_calc').hide();
-            place_order_visible(true);
+
+            if ($status === 'limit_ioss_sales') {
+                show_error(plugin_dictionary.limit_ioss_sales_message);
+                place_order_visible(false);
+            } else {
+                place_order_visible(true);
+            }
         } else {
             $('.button_calc').show();
             place_order_visible(false);

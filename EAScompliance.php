@@ -709,6 +709,7 @@ function eascompliance_javascript()
             'standard_checkout' => EAS_TR('Standard Checkout'),
             'reload_link' => EAS_TR('reload'),
             'security_check' => EAS_TR('Security check, please reload page. '),
+            'limit_ioss_sales_message' => get_option( 'easproj_limit_ioss_sales_message' ),
         )
     );
     wp_localize_script(
@@ -1043,8 +1044,8 @@ function eascompliance_woocommerce_review_order_before_payment()
     try {
         // checkout form data saved during /calculate step //.
         $checkout_form_data = null;
+		$cart = WC()->cart;
         if (eascompliance_is_set()) {
-            $cart = WC()->cart;
             $k = eascompliance_array_key_first2($cart->get_cart());
             $item = $cart->get_cart_contents()[$k];
             $checkout_form_data = eascompliance_array_get($item, 'CHECKOUT FORM DATA', '');
@@ -1082,6 +1083,15 @@ function eascompliance_woocommerce_review_order_before_payment()
 
         $status = eascompliance_is_set() ? 'present' : 'not present';
         $needs_recalculate = eascompliance_needs_recalculate() ? 'yes' : 'no';
+
+        if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
+			$k0 = eascompliance_array_key_first2($cart->get_cart());
+			$cart_item0 = $cart->cart_contents[$k0];
+
+            if ( eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
+				$status = 'limit_ioss_sales';
+            }
+        }
 
         if (eascompliance_is_standard_checkout()) {
             $status = 'standard_checkout';
@@ -2484,6 +2494,14 @@ function eascompliance_redirect_confirm()
         $cart_item0['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
         $cart_item0['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
         $cart_item0['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
+
+		if ( get_option('easproj_limit_ioss_sales') == 'yes'
+            && $payload_j['merchandise_vat'] == 0
+			&& $payload_j['merchandise_cost_vat_excl'] > 0
+			&& in_array($payload_j['delivery_country'], EUROPEAN_COUNTRIES)
+		) {
+			$cart_item0['EAScompliance limit_ioss_sales'] = true;
+		}
 
         // WP-42 save request json backup copy into cart first item
         $cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get('EAS API REQUEST JSON');
@@ -4248,6 +4266,12 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $cart = WC()->cart;
         $k0 = eascompliance_array_key_first2($cart->get_cart());
         $item0 = &$woocommerce->cart->cart_contents[$k0];
+
+        if ( eascompliance_array_get($item0, 'EAScompliance limit_ioss_sales') === true) {
+			eascompliance_unset();
+			throw new Exception( get_option('easproj_limit_ioss_sales_message') );
+        }
+
         $item0['EAScompliance NEEDS RECALCULATE'] = false;
         $woocommerce->cart->set_session();
 
@@ -5720,18 +5744,32 @@ function eascompliance_settings()
             'default' => 'yes',
             'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
         ),
-                'standard_mode' => array(
+        'standard_mode' => array(
             'name' => EAS_TR('Standard mode'),
             'type' => 'checkbox',
-            'desc' => 'This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.',
+            'desc' => EAS_TR('This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.'),
             'id' => 'easproj_standard_mode',
             'default' => 'no',
+        ),
+        'limit_ioss_sales' => array(
+            'name' => EAS_TR('Prohibit non IOSS sales to EU countries'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('This option will prohibit sales for orders over 150€ (intrinsic value - the cost of merchandise only without VAT and shipping rate)'),
+            'id' => 'easproj_limit_ioss_sales',
+            'default' => 'no',
+        ),
+        'limit_ioss_sales_message' => array(
+            'name' => EAS_TR('Notification text for the customer will be displayed. '),
+            'type' => 'text',
+            'desc' => EAS_TR('You can change the text. Notice, text will be saved for default store language only.'),
+            'id' => 'easproj_limit_ioss_sales_message',
+            'default' => EAS_TR("Sorry, we don't support sales over 150€. Please remove some items from the cart to place the order."),
         ),
 		'debug' => array(
 			'name' => EAS_TR('Log levels'),
 			'type' => 'multiselect',
 			'class' => 'wc-enhanced-select',
-			'desc' => 'Debug messages levels',
+			'desc' => EAS_TR('Debug messages levels'),
 			'id' => 'easproj_debug',
 			'default' => array('info', 'error'),
 			'options' => $easproj_debug_options,
