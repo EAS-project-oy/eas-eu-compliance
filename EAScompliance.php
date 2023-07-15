@@ -234,6 +234,10 @@ function eascompliance_woocommerce_init()
             eascompliance_log('error', 'Incompatible WooCommerce version ' . WC()->version . '. Plugin deactivated');
         }
 
+    if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+            add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
+    }
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
     } finally {
@@ -379,9 +383,6 @@ function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
-}
 
 /**
  * Filter for woocommerce_available_payment_gateways. Hide payment methods until /calculate has been set or not required
