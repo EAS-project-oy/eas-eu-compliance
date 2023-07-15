@@ -223,6 +223,9 @@ function eascompliance_plugin_activation()
  * @throws Exception May throw exception.
  */
 add_action('plugins_loaded', 'eascompliance_plugins_loaded');
+add_action( 'woocommerce_init', 'eascompliance_woocommerce_init'  );
+
+
 
 function eascompliance_plugins_loaded_with_error()
 {
@@ -240,11 +243,11 @@ function eascompliance_plugins_loaded()
 	try {
 		set_error_handler('eascompliance_error_handler');
 
-		if ( version_compare(WC_VERSION, MIN_WC_VERSION ) === -1 ) {
+	/*	if ( version_compare(WC_VERSION, MIN_WC_VERSION ) === -1 ) {
          
             add_action( 'admin_notices', 'eascompliance_plugins_loaded_with_error' );
 			eascompliance_log('error', 'Incompatible WooCommerce version ' . WC_VERSION . '. Plugin deactivated');
-		}
+		}*/
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -253,6 +256,24 @@ function eascompliance_plugins_loaded()
 	}
 }
 
+function eascompliance_woocommerce_init()
+{
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+      if ( version_compare(WC()->version, MIN_WC_VERSION ) === -1 ) {
+         
+            add_action( 'admin_notices', 'eascompliance_plugins_loaded_with_error' );
+            eascompliance_log('error', 'Incompatible WooCommerce version ' . WC()->version . '. Plugin deactivated');
+        }
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+    } finally {
+        restore_error_handler();
+    }
+
+}
 /**
  * Plugin upgrades and migrations
  *
