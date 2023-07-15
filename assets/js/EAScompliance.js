@@ -6,8 +6,8 @@ jQuery(document).ready(function ($) {
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '').css('opacity', '')
-                if (($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
-                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false)
+                if (($(".eascompliance_status").attr('data-eascompliance-status')=='present')&&($(".woocommerce-error").children().length==0)){
+                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false);
             }
         }
         else {
@@ -266,9 +266,19 @@ jQuery(document).ready(function ($) {
             (
                 $status === 'standard_mode'
             )
+            ||
+            (
+                $status === 'limit_ioss_sales'
+            )
         ) {
             $('.button_calc').hide();
-            place_order_visible(true);
+
+            if ($status === 'limit_ioss_sales') {
+                show_error(plugin_dictionary.limit_ioss_sales_message);
+                place_order_visible(false);
+            } else {
+                place_order_visible(true);
+            }
         } else {
             $('.button_calc').show();
             place_order_visible(false);
