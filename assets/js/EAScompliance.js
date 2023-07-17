@@ -189,7 +189,9 @@ jQuery(document).ready(function ($) {
     }
 
     $(document.body).one("updated_checkout", async function () {
-        if (($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
+          $status = $('.eascompliance_status').attr('data-eascompliance-status')
+        if ($status =='present') {
+            //(($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
             // restore fields from what was submitted upon 'Calculate'
 
             $('.button_calc').text(plugin_dictionary.recalculate_taxes);
