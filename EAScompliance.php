@@ -413,6 +413,14 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
         // standard checkout or /calculate has been set
         if (eascompliance_is_standard_checkout() || (eascompliance_is_set() && !eascompliance_needs_recalculate())) {
             $show_payment_methods = true;
+
+            // hide payment methods when limit_ioss_sales is active
+			$cart_contents = WC()->cart->cart_contents;
+            $k0 = eascompliance_array_key_first2($cart_contents);
+            if ( !is_null($k0) && eascompliance_array_get($cart_contents[$k0],'EAScompliance limit_ioss_sales') === true) {
+                $show_payment_methods = false;
+            }
+
         }
 
         if (is_null(WC()->customer)) {
