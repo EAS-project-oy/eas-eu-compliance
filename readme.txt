@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.8.1
 Tested up to: 6.2
-Stable tag: 1.4.59
+Stable tag: 1.4.63
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -123,6 +123,12 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.4.63 =
+* Hotfix for the detected issue with init process released
+
+= 1.4.62 =
+* Issue with unsaved checkout form data fixed
+
 = 1.4.59 =
 * Fixed issue with button positioning on the checkout page
 * Enhanced support of WPML multicurrency
