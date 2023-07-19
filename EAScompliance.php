@@ -236,7 +236,201 @@ function eascompliance_woocommerce_init()
 
     if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
             add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
-    }
+        }
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
+		}
+
+		// // adding custom javascript file
+		if (eascompliance_is_active()) {
+			add_action('wp_enqueue_scripts', 'eascompliance_javascript');
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review2', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_applied_coupon', 'eascompliance_woocommerce_applied_coupon', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_removed_coupon', 'eascompliance_woocommerce_removed_coupon', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wp_ajax_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
+			add_action('wp_ajax_nopriv_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wp_ajax_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
+			add_action('wp_ajax_nopriv_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wp_ajax_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
+			add_action('wp_ajax_nopriv_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
+			add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
+			add_action('woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_checkout_create_order_line_item', 'eascompliance_woocommerce_checkout_create_order_line_item', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('option_woocommerce_klarna_payments_settings', 'eascompliance_klarna_settings_fix');
+		}
+
+		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+			add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('kp_wc_api_order_lines', 'eascompliance_kp_wc_api_order_lines', 10, 3);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed4', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('eascompliance_get_post_sale_without_lc_job_status', 'eascompliance_get_post_sale_without_lc_job_status', 10, 3);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_refunded', 'eascompliance_woocommerce_order_refunded', 10, 4);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_order_item_add_action_buttons', 'eascompliance_woocommerce_order_item_add_action_buttons', 10, 1);
+		}
+
+		if (eascompliance_is_active()) {
+			add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
+		}
+
+		if (eascompliance_is_active()) {
+			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
+		}
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -341,9 +535,6 @@ function eascompliance_tax_rate_id()
     return (int)$tax_rate_id0;
 }
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
-}
 
 /**
  * Filter for woocommerce_cart_tax_totals
@@ -473,10 +664,6 @@ function eascompliance_supported_countries()
 
 
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2);
-}
-
 /**
  * Filter for woocommerce_no_available_payment_methods_message. Change message when available payment methods are hidden
  *
@@ -501,9 +688,6 @@ function eascompliance_woocommerce_no_available_payment_methods_message($message
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
-}
 /**
  * Filter for woocommerce_order_get_tax_totals
  *
@@ -689,10 +873,6 @@ function eascompliance_is_standard_mode()
 }
 
 
-// // adding custom javascript file
-if (eascompliance_is_active()) {
-    add_action('wp_enqueue_scripts', 'eascompliance_javascript');
-}
 /**
  * Browser client scripts
  */
@@ -769,9 +949,6 @@ function eascompliance_settings_scripts()
 
 }
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
-}
 /**
  * Filter for setting billing required fields in checkout form
  *
@@ -833,9 +1010,6 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
-}
 /**
  * Filter for setting shipping required fields in checkout form
  *
@@ -889,9 +1063,6 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1);
-}
 /**
  *  Checkout -> Reset calculate billing/shipping country changes
  */
@@ -951,9 +1122,6 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review2', 10, 1);
-}
 /**
  *  WCML save currency calculated at checkout
  */
@@ -989,9 +1157,6 @@ function eascompliance_woocommerce_checkout_update_order_review2($post_data)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1);
-}
 /**
  *  Reset calculations when WCML currency changes
  */
@@ -1007,9 +1172,6 @@ function eascompliance_wcml_switch_currency($post_data)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_applied_coupon', 'eascompliance_woocommerce_applied_coupon', 10, 1);
-}
 /**
  *  Reset calculations when coupons are applied
  */
@@ -1025,9 +1187,6 @@ function eascompliance_woocommerce_applied_coupon($post_data)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_removed_coupon', 'eascompliance_woocommerce_removed_coupon', 10, 1);
-}
 /**
  *  Reset calculations when coupons are applied
  */
@@ -1043,9 +1202,6 @@ function eascompliance_woocommerce_removed_coupon($coupon_code)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment');
-}
 /**
  *  Checkout -> Before 'Proceed Order' Hook
  */
@@ -2059,10 +2215,6 @@ class EAScomplianceAuthorizationFaliedException extends Exception
 
 ;
 
-if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
-    add_action('wp_ajax_nopriv_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
-}
 /**
  * Customs Duties Calculation
  * This handler is called when user clicks 'Calculate Taxes button on Checkout page'
@@ -2286,10 +2438,6 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
-    add_action('wp_ajax_nopriv_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
-}
 /**
  * Handle redirect URI confirmation
  *
@@ -2584,9 +2732,6 @@ function eascompliance_is_set()
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
-}
 /**
  *  Reset calculated taxes in cart and checkout
  */
@@ -2772,10 +2917,6 @@ function eascompliance_needs_recalculate()
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
-    add_action('wp_ajax_nopriv_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
-}
 /**
  * Check needs_recalculate via ajax
  *
@@ -2953,9 +3094,6 @@ function eascompliance_order_createpostsaleorder($order)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
-}
 /**
  * EAS recalculate taxes after order is saved via API calls
  *
@@ -3013,9 +3151,6 @@ function eascompliance_woocommerce_after_order_object_save($order)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
-}
 /**
  * Shipment tracking number notification from various plugins
  *
@@ -3113,9 +3248,6 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 }
 
 
-if (eascompliance_is_active()) {
-	add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
-}
 /**
  * Admin Order method to recalculate EAS fees
  *
@@ -3152,9 +3284,6 @@ function eascompliance_recalculate_ajax()
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
-}
 /**
  * Admin Order method to log EAS order data
  *
@@ -3209,9 +3338,6 @@ function eascompliance_logorderdata_ajax()
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3);
-}
 /**
  * Replace order_item taxes with EAScompliance during order creation
  *
@@ -3331,9 +3457,6 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
     }
 }
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
-}
 /**
  * Replace order_item taxes list with EAScompliance tax if calculation is present
  *
@@ -3484,9 +3607,6 @@ function eascompliance_cart_total($current_total = null)
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
-}
 /**
  * Filter for cart total
  *
@@ -3512,9 +3632,6 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
-}
 /**
  * Order review Tax field
  *
@@ -3576,9 +3693,6 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
-}
 /**
  * Checkout Order review Item Subtotal
  *
@@ -3633,11 +3747,6 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
     }
 }
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
-    add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
-    add_action('woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
-}
 /**
  * Checkout actiom to fix WCML cart discount for percent coupons from $o to $n
  *
@@ -3669,9 +3778,6 @@ function eascompliance_wcml_update_coupon_percent_discount()
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
-}
 /**
  * Checkout Order review Cart Subtotal
  *
@@ -3741,9 +3847,6 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
-}
 /**
  * Checkout Order review Total field
  *
@@ -3798,9 +3901,6 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_checkout_create_order_line_item', 'eascompliance_woocommerce_checkout_create_order_line_item', 10, 4);
-}
 /**
  * Order Items creation wrapper
  *
@@ -3847,9 +3947,6 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
 ;
 
 
-if (eascompliance_is_active()) {
-    add_filter('option_woocommerce_klarna_payments_settings', 'eascompliance_klarna_settings_fix');
-}
 /**
  * Substitute empty values to Klarna settings when country is not Finland since otherwise it produces 'Undefined Index' errors
  *
@@ -3886,9 +3983,6 @@ function eascompliance_klarna_settings_fix($kp_settings)
 }
 
 
-if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-    add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
-}
 /**
  *  Fix tax_rate for Klarna plugin:
  *  klarna-payments-for-woocommerceclassesrequestshelpersclass-kp-order-lines.php:158
@@ -3937,9 +4031,6 @@ function eascompliance_woocommerce_cart_totals_get_item_tax_rates($item_tax_rate
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('kp_wc_api_order_lines', 'eascompliance_kp_wc_api_order_lines', 10, 3);
-}
 /**
  * Klarna plugin hook to calculate lines submitted
  *
@@ -4020,9 +4111,6 @@ function eascompliance_kp_wc_api_order_lines($klarna_order_lines, $order_id)
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
-}
 /**
  * Replace order_item taxes with customs duties during Recalculate
  *
@@ -4064,9 +4152,6 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
-}
 /**
  * Replace chosen shipping method cost with $payload_j['delivery_charge_vat_excl']
  *
@@ -4175,9 +4260,6 @@ function eascompliance_woocommerce_shipping_packages($packages)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
-}
 /**
  * Checkout -> Order Hook (before Order created)
  *
@@ -4337,9 +4419,6 @@ function eascompliance_woocommerce_checkout_create_order($order)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
-}
 /**
  *  After Order has been created
  *
@@ -4431,9 +4510,6 @@ function eascompliance_order_status_paid($status_to) {
 	}
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
-}
 
 /**
  * When Order status changes from Pending to Processing, send payment verification
@@ -4540,9 +4616,6 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
-}
 /**
  * When order becomes paid (status becomes Processing, Completed), call /confirmpostsaleorder with obtained token
  *
@@ -4628,9 +4701,6 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4);
-}
 /**
  * When order status becomes Cancelled and EAS token present, try to notify EAS and ignore errors
  *
@@ -4709,9 +4779,6 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
 
 }
 
-if (eascompliance_is_active()) {
-	add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed4', 10, 4);
-}
 /**
  * In standard_mode when order becomes paid, schedule  /mass-sale/create_post_sale_without_lc_orders
  *
@@ -4849,9 +4916,6 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 	}
 }
 
-if (eascompliance_is_active()) {
-	add_action('eascompliance_get_post_sale_without_lc_job_status', 'eascompliance_get_post_sale_without_lc_job_status', 10, 3);
-}
 /**
  * Check job status and try to obtain order information from EAS server
  *
@@ -5005,9 +5069,6 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
 	}
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2);
-}
 /**
  * EAS Refund return creation
  *
@@ -5299,9 +5360,6 @@ function eascompliance_woocommerce_create_refund($refund, $args)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_order_refunded', 'eascompliance_woocommerce_order_refunded', 10, 4);
-}
 /**
  * Notify EAS on order refund
  *
@@ -5424,9 +5482,6 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
 }
 
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_order_item_add_action_buttons', 'eascompliance_woocommerce_order_item_add_action_buttons', 10, 1);
-}
 /**
  * EAS recalculate button in admin Order view
  *
@@ -5482,9 +5537,6 @@ function eascompliance_get_locale()
 }
 
 
-if (eascompliance_is_active()) {
-    add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
-}
 
 /**
  * Admin Order must not be editable when calculations already present
@@ -5502,9 +5554,6 @@ function eascompliance_wc_order_is_editable($is_editable, $order)
     return $is_editable;
 }
 
-if (eascompliance_is_active()) {
-    add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
-}
 /**
  * Display Order Totals in Order Admin Page
  *
@@ -6837,9 +6886,6 @@ function eascompliance_sort_by_order_column($query)
     }
 }
 
-if (eascompliance_is_active()) {
-    add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
-}
 /**
  * Rest API route for bulk attribute update
  */
