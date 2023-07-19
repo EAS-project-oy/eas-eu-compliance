@@ -965,7 +965,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 		}
 
         // skip unset when billing/shipping countries differ while ship_to_different_address is false
-        if ( !$ship_to_different_address && ( $new_shipping_country != $new_billing_country ) ) {
+        if ( !empty($new_shipping_country) && !$ship_to_different_address && ( $new_shipping_country != $new_billing_country ) ) {
             $new_shipping_country = '';
         }
 
@@ -2207,8 +2207,6 @@ function eascompliance_ajaxhandler()
         $jdebug['step'] = 'parse /calculate response';
         // CALC response should be quoted link to confirmation page: "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"     //.
         $calc_response = trim(json_decode($response['http_response']->get_data()));
-
-        // sometimes eas_checkout_token is appended with '?' while should be '&':           //.
         $calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 
         $jdebug['CALC response'] = $calc_response;
@@ -2224,7 +2222,7 @@ function eascompliance_ajaxhandler()
         $jres['message'] = $ex->getMessage();
         $jres['CALC response'] = 'STANDARD_CHECKOUT';
 
-        // this line saves cart here, but does not save before EAScomplianceStandardCheckoutException thrown. Why?
+        // this line saves cart here, but does not save before EAScomplianceStandardCheckoutException thrown. 
         WC()->cart->set_session();
     } catch (Exception $ex) {
 

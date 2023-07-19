@@ -250,14 +250,15 @@ msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
 msgstr ""
-"Refund $refund_id  is cancelled due to insufficient remaining number of "
-"items. "
+"Sorry, refund $refund_id was not created in the EAS system, all items "
+"already retuned. Please visit EAS Dashboard to verify that the order is in "
+"proper state. "
 
 #: EAScompliance.php:5306
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
-"Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund. "
+"Refund $refund_id is not saved since gift card cannot be returned. Please, "
+"remove gift card form the refund and try again. "
 
 #: EAScompliance.php:5313
 msgid ""
@@ -272,37 +273,32 @@ msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
 msgstr ""
-"Refund $refund_id cancelled due to the fact that EAS return management "
-"service  being temporary unavailable. Please try to create Refund later. "
+"EAS don't support zero quantity returns. Please enter quantity greater than "
+"0 for items to be returned and try again.\n"
+"Refund $refund_id was not saved. "
 
 #: EAScompliance.php:5328
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
 msgstr ""
-"Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund."
+"Sorry, refund $refund_id was not saved. Refund total cannot be more than "
+"order total."
 
 #: EAScompliance.php:5336
-#, fuzzy
-#| msgid ""
-#| "Refund $refund_id cancelled and removed. Refund total cannot be more than "
-#| "order total."
 msgid ""
 "Refund $refund_id cancelled and removed. Refund response status is not OK."
 msgstr ""
-"Refund $refund_id is cancelled since gift card cannot be returned. Please, "
-"remove gift card form the refund."
+"Sorry, refund $refund_id was not saved. Return was not created in the EAS "
+"system. Please check logs."
 
 #: EAScompliance.php:5377
 msgid "Refund confirmed to EAS"
 msgstr ""
 
 #: EAScompliance.php:5382
-#, fuzzy
-#| msgid "Refund create failed: "
 msgid "Refund confirm failed: "
-msgstr "Refund could not be created: "
+msgstr "Refund could not be confirmed: "
 
 #: EAScompliance.php:5406
 msgid "Log EAS order data"
