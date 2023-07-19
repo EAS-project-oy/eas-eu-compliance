@@ -234,201 +234,66 @@ function eascompliance_woocommerce_init()
             eascompliance_log('error', 'Incompatible WooCommerce version ' . WC()->version . '. Plugin deactivated');
         }
 
-    if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+        if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
             add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
+            add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
+            add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
+            add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
+
+            add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
+            add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
+            add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
+            add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
+            add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
+            add_action('woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
+            add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
+            add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
+            add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
+
         }
 
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
-		}
-
+		
 		if (eascompliance_is_active()) {
 			add_filter('woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
-		}
-
-		// // adding custom javascript file
-		if (eascompliance_is_active()) {
-			add_action('wp_enqueue_scripts', 'eascompliance_javascript');
-		}
-
-		if (eascompliance_is_active()) {
+		// adding custom javascript file
+		    add_action('wp_enqueue_scripts', 'eascompliance_javascript');
 			add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
-		}
-
-		if (eascompliance_is_active()) {
-			add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
+		    add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1);
 			add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review2', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
-			add_action('wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
+		    add_action('wcml_switch_currency', 'eascompliance_wcml_switch_currency', 10, 1);
 			add_action('woocommerce_applied_coupon', 'eascompliance_woocommerce_applied_coupon', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_removed_coupon', 'eascompliance_woocommerce_removed_coupon', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_review_order_before_payment', 'eascompliance_woocommerce_review_order_before_payment');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('wp_ajax_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
 			add_action('wp_ajax_nopriv_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('wp_ajax_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
 			add_action('wp_ajax_nopriv_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('wp_ajax_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
 			add_action('wp_ajax_nopriv_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
-			add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
-			add_action('woocommerce_applied_coupon', 'eascompliance_wcml_update_coupon_percent_discount', 999);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_checkout_create_order_line_item', 'eascompliance_woocommerce_checkout_create_order_line_item', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('option_woocommerce_klarna_payments_settings', 'eascompliance_klarna_settings_fix');
-		}
-
-		if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
-			add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('kp_wc_api_order_lines', 'eascompliance_kp_wc_api_order_lines', 10, 3);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed4', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('eascompliance_get_post_sale_without_lc_job_status', 'eascompliance_get_post_sale_without_lc_job_status', 10, 3);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_create_refund', 'eascompliance_woocommerce_create_refund', 10, 2);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_refunded', 'eascompliance_woocommerce_order_refunded', 10, 4);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_order_item_add_action_buttons', 'eascompliance_woocommerce_order_item_add_action_buttons', 10, 1);
-		}
-
-		if (eascompliance_is_active()) {
 			add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
-		}
-
-		if (eascompliance_is_active()) {
 			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
 		}
 
