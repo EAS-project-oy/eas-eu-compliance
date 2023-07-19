@@ -239,7 +239,6 @@ function eascompliance_woocommerce_init()
             add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
             add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
             add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
-
             add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
             add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
             add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
@@ -2559,6 +2558,7 @@ function eascompliance_is_set()
 {
     try {
         set_error_handler('eascompliance_error_handler');
+        //this is hot fix to be compatible with Braintree 
          if ( ! did_action( 'wp_loaded' ) ) {
             return false;
         }    
