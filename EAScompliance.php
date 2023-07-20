@@ -2557,10 +2557,12 @@ function eascompliance_is_set()
 {
     try {
         set_error_handler('eascompliance_error_handler');
-        //this is hot fix to be compatible with Braintree 
-         if ( ! did_action( 'wp_loaded' ) ) {
+
+        // with Braintree plugin cart total is accessed before wp_loaded
+         if ( !did_action('wp_loaded') ) {
             return false;
-        }    
+        }
+
         $cart = WC()->cart;
         if (is_null($cart)) {
             return false;
