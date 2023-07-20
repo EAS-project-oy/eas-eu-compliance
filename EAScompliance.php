@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.64
+ * Version: 1.4.65
  * Tested up to 6.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -1097,6 +1097,7 @@ function eascompliance_woocommerce_review_order_before_payment()
                 $currency_old = $calc_jreq_saved['payment_currency'];
 
                 if ($currency_new !== $currency_old) {
+					eascompliance_log('calculate', 'WC_Payments_Multi_Currency currency changed from $old to $new', array('old'=>$currency_old, 'new'=>$currency_new));
                     eascompliance_unset();
                 }
             }
@@ -2556,10 +2557,12 @@ function eascompliance_is_set()
 {
     try {
         set_error_handler('eascompliance_error_handler');
-        //this is hot fix to be compatible with Braintree 
-         if ( ! did_action( 'wp_loaded' ) ) {
+
+        // with Braintree plugin cart total is accessed before wp_loaded
+         if ( !did_action('wp_loaded') ) {
             return false;
-        }    
+        }
+
         $cart = WC()->cart;
         if (is_null($cart)) {
             return false;
@@ -2612,6 +2615,7 @@ function eascompliance_unset()
             $k0 = eascompliance_array_key_first2($cart->get_cart());
             $item0 = &$woocommerce->cart->cart_contents[$k0];
             $item0['EAScompliance NEEDS RECALCULATE'] = true;
+            $item0['EAScompliance limit_ioss_sales'] = false;
             $item0['EAScompliance SET'] = false;
             WC()->session->set('EAS CART DISCOUNT', null);
             $woocommerce->cart->set_session();
