@@ -1097,6 +1097,7 @@ function eascompliance_woocommerce_review_order_before_payment()
                 $currency_old = $calc_jreq_saved['payment_currency'];
 
                 if ($currency_new !== $currency_old) {
+					eascompliance_log('calculate', 'WC_Payments_Multi_Currency currency changed from $old to $new', array('old'=>$currency_old, 'new'=>$currency_new));
                     eascompliance_unset();
                 }
             }
@@ -2612,6 +2613,7 @@ function eascompliance_unset()
             $k0 = eascompliance_array_key_first2($cart->get_cart());
             $item0 = &$woocommerce->cart->cart_contents[$k0];
             $item0['EAScompliance NEEDS RECALCULATE'] = true;
+            $item0['EAScompliance limit_ioss_sales'] = false;
             $item0['EAScompliance SET'] = false;
             WC()->session->set('EAS CART DISCOUNT', null);
             $woocommerce->cart->set_session();
