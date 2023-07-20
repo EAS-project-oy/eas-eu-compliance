@@ -250,14 +250,14 @@ msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
 msgstr ""
-"Sorry, refund $refund_id was not created in the EAS system, all items "
-"already retuned. Please visit EAS Dashboard to verify that the order is in "
-"proper state. "
+"Sorry, refund $refund_id was not created in the EAS system, items already "
+"retuned. Please visit EAS Dashboard to verify that the order is in proper "
+"state. "
 
 #: EAScompliance.php:5306
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
-"Refund $refund_id is not saved since gift card cannot be returned. Please, "
+"Refund $refund_id was not saved since gift card cannot be returned. Please, "
 "remove gift card form the refund and try again. "
 
 #: EAScompliance.php:5313

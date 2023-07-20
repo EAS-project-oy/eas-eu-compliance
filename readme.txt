@@ -24,6 +24,20 @@ With EAS selling to all EU countries and UK is just as easy as your domestic sal
 
 EAS removes all the tax and customs compliance barriers preventing your sales throughout the whole EU!
 
+= EAS EU compliance Features =
+
+* Smart VAT calculator: all 600.000+ reduced rates in use. Your customer knows the whole amount due (including VAT and all applicable customs duties) on purchase and you provide a better customer experience. 
+* Registration for **OSS / IOSS special schemes** with intermediary services when needed
+* VAT filing and payment management and support
+* UK VAT compliance with intermediary services when needed
+* Compliance with all schemes, Domestic, B2B, Import, Union and Non-Union schemes. EAS Solution supports all business models, including multi-warehouse. 
+* Access to EAS Merchant dashboard that contains all invoices and reports
+* Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
+* All the data available in accountant friendly format, further reducing the need for manual work. 
+* WooCommerce High-Performance Order Storage (HPOS) supported.
+* PHP 8.0 support verified.
+* Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
+
 **How to get started?**
 
 Getting started is easy!  EAS makes you EU and UK compliant within minutes.
@@ -83,19 +97,6 @@ The following currency switcher plugins are supported:
 * WC Currency Switcher by realmag777
 * Multi Currency for WooCommerce by VillaTheme
 
-= EAS EU compliance Features =
-
-* Smart VAT calculator: all 600.000+ reduced rates in use. Your customer knows the whole amount due (including VAT and all applicable customs duties) on purchase and you provide a better customer experience. 
-* Registration for **OSS / IOSS special schemes** with intermediary services when needed
-* VAT filing and payment management and support
-* UK VAT compliance with intermediary services when needed
-* Compliance with all schemes, Domestic, B2B, Import, Union and Non-Union schemes. EAS Solution supports all business models, including multi-warehouse. 
-* Access to EAS Merchant dashboard that contains all invoices and reports
-* Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
-* All the data available in accountant friendly format, further reducing the need for manual work. 
-* WooCommerce High-Performance Order Storage (HPOS) supported
-
-
 
 == Installation ==
 
@@ -123,6 +124,13 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.70 =
+* New feature implemented: Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
+* PHP 8.0 support verified
+* Improved whole performance of the plugin
+* Fixed issue with unnecessary data in the event log posted.
+
 = 1.4.63 =
 * Hotfix for the detected issue with init process released
 
