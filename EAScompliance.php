@@ -296,6 +296,11 @@ function eascompliance_woocommerce_init()
 			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
 		}
 
+        if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
+			update_option('easproj_limit_ioss_sales_message', EAS_TR("Sorry, we don't support sales over 150€. Please remove some items from the cart to place the order."));
+        };
+
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
     } finally {
@@ -5688,7 +5693,6 @@ function eascompliance_settings()
             'type' => 'text',
             'desc' => EAS_TR('You can change the text. Notice, text will be saved for default store language only.'),
             'id' => 'easproj_limit_ioss_sales_message',
-            'default' => EAS_TR("Sorry, we don't support sales over 150€. Please remove some items from the cart to place the order."),
         ),
 		'debug' => array(
 			'name' => EAS_TR('Log levels'),
