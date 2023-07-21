@@ -269,8 +269,8 @@ function eascompliance_woocommerce_init()
 			add_action('wp_ajax_nopriv_eascompliance_ajaxhandler', 'eascompliance_ajaxhandler');
 			add_action('wp_ajax_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
 			add_action('wp_ajax_nopriv_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
-			add_action('wp_ajax_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
-			add_action('wp_ajax_nopriv_eascompliance_needs_recalculate_ajax', 'eascompliance_needs_recalculate_ajax');
+			add_action('wp_ajax_eascompliance_status_ajax', 'eascompliance_status_ajax');
+			add_action('wp_ajax_nopriv_eascompliance_status_ajax', 'eascompliance_status_ajax');
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
 			add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
@@ -466,7 +466,7 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 		}
 
         // standard checkout or /calculate has been set
-        if (eascompliance_is_standard_checkout() || (eascompliance_is_set() && !eascompliance_needs_recalculate())) {
+        if ( eascompliance_is_standard_checkout() || eascompliance_is_set() ) {
             $show_payment_methods = true;
 
             // hide payment methods when limit_ioss_sales is active
@@ -541,7 +541,19 @@ function eascompliance_woocommerce_no_available_payment_methods_message($message
     try {
         set_error_handler('eascompliance_error_handler');
 
-        return EAS_TR('Please calculate taxes and duties to proceed with order payment');
+
+		if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
+			$cart = WC()->cart;
+			$k0 = eascompliance_array_key_first2($cart->get_cart());
+			$cart_item0 = $cart->cart_contents[$k0];
+
+			if (eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
+				return get_option( 'easproj_limit_ioss_sales_message' );
+			}
+
+		}
+
+		return EAS_TR('Please calculate taxes and duties to proceed with order payment');
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -1114,26 +1126,7 @@ function eascompliance_woocommerce_review_order_before_payment()
             $button_name = EAS_TR('Calculate Taxes and Duties');
         }
 
-        $status = eascompliance_is_set() ? 'present' : 'not present';
-        $needs_recalculate = eascompliance_needs_recalculate() ? 'yes' : 'no';
-
-        if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
-			$k0 = eascompliance_array_key_first2($cart->get_cart());
-			$cart_item0 = $cart->cart_contents[$k0];
-
-            if ( eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
-				$status = 'limit_ioss_sales';
-            }
-        }
-
-        if (eascompliance_is_standard_checkout()) {
-            $status = 'standard_checkout';
-        }
-
-
-		if ( 'yes' === get_option('easproj_standard_mode') ) {
-			$status = 'standard_mode';
-		}
+        $status = eascompliance_status();
 
         ?>
         <div class="form-row eascompliance">
@@ -1142,7 +1135,6 @@ function eascompliance_woocommerce_review_order_before_payment()
                    value="<?php echo esc_attr($nonce_calc); ?>"/></input>
             <p class="eascompliance_status"
                checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>"
-               needs-recalculate="<?php echo esc_attr($needs_recalculate); ?>"
                data-eascompliance-status="<?php echo esc_attr($status); ?>"
             >
             </p>
@@ -2510,8 +2502,6 @@ function eascompliance_redirect_confirm()
         $cart_item0['EASPROJ API PAYLOAD'] = $payload_j;
         $cart_item0['EAScompliance HEAD'] = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
         $cart_item0['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
-        $cart_item0['EAScompliance NEEDS RECALCULATE'] = false;
-
         $cart_item0['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
         $cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'] = $payload_j['delivery_charge'];
         $cart_item0['EAScompliance DELIVERY CHARGE VAT'] = $payload_j['delivery_charge_vat'];
@@ -2614,7 +2604,6 @@ function eascompliance_unset()
             $cart = WC()->cart;
             $k0 = eascompliance_array_key_first2($cart->get_cart());
             $item0 = &$woocommerce->cart->cart_contents[$k0];
-            $item0['EAScompliance NEEDS RECALCULATE'] = true;
             $item0['EAScompliance limit_ioss_sales'] = false;
             $item0['EAScompliance SET'] = false;
             WC()->session->set('EAS CART DISCOUNT', null);
@@ -2752,31 +2741,38 @@ function eascompliance_is_deduct_vat_outside_eu()
     }
 }
 
+
 /**
- * CHeck if EAScompliance needs to  recalculate
+ * EAScompliance status
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_needs_recalculate()
+function eascompliance_status()
 {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        $cart = WC()->cart;
-        if (is_null($cart)) {
-            return false;
-        }
-        $k0 = eascompliance_array_key_first2($cart->get_cart());
+		$status = eascompliance_is_set() ? 'present' : 'not present';
 
-        if (is_null($k0)) {
-            return false;
-        }
-        $cart_item0 = $cart->get_cart_contents()[$k0];
-        if (!array_key_exists('EAScompliance NEEDS RECALCULATE', $cart_item0)) {
-            return false;
-        }
-        $needs_recalculate = (true === $cart_item0['EAScompliance NEEDS RECALCULATE']);
-        return $needs_recalculate;
+        if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
+            $cart = WC()->cart;
+			$k0 = eascompliance_array_key_first2($cart->get_cart());
+			$cart_item0 = $cart->cart_contents[$k0];
+
+			if ( eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
+				$status = 'limit_ioss_sales';
+			}
+		}
+
+        if (eascompliance_is_standard_checkout()) {
+			$status = 'standard_checkout';
+		}
+
+		if ( 'yes' === get_option('easproj_standard_mode') ) {
+			$status = 'standard_mode';
+		}
+
+        return $status;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -2787,19 +2783,20 @@ function eascompliance_needs_recalculate()
 
 
 /**
- * Check needs_recalculate via ajax
+ * Check eascompliance status via ajax
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_needs_recalculate_ajax()
+function eascompliance_status_ajax()
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
 
-        $needs_recalculate = eascompliance_needs_recalculate();
-        wp_send_json(array('needs_recalculate' => $needs_recalculate));
+		$status = eascompliance_status();
+
+        wp_send_json(array('eascompliance_status' => $status));
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -4236,14 +4233,11 @@ function eascompliance_woocommerce_checkout_create_order($order)
 			throw new Exception( get_option('easproj_limit_ioss_sales_message') );
         }
 
-        $item0['EAScompliance NEEDS RECALCULATE'] = false;
         $woocommerce->cart->set_session();
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
             eascompliance_log('place_order', '$calc_jreq_saved ' . print_r($calc_jreq_saved, true) . '  $calc_jreq_new  ' . print_r($calc_jreq_new, true));
             // reset EAScompliance if json's mismatch //.
-            $item0['EAScompliance NEEDS RECALCULATE'] = true;
-            // reset calculate of cart since calculate may have changed previous values //.
             eascompliance_unset();
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
         }
