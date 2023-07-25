@@ -294,6 +294,7 @@ function eascompliance_woocommerce_init()
 			add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
 			add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
 			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
+			add_action('woocommerce_before_delete_order_item', 'eascompliance_woocommerce_before_delete_order_item');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -5432,6 +5433,44 @@ function eascompliance_wc_order_is_editable($is_editable, $order)
 	}
 
     return $is_editable;
+}
+
+
+/**
+ * Prevent deletion of calculated taxes in Order
+ *
+ * @param $order_item_id int order_item_id.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_before_delete_order_item($order_item_id)
+{
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        $order_id = wc_get_order_id_by_order_item_id($order_item_id);
+        $order = wc_get_order($order_id);
+        $order_item = $order->get_item($order_item_id);
+
+		$payload_j = $order->get_meta('easproj_payload');
+
+		if (empty($payload_j)) {
+		    return;
+		}
+
+        $order_item_type = $order_item->get_type();
+        eascompliance_log('debug', 'item type is $it item is',['it'=>$order_item_type, 'item'=>$order_item]);
+        if ($order_item_type != 'tax' ) {
+            return;
+        }
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+	} finally {
+		restore_error_handler();
+	}
+
+
+	throw new Exception("Cannot delete tax items in order with EAScompliance tax items, order id $order_id");
 }
 
 /**
