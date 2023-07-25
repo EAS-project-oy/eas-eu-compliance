@@ -2525,6 +2525,9 @@ function eascompliance_redirect_confirm()
         // WP-42 save request json backup copy into cart first item
         $cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get('EAS API REQUEST JSON');
 
+        // save chosen_shipping_methods
+		WC()->session->set('EAS chosen_shipping_methods', WC()->session->get('chosen_shipping_methods'));
+
         // DEBUG SAMPLE: return WC()->cart->get_cart(); //.
         $woocommerce->cart->set_session();   // when in ajax calls, saves it //.
 
@@ -4078,6 +4081,15 @@ function eascompliance_woocommerce_shipping_packages($packages)
             eascompliance_unset();
             return $packages;
         }
+
+		//compare chosen_shipping_methods with version saved during calculate, unset if they differ
+		$chosen_shipping_methods_saved = WC()->session->get('EAS chosen_shipping_methods');
+		if ( is_array($chosen_shipping_methods_saved) && array_diff($chosen_shipping_methods_saved, $chosen_shipping_methods)) {
+			eascompliance_log('info', 'Chosen shipping methods changed, unset calculation');
+			eascompliance_unset();
+			return $packages;
+		}
+
 
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($packages as $px => &$p) {
