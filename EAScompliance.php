@@ -5458,7 +5458,6 @@ function eascompliance_woocommerce_before_delete_order_item($order_item_id)
 		}
 
         $order_item_type = $order_item->get_type();
-        eascompliance_log('debug', 'item type is $it item is',['it'=>$order_item_type, 'item'=>$order_item]);
         if ($order_item_type != 'tax' ) {
             return;
         }
