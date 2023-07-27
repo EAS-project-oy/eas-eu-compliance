@@ -286,6 +286,7 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
 			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
+			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4);
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed4', 10, 4);
 			add_action('eascompliance_get_post_sale_without_lc_job_status', 'eascompliance_get_post_sale_without_lc_job_status', 10, 3);
@@ -4505,6 +4506,90 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
 
 }
 
+
+/**
+ * When order becomes paid (status becomes Processing, Completed), call /confirmpostsaleorder with obtained token
+ *
+ * @param int $order_id order_id.
+ * @param string $status_from status_from.
+ * @param string $status_to status_to.
+ * @param object $order order.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_order_status_changed2($order_id, $status_from, $status_to, $order)
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+		if ( !eascompliance_order_status_paid($status_to) ) {
+			return;
+		}
+
+        // process only orders created with createpostsaleorder
+        if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') !== '1') {
+            return;
+        }
+
+        $auth_token = eascompliance_get_oauth_token();
+        $confirmation_token = $order->get_meta('_easproj_token');
+        // JWT token is not present during STANDARD_CHECKOUT //.
+        if ('' === $confirmation_token) {
+            return;
+        }
+
+        $payment_jreq = array(
+            'order_token' => $confirmation_token,
+        );
+
+        $options = array(
+            'method' => 'POST',
+            'headers' => array(
+                'Content-type' => 'application/json',
+                'Authorization' => 'Bearer ' . $auth_token,
+            ),
+            'body' => json_encode($payment_jreq, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
+            'sslverify' => false,
+        );
+
+        $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/confirmpostsaleorder';
+        $payment_response = (new WP_Http)->request($payment_url, $options);
+        if (is_wp_error($payment_response)) {
+            throw new Exception($payment_response->get_error_message());
+        }
+
+        $payment_status = (string)$payment_response['response']['code'];
+
+        if ('200' === $payment_status) {
+            $order->add_order_note(
+                eascompliance_format(
+                    EAS_TR('Order $order_id payment notified to EAS'),
+                    array(
+                        'order_id' => $order->get_order_number(),
+                    )
+                )
+            );
+
+            $order->save();
+        } elseif ('206' === $payment_status) {
+            $order->add_order_note(
+                EAS_TR('EAS EU compliance: Order created. Cannot make shipments as S10 is not provided. Login to dashboard to create shipments')
+            );
+        } else {
+            eascompliance_log('error', 'Notify failed response is $r', array('$r' => $payment_response));
+            throw new Exception($payment_status . ' ' . $payment_response['response']['message']);
+        }
+
+        eascompliance_log('info', "Order ".$order->get_order_number()." payment confirmed");
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        $order->add_order_note(EAS_TR("Order ".$order->get_order_number()." payment notification failed: ") . $ex->getMessage());
+    } finally {
+        restore_error_handler();
+    }
+
+}
 
 
 /**
