@@ -224,4 +224,15 @@ jQuery(document).ready(function($) {
         } )
     }
 
+    // prevent product attributes deletion
+    $( 'table.attributes-table a.delete' ).on( 'click', function() {
+        $slug = $($(this).parents('tr').find('td')[1]).text()
+        if (Object.values(plugin_ajax_object.EASCOMPLIANCE_PRODUCT_ATTRIBUTES).indexOf($slug) > -1)
+        {
+            window.alert(plugin_ajax_object.prevent_attributes_delete_message)
+            return false;
+        }
+        return true;
+    })
+
 })
