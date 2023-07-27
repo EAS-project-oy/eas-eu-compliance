@@ -3209,6 +3209,7 @@ function eascompliance_logorderdata_ajax()
                 '_easproj_api_save_notification_started' => $order->get_meta('_easproj_api_save_notification_started'),
                 '_easproj_order_created_with_createpostsaleorder' => $order->get_meta('_easproj_order_created_with_createpostsaleorder'),
                 '_easproj_create_post_sale_without_lc_orders_json' => $order->get_meta('_easproj_create_post_sale_without_lc_orders_json'),
+                '_easproj_order_created_with_create_post_sale_without_lc_orders' => $order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders'),
             ), true));
 
 
@@ -4532,6 +4533,10 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
             return;
         }
 
+        if ($order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders') === '1') {
+            return;
+        }
+
         $auth_token = eascompliance_get_oauth_token();
         $confirmation_token = $order->get_meta('_easproj_token');
         // JWT token is not present during STANDARD_CHECKOUT //.
@@ -4699,6 +4704,10 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			return;
 		}
 
+		if ( $order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders') === '1' ) {
+			return;
+		}
+
 		// we can get here if order was tried for  to be sent before but failed
 		if ( $order->get_meta('_easproj_order_sent_to_eas') === '1' ) {
 
@@ -4730,7 +4739,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 				//if order is present, add a note, enable processed EAS logo and return, otherwise continue to mass-sale
                 if ( $row_count != 0 ) {
                     $order->add_order_note(EAS_TR('Order was processed by EAS solution, but returns should be handled in the EAS dashboard https:///dashaboard.easproject.com ') );
-					$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+					$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '1', true);
 					$order->save_meta_data();
                     return;
                 }
@@ -4791,7 +4800,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			}
 
 			$order->add_meta_data('_easproj_create_post_sale_without_lc_orders_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
-			$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+			$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '1', true);
 			$order->save_meta_data();
 		} else {
 			eascompliance_log('error', 'Request failed. Order json: $o Response: $r', array('$o' => $order_json, '$r'=>$request));
@@ -4901,7 +4910,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                     else {
                         eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution successful', array('$order_id'=> $order_num, '$job_id'=>$job_id));
                         $order->add_order_note("Order successfully processed by EAS solution, eas_id=$eas_id");
-						$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+						$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '1', true);
 						$order->save_meta_data();
                     }
                 }
