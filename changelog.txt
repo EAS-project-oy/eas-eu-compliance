@@ -2,6 +2,17 @@
 
 
 == Changelog ==
+= 1.4.70 =
+* New feature implemented: Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
+* PHP 8.0 support verified
+* Improved whole performance of the plugin
+* Fixed issue with unnecessary data in the event log posted.
+
+17-07-23 1.4.63 =
+* Hotfix for the detected issue with init process released
+
+ 1.4.62 =
+* Issue with unsaved checkout form data fixed
 
 13-07-23 - version 1.4.59 
 
