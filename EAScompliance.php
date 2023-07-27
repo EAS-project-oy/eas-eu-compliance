@@ -286,7 +286,6 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
 			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
-			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed3', 10, 4);
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed4', 10, 4);
 			add_action('eascompliance_get_post_sale_without_lc_job_status', 'eascompliance_get_post_sale_without_lc_job_status', 10, 3);
