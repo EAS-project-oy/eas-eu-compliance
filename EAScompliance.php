@@ -5498,7 +5498,7 @@ function eascompliance_tax_rate_insert()
 				'tax_rate_state' => '',
 				'tax_rate' => '0.0000',
 				'tax_rate_name' => EASCOMPLIANCE_TAX_RATE_NAME,
-				'tax_rate_priority' => '1',
+				'tax_rate_priority' => '2',
 				'tax_rate_compound' => '0',
 				'tax_rate_shipping' => '1',
 				'tax_rate_order' => '1',
