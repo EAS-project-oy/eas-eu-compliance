@@ -294,7 +294,7 @@ function eascompliance_woocommerce_init()
 			add_filter('wc_order_is_editable', 'eascompliance_wc_order_is_editable', 10, 2);
 			add_action('woocommerce_admin_order_totals_after_total', 'eascompliance_woocommerce_admin_order_totals_after_total');
 			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
-			add_action('woocommerce_before_delete_order_item', 'eascompliance_woocommerce_before_delete_order_item');
+			add_action('woocommerce_tax_rate_deleted', 'eascompliance_woocommerce_tax_rate_deleted');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -5437,39 +5437,73 @@ function eascompliance_wc_order_is_editable($is_editable, $order)
 
 
 /**
- * Prevent deletion of calculated taxes in Order
+ * Insert tax rate when it was deleted erroneously
  *
  * @param $order_item_id int order_item_id.
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_before_delete_order_item($order_item_id)
+function eascompliance_woocommerce_tax_rate_deleted($tax_rate_id)
 {
 	try {
 		set_error_handler('eascompliance_error_handler');
 
-        $order_id = wc_get_order_id_by_order_item_id($order_item_id);
-        $order = wc_get_order($order_id);
-        $order_item = $order->get_item($order_item_id);
-
-		$payload_j = $order->get_meta('easproj_payload');
-
-		if (empty($payload_j)) {
-		    return;
-		}
-
-        $order_item_type = $order_item->get_type();
-        if ($order_item_type != 'tax' ) {
+        // same conditions apply for inserting tax rate when saving settings
+		if (get_option('easproj_standard_mode') === 'yes')
+		{
+			if (get_option('easproj_process_imported_orders') === 'yes') {
+				update_option('easproj_process_imported_orders', 'no');
+			}
             return;
-        }
+		} else {
+			eascompliance_tax_rate_insert();
+		}
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
 	} finally {
 		restore_error_handler();
 	}
+}
 
 
-	throw new Exception("Cannot delete tax items in order with EAScompliance tax items, order id $order_id");
+/**
+ * Insert tax rate if it does not exist
+ *
+ * @throws Exception May throw exception.
+ * @returns int
+ */
+function eascompliance_tax_rate_insert()
+{
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        global $wpdb;
+
+		$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
+		$tax_rate_id = eascompliance_array_get($tax_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
+
+		if (!$tax_rate_id) {
+			$tax_rate = array(
+				'tax_rate_country' => '',
+				'tax_rate_state' => '',
+				'tax_rate' => '0.0000',
+				'tax_rate_name' => EASCOMPLIANCE_TAX_RATE_NAME,
+				'tax_rate_priority' => '1',
+				'tax_rate_compound' => '0',
+				'tax_rate_shipping' => '1',
+				'tax_rate_order' => '1',
+				'tax_rate_class' => '',
+			);
+			$tax_rate_id = WC_Tax::_insert_tax_rate($tax_rate);
+		}
+
+        return $tax_rate_id;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+	} finally {
+		restore_error_handler();
+	}
 }
 
 /**
@@ -6301,27 +6335,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
 				}
             }
         } else {
-			// add tax rate //.
-			$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
-			$tax_rate_id = eascompliance_array_get($tax_rates, 0, array('tax_rate_id' => null))['tax_rate_id'];
-
-			if (!$tax_rate_id) {
-				$tax_rate = array(
-					'tax_rate_country' => '',
-					'tax_rate_state' => '',
-					'tax_rate' => '0.0000',
-					'tax_rate_name' => EASCOMPLIANCE_TAX_RATE_NAME,
-					'tax_rate_priority' => '1',
-					'tax_rate_compound' => '0',
-					'tax_rate_shipping' => '1',
-					'tax_rate_order' => '1',
-					'tax_rate_class' => '',
-				);
-				$tax_rate_id = WC_Tax::_insert_tax_rate($tax_rate);
-				// update_option( 'woocommerce_calc_taxes', 'yes' );
-				// update_option( 'woocommerce_default_customer_address', 'base' );
-				// update_option( 'woocommerce_tax_based_on', 'base' ); //.
-			}
+			eascompliance_tax_rate_insert();
         }
 
         // create attributes that did not exist //.
