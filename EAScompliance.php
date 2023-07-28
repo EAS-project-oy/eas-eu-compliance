@@ -5597,7 +5597,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total($order_id)
 	?>
     <p class="eascompliance_order_status"
         data-eascompliance-order-status="<?php echo esc_attr($order_status); ?>"
-    >
+    />
 	<?php
 
     if (empty($payload_j)) {
