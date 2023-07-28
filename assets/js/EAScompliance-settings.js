@@ -57,7 +57,8 @@ jQuery(document).ready(function($) {
         $('.woocommerce-layout__header-heading:contains(\'' + PLUGIN_NAME + '\')').hide()
     }
 
-    if (window.woocommerce_admin_meta_boxes) {
+    $order_status = $('.eascompliance_order_status').attr('data-eascompliance-order-status')
+    if (window.woocommerce_admin_meta_boxes && $order_status == 'taxable') {
         window.woocommerce_admin_meta_boxes.i18n_do_refund = "Calculation of refund amount can\'t be undo (refund amount will be included into VAT report), please check that you selected all goods to be returned. Confirm to proceed";
         window.woocommerce_admin_meta_boxes.calc_totals = "Tax calculation handled by EAS EU Compliance solution. This will remove all taxes from the order and update totals. Confirm recalculate totals?";
     }

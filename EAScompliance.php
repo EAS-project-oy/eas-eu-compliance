@@ -2762,7 +2762,7 @@ function eascompliance_is_deduct_vat_outside_eu()
 
 
 /**
- * EAScompliance status
+ * EAScompliance cart status
  *
  * @throws Exception May throw exception.
  */
@@ -2789,6 +2789,36 @@ function eascompliance_status()
 
 		if ( 'yes' === get_option('easproj_standard_mode') ) {
 			$status = 'standard_mode';
+		}
+
+        return $status;
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+/**
+ * EAScompliance order status
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_order_status($order)
+{
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        $is_set = !empty($order->get_meta('easproj_payload'));
+
+		$status = $is_set ? 'present' : 'not present';
+
+		$shipping_country = $order->get_shipping_country();
+
+        if ($status == 'not present' && in_array($shipping_country, eascompliance_supported_countries())) {
+		    $status = 'taxable';
 		}
 
         return $status;
@@ -4014,6 +4044,12 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
 		if ( 'yes' === get_option('easproj_standard_mode') ) {
 			return $order_item;
 		}
+
+        $order = $order_item->get_order();
+
+        if ( 'taxable' != eascompliance_order_status($order) ) {
+            return;
+        }
 
         // Recalculate process must set taxes from order_item meta-data 'Customs duties' //.
         $tax_rate_id0 = eascompliance_tax_rate_id();
@@ -5555,6 +5591,14 @@ function eascompliance_woocommerce_admin_order_totals_after_total($order_id)
     $order = wc_get_order($order_id);
 
     $payload_j = $order->get_meta('easproj_payload');
+
+    $order_status = eascompliance_order_status($order);
+
+	?>
+    <p class="eascompliance_order_status"
+        data-eascompliance-order-status="<?php echo esc_attr($order_status); ?>"
+    >
+	<?php
 
     if (empty($payload_j)) {
         return;
