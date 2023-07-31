@@ -25,6 +25,7 @@ define('EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties');
 define('EASCOMPLIANCE_JSON_THROW_ON_ERROR', 4194304);
 
 define('EASCOMPLIANCE_PRODUCT_ATTRIBUTES', array('easproj_hs6p_received', 'easproj_warehouse_country', 'easproj_reduced_vat_group', 'easproj_disclosed_agent', 'easproj_seller_reg_country', 'easproj_originating_country', ));
+define('EASCOMPLIANCE_COUNTRIES_TAX_NAMES', array('AT' => 'MwSt', 'BE' => 'BTW', 'BG' => 'DDS', 'CY' => 'FPA', 'CZ' => 'DPH', 'DE' => 'MwSt', 'DK' => 'Moms', 'EE' => 'Km', 'ES' => 'IVA', 'FI' => 'ALV', 'FR' => 'TVA', 'GR' => 'FPA', 'HR' => 'PDV', 'HU' => 'AFA', 'IE' => 'VAT', 'IT' => 'IVA', 'LT' => 'PVN', 'LU' => 'TVA', 'LV' => 'PVM', 'MT' => 'VAT', 'NL' => 'BTW', 'PL' => 'PTU', 'PT' => 'IVA', 'RO' => 'TVA', 'SE' => 'Moms', 'SI' => 'DDV', 'SK' => 'DPH'));
 
 const EUROPEAN_COUNTRIES = array('AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE');
 const WORLD_COUNTRIES = array('AF' => 'Afghanistan', 'AX' => 'Aland Islands', 'AL' => 'Albania', 'DZ' => 'Algeria', 'AS' => 'American Samoa', 'AD' => 'Andorra', 'AO' => 'Angola', 'AI' => 'Anguilla', 'AQ' => 'Antarctica', 'AG' => 'Antigua and Barbuda', 'AR' => 'Argentina', 'AM' => 'Armenia', 'AW' => 'Aruba', 'AU' => 'Australia', 'AT' => 'Austria', 'AZ' => 'Azerbaijan', 'BS' => 'Bahamas', 'BH' => 'Bahrain', 'BD' => 'Bangladesh', 'BB' => 'Barbados', 'BY' => 'Belarus', 'PW' => 'Belau', 'BE' => 'Belgium', 'BZ' => 'Belize', 'BJ' => 'Benin', 'BM' => 'Bermuda', 'BT' => 'Bhutan', 'BO' => 'Bolivia', 'BQ' => 'Bonaire, Saint Eustatius and Saba', 'BA' => 'Bosnia and Herzegovina', 'BW' => 'Botswana', 'BV' => 'Bouvet Island', 'BR' => 'Brazil', 'IO' => 'British Indian Ocean Territory', 'BN' => 'Brunei', 'BG' => 'Bulgaria', 'BF' => 'Burkina Faso', 'BI' => 'Burundi', 'KH' => 'Cambodia', 'CM' => 'Cameroon', 'CA' => 'Canada', 'CV' => 'Cape Verde', 'KY' => 'Cayman Islands', 'CF' => 'Central African Republic', 'TD' => 'Chad', 'CL' => 'Chile', 'CN' => 'China', 'CX' => 'Christmas Island', 'CC' => 'Cocos (Keeling) Islands', 'CO' => 'Colombia', 'KM' => 'Comoros', 'CG' => 'Congo (Brazzaville)', 'CD' => 'Congo (Kinshasa)', 'CK' => 'Cook Islands', 'CR' => 'Costa Rica', 'HR' => 'Croatia', 'CU' => 'Cuba', 'CW' => 'Cura&ccedil;ao', 'CY' => 'Cyprus', 'CZ' => 'Czech Republic', 'DK' => 'Denmark', 'DJ' => 'Djibouti', 'DM' => 'Dominica', 'DO' => 'Dominican Republic', 'EC' => 'Ecuador', 'EG' => 'Egypt', 'SV' => 'El Salvador', 'GQ' => 'Equatorial Guinea', 'ER' => 'Eritrea', 'EE' => 'Estonia', 'ET' => 'Ethiopia', 'FK' => 'Falkland Islands', 'FO' => 'Faroe Islands', 'FJ' => 'Fiji', 'FI' => 'Finland', 'FR' => 'France', 'GF' => 'French Guiana', 'PF' => 'French Polynesia', 'TF' => 'French Southern Territories', 'GA' => 'Gabon', 'GM' => 'Gambia', 'GE' => 'Georgia', 'DE' => 'Germany', 'GH' => 'Ghana', 'GI' => 'Gibraltar', 'GR' => 'Greece', 'GL' => 'Greenland', 'GD' => 'Grenada', 'GP' => 'Guadeloupe', 'GU' => 'Guam', 'GT' => 'Guatemala', 'GG' => 'Guernsey', 'GN' => 'Guinea', 'GW' => 'Guinea-Bissau', 'GY' => 'Guyana', 'HT' => 'Haiti', 'HM' => 'Heard Island and McDonald Islands', 'HN' => 'Honduras', 'HK' => 'Hong Kong', 'HU' => 'Hungary', 'IS' => 'Iceland', 'IN' => 'India', 'ID' => 'Indonesia', 'IR' => 'Iran', 'IQ' => 'Iraq', 'IE' => 'Ireland', 'IM' => 'Isle of Man', 'IL' => 'Israel', 'IT' => 'Italy', 'CI' => 'Ivory Coast', 'JM' => 'Jamaica', 'JP' => 'Japan', 'JE' => 'Jersey', 'JO' => 'Jordan', 'KZ' => 'Kazakhstan', 'KE' => 'Kenya', 'KI' => 'Kiribati', 'KW' => 'Kuwait', 'KG' => 'Kyrgyzstan', 'LA' => 'Laos', 'LV' => 'Latvia', 'LB' => 'Lebanon', 'LS' => 'Lesotho', 'LR' => 'Liberia', 'LY' => 'Libya', 'LI' => 'Liechtenstein', 'LT' => 'Lithuania', 'LU' => 'Luxembourg', 'MO' => 'Macao', 'MG' => 'Madagascar', 'MW' => 'Malawi', 'MY' => 'Malaysia', 'MV' => 'Maldives', 'ML' => 'Mali', 'MT' => 'Malta', 'MH' => 'Marshall Islands', 'MQ' => 'Martinique', 'MR' => 'Mauritania', 'MU' => 'Mauritius', 'YT' => 'Mayotte', 'MX' => 'Mexico', 'FM' => 'Micronesia', 'MD' => 'Moldova', 'MC' => 'Monaco', 'MN' => 'Mongolia', 'ME' => 'Montenegro', 'MS' => 'Montserrat', 'MA' => 'Morocco', 'MZ' => 'Mozambique', 'MM' => 'Myanmar', 'NA' => 'Namibia', 'NR' => 'Nauru', 'NP' => 'Nepal', 'NL' => 'Netherlands', 'NC' => 'New Caledonia', 'NZ' => 'New Zealand', 'NI' => 'Nicaragua', 'NE' => 'Niger', 'NG' => 'Nigeria', 'NU' => 'Niue', 'NF' => 'Norfolk Island', 'KP' => 'North Korea', 'MK' => 'North Macedonia', 'MP' => 'Northern Mariana Islands', 'NO' => 'Norway', 'OM' => 'Oman', 'PK' => 'Pakistan', 'PS' => 'Palestinian Territory', 'PA' => 'Panama', 'PG' => 'Papua New Guinea', 'PY' => 'Paraguay', 'PE' => 'Peru', 'PH' => 'Philippines', 'PN' => 'Pitcairn', 'PL' => 'Poland', 'PT' => 'Portugal', 'PR' => 'Puerto Rico', 'QA' => 'Qatar', 'RE' => 'Reunion', 'RO' => 'Romania', 'RU' => 'Russia', 'RW' => 'Rwanda', 'ST' => 'S&atilde;o Tom&eacute; and Pr&iacute;ncipe', 'BL' => 'Saint Barth&eacute;lemy', 'SH' => 'Saint Helena', 'KN' => 'Saint Kitts and Nevis', 'LC' => 'Saint Lucia', 'SX' => 'Saint Martin (Dutch part)', 'MF' => 'Saint Martin (French part)', 'PM' => 'Saint Pierre and Miquelon', 'VC' => 'Saint Vincent and the Grenadines', 'WS' => 'Samoa', 'SM' => 'San Marino', 'SA' => 'Saudi Arabia', 'SN' => 'Senegal', 'RS' => 'Serbia', 'SC' => 'Seychelles', 'SL' => 'Sierra Leone', 'SG' => 'Singapore', 'SK' => 'Slovakia', 'SI' => 'Slovenia', 'SB' => 'Solomon Islands', 'SO' => 'Somalia', 'ZA' => 'South Africa', 'GS' => 'South Georgia/Sandwich Islands', 'KR' => 'South Korea', 'SS' => 'South Sudan', 'ES' => 'Spain', 'LK' => 'Sri Lanka', 'SD' => 'Sudan', 'SR' => 'Suriname', 'SJ' => 'Svalbard and Jan Mayen', 'SZ' => 'Swaziland', 'SE' => 'Sweden', 'CH' => 'Switzerland', 'SY' => 'Syria', 'TW' => 'Taiwan', 'TJ' => 'Tajikistan', 'TZ' => 'Tanzania', 'TH' => 'Thailand', 'TL' => 'Timor-Leste', 'TG' => 'Togo', 'TK' => 'Tokelau', 'TO' => 'Tonga', 'TT' => 'Trinidad and Tobago', 'TN' => 'Tunisia', 'TR' => 'Turkey', 'TM' => 'Turkmenistan', 'TC' => 'Turks and Caicos Islands', 'TV' => 'Tuvalu', 'UG' => 'Uganda', 'UA' => 'Ukraine', 'AE' => 'United Arab Emirates', 'GB' => 'United Kingdom (UK)', 'US' => 'United States (US)', 'UM' => 'United States (US) Minor Outlying Islands', 'UY' => 'Uruguay', 'UZ' => 'Uzbekistan', 'VU' => 'Vanuatu', 'VA' => 'Vatican', 'VE' => 'Venezuela', 'VN' => 'Vietnam', 'VG' => 'Virgin Islands (British)', 'VI' => 'Virgin Islands (US)', 'WF' => 'Wallis and Futuna', 'EH' => 'Western Sahara', 'YE' => 'Yemen', 'ZM' => 'Zambia', 'ZW' => 'Zimbabwe');
@@ -416,7 +417,7 @@ function eascompliance_tax_rate_id()
  * @param object $order order.
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
+function eascompliance_woocommerce_cart_tax_totals($tax_totals, $cart)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
@@ -432,7 +433,7 @@ function eascompliance_woocommerce_cart_tax_totals($tax_totals, $order)
         foreach ($tax_totals as $code => &$tax) {
             if ($tax->tax_rate_id === $tax_rate_id0) {
                 //clear all other taxes except EAS
-                $tax->label = EAS_TR('Taxes & Duties');
+                $tax->label = eascompliance_cart_tax_caption_html();
                 return array( $code => $tax);
             }
         }
@@ -3693,6 +3694,39 @@ function eascompliance_wcml_update_coupon_percent_discount()
     }
 }
 
+/**
+ * Cart tax caption for subtotals and totals when price is tax inclusive
+ */
+function eascompliance_cart_tax_caption_html() {
+    $cart = WC()->cart;
+	$delivery_country = WC()->customer->get_shipping_country();
+
+	$customs_duties = '';
+	$tax_name = '';
+	//compose tax name from WC tax labels
+	$cart_taxes = $cart->get_cart_contents_taxes();
+	foreach($cart_taxes as $tax_rate_id=>$tax_amount) {
+		if ($tax_amount != 0) {
+			$tax_name = ($tax_name == '' ? '' : ',') . WC_Tax::get_rate_label($tax_rate_id);
+		}
+	}
+
+	//  compose tax name from country tax names and customs duties if EAS tax is the only one present in cart
+	if ( empty(array_diff(array_keys($cart_taxes), array(eascompliance_tax_rate_id()))) ) {
+		$tax_name = EASCOMPLIANCE_COUNTRIES_TAX_NAMES[$delivery_country];
+
+		$k0 = eascompliance_array_key_first2($cart->get_cart());
+		$cart_item0 = $cart->cart_contents[$k0];
+		$payload_j = $cart_item0['EASPROJ API PAYLOAD'];
+		$total_customs_duties = $payload_j['total_customs_duties'];
+		if ( $total_customs_duties > 0) {
+			$customs_duties = EAS_TR(' & duties');
+		}
+	}
+
+	return  $tax_name . $customs_duties;
+}
+
 
 /**
  * Checkout Order review Cart Subtotal
@@ -3750,7 +3784,7 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
 		$html = wc_price($subtotal);
 
 		if ($price_inclusive===true) {
-			$html .= ' <small>' . WC()->countries->inc_tax_or_vat() . '</small>';
+			$html .= ' <small>(' . EAS_TR('incl.') . ' '. eascompliance_cart_tax_caption_html() . ')</small>';
 		}
 
         return $html;
@@ -3801,7 +3835,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
         if (eascompliance_is_set() && $price_inclusive===true) {
             $tax_rate_id0 = eascompliance_tax_rate_id();
             $total_taxes = eascompliance_woocommerce_cart_get_taxes(array("$tax_rate_id0" => 0));
-            $html .= EAS_TR('Incl. Taxes & Duties: ') . wc_price(wc_format_decimal($total_taxes[$tax_rate_id0], wc_get_price_decimals()));
+            $html .= '(' . EAS_TR('Incl.') . ' '. eascompliance_cart_tax_caption_html() . ': ' . wc_price(wc_format_decimal($total_taxes[$tax_rate_id0], wc_get_price_decimals())) . ')';
         }
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
