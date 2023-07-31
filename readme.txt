@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.8.1
 Tested up to: 6.2
-Stable tag: 1.4.63
+Stable tag: 1.4.70
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -36,7 +36,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * All the data available in accountant friendly format, further reducing the need for manual work. 
 * WooCommerce High-Performance Order Storage (HPOS) supported.
 * PHP 8.0 support verified.
-* Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
+* Prohibition of ordering over the amount of threshold establisehd in EU for IOSS orders.
 
 **How to get started?**
 
@@ -126,10 +126,12 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 == Changelog ==
 
 = 1.4.70 =
-* New feature implemented: Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
+* New feature implemented: "Prevent orders being paid over 150€ threshold."
 * PHP 8.0 support verified
 * Improved whole performance of the plugin
 * Fixed issue with unnecessary data in the event log posted.
+* Additional validation added full integrity of the plugin data.
+* Some unnecessary API calls removed.
 
 = 1.4.63 =
 * Hotfix for the detected issue with init process released
