@@ -284,6 +284,7 @@ function eascompliance_woocommerce_init()
 			add_filter('kp_wc_api_order_lines', 'eascompliance_kp_wc_api_order_lines', 10, 3);
 			add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
 			add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
+			add_filter('woocommerce_shipping_method_chosen', 'eascompliance_woocommerce_shipping_method_chosen', 10, 3);
 			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
 			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
@@ -4108,6 +4109,32 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
     } finally {
         restore_error_handler();
     }
+}
+
+
+/**
+ * Avoid setting default chosen shipping method if taxes are calculated
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_shipping_method_chosen( $chosen_method ) {
+	eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        if (eascompliance_is_set() && !empty(WC()->session->get('EAS chosen_shipping_methods'))) {
+			WC()->session->set( 'chosen_shipping_methods', WC()->session->get('EAS chosen_shipping_methods') );
+        } else {
+			WC()->session->set('EAS chosen_shipping_methods', array());
+        }
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
 }
 
 
