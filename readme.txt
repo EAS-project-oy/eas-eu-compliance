@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.8.1
 Tested up to: 6.2
-Stable tag: 1.4.70
+Stable tag: 1.4.72
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -125,13 +125,14 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
-= 1.4.70 =
+= 1.4.72 =
 * New feature implemented: "Prevent orders being paid over 150€ threshold."
 * PHP 8.0 support verified
 * Improved whole performance of the plugin
 * Fixed issue with unnecessary data in the event log posted.
 * Additional validation added full integrity of the plugin data.
 * Some unnecessary API calls removed.
+* Added support of VAT naming in EU countries
 
 = 1.4.63 =
 * Hotfix for the detected issue with init process released
