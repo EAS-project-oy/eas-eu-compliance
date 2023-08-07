@@ -5679,6 +5679,14 @@ function eascompliance_woocommerce_admin_order_totals_after_total($order_id)
         return;
     }
 
+    //  $payload_j may be string when written manually to meta
+    if (gettype($payload_j) == 'string') {
+        $payload_j = json_decode($payload_j, true);
+        if (is_null($payload_j)) {
+            return;
+		}
+	}
+
     ?>
     <tr>
         <td class="label" style="padding-right:20px;">
