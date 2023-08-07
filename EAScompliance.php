@@ -407,7 +407,7 @@ function eascompliance_tax_rate_id()
     global $wpdb;
     $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
     if (count($tax_rates) === 0) {
-        throw new Exception(EAS_TR('No tax rate found, please check plugin settings'));
+        throw new EAScomplianceTaxrateNotPresentException(EAS_TR('No tax rate found, please check plugin settings'));
     }
     $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
     return (int)$tax_rate_id0;
@@ -596,7 +596,11 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
 			return $tax_totals;
 		}
 
-        $tax_rate_id0 = eascompliance_tax_rate_id();
+        try {
+			$tax_rate_id0 = eascompliance_tax_rate_id();
+        } catch (EAScomplianceTaxrateNotPresentException $ex) {
+			return $tax_totals;
+        }
         foreach ($tax_totals as $code => &$tax) {
             if ($tax->rate_id === $tax_rate_id0) {
                 //clear all other taxes except EAS
@@ -2079,6 +2083,13 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
  * EAScomplianceStandardCheckoutException class
  */
 class EAScomplianceStandardCheckoutException extends Exception
+{
+}
+
+/**
+ * EAScomplianceTaxrateNotPresentException class
+ */
+class EAScomplianceTaxrateNotPresentException extends Exception
 {
 }
 
