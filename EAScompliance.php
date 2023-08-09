@@ -1001,6 +1001,14 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 			$new_shipping_country = $new_billing_country;
 		}
 
+        // During calculate_shipping() get_zone_matching_package() checks for $package['destination']['country'] which is taken from $_POST['s_country']
+        // when billing (non-EU) and shipping zones (EU) differ, this sometimes makes WC temporary 'forget' about correct shipping zone.
+        // We fix it by setting $_POST['s_country'] to one that was used when calculating tax
+		if (eascompliance_is_set() && !$is_user_checkout && $_POST['s_country'] != $new_shipping_country) {
+			eascompliance_log('calculate', 'changing _POST s_country to $c', ['c'=>$new_shipping_country]);
+			$_POST['s_country'] = $new_shipping_country;
+		}
+
         // skip unset when billing/shipping countries differ while ship_to_different_address is false
         if ( !empty($new_shipping_country) && !$ship_to_different_address && ( $new_shipping_country != $new_billing_country ) ) {
             $new_shipping_country = '';
