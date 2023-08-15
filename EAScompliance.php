@@ -2517,6 +2517,14 @@ function eascompliance_redirect_confirm()
                 else {
                     //add back discount proportionally to cart item quantity, set last item discount to discount remainder for sum of rounded items discounts to equal total discount
                     $cart_item_discount = round($discount * $payload_item['quantity'] / $total_qnty, 2);
+
+                    // if discount coupon type is percent then restore displayed item discount from difference between line_subtotal and line_total
+                    foreach ($cart->get_coupons() as $coupon) {
+                        if ($coupon->get_discount_type() === 'percent') {
+							$cart_item_discount = $cart_item['line_subtotal'] - $cart_item['line_total'];
+                        }
+                        break;
+                    }
                     if ( 0 < ($qnty_remainder - $payload_item['quantity'])) {
 						$cart_item['EAScompliance item price'] += $cart_item_discount;
 
