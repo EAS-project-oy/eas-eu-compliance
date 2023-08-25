@@ -2433,7 +2433,6 @@ function eascompliance_redirect_confirm()
         // needs global $woocommerce: https://stackoverflow.com/questions/33322805/how-to-update-cart-item-meta-woocommerce/33322859#33322859    //.
         $cart = WC()->cart;
         $discount = WC()->session->get('EAS CART DISCOUNT');
-		eascompliance_log('debug', 'new discount set to $d', ['d'=>$discount]);
 
         // calculate $total_price and $most_expensive_item //.
         $total_price = 0;
@@ -2449,9 +2448,6 @@ function eascompliance_redirect_confirm()
                 $most_expensive_item = &$item_payload;
             }
         }
-
-        $discount_remainder = $discount;
-        $qnty_remainder = $total_qnty;
 
         // calculate cart_total that should later match eascompliance_cart_total()
         // when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat //.
@@ -2490,6 +2486,7 @@ function eascompliance_redirect_confirm()
 			$cart_item['EAScompliance item price'] = $cart_item_price;
 			$cart_item['EAScompliance item price log'] = eascompliance_format('item price set to $p from quantity $q multiplied by unit_cost_excl_vat $c;', ['p'=>$cart_item['EAScompliance item price'], 'q'=>$item_payload['quantity'], 'c'=>$item_payload['unit_cost_excl_vat']]);
             $cart_item['EAScompliance item tax'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_delivery_charge_vat'];
+			$cart_item['EAScompliance item discount'] = 0;
 
             if ($discount > 0 && $total_price > 0) {
 				if (eascompliance_is_wcml_enabled()) {
@@ -2502,29 +2499,8 @@ function eascompliance_redirect_confirm()
 
 				}
                 else {
-                    //add back discount proportionally to cart item quantity, set last item discount to discount remainder for sum of rounded items discounts to equal total discount
-                    $cart_item_discount = round($discount * $item_payload['quantity'] / $total_qnty, 2);
-
-                    //TODO remove this or save for later order creation?
-					//$cart_item_discount = $cart_item['line_subtotal'] - $cart_item['line_total'];
-
-                    // if discount coupon type is percent then restore displayed item discount from difference between line_subtotal and line_total
-                    foreach ($cart->get_coupons() as $coupon) {
-                        if ($coupon->get_discount_type() === 'percent') {
-							$cart_item_discount = $cart_item['line_subtotal'] - $cart_item['line_total'];
-                        }
-                        break;
-                    }
-                    if ( 0 < ($qnty_remainder - $item_payload['quantity'])) {
-						$cart_item_price += $cart_item_discount;
-						$cart_item_price_log .= eascompliance_format('add cart_item_discount $c;', ['c'=>$cart_item_discount]);
-
-					} else {
-						$cart_item_price += $discount_remainder;
-						$cart_item_price_log .= eascompliance_format('add discount_remainder $r;', ['r'=>$discount_remainder]);
-                    }
-                    $discount_remainder -= $cart_item_discount;
-                    $qnty_remainder -= $item_payload['quantity'];
+					$cart_item_discount = $cart_item['line_subtotal'] - $cart_item['line_total'];
+					$cart_item['EAScompliance item discount'] = $cart_item_discount;
                 }
             }
 
@@ -3498,16 +3474,18 @@ function eascompliance_cart_total($current_total = null)
                 if ($first) {
                     // replace cart total with one from $payload_j['merchandise_cost'] //.
                     $cart_total = $cart_item['EAScompliance DELIVERY CHARGE'] + $cart_item['EAScompliance DELIVERY CHARGE VAT'];
-                    $cart_total_log .= eascompliance_format('add DELIVERY CHARGE $dc and DELIVERY CHARGE VAT $dcv;', ['dc'=>$cart_item['EAScompliance DELIVERY CHARGE'], 'dcv'=>$cart_item['EAScompliance DELIVERY CHARGE VAT']]);
+                    $cart_total_log = eascompliance_format('set from DELIVERY CHARGE $dc, add DELIVERY CHARGE VAT $dcv;', ['dc'=>$cart_item['EAScompliance DELIVERY CHARGE'], 'dcv'=>$cart_item['EAScompliance DELIVERY CHARGE VAT']]);
                     $first = false;
                     $payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
                     $payload = $cart_item['EASPROJ API PAYLOAD'];
                     $discount = WC()->session->get('EAS CART DISCOUNT');
                 }
 
-                $item_payload = $cart_item['EAScompliance item payload'];
-                $cart_total += $cart_item['EAScompliance item tax'] + $cart_item['EAScompliance item price'];
-                $cart_total_log .= eascompliance_format('add EAScompliance item tax $it and EAScompliance item price $ip;', ['it'=>$cart_item['EAScompliance item tax'], 'ip'=>$cart_item['EAScompliance item price']]);
+                $cart_total += $cart_item['EAScompliance item price'] + $cart_item['EAScompliance item discount'];
+				$cart_total_log .= eascompliance_format('add item price $ip, add item discount $d;', ['ip'=>$cart_item['EAScompliance item price'], 'd'=>$cart_item['EAScompliance item discount']]);
+
+                $cart_total += $cart_item['EAScompliance item tax'];
+                $cart_total_log .= eascompliance_format('add item tax $it;', ['it'=>$cart_item['EAScompliance item tax']]);
             }
 
             $cart_total -= $discount;
@@ -3679,6 +3657,12 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
         $cart_item_total = $cart_item['EAScompliance item price'];
 		$cart_item_total_log .= eascompliance_format('set from EAScompliance item price $p;',['p'=>$cart_item['EAScompliance item price']]);
 
+        if ($cart_item['EAScompliance item discount'] != 0) {
+			$cart_item_total += $cart_item['EAScompliance item discount'];
+			$cart_item_total_log .= eascompliance_format('add item discount $d;',['d'=>$cart_item['EAScompliance item discount']]);
+        }
+
+
 		$price_inclusive = false;
         if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
             if (WC()->cart->get_tax_price_display_mode() === 'incl') {
@@ -3788,20 +3772,22 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
-            $subtotal = 0;
+            $cart_subtotal = 0;
             foreach (WC()->cart->cart_contents as $cart_item) {
                 $item_total = round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
-                $subtotal += $item_total;
+                $cart_subtotal += $item_total;
             }
-            eascompliance_log('cart_total', 'deduct vat outside EU, cart subtotal is $t', array('$t' => $subtotal));
-            return wc_price($subtotal);;
+            eascompliance_log('cart_total', 'deduct vat outside EU, cart subtotal is $t', array('$t' => $cart_subtotal));
+            return wc_price($cart_subtotal);;
         }
 
         if (!eascompliance_is_set()) {
             return $cart_subtotal;
         }
 
-        $subtotal = 0;
+        $cart_subtotal = 0;
+        $cart_subtotal_log = '';
+
         $cart_items = array_values(WC()->cart->cart_contents);
          $price_inclusive = false;
         if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
@@ -3817,15 +3803,24 @@ function eascompliance_woocommerce_cart_subtotal($cart_subtotal, $compound, $car
         }
 
         foreach ($cart_items as $cart_item) {
-            $subtotal += $cart_item['EAScompliance item price'];
+            $cart_subtotal += $cart_item['EAScompliance item price'];
+			$cart_subtotal_log .= eascompliance_format('add item price $p;',['p'=>$cart_item['EAScompliance item price']]);
+
+			if ($cart_item['EAScompliance item discount'] != 0) {
+				$cart_subtotal += $cart_item['EAScompliance item discount'];
+				$cart_subtotal_log .= eascompliance_format('add item discount $d;',['d'=>$cart_item['EAScompliance item discount']]);
+			}
+
 			$item_payload = $cart_item['EAScompliance item payload'];
 
 			if ($price_inclusive===true) {
-				$subtotal += $cart_item['EAScompliance item VAT'] + $item_payload['item_eas_fee'] + $item_payload['item_eas_fee_vat'];
+				$cart_subtotal += $cart_item['EAScompliance item VAT'] + $item_payload['item_eas_fee'] + $item_payload['item_eas_fee_vat'];
+				$cart_subtotal_log .= eascompliance_format('add item VAT $v, add eas_fee $f, add eas_fee_vat $fv;',['v'=>$cart_item['EAScompliance item VAT'],'f'=>$item_payload['item_eas_fee'], 'fv'=>$item_payload['item_eas_fee_vat']]);
 			}
         }
 
-		$html = wc_price($subtotal);
+		eascompliance_log('cart_total','cart_subtotal is $v, cart_subtotal_log value was $vl',['v'=>$cart_subtotal, 'vl'=>$cart_subtotal_log]);
+		$html = wc_price($cart_subtotal);
 
 		if ($price_inclusive===true) {
 			$html .= ' <small>(' . EAS_TR('incl.') . ' '. eascompliance_cart_tax_caption_html() . ')</small>';
@@ -3927,8 +3922,7 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
         }
 
         $cart_item = WC()->cart->cart_contents[$cart_item_key];
-		//TODO + discount?
-        $order_item_product->set_subtotal($cart_item['EAScompliance item price']);
+        $order_item_product->set_subtotal($cart_item['EAScompliance item price'] + $cart_item['EAScompliance item discount']);
         $order_item_product->set_total($cart_item['EAScompliance item price']);
 
     } catch (Exception $ex) {
