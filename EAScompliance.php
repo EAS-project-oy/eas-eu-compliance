@@ -1160,7 +1160,7 @@ function eascompliance_woocommerce_review_order_before_payment()
         <div class="form-row eascompliance">
             <button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
             <input type="hidden" id="eascompliance_nonce_calc" name="eascompliance_nonce_calc"
-                   value="<?php echo esc_attr($nonce_calc); ?>"/></input>
+                   value="<?php echo esc_attr($nonce_calc); ?>"/>
             <p class="eascompliance_status"
                checkout-form-data="<?php echo esc_attr($checkout_form_data); ?>"
                data-eascompliance-status="<?php echo esc_attr($status); ?>"
@@ -1175,7 +1175,7 @@ function eascompliance_woocommerce_review_order_before_payment()
                               placeholder="input"><?php echo esc_html('return WC()->cart->get_cart();'); ?></textarea>
                     <button type="button" class="button eascompliance_debug_button">eval</button>
                     <input type="hidden" id="eascompliance_nonce_debug" name="eascompliance_nonce_debug"
-                           value="<?php echo esc_attr($nonce_debug); ?>"/></input>
+                           value="<?php echo esc_attr($nonce_debug); ?>"/>
                     <textarea class="eascompliance_debug_output" style="font-family:monospace"
                               placeholder="output"></textarea>
                 </p>
@@ -1424,7 +1424,8 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
         $currency = $woocommerce_wpml->multi_currency->get_client_currency();
 
         // set client currency when it differs from currency last saved during checkout
-		if ($k0 !== null) {
+
+		if (!empty($cart_item0)) {
 			$saved_currency = $cart_item0['EAScompliance WCML currency'];
             if ($saved_currency && $saved_currency !== $currency) {
 				eascompliance_log('request', 'WCML update currency from $pc to $c', array('pc'=>$currency,'$c'=>$saved_currency));
@@ -3503,6 +3504,7 @@ function eascompliance_cart_total($current_total = null)
             }
 
             // check that payload total_order_amount equals Order total //.
+            $txt = '';
             $margin = abs((float)$payload_total_order_amount -(float)$cart_total);
             if (!is_null(WC()->session)) {
                 $user_id = WC()->session->get_customer_id();
@@ -4121,7 +4123,7 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
         $order = $order_item->get_order();
 
         if ( 'taxable' != eascompliance_order_status($order) ) {
-            return;
+            return $order_item;
         }
 
         // Recalculate process must set taxes from order_item meta-data 'Customs duties' //.
@@ -4138,6 +4140,8 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
                 'subtotal' => array($tax_rate_id0 => $amount),
             )
         );
+
+        return $order_item;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -4526,6 +4530,7 @@ function eascompliance_order_status_paid($status_to) {
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
+        throw $ex;
 	} finally {
 		restore_error_handler();
 	}
@@ -5649,6 +5654,7 @@ function eascompliance_tax_rate_insert()
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
+        throw $ex;
 	} finally {
 		restore_error_handler();
 	}
@@ -5690,7 +5696,7 @@ function eascompliance_woocommerce_admin_order_totals_after_total($order_id)
 	?>
     <p class="eascompliance_order_status"
         data-eascompliance-order-status="<?php echo esc_attr($order_status); ?>"
-    />
+    ></p>
 	<?php
 
     if (empty($payload_j)) {
