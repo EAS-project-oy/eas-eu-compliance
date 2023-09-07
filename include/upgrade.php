@@ -44,3 +44,26 @@ function eascompliance_upgrade_wp135_location_delivery_countries()
 		throw new Exception($wpdb->last_error);
 	}
 }
+
+
+function eascompliance_upgrade_wp196_session_data()
+{
+	global $wpdb;
+
+	$wpdb->query("
+        CREATE TABLE IF NOT EXISTS {$wpdb->prefix}eascompliance_session_data
+        (
+			  session_data_id int NOT NULL AUTO_INCREMENT
+			, session_id varchar(100) NOT NULL
+			, session_key varchar(1000) NOT NULL
+			, session_key_type varchar(100) NOT NULL
+			, session_value varchar(50000) NULL
+          	, PRIMARY KEY (session_data_id)
+        )
+    ");
+
+	if ($wpdb->last_error) {
+		throw new Exception($wpdb->last_error);
+	}
+
+}
