@@ -1543,6 +1543,7 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
         $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
     }
     $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
+    $cart_discount_log = eascompliance_format('set to $d;', ['d'=>$cart_discount]);
 
     $currency = get_woocommerce_currency();
 
@@ -1550,7 +1551,12 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     if ($wcml_enabled) {
         global $woocommerce_wpml;
 
-		eascompliance_log('debug', 'WCML storage currency is $d', array('d'=>wcml_user_store_get( WCML_Multi_Currency::CURRENCY_STORAGE_KEY)));
+		if ( is_numeric(eascompliance_session_get('EAS CART DISCOUNT'))) {
+			$cart_discount = eascompliance_session_get('EAS CART DISCOUNT');
+			$cart_discount_log = eascompliance_format('set from session $d;', ['d'=>$cart_discount]);
+		}
+
+		eascompliance_log('request', 'WCML storage currency is $d', array('d'=>wcml_user_store_get( WCML_Multi_Currency::CURRENCY_STORAGE_KEY)));
 
         $currency = $woocommerce_wpml->multi_currency->get_client_currency();
 
@@ -1566,37 +1572,12 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
             }
 		}
 
-
-        // WCML breaks $cart->get_discount_total() so we re-calculcate it
-        $cart_discount = (float)0;
-        foreach ($cart->get_coupons() as $coupon) {
-            if ($coupon->get_discount_type() == 'fixed_cart') {
-                $cart_discount += $cart->get_coupon_discount_amount($coupon->get_code(), WC()->cart->display_cart_ex_tax);;
-            } elseif ($coupon->get_discount_type() == 'fixed_product') {
-                $cart_discount += $cart->get_coupon_discount_amount($coupon->get_code(), WC()->cart->display_cart_ex_tax);
-            } elseif ($coupon->get_discount_type() === 'percent') {
-                if ( is_numeric(eascompliance_session_get('EAS CART DISCOUNT'))) {
-					$cart_discount = eascompliance_session_get('EAS CART DISCOUNT');
-					eascompliance_log('request', 'WCML taking cart discount from session $c', array('$c' => $cart_discount));
-                } else {
-					$cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
-					eascompliance_session_set('EAS CART DISCOUNT', $cart_discount);
-                }
-                if ($currency_conversion) {
-                    $cart_discount = (float)$woocommerce_wpml->multi_currency->prices->unconvert_price_amount($cart_discount);
-                }
-
-            } else {
-                eascompliance_log('error', 'Coupon type not supported: $ct', array('$c' => $cart_discount));
-                throw new Exception(EAS_TR('Selected coupon type is not supported, please contact support'));
-            }
-        }
-
         if ($currency_conversion) {
             $delivery_cost = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($delivery_cost);
             $cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
+			$cart_discount_log .= eascompliance_format('converted to $d;', ['d'=>$cart_discount]);
         }
-        eascompliance_log('request', 'WCML currency is $c, delivery cost is $dc, cart discount is $cd', array('$c' => $currency, '$dc' => $delivery_cost, '$cd' => $cart_discount));
+        eascompliance_log('request', 'WCML currency is $c, delivery cost is $dc, cart_discount is $cd, value was $cart_discount_log', array('$c' => $currency, '$dc' => $delivery_cost, '$cd' => $cart_discount, 'cart_discount_log'=>$cart_discount_log));
     }
     if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
         $multi_currency = WC_Payments_Multi_Currency();
@@ -1707,35 +1688,6 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
         );
     }
 
-    eascompliance_log('request', '$items before discount ' . print_r($order_breakdown_items, true));
-
-	if ($wcml_enabled) {
-		eascompliance_log('request', 'WCML is present, using price*qnty proportion to distribute coupons over items');
-
-		// split cart discount proportionally between items
-		// making and solving equation to get new item price //.
-		$d = $cart_discount; // discount d    //.
-		$t = 0; // cart total  t = p1*q1 + p2*q2           //.
-		$q = 0; // total quantity q = q1 + q2              //.
-		foreach ($order_breakdown_items as $item) {
-			$t += $item['quantity'] * $item['cost_provided_by_em'];
-			$q += $item['quantity'];
-		}
-
-		if ($d > 0 && $t > 0) { // only process if discount and total are positive //.
-			foreach ($order_breakdown_items as &$item) {
-				$q1 = $item['quantity'];
-				$p1 = $item['cost_provided_by_em'];
-
-				// Equation: cart total is sum of price*qnty of each item, new price*qnty relates to original price*qnty same as p*q of first item relates to p*q of others //.
-				// p1 * q1 + p2 * q2 = t                              //.
-				// x1 * q1 + x2 * q2 = t - d                          //.
-				// x1 * q1 / (x2 * q2) = p1 * q1 / ( p2 * q2 )        //.
-				$item['cost_provided_by_em'] = round($p1 * ($t - $d) / $t, 2);
-				eascompliance_log('request', "\$t $t \$Q $q \$d $d \$q1 $q1 \$p1 $p1 cost_provided_by_em " . $item['cost_provided_by_em']);
-			}
-		}
-	}
     $calc_jreq['order_breakdown'] = $order_breakdown_items;
 
 	eascompliance_log('request', 'api request json is $j ', array('$j'=>$calc_jreq));
@@ -2620,11 +2572,8 @@ function eascompliance_redirect_confirm()
 
             if ($discount > 0 && $total_price > 0) {
 				if (eascompliance_is_wcml_enabled()) {
-					// WCML add back discounted value to item price //.
 					{
                         $wcml_discounted =  $discount * $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'] / $total_price;
-						$cart_item_price += $wcml_discounted;
-						$cart_item_price_log .= eascompliance_format('add wcml_discount $wd;', ['wd'=>$wcml_discounted]);
 					}
 					$cart_item['EAScompliance item discount'] = $wcml_discounted;
 				}
@@ -3687,8 +3636,8 @@ function eascompliance_cart_total($current_total = null)
             if ($margin > 0.014 ) {
                 if (is_null(WC()->session->get('EAS cart_total error notified')) || WC()->session->get('EAS cart_total error notified') !== $txt.'_'.$payload_total_order_amount.'-'.$cart_total) {
                     eascompliance_log('error',
-                        eascompliance_format('$payload_total_order_amount $a not equal order total $cart_total',
-                        array('a' => $payload_total_order_amount, 'cart_total' => $cart_total)
+                        eascompliance_format('$payload_total_order_amount $a not equal cart_total $cart_total, difference $diff',
+                        array('a' => $payload_total_order_amount, 'cart_total' => $cart_total, 'diff'=>$payload_total_order_amount-$cart_total)
                     )
                     );
                     WC()->session->set('EAS cart_total error notified', $txt.'_'.$payload_total_order_amount.'-'.$cart_total);
