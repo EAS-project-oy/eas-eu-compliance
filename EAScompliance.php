@@ -2573,7 +2573,7 @@ function eascompliance_redirect_confirm()
             if ($discount > 0 && $total_price > 0) {
 				if (eascompliance_is_wcml_enabled()) {
 					{
-                        $wcml_discounted =  $discount * $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'] / $total_price;
+                        $wcml_discounted =  round($discount * $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'] / $total_price, 2);
 					}
 					$cart_item['EAScompliance item discount'] = $wcml_discounted;
 				}
