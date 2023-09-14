@@ -330,16 +330,16 @@ function eascompliance_plugins_loaded_with_error()
 
 
 /**
- * Plugin upgrades and migrations. Will not trigger when upgrade is via FTP or when admin pages are not reloaded after upgrade.
+ * Plugin upgrades and migrations.
+ * Various upgrade hooks do not trigger when upgrade is via FTP or when admin pages are not reloaded after upgrade.
  * More info: https://stackoverflow.com/questions/59878178/update-hook-in-wordpress-not-fired
  *
  * @throws Exception May throw exception.
  */
 register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
-add_action('admin_init', 'eascompliance_plugin_upgrade');
+add_action('plugins_loaded', 'eascompliance_plugin_upgrade');
 function eascompliance_plugin_upgrade()
 {
-
     try {
 
         set_error_handler('eascompliance_error_handler');
@@ -372,10 +372,12 @@ function eascompliance_plugin_upgrade()
         }
 
     } catch (Exception $ex) {
-        eascompliance_log('error', 'Plugin upgrade failed!');
+        eascompliance_log('error', 'Plugin upgrade failed! Deactivating...');
         eascompliance_log('error', $ex, [], true);
 		deactivate_plugins(plugin_basename(__FILE__));
-        show_message($ex->getMessage());
+        if (is_admin() && function_exists('show_message')) {
+			show_message($ex->getMessage());
+        }
     } finally {
         restore_error_handler();
     }
