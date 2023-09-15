@@ -1,6 +1,9 @@
 jQuery(document).ready(function ($) {
     window.$ = $
 
+    // some themes clone checkout forms, use offsetWidth to detect visible form
+    var checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0);
+
     var place_order_visible = function(is_visible) {
         // Place Order button and grodonkey theme 'continue to payment' button
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
@@ -94,7 +97,8 @@ jQuery(document).ready(function ($) {
         $(document.body).one("updated_checkout", function () {
 
             request = {
-                form_data: $('.checkout').serialize() + '&ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
+
+                form_data: checkout_form.serialize() + '&ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
             }
 
             $.post({
@@ -163,8 +167,8 @@ jQuery(document).ready(function ($) {
     // handle return from confirmation page
 
     //checkout data change happens when page loads, avoid calculate reset in such case
-    $('form.checkout').append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
-    $('form.checkout').on('focusin', function (event) {
+    checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+    checkout_form.on('focusin', function (event) {
         //ignore calculate button click
         if ($(event.target).hasClass('button_calc')) {
             return
@@ -174,13 +178,13 @@ jQuery(document).ready(function ($) {
         if ( event.originalEvent?.isTrusted === false ) {
             return
         }
-        $('form.checkout #is_user_checkout').remove()
+        checkout_form.find('#is_user_checkout').remove()
     })
 
     // avoid calculate reset when payment method changes
-    $('form.checkout').on('change', 'input[name="payment_method"]', function () {
-        $('form.checkout #is_user_checkout').remove()
-        $('form.checkout').append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+    checkout_form.on('change', 'input[name="payment_method"]', function () {
+        checkout_form.find('#is_user_checkout').remove()
+        checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
     })
 
     // move security_check message higher for reload link to work
