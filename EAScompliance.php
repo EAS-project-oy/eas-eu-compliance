@@ -2315,7 +2315,9 @@ function eascompliance_ajaxhandler()
         }
 
         $jdebug['step'] = 'parse /calculate response';
-        // CALC response should be quoted link to confirmation page: "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"     //.
+        // CALC response should be quoted link to EAS confirmation page from which user is later sent to eascompliance_redirect_confirm
+        // or it is link to eascompliance_redirect_confirm
+        // "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"
         $calc_response = trim(json_decode($response['http_response']->get_data()));
         $calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 

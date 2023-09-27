@@ -2,15 +2,15 @@ jQuery(document).ready(function ($) {
     window.$ = $
 
     // some themes clone checkout forms, use offsetWidth to detect visible form
-    var checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0);
+    var checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0)
 
     var place_order_visible = function(is_visible) {
         // Place Order button and grodonkey theme 'continue to payment' button
-        const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two';
+        const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two'
         if (is_visible) {
             $(PLACE_ORDER_BUTTON).show().css('z-index', '').css('opacity', '')
                 if (($(".eascompliance_status").attr('data-eascompliance-status')=='present')&&($(".woocommerce-error").children().length==0)){
-                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false);
+                $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false)
             }
         }
         else {
@@ -20,12 +20,12 @@ jQuery(document).ready(function ($) {
 
     //// block, unblock UI when request is processed
     var unblock = function ($node) {
-        $node.removeClass('processing').unblock();
-    };
+        $node.removeClass('processing').unblock()
+    }
 
     var is_blocked = function ($node) {
-        return $node.is('.processing') || $node.parents('.processing').length;
-    };
+        return $node.is('.processing') || $node.parents('.processing').length
+    }
 
     var block = function ($node) {
         if (!is_blocked($node)) {
@@ -35,14 +35,14 @@ jQuery(document).ready(function ($) {
                     background: '#fff',
                     opacity: 0.6
                 }
-            });
+            })
         }
-    };
+    }
 
     var show_error = function (error_message) {
-        $el = $('<div class="woocommerce-error">').text(error_message);
-        $el.css('border-color','red');
-        $('.woocommerce-notices-wrapper:first').prepend($el);
+        $el = $('<div class="woocommerce-error">').text(error_message)
+        $el.css('border-color','red')
+        $('.woocommerce-notices-wrapper:first').prepend($el)
         $('.woocommerce-notices-wrapper:first')[0].scrollIntoView(false)
         // Add reload link to Security check error message
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
@@ -57,8 +57,7 @@ jQuery(document).ready(function ($) {
     })
 
     //// send order information to EAS API and redirect to confirmation page
-    $('.button_calc').on('click', function (ev) {
-
+    $('.button_calc').on('click', async function (ev) {
         //validate fields before sending Calculate request
         if (
             $('#billing_first_name').val() === ''
@@ -70,8 +69,8 @@ jQuery(document).ready(function ($) {
             || $('#billing_phone').val() === ''
             || $('#billing_email').val() === ''
         ) {
-            show_error(plugin_dictionary.error_required_billing_details);
-            return;
+            show_error(plugin_dictionary.error_required_billing_details)
+            return
         }
 
         if ($('#ship-to-different-address-checkbox').prop('checked') === true) {
@@ -83,64 +82,67 @@ jQuery(document).ready(function ($) {
                 || $('#shipping_postcode').val() === ''
                 || $('#shipping_city').val() === ''
             ) {
-                show_error(plugin_dictionary.error_required_shipping_details);
-                return;
+                show_error(plugin_dictionary.error_required_shipping_details)
+                return
             }
         }
 
 
-        block($('.woocommerce-checkout'));
-        $('.button_calc').text(plugin_dictionary.calculating_taxes);
+        block($('.woocommerce-checkout'))
+        $('.button_calc').text(plugin_dictionary.calculating_taxes)
 
-        $(document.body).trigger("update_checkout");
+        request = {
+            form_data: checkout_form.serialize() + '&ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
+        }
 
-        $(document.body).one("updated_checkout", function () {
-
-            request = {
-
-                form_data: checkout_form.serialize() + '&ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
+        j = await $.post({
+            url: plugin_ajax_object.ajax_url
+            ,
+            data: {
+                'action': 'eascompliance_ajaxhandler',
+                'request': JSON.stringify(request),
+                'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val()
             }
+            ,
+            dataType: 'json'
+        })
 
-            $.post({
-                url: plugin_ajax_object.ajax_url
-                ,
-                data: {
-                    'action': 'eascompliance_ajaxhandler',
-                    'request': JSON.stringify(request),
-                    'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val()
+        $('.button_calc').text(plugin_dictionary.taxes_added)
+        $('.eascompliance_status').text(plugin_dictionary.waiting_for_confirmation)
+
+        $('.eascompliance_debug_output').val(JSON.stringify(j, null, ' '))
+
+        if (j.status === 'ok') {
+            // 'CALC response' should be quoted link to confirmation page or STANDARD_CHECKOUT
+            if (j['CALC response'] === 'STANDARD_CHECKOUT') {
+                show_error(j['message'])
+                $('.button_calc').text(plugin_dictionary.standard_checkout)
+                $('.eascompliance_status').text('standard_checkout')
+                $(".eascompliance_status").attr('eascompliance-p-content','standard_checkout')
+
+                $('.button_calc').hide()
+                $('#place_order').show()
+            } else {
+                confirmation_url = new URL(j['CALC response'])
+
+                // avoid page reload if redirect to EAS confirmation page is not necessary
+                if (confirmation_url.hostname === window.location.hostname) {
+                    res = await $.get ( {'url': confirmation_url.href} )
+                    $('.eascompliance_status').text('present')
+                    $('.eascompliance_status').attr('data-eascompliance-status', 'present')
+                    $('.button_calc').text(plugin_dictionary.recalculate_taxes)
+
+                    checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+                    await $( document.body ).trigger( 'update_checkout')
+                } else {
+                    window.open(confirmation_url.href, '_self')
                 }
-                ,
-                dataType: 'json'
-                ,
-                success: function (j) {
-                    unblock($('.woocommerce-checkout'));
-                    $('.button_calc').text(plugin_dictionary.taxes_added)
-                    $('.eascompliance_status').text(plugin_dictionary.waiting_for_confirmation)
-
-                    $('.eascompliance_debug_output').val(JSON.stringify(j, null, ' '))
-                    console.log(j)
-
-                    if (j.status === 'ok') {
-                        // 'CALC response' should be quoted link to confirmation page or STANDARD_CHECKOUT
-                        if (j['CALC response'] === 'STANDARD_CHECKOUT') {
-                            show_error(j['message']);
-                            $('.button_calc').text(plugin_dictionary.standard_checkout)
-                            $('.eascompliance_status').text('standard_checkout');
-                            $(".eascompliance_status").attr('eascompliance-p-content','standard_checkout');
-
-                            $('.button_calc').hide()
-                            $('#place_order').show();
-                        } else {
-                            window.open(j['CALC response'], '_self');
-                        }
-                    } else {
-                        show_error(j['message']);
-                        $('.button_calc').text(plugin_dictionary.sorry_didnt_work)
-                    }
-                }
-            });
-
-        });
+            }
+        } else {
+            show_error(j['message'])
+            $('.button_calc').text(plugin_dictionary.sorry_didnt_work)
+        }
+        unblock($('.woocommerce-checkout'))
     })
 
     //// debug button
@@ -160,7 +162,7 @@ jQuery(document).ready(function ($) {
                 $('.eascompliance_debug_output').val(j.eval_result)
                 console.log(j)
             }
-        });
+        })
 
     })
 
@@ -198,15 +200,15 @@ jQuery(document).ready(function ($) {
             //(($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
             // restore fields from what was submitted upon 'Calculate'
 
-            $('.button_calc').text(plugin_dictionary.recalculate_taxes);
+            $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
-            form_data = atob($(".eascompliance_status").attr('checkout-form-data'));
+            form_data = atob($(".eascompliance_status").attr('checkout-form-data'))
 
             //restore form elements from form_data
-            chunks = form_data.split('&');
+            chunks = form_data.split('&')
             for (i = 0; i < chunks.length; i++) {
-                chunk = chunks[i];
-                [k, v] = chunk.split('=');
+                chunk = chunks[i]
+                [k, v] = chunk.split('=')
                 k = decodeURIComponent(k)
                 v = decodeURIComponent(v)
                 if (k === 'ship_to_different_address') {
@@ -216,35 +218,33 @@ jQuery(document).ready(function ($) {
                         await new Promise(function (resolve) {
                             $(document.body).one("updated_checkout", function () {
                                 resolve()
-                            });
+                            })
                         })
                     }
                 } else {
-                    $('#' + k).val(v);
+                    $('#' + k).val(v)
                 }
             }
         }
-    });
+    })
 
     $(document.body).on("updated_checkout checkout_error", async function () {
         // only work in supported countries
-        delivery_country = $('#shipping_country').val();
+        delivery_country = $('#shipping_country').val()
         if (!$('#ship-to-different-address-checkbox').prop('checked')) {
-            delivery_country = $('#billing_country').val();
+            delivery_country = $('#billing_country').val()
         }
 
         //take needs-recalculate from server because it may change without checkout page reloading
-        j = (await new Promise ( function(resolve) {$.post({
+        j = await $.post({
             url: plugin_ajax_object.ajax_url
             , data: {'action': 'eascompliance_status_ajax'}
             , dataType: 'json'
-            , success: function (j) {
-                resolve(j);
-            }
-        })}));
+        })
 
-        $status = j.eascompliance_status;
-        $('.eascompliance_status').attr('data-eascompliance-status', $status);
+        $status = j.eascompliance_status
+        $('.eascompliance_status').text($status)
+        $('.eascompliance_status').attr('data-eascompliance-status', $status)
 
         if
         (
@@ -273,40 +273,40 @@ jQuery(document).ready(function ($) {
                 $status === 'limit_ioss_sales'
             )
         ) {
-            $('.button_calc').hide();
+            $('.button_calc').hide()
 
             if ($status === 'limit_ioss_sales') {
-                show_error(plugin_dictionary.limit_ioss_sales_message);
-                place_order_visible(false);
+                show_error(plugin_dictionary.limit_ioss_sales_message)
+                place_order_visible(false)
             } else {
-                place_order_visible(true);
+                place_order_visible(true)
             }
         } else {
-            $('.button_calc').show();
-            place_order_visible(false);
+            $('.button_calc').show()
+            place_order_visible(false)
         }
-    });
+    })
 
     //for most of themes styles 'submit' buttons we copy some styles from #place_order
     button_styles = 'background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (i = 0; i < button_styles.length; i++) {
-        $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]));
+        $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]))
     }
     div_styles = 'display flex-direction background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (i = 0; i < div_styles.length; i++) {
-        $('.eascompliance').css(div_styles[i], $("#payment > div").css(div_styles[i]));
+        $('.eascompliance').css(div_styles[i], $("#payment > div").css(div_styles[i]))
     }
     
 
-if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color);
-    if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color);
-    if (plugin_css_settings.button_font_size) $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px');
+if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color)
+    if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color)
+    if (plugin_css_settings.button_font_size) $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px')
     if (plugin_css_settings.button_font_color || plugin_css_settings.button_font_size || plugin_css_settings.button_background_color )   
     {     
     $(".button_calc").mouseenter(function () {
-            $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"));
+            $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"))
         }).mouseleave(function () {
-           $(this).css("background", (plugin_css_settings.button_background_color) ? plugin_css_settings.button_background_color: $('#place_order').css("background") ).css('color', (plugin_css_settings.button_font_color) ? plugin_css_settings.button_font_color: $('#place_order').css("color")  );
-        });
+           $(this).css("background", (plugin_css_settings.button_background_color) ? plugin_css_settings.button_background_color: $('#place_order').css("background") ).css('color', (plugin_css_settings.button_font_color) ? plugin_css_settings.button_font_color: $('#place_order').css("color")  )
+        })
     }
 });
