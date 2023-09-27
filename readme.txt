@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 7.8.1
 Tested up to: 6.2
-Stable tag: 1.4.72
+Stable tag: 1.4.82
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -100,6 +100,8 @@ The following currency switcher plugins are supported:
 
 == Installation ==
 
+EAS project providing service for assistance installation.
+
 1.	Register with EAS at [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
 2. Install the plugin through the WordPress plugin directory
 3. Activate  EAS EU compliance plugin through the 'Plugins' screen in WordPress.
@@ -124,6 +126,9 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.82 =
+* Fully refactored dscount handling process. Strating from 1.4.82 EAS EU plugin supports multi coupons.
 
 = 1.4.72 =
 * New feature implemented: "Prevent orders being paid over 150€ threshold."

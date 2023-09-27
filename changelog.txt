@@ -1,7 +1,18 @@
 *** EAS EU compliance plugin Changelog ***
 
-
 == Changelog ==
+= 1.4.82 =
+* Fully refactored dscount handling process. Starting from 1.4.82 EAS EU plugin supports multi coupons.
+
+= 1.4.72 =
+* New feature implemented: "Prevent orders being paid over 150€ threshold."
+* PHP 8.0 support verified
+* Improved whole performance of the plugin
+* Fixed issue with unnecessary data in the event log posted.
+* Additional validation added full integrity of the plugin data.
+* Some unnecessary API calls removed.
+* Added support of VAT naming in EU countries
+
 = 1.4.70 =
 * New feature implemented: Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
 * PHP 8.0 support verified
