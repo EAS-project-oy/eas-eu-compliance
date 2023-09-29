@@ -2236,7 +2236,13 @@ function eascompliance_ajaxhandler()
             )
         );
 
-        $redirect_uri = admin_url('admin-ajax.php') . '?action=eascompliance_redirect_confirm&confirm_hash=' . $confirm_hash;
+
+		$admin_url = admin_url('admin-ajax.php');
+		if ($admin_url == '/admin-ajax.php') {
+			$admin_url = get_option('siteurl').'/wp-admin'.$admin_url;
+		}
+
+        $redirect_uri = $admin_url . '?action=eascompliance_redirect_confirm&confirm_hash=' . $confirm_hash;
         $jdebug['redirect_uri'] = $redirect_uri;
 
         $jdebug['step'] = 'prepare EAS API /calculate request';
