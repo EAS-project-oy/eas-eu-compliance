@@ -2641,8 +2641,7 @@ function eascompliance_redirect_confirm()
             && $payload_j['merchandise_vat'] == 0
 			&& $payload_j['merchandise_cost_vat_excl'] > 0
 			&& in_array($payload_j['delivery_country'], EUROPEAN_COUNTRIES)
-            && $count_goods_in_cart==0
-            && $count_tbe_in_cart >= 0
+            && !($count_goods_in_cart == 0 && $count_tbe_in_cart >= 0)
 		) {
 
 			$cart_item0['EAScompliance limit_ioss_sales'] = true;
