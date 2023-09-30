@@ -2556,6 +2556,8 @@ function eascompliance_redirect_confirm()
 
             $total_price -= $margin;
         }
+        $count_goods_in_cart = 0;
+        $count_tbe_in_cart = 0;
 
         foreach (WC()->cart->cart_contents as $k => &$cart_item) {
             $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
@@ -2574,6 +2576,25 @@ function eascompliance_redirect_confirm()
             }
             if (!$found) {
                 throw new Exception('Cart item not found from payload');
+            }
+            $product= wc_get_product($product_id);
+            $product_is_virtual = $product->is_virtual();
+        // Plugin 'WooCommerce Product Bundles'
+            if ( $product->get_type() === 'bundle' ) {
+            if ( method_exists($product, 'get_virtual_bundle') ) {
+                $product_is_virtual = $product->get_virtual_bundle();
+            }
+            else {
+                $product_is_virtual = get_option('easproj_default_product_type') === 'virtual';
+            }
+            }
+            if ($product_is_virtual)
+            {
+                $count_tbe_in_cart++;
+            }
+            else
+            {
+                $count_goods_in_cart++;
             }
 
 			$cart_item['EAScompliance item payload'] = $item_payload;
@@ -2620,7 +2641,10 @@ function eascompliance_redirect_confirm()
             && $payload_j['merchandise_vat'] == 0
 			&& $payload_j['merchandise_cost_vat_excl'] > 0
 			&& in_array($payload_j['delivery_country'], EUROPEAN_COUNTRIES)
+            && $count_goods_in_cart==0
+            && $count_tbe_in_cart >= 0
 		) {
+
 			$cart_item0['EAScompliance limit_ioss_sales'] = true;
 		}
 
