@@ -1270,7 +1270,7 @@ function eascompliance_woocommerce_review_order_before_payment()
                 $multi_currency = WC_Payments_Multi_Currency();
                 $currency_new = $multi_currency->get_selected_currency()->get_code();
 
-                $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+                $calc_jreq_saved = eascompliance_session_get('EAS API REQUEST JSON');
                 $currency_old = $calc_jreq_saved['payment_currency'];
 
                 if ($currency_new !== $currency_old) {
@@ -2218,7 +2218,7 @@ function eascompliance_ajaxhandler()
         $calc_jreq = eascompliance_make_eas_api_request_json();
 
         // save request json into session //.
-        WC()->session->set('EAS API REQUEST JSON', $calc_jreq);
+		eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq);
 
         $cart = WC()->cart;
         $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
@@ -2648,7 +2648,7 @@ function eascompliance_redirect_confirm()
 		}
 
         // WP-42 save request json backup copy into cart first item
-        $cart_item0['EAS API REQUEST JSON COPY'] = WC()->session->get('EAS API REQUEST JSON');
+        $cart_item0['EAS API REQUEST JSON COPY'] = eascompliance_session_get('EAS API REQUEST JSON');
 
         // save chosen_shipping_methods
 		WC()->session->set('EAS chosen_shipping_methods', WC()->session->get('chosen_shipping_methods'));
@@ -4389,7 +4389,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
 
                 }
 //                // update $calc_jreq_saved with new delivery_cost //.
-                 $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+                 $calc_jreq_saved = eascompliance_session_get('EAS API REQUEST JSON');
 //
 //                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
                 if (empty($calc_jreq_saved)) {
@@ -4407,7 +4407,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
                 }
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
 
-                WC()->session->set('EAS API REQUEST JSON', $calc_jreq_saved);
+				eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq_saved);
             }
         }
 
@@ -4464,7 +4464,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
 
         // compare new json with saved version. We need to offer customs duties recalculation if json changed //.
-        $calc_jreq_saved = WC()->session->get('EAS API REQUEST JSON');
+        $calc_jreq_saved = eascompliance_session_get('EAS API REQUEST JSON');
 
         if (empty($calc_jreq_saved)) {
             throw new Exception('WP-42 $calc_jreq_saved cannot be empty');
@@ -4560,7 +4560,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $order->save();
 
         // save order json in order metadata //.
-        $order_json = WC()->session->get('EAS API REQUEST JSON');
+        $order_json = eascompliance_session_get('EAS API REQUEST JSON');
         $order_json['external_order_id'] = '' . $order->get_order_number();
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
 
