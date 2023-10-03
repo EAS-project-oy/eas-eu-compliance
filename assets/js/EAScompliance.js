@@ -40,7 +40,7 @@ jQuery(document).ready(function ($) {
     }
 
     var show_error = function (error_message) {
-        $el = $('<div class="woocommerce-error">').text(error_message)
+        $el = $('<div class="woocommerce-error eascompliance-error">').text(error_message)
         $el.css('border-color','red')
         $('.woocommerce-notices-wrapper:first').prepend($el)
         $('.woocommerce-notices-wrapper:first')[0].scrollIntoView(false)
@@ -48,9 +48,14 @@ jQuery(document).ready(function ($) {
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
 
+    var clear_errors = function () {
+        $('div.eascompliance-error').remove()
+    }
+
     // block calculate button during checkout update
     $(document.body).on('update_checkout', function (ev) {
         block($('.button_calc'))
+        clear_errors()
     })
     $(document.body).on('updated_checkout', function (ev) {
         unblock($('.button_calc'))
