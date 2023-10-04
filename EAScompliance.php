@@ -277,6 +277,7 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
 			add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
+			add_action('wp_ajax_eascompliance_reexport_order', 'eascompliance_reexport_order');
 			add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
 			add_filter('woocommerce_checkout_create_order_tax_item', 'eascompliance_woocommerce_checkout_create_order_tax_item', 10, 3);
 			add_action('woocommerce_checkout_create_order_line_item', 'eascompliance_woocommerce_checkout_create_order_line_item', 10, 4);
@@ -3338,6 +3339,49 @@ function eascompliance_recalculate_ajax()
 
 
 /**
+ * Admin Order method to reexport order to EAS
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_reexport_order()
+{
+	eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+		if (!current_user_can('edit_shop_orders')) {
+			wp_send_json(array('status' => 'error', 'message' => 'no permission'));
+		}
+
+		$order_id = absint($_POST['order_id']);
+
+		$order = wc_get_order($order_id);
+
+		$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '-1', true);
+		$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '-1', true);
+		$order->add_meta_data('_easproj_order_sent_to_eas', '-1', true);
+
+        $status_from = $order->get_status();
+        $status_to = $order->get_status();
+
+		$res = eascompliance_woocommerce_order_status_changed4($order_id, $status_from, $status_to, $order);
+        $order_num = $order->get_order_number();
+
+		eascompliance_log('info', 'Order $order_id re-exported to EAS, return code $c', array('$order_id'=>$order_num, 'c'=>$res));
+
+		wp_send_json(array('status' => 'ok', 'return code'=>$res));
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		wp_send_json(array('status' => 'error', 'message' => $ex->getMessage()));;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+
+/**
  * Admin Order method to log EAS order data
  *
  * @throws Exception May throw exception.
@@ -4953,20 +4997,20 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 		set_error_handler('eascompliance_error_handler');
 
 		if (!eascompliance_order_status_paid($status_to)) {
-			return;
+			return 1;
 		}
 
 		if (get_option('easproj_standard_mode') !== 'yes') {
-			return;
+			return 2;
 		}
 
 		//  createpostsaleorder and create_post_sale_without_lc_orders are mutually exclusive
 		if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
-			return;
+			return 3;
 		}
 
 		if ( $order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders') === '1' ) {
-			return;
+			return 4;
 		}
 
 		// we can get here if order was tried for  to be sent before but failed
@@ -5002,7 +5046,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
                     $order->add_order_note(EAS_TR('Order was processed by EAS solution, but returns should be handled in the EAS dashboard https:///dashaboard.easproject.com ') );
 					$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '1', true);
 					$order->save_meta_data();
-                    return;
+                    return 5;
                 }
 			} else {
 				eascompliance_log('error', 'Order $o /visualization/em_order_list failed, request $r', array('$o' => $order->get_order_number(), '$r'=>$request));
@@ -5075,6 +5119,8 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 	} finally {
 		restore_error_handler();
 	}
+
+    return 0;
 }
 
 /**
@@ -5664,6 +5710,14 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
         ?>
         <button type="button"
                 class="button button-primary eascompliance-recalculate"><?php esc_html_e('Calculate Taxes & Duties EAS', 'woocommerce'); ?></button>
+        <?php
+    }
+
+    //allow re-export of paid order to EAS in standard mode
+    if (eascompliance_order_status_paid($order->get_status()) && get_option('easproj_standard_mode') === 'yes') {
+        ?>
+        <button type="button"
+                class="button button-primary eascompliance-reexport-order"><?php esc_html_e('Re-Export to EAS', 'woocommerce'); ?></button>
         <?php
     }
 }

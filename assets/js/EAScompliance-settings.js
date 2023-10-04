@@ -125,6 +125,28 @@ jQuery(document).ready(function($) {
             window.alert('EAS Order data logged')
         }
     } )
+    // Admin Order view button 'Re-export to EAS'
+    $( '#woocommerce-order-items').on('click', '.eascompliance-reexport-order' ,async function () {
+        $node = $('.woocommerce_order_items_wrapper');
+        if (is_blocked($node)) {
+            return
+        }
+        block($node)
+        j = await $.post({
+            url: plugin_ajax_object.ajax_url
+            , data: {'action': 'eascompliance_reexport_order', 'order_id': woocommerce_admin_meta_boxes.post_id}
+            , dataType: 'json'
+
+        });
+        unblock($node)
+
+        if ( 'ok' !== j.status) {
+            window.alert('EAS Order re-export failed: '+j.message)
+        } else {
+            window.alert('EAS Order re-exported to EAS, return code ' + j['return code'])
+            window.location.reload();
+        }
+    } )
 
     // enable tags for easproj_debug options
     $("#easproj_debug").select2({
