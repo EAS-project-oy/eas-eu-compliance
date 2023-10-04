@@ -3360,7 +3360,6 @@ function eascompliance_reexport_order()
 
 		$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '-1', true);
 		$order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '-1', true);
-		$order->add_meta_data('_easproj_order_sent_to_eas', '-1', true);
 
         $status_from = $order->get_status();
         $status_to = $order->get_status();
