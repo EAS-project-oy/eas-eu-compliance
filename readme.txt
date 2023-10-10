@@ -4,8 +4,8 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 7.8.1
-Tested up to: 6.2
+WC tested up to: 8.1.1
+Tested up to: 6.3.1
 Stable tag: 1.4.82
 Last updated time: 15.05.2023
 License: GPLv2 or later
