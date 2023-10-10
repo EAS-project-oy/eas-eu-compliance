@@ -301,6 +301,7 @@ function eascompliance_woocommerce_init()
 			add_action('rest_api_init', 'eascompliance_bulk_update_rest_route');
 			add_action('woocommerce_tax_rate_deleted', 'eascompliance_woocommerce_tax_rate_deleted');
 			add_action('woocommerce_before_attribute_delete', 'eascompliance_woocommerce_before_attribute_delete', 10, 3);
+			add_filter('wcml_load_multi_currency_in_ajax','eascompliance_wcml_load_multi_currency_in_ajax');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -1201,6 +1202,14 @@ function eascompliance_woocommerce_checkout_update_order_review2($post_data)
 
 
 /**
+ *  WCML fix to enable multi_currency conversion in ajax requests so that cart_item['line_subtotal'] is in correct currency
+ */
+function eascompliance_wcml_load_multi_currency_in_ajax($load) {
+    return true;
+}
+
+
+/**
  *  Reset calculations when WCML currency changes
  */
 function eascompliance_wcml_switch_currency($post_data)
@@ -1438,7 +1447,7 @@ function eascompliance_get_oauth_token()
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_make_eas_api_request_json($currency_conversion = true)
+function eascompliance_make_eas_api_request_json()
 {
     eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
@@ -1546,46 +1555,9 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total() + $cart->get_shipping_tax()), 2);
 
-    if ($currency_conversion) {
-        $delivery_cost = eascompliance_convert_price_to_selected_currency($delivery_cost);
-    }
-    $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
-    $cart_discount_log = eascompliance_format('set to $d;', ['d'=>$cart_discount]);
-
     $currency = get_woocommerce_currency();
 
     $wcml_enabled = eascompliance_is_wcml_enabled();
-    if ($wcml_enabled) {
-        global $woocommerce_wpml;
-
-		if ( is_numeric(eascompliance_session_get('EAS CART DISCOUNT'))) {
-			$cart_discount = eascompliance_session_get('EAS CART DISCOUNT');
-			$cart_discount_log = eascompliance_format('set from session $d;', ['d'=>$cart_discount]);
-		}
-
-		eascompliance_log('request', 'WCML storage currency is $d', array('d'=>wcml_user_store_get( WCML_Multi_Currency::CURRENCY_STORAGE_KEY)));
-
-        $currency = $woocommerce_wpml->multi_currency->get_client_currency();
-
-        // set client currency when it differs from currency last saved during checkout
-
-		$saved_currency = $currency;
-		if (!empty($cart_item0)) {
-			$saved_currency = $cart_item0['EAScompliance WCML currency'];
-            if ($saved_currency && $saved_currency !== $currency) {
-				eascompliance_log('request', 'WCML update currency from $pc to $c', array('pc'=>$currency,'$c'=>$saved_currency));
-				$woocommerce_wpml->multi_currency->set_client_currency($saved_currency);
-				$currency = $saved_currency;
-            }
-		}
-
-        if ($currency_conversion) {
-            $delivery_cost = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($delivery_cost);
-            $cart_discount = (float)$woocommerce_wpml->multi_currency->prices->convert_price_amount($cart_discount);
-			$cart_discount_log .= eascompliance_format('converted to $d;', ['d'=>$cart_discount]);
-        }
-        eascompliance_log('request', 'WCML currency is $c, delivery cost is $dc, cart_discount is $cd, value was $cart_discount_log', array('$c' => $currency, '$dc' => $delivery_cost, '$cd' => $cart_discount, 'cart_discount_log'=>$cart_discount_log));
-    }
     if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
         $multi_currency = WC_Payments_Multi_Currency();
         $currency = $multi_currency->get_selected_currency()->get_code();
@@ -1657,20 +1629,6 @@ function eascompliance_make_eas_api_request_json($currency_conversion = true)
 
         // line_tax is positive when other tax rates for supported countries present
         $cost_provided_by_em = round((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
-
-		$cost_provided_by_em_new = $cost_provided_by_em;
-        if ($wcml_enabled && $saved_currency !== $currency) {
-            global $woocommerce_wpml;
-            $cost_provided_by_em_new = (float)$woocommerce_wpml->multi_currency->prices->get_product_price_in_currency($product_id, $currency);
-        } elseif ($currency_conversion) {
-			$cost_provided_by_em_new = eascompliance_convert_price_to_selected_currency($cost_provided_by_em);
-        }
-        if ($cost_provided_by_em != $cost_provided_by_em_new) {
-			eascompliance_log('request', 'cost_provided_by_em changed from $old to $new', ['old'=>$cost_provided_by_em, 'new'=>$cost_provided_by_em_new]);
-			$cost_provided_by_em = $cost_provided_by_em_new;
-        }
-
-
         $order_breakdown_items[] = array(
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
@@ -4512,7 +4470,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
         }
 
-        $calc_jreq_new = eascompliance_make_eas_api_request_json(false);
+        $calc_jreq_new = eascompliance_make_eas_api_request_json();
       
 
         // exclude external_order_id because get_cart_hash is always different //.
