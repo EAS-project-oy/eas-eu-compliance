@@ -1,6 +1,14 @@
 *** EAS EU compliance plugin Changelog ***
 
 == Changelog ==
+= 1.4.86 =
+* Removed unnecessary checkout page reload. 
+* Refactored plugin behaviour on the checkout steps
+* Support of WooCommerce Multilingual and Multicurrency plugin refactored
+* Some minor updates implemented
+* Fixe issue with 150€ threshold computation.
+
+
 = 1.4.82 =
 * Fully refactored dscount handling process. Starting from 1.4.82 EAS EU plugin supports multi coupons.
 

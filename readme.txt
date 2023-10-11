@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.1.1
 Tested up to: 6.3.1
-Stable tag: 1.4.82
+Stable tag: 1.4.86
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -44,7 +44,7 @@ Getting started is easy!  EAS makes you EU and UK compliant within minutes.
 
 1. Register at  [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
 2. Install the EAS Plugin, or request free EAS installation assistance
-3. If you decide to install the plugin your self, please follow setup instructions at the [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide  "EAS Help Centre").
+3. If you decide to install the plugin your self, please follow setup instructions at the [EAS Help Center](https://help.easproject.com/eas-for-woocommerce "EAS Help Centre").
 
 **EAS tool provides you with:**
 
@@ -58,24 +58,26 @@ Getting started is easy!  EAS makes you EU and UK compliant within minutes.
 
 **IOSS registration without registration, monthly fees or minimum volumes**
 
-EAS all-inclusive IOSS service is transaction fee based only. The service includes IOSS 	registration, IOSS intermediary service, WooCommerce Plugin, IOSS reporting and IOSS ﬁling. EAS handles the complex, so you can focus on your customers.
+EAS all-inclusive IOSS service is volume based. The service includes IOSS registration, IOSS intermediary service, WooCommerce Plugin, IOSS reporting and IOSS ﬁling. EAS handles the complex, so you can focus on your customers.
 
 **Introducing UK extension - fully automated UK sales**
 
+With the new UK extension + EAS EU Compliance, you can cover more than half a billion consumers with one plugin. EAS makes UK sales easier than ever. The EAS plugin calculates UK VAT, creates VAT reports, ﬁles the reports, and invoices and pays the required VAT on your behalf. 
 
-With the new UK extension + EAS EU Compliance, you can cover more than half a billion consumers with one APP. EAS makes UK sales easier than ever. The EAS APP calculates UK VAT, creates VAT reports, ﬁles the reports, and invoices and pays the required VAT.
+EAS UK VAT service pricing is volume based. 
 
 **OSS and Non-Union OSS**
 
-EAS tool supports all the EU VAT schemes, even if you are warehousing your products in multiple countries.
+EAS tool supports all the EU VAT schemes. Meaning EAS supports warehousing products in multiple countries.
 
-Everything is automated, and no manual use of the EAS tool is required.
 
-Start by installing the EAS compliance plugin and registering at [https://easproject.com](https://easproject.com/ "Get credentials by registering to EAS project OY"), or contact us via email or visitthe EAS website and book a meeting.
+Everything is automated, and no manual use of the EAS tool is required. EAS OSS pricing is volume based while non-Union (digital goods) is a small % of the value
+
+Start by installing the EAS compliance plugin and registering at [https://easproject.com](https://easproject.com/ "Get credentials by registering to EAS project OY"), or contact us via email or visit the EAS website and book a meeting.
 
 **Transparent and clear pricing** 
 
-The transaction fee is simple and transparent, you always know the charges. We do only charge for cross-border sales. In other words, if you don’t use it, there are no charges.
+EAS volume based fees are simple and transparent, you always know the charges.
 
 Full pricing at [https://easproject.com](https://easproject.com/#pricing "Look at our pricing, it is clear and transparent")
 
@@ -113,11 +115,8 @@ EAS project providing service for assistance installation.
 9. If wrong credentials provided Plugin won’t activate and an error message will be displayed.
 10. Setup delivery options
 11. Setup additional product attributes
-12. Detailed instructions available at [EAS Help Center](https://easproject.zendesk.com/hc/en-us/articles/5910679291165-Quick-installation-guide "Visit EAS Help Center for instructions and manuals.") or manual can be found in the plugin directory under the 'doc' folder.
+12. Detailed instructions available at [EAS Help Center](https://help.easproject.com/eas-for-woocommerce "Visit EAS Help Center for instructions and manuals.") or manual can be found in the plugin directory under the 'doc' folder.
 
-= Manual installation =
-
-Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-eu-compliance)
 
 == Screenshots ==
 
@@ -127,8 +126,15 @@ Follow instuctions from our [Github Repo](https://github.com/EAS-project-oy/eas-
 
 == Changelog ==
 
+= 1.4.86 =
+* Removed unnecessary checkout page reload. 
+* Refactored plugin behaviour on the checkout steps
+* Support of WooCommerce Multilingual and Multicurrency plugin refactored
+* Fixe issue with 150€ threshold computation.
+* Some minor updates implemented
+
 = 1.4.82 =
-* Fully refactored dscount handling process. Strating from 1.4.82 EAS EU plugin supports multi coupons.
+* Fully refactored discount handling process. Strating from 1.4.82 EAS EU plugin supports multi coupons.
 
 = 1.4.72 =
 * New feature implemented: "Prevent orders being paid over 150€ threshold."
