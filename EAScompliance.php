@@ -3593,7 +3593,7 @@ function eascompliance_cart_total($current_total = null)
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
 
             $cart_total = 0;
-            $cart_total_log .= eascompliance_format('set to 0 due to deduct_vat_outside_eu;');
+            $cart_total_log .= 'set to 0 due to deduct_vat_outside_eu;';
 
             $cart_items = array_values(WC()->cart->cart_contents);
             foreach ($cart_items as $cart_item) {
