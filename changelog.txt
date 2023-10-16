@@ -1,12 +1,13 @@
 *** EAS EU compliance plugin Changelog ***
 
 == Changelog ==
-= 1.4.86 =
+= 1.4.87 =
 * Removed unnecessary checkout page reload. 
-* Refactored plugin behaviour on the checkout steps
-* Support of WooCommerce Multilingual and Multicurrency plugin refactored
-* Some minor updates implemented
-* Fixe issue with 150€ threshold computation.
+* Refactored plugin behaviour on the checkout steps.
+* Support of WooCommerce Multilingual and Multicurrency plugin refactored.
+* Fixed issue with 150€ threshold computation.
+* New feature implemented. Now it is possible to send orders to EAS solution directly from admin order page.
+* Some minor updates implemented.
 
 
 = 1.4.82 =

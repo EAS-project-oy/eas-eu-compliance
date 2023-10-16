@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.1.1
 Tested up to: 6.3.1
-Stable tag: 1.4.86
+Stable tag: 1.4.87
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -126,12 +126,14 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
-= 1.4.86 =
+= 1.4.87 =
 * Removed unnecessary checkout page reload. 
 * Refactored plugin behaviour on the checkout steps
 * Support of WooCommerce Multilingual and Multicurrency plugin refactored
-* Fixe issue with 150€ threshold computation.
-* Some minor updates implemented
+* Fixed issue with 150€ threshold computation.
+* New feature implemented. Now it is possible to send orders to EAS solution directly from admin order page.
+* Some minor updates implemented.
+
 
 = 1.4.82 =
 * Fully refactored discount handling process. Strating from 1.4.82 EAS EU plugin supports multi coupons.
