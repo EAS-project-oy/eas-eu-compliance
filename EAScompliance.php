@@ -1122,6 +1122,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             }
             if ($param[0] === 'ship_to_different_address') {
                 $ship_to_different_address = urldecode($param[1]);
+				$ship_to_different_address = ('true' === $ship_to_different_address || '1' === $ship_to_different_address);
             }
         }
 
@@ -1134,15 +1135,15 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             }
         }
 
-		if ($is_user_checkout && !(true === $ship_to_different_address || 'true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
+		if ($is_user_checkout && !$ship_to_different_address) {
 			$new_shipping_country = $new_billing_country;
 		}
 
         // During calculate_shipping() get_zone_matching_package() checks for $package['destination']['country'] which is taken from $_POST['s_country']
         // when billing (non-EU) and shipping zones (EU) differ, this sometimes makes WC temporary 'forget' about correct shipping zone.
         // We fix it by setting $_POST['s_country'] to one that was used when calculating tax
-		if (eascompliance_is_set() && !$is_user_checkout && $_POST['s_country'] != $new_shipping_country) {
-			eascompliance_log('calculate', 'changing _POST s_country to $c', ['c'=>$new_shipping_country]);
+		if (eascompliance_is_set() && !$is_user_checkout && $_POST['s_country'] != $new_shipping_country && $ship_to_different_address) {
+			eascompliance_log('calculate', 'changing _POST s_country from $p to $c', ['c'=>$new_shipping_country, 'p'=>$_POST['s_country']]);
 			$_POST['s_country'] = $new_shipping_country;
 		}
 
