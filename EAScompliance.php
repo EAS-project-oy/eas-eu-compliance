@@ -2590,6 +2590,8 @@ function eascompliance_redirect_confirm()
         $cart_item0['EAScompliance MERCHANDISE COST'] = $payload_j['merchandise_cost'];
         $cart_item0['EAScompliance total_order_amount'] = $payload_j['total_order_amount'];
 
+        $calc_req = eascompliance_session_get('EAS API REQUEST JSON');
+
 		if ( get_option('easproj_limit_ioss_sales') == 'yes'
             && empty($payload_j['FID'])
             && $payload_j['merchandise_vat'] == 0
@@ -2597,12 +2599,13 @@ function eascompliance_redirect_confirm()
 			&& in_array($payload_j['delivery_country'], EUROPEAN_COUNTRIES)
             // allow purchase when all goods are TBE/gift cards;
             && $has_goods_in_cart
+            && $calc_req['recipient_company_name'] == 'No company'
 		) {
 			$cart_item0['EAScompliance limit_ioss_sales'] = true;
 		}
 
         // WP-42 save request json backup copy into cart first item
-        $cart_item0['EAS API REQUEST JSON COPY'] = eascompliance_session_get('EAS API REQUEST JSON');
+        $cart_item0['EAS API REQUEST JSON COPY'] = $calc_req;
 
         // save chosen_shipping_methods
 		WC()->session->set('EAS chosen_shipping_methods', WC()->session->get('chosen_shipping_methods'));
