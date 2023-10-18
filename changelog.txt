@@ -1,6 +1,10 @@
 *** EAS EU compliance plugin Changelog ***
 
 == Changelog ==
+= 1.4.89 =
+* Bug fixed when after landed cost calculated WooCommerce returns delivery options for store registration company.
+* Additional validation added for B2B sales
+
 = 1.4.87 =
 * Removed unnecessary checkout page reload. 
 * Refactored plugin behaviour on the checkout steps.

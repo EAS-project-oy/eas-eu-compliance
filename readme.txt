@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.1.1
 Tested up to: 6.3.1
-Stable tag: 1.4.87
+Stable tag: 1.4.89
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -125,6 +125,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.4.89 =
+* Bug fixed when after landed cost calculated, WooCommerce returns delivery options for store registration country.
+* Additional validation added for B2B sales
 
 = 1.4.87 =
 * Removed unnecessary checkout page reload. 
