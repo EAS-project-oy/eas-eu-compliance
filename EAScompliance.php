@@ -6423,7 +6423,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
             <img src="<?php echo plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) ?>" ">
             <div>
                 EAS solution settings page<br>
-                Please refer to <a href="<?php echo plugins_url('doc/Installation and Setup guide 1.1.pdf', __FILE__) ?>">Installation and configuration guide</a> for detailed instructions.
+                Please refer to <a href="https://help.easproject.com/eas-for-woocommerce">Installation and configuration guides</a> for detailed instructions.
                 <div style="font-size:1em;"><b>Current version</b>:  <?php echo $version ?></div>
             </div>
         </div>
