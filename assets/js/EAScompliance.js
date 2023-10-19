@@ -113,7 +113,6 @@ jQuery(document).ready(function ($) {
             dataType: 'json'
         })
 
-        $('.button_calc').text(plugin_dictionary.taxes_added)
         $('.eascompliance_status').text(plugin_dictionary.waiting_for_confirmation)
 
         $('.eascompliance_debug_output').val(JSON.stringify(j, null, ' '))
@@ -131,8 +130,10 @@ jQuery(document).ready(function ($) {
             } else {
                 confirmation_url = new URL(j['CALC response'])
 
-                // avoid page reload if redirect to EAS confirmation page is not necessary
                 if (confirmation_url.hostname === window.location.hostname) {
+                    // EAS confirmation page is not necessary, update status and update checkout
+                    $('.button_calc').text(plugin_dictionary.taxes_added)
+
                     res = await $.get ( {'url': confirmation_url.href} )
                     $('.eascompliance_status').text('present')
                     $('.eascompliance_status').attr('data-eascompliance-status', 'present')
@@ -141,7 +142,41 @@ jQuery(document).ready(function ($) {
                     checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
                     await $( document.body ).trigger( 'update_checkout')
                 } else {
-                    window.open(confirmation_url.href, '_self')
+                    // EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
+
+                    var width = 760, height = 1000
+                    var left = window.top.outerWidth / 2 + window.top.screenX - width / 2
+                    var top = window.top.outerHeight / 2 + window.top.screenY - height / 2
+                    var popup = window.open(confirmation_url.href, 'eascompliance', `popup,width=${width},height=${height},scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,left=${left},top=${top}`)
+                    if (!popup) {
+                        //open EAS confirmation page in same window if popup was blocked by browser
+                        window.open(confirmation_url.href, '_self')
+                    }
+
+                    var popupInterval = 500
+                    var popupHandler = function () {
+                        if (popup.closed) {
+                            checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+                            $( document.body ).trigger( 'update_checkout')
+                        }
+                        else {
+                            $.post({
+                                url: plugin_ajax_object.ajax_url
+                                , data: {'action': 'eascompliance_status_ajax'}
+                                , dataType: 'json'
+                                , success: (j) => {
+                                    if ( j.eascompliance_status === 'not present' ) {
+                                        setTimeout(popupHandler, popupInterval)
+                                    } else {
+                                        popup.close()
+                                        $('.button_calc').text(plugin_dictionary.taxes_added)
+                                        popupHandler()
+                                    }
+                                }
+                            })
+                        }
+                    }
+                    setTimeout(popupHandler, popupInterval)
                 }
             }
         } else {
