@@ -2397,10 +2397,12 @@ function eascompliance_redirect_confirm()
 
         if (!array_key_exists('eas_checkout_token', $_GET)) {
             // confirmation was declined
-            $k = eascompliance_array_key_first2(WC()->cart->cart_contents);
-            // pass by reference is required here //.
-            $item = &WC()->cart->cart_contents[$k];
-            $item['EAScompliance SET'] = false;
+            $cart_item0 = &eascompliance_cart_item0();
+			$cart_item0['EAScompliance SET'] = false;
+			$cart_item0['EAScompliance declined'] = time();
+
+			WC()->cart->set_session();
+
             // redirect back to checkout //.
             wp_safe_redirect(wc_get_checkout_url());
             exit();
@@ -2712,6 +2714,7 @@ function eascompliance_unset()
             $cart_item0 = &eascompliance_cart_item0();
             $cart_item0['EAScompliance limit_ioss_sales'] = false;
             $cart_item0['EAScompliance SET'] = false;
+			$cart_item0['EAScompliance declined'] = 0;
 			eascompliance_session_set('EAS CART DISCOUNT', null);
             WC()->cart->set_session();
             eascompliance_log('calculate', 'calculation unset');
@@ -2843,9 +2846,14 @@ function eascompliance_status()
 
 		$status = eascompliance_is_set() ? 'present' : 'not present';
 
-        if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
-			$cart_item0 = &eascompliance_cart_item0();
+		$cart_item0 = &eascompliance_cart_item0();
 
+        // return status 'declined' for few seconds so popup confirmation window can be closed
+        if (!empty($cart_item0) && (time() - $cart_item0['EAScompliance declined']) < 5 ) {
+            $status = 'declined';
+        }
+
+        if ( get_option('easproj_limit_ioss_sales') === 'yes' && eascompliance_is_set() ) {
 			if ( eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
 				$status = 'limit_ioss_sales';
 			}
