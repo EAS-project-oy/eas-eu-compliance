@@ -128,6 +128,8 @@ jQuery(document).ready(function ($) {
                 $('.button_calc').hide()
                 $('#place_order').show()
             } else {
+                $('.button_calc').text(plugin_dictionary.recalculate_taxes)
+
                 confirmation_url = new URL(j['CALC response'])
 
                 if (confirmation_url.hostname === window.location.hostname) {
@@ -139,10 +141,12 @@ jQuery(document).ready(function ($) {
                     $('.eascompliance_status').attr('data-eascompliance-status', 'present')
                     $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
+                    unblock($('.woocommerce-checkout'))
                     checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
                     await $( document.body ).trigger( 'update_checkout')
                 } else {
                     // EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
+                    $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
                     var width = 760, height = 1000
                     var left = window.top.outerWidth / 2 + window.top.screenX - width / 2
@@ -156,6 +160,7 @@ jQuery(document).ready(function ($) {
                     var popupInterval = 500
                     var popupHandler = function () {
                         if (popup.closed) {
+                            unblock($('.woocommerce-checkout'))
                             checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
                             $( document.body ).trigger( 'update_checkout')
                         }
@@ -169,7 +174,6 @@ jQuery(document).ready(function ($) {
                                         setTimeout(popupHandler, popupInterval)
                                     } else {
                                         popup.close()
-                                        $('.button_calc').text(plugin_dictionary.taxes_added)
                                         popupHandler()
                                     }
                                 }
@@ -182,8 +186,8 @@ jQuery(document).ready(function ($) {
         } else {
             show_error(j['message'])
             $('.button_calc').text(plugin_dictionary.sorry_didnt_work)
+            unblock($('.woocommerce-checkout'))
         }
-        unblock($('.woocommerce-checkout'))
     })
 
     //// debug button
