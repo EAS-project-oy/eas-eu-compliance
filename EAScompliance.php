@@ -1513,7 +1513,14 @@ function eascompliance_make_eas_api_request_json()
 
         $request = strval(eascompliance_array_get($_POST, 'request', ''));
 
-        $jreq = json_decode(stripslashes($request), true);
+        // some plugins urlencode POST variables, we revert this
+        $c = urlencode('{');
+        if (substr($request, 0, strlen($c)) === $c) {
+            $request = urldecode($request);
+        }
+		$request = stripslashes($request);
+
+        $jreq = json_decode($request, true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
         $checkout = array();
         $query = $jreq['form_data'];
         foreach (explode('&', $query) as $chunk) {
