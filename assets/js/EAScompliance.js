@@ -97,8 +97,17 @@ jQuery(document).ready(function ($) {
         block($('.woocommerce-checkout'))
         $('.button_calc').text(plugin_dictionary.calculating_taxes)
 
+
+        // encode form data elements
+        let form_data = Array.from((new FormData(checkout_form[0])).entries())
+        let form_data_str = 'ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
+        for (let [k, v] of form_data) {
+            if (k.startsWith('billing_') || k.startsWith('shipping_'))
+            form_data_str += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(v)
+        }
+
         var request = {
-            form_data: checkout_form.serialize() + '&ship_to_different_address=' + $('#ship-to-different-address-checkbox').prop('checked')
+            form_data: form_data_str
         }
 
         var j = await $.post({

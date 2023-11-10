@@ -1516,7 +1516,12 @@ function eascompliance_make_eas_api_request_json()
         }
 		$request = stripslashes($request);
 
-        $jreq = json_decode($request, true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+        try {
+			$jreq = json_decode($request, true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+        } catch (Exception $ex) {
+            eascompliance_log('error', 'failed to decode json from request: '.$request);
+            throw $ex;
+        }
         $checkout = array();
         $query = $jreq['form_data'];
         foreach (explode('&', $query) as $chunk) {
