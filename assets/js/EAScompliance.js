@@ -141,6 +141,8 @@ jQuery(document).ready(function ($) {
 
                 confirmation_url = new URL(j['CALC response'])
 
+                var reload_checkout_page = Boolean(j['reload_checkout_page'] == 'yes')
+
                 if (confirmation_url.hostname === window.location.hostname) {
                     // EAS confirmation page is not necessary, update status and update checkout
                     $('.button_calc').text(plugin_dictionary.taxes_added)
@@ -152,6 +154,9 @@ jQuery(document).ready(function ($) {
 
                     unblock($('.woocommerce-checkout'))
                     checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+                    if (reload_checkout_page) {
+                        location.reload()
+                    }
                     await $( document.body ).trigger( 'update_checkout')
                 } else {
                     // EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
@@ -171,6 +176,9 @@ jQuery(document).ready(function ($) {
                         if (popup.closed) {
                             unblock($('.woocommerce-checkout'))
                             checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
+                            if (reload_checkout_page) {
+                                location.reload()
+                            }
                             $( document.body ).trigger( 'update_checkout')
                         }
                         else {

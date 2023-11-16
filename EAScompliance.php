@@ -2292,6 +2292,7 @@ function eascompliance_ajaxhandler()
         eascompliance_log('calculate', '/calculate request successful, $calc_response ' . $calc_response);
         // throw new Exception('debug');   //.
 
+        $jres['reload_checkout_page'] = get_option('easproj_reload_checkout_page');
         $jres['status'] = 'ok';
         $jres['message'] = 'CALC response successful';
         $jres['CALC response'] = $calc_response;
@@ -6324,6 +6325,15 @@ function eascompliance_settings()
             'css' => 'font-size:20px;background-color: grey;display:none',
             'desc' => '<button class="button_calc_test" style="background-color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_background_color') . ';color: ' . eascompliance_woocommerce_settings_get_option_sql('eas_button_text_color') . ';font-size:' . eascompliance_woocommerce_settings_get_option_sql('eas_button_font_size') . 'px;" disabled="disabled">' . (eascompliance_woocommerce_settings_get_option_sql('eas_button_text') ? eascompliance_woocommerce_settings_get_option_sql('eas_button_text') : EAS_TR('Calculate Taxes and Duties')) . '</button>'
         ),
+
+        'easproj_reload_checkout_page' => array(
+            'name' => EAS_TR('Reload Checkout Page'),
+            'type' => 'checkbox',
+            'id' => 'easproj_reload_checkout_page',
+            'default' => false,
+            'desc' => EAS_TR('Please use this option only if payment step in the store’s theme can’t be reached, until checkout page is reloaded')
+        ),
+
 		'section_design_end' => array(
 			'type' => 'sectionend',
 		),
