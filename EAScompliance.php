@@ -1626,6 +1626,13 @@ function eascompliance_make_eas_api_request_json()
 				$product_is_virtual = get_option('easproj_default_product_type') === 'virtual';
             }
 		}
+
+        //Plugin 'WC Gift Cards'
+        if (function_exists('WC_GC')) {
+            if (is_a( $cart_item[ 'data' ], 'WC_Product' ) && WC_GC_Gift_Card_Product::is_gift_card( $cart_item[ 'data' ] ) ) {
+				$product_is_virtual = true;
+            }
+        }
         $type_of_goods = $product_is_virtual ? 'TBE' : 'GOODS';
 
 		// check if product or its parent type belong to gift card types
