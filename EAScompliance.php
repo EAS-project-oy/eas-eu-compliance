@@ -3662,6 +3662,17 @@ function eascompliance_cart_total($current_total = null)
                 }
             }
 
+            // WC Gift Cards plugin fix: take discounts of gift cards //.
+            if (function_exists('WC_GC')) {
+				$discount_totals = WC_GC()->cart->get_account_totals_breakdown();
+				$discount_amount = $discount_totals['cart_total'] - $discount_totals['remaining_total'];
+				if ($discount_amount > 0) {
+					$cart_total -= $discount_amount;
+					$cart_total_log .= eascompliance_format('subtract WC Gift Card discount $d;', ['d'=>$discount_amount]);
+                };
+
+            }
+
             // check that payload total_order_amount equals Order total //.
             $txt = '';
             $margin = abs((float)$payload_total_order_amount -(float)$cart_total);
