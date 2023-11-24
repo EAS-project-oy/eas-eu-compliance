@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.96
+ * Version: 1.4.97
  * Tested up to 6.3
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -1627,12 +1627,6 @@ function eascompliance_make_eas_api_request_json()
             }
 		}
 
-        //Plugin 'WC Gift Cards'
-        if (function_exists('WC_GC')) {
-            if (is_a( $cart_item[ 'data' ], 'WC_Product' ) && WC_GC_Gift_Card_Product::is_gift_card( $cart_item[ 'data' ] ) ) {
-				$product_is_virtual = true;
-            }
-        }
         $type_of_goods = $product_is_virtual ? 'TBE' : 'GOODS';
 
 		// check if product or its parent type belong to gift card types
@@ -1643,7 +1637,14 @@ function eascompliance_make_eas_api_request_json()
 			$type_of_goods = 'GIFTCARD';
 		}
 
-        // line_tax is positive when other tax rates for supported countries present
+		//Plugin 'WC Gift Cards'
+		if (function_exists('WC_GC')) {
+			if (is_a( $cart_item[ 'data' ], 'WC_Product' ) && WC_GC_Gift_Card_Product::is_gift_card( $cart_item[ 'data' ] ) ) {
+				$type_of_goods = 'GIFTCARD';
+			}
+		}
+
+		// line_tax is positive when other tax rates for supported countries present
         $cost_provided_by_em = round((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
         $order_breakdown_items[] = array(
             'short_description' => $product->get_name(),
