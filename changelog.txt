@@ -1,6 +1,11 @@
 *** EAS EU compliance plugin Changelog ***
 
 == Changelog ==
+= 1.5.0 =
+* Implemented support of Woo Gift Cards by WooCommerce.
+* Added feature for checkout page beeing reload after landed cost done if them do not properly displays payment methods.
+* Fixed issue with url encode/decode of checkout data. Some plugins encoded checkout form data that was not properly handled.
+
 
 = 1.4.92 =
 * Validation of Company EU VAT identification number for B2B sales added. Validation implemented as separate popup window. 

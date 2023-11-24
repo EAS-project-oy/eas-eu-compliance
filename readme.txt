@@ -126,6 +126,12 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
+= 1.5.0 =
+* Implemented support of Woo Gift Cards by WooCommerce.
+* Added feature for checkout page beeing reloaded after landed cost done, in case when stores theme do not properly displays payment methods.
+* Fixed issue with url encode/decode of checkout data. Some plugins encoded checkout form data that was not properly handled.
+
+
 = 1.4.92 =
 * Validation of EU VAT ID for B2B sales added. Validation implemented in a separate popup window. 
 
