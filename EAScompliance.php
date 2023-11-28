@@ -5236,7 +5236,8 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                 elseif ( 'rejected' === $order_status) {
                     if ( 'STOP_SELLING' === $order_json['error']['type']) {
                         $msg = $order_json['error']['message'];
-                        $order->add_order_note("EAS failed to process order with message: $msg");
+                        $order->add_order_note(eascompliance_format('Order synchronisation failed. See details in the <a href="$url">logs</a>', ['url'=>admin_url('admin.php?page=wc-status&tab=logs')]));
+                        eascompliance_log('error', 'Order $order_id synchronisation failed: $msg', ['msg'=>$order_json['error'], 'order_id'=>$order_num]);
                     }
                     elseif ( 'STANDARD_CHECKOUT' === $order_json['error']['type'] ) {
                         eascompliance_log('info', 'Order $order_id job $job_id payment processed by EAS solution with STANDARD_CHECKOUT', array('$order_id'=>$order_num, '$job_id'=>$job_id));
