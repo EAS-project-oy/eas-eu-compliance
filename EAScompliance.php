@@ -3545,11 +3545,13 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
     try {
         set_error_handler('eascompliance_error_handler');
 
+		$tax_rate_id0 = eascompliance_tax_rate_id();
+
         if (!eascompliance_is_set()) {
+            unset($taxes[$tax_rate_id0]);
             return $taxes;
         }
 
-		$tax_rate_id0 = eascompliance_tax_rate_id();
         $cart_items = array_values(WC()->cart->cart_contents);
 		$total_tax = 0;
 
