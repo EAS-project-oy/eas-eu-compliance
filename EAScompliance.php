@@ -302,6 +302,7 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_tax_rate_deleted', 'eascompliance_woocommerce_tax_rate_deleted');
 			add_action('woocommerce_before_attribute_delete', 'eascompliance_woocommerce_before_attribute_delete', 10, 3);
 			add_filter('wcml_load_multi_currency_in_ajax','eascompliance_wcml_load_multi_currency_in_ajax');
+    		add_filter('woocommerce_cart_remove_taxes_zero_rate_id','eascompliance_woocommerce_cart_remove_taxes_zero_rate_id');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -3547,11 +3548,6 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
 
 		$tax_rate_id0 = eascompliance_tax_rate_id();
 
-        if (!eascompliance_is_set()) {
-            unset($taxes[$tax_rate_id0]);
-            return $taxes;
-        }
-
         $cart_items = array_values(WC()->cart->cart_contents);
 		$total_tax = 0;
 
@@ -3559,6 +3555,32 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
 			$total_tax += $cart_item['EAScompliance item tax'];
 		}
         return array( $tax_rate_id0 => $total_tax );
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+/**
+ * Skip adding EAS tax when it should not present
+ *
+ * @param string $zero_rated zero-rated.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_cart_remove_taxes_zero_rate_id($zero_rated)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (!eascompliance_is_set()) {
+			return eascompliance_tax_rate_id();
+        }
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
