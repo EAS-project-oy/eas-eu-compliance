@@ -174,7 +174,7 @@ function eascompliance_plugin_activation()
     try {
         set_error_handler('eascompliance_error_handler');
 
-        $activate_url = 'https://woo-info.easproject.com/api/data';
+        $activate_url = 'https://woo-info.easproject.com/api/data/woo';
 
         $store_data = array(
             'address1' => get_option('woocommerce_store_address', ''),
