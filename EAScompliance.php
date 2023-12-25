@@ -435,12 +435,11 @@ function eascompliance_vat_rates_update()
 
         $latest_update = date_create(get_option('easproj_latest_vat_rates_update', 'today -1 year'));
 
-        // check once on first day of each month
-        if ( date_create()->format('d') == '01' && date_diff($latest_update, date_create('today'))->days > 1) {
-
+        // check once a month
+        if ( date_create('today')->format('Y-m') !=  $latest_update->format('Y-m') ) {
 			eascompliance_log('info', 'Monthly tax rates check');
 
-            update_option('easproj_latest_vat_rates_update',  date_create('today')->format('Y-m-d'));
+            update_option('easproj_latest_vat_rates_update', date_create('today')->format('Y-m-d'));
 
 			$url = 'https://cc.easproject.com/api/vat_rate_updates';
 			$req = (new WP_Http)->request($url);
