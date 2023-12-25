@@ -231,8 +231,7 @@ function eascompliance_woocommerce_init()
     try {
         set_error_handler('eascompliance_error_handler');
 
-      if ( version_compare(WC()->version, MIN_WC_VERSION ) === -1 ) {
-
+        if ( version_compare(WC()->version, MIN_WC_VERSION ) === -1 ) {
             add_action( 'admin_notices', 'eascompliance_plugins_loaded_with_error' );
             eascompliance_log('error', 'Incompatible WooCommerce version ' . WC()->version . '. Plugin deactivated');
         }
@@ -256,9 +255,11 @@ function eascompliance_woocommerce_init()
 
 		
 		if (eascompliance_is_active()) {
+			eascompliance_vat_rates_update();
+
 			add_filter('woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2);
 			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
-		// adding custom javascript file
+		    // adding custom javascript file
 		    add_action('wp_enqueue_scripts', 'eascompliance_javascript');
 			add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
 			add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
@@ -420,6 +421,67 @@ function eascompliance_tax_rate_id()
     }
     $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
     return (int)$tax_rate_id0;
+}
+
+/**
+ * Monthly tax rates check and update
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_vat_rates_update()
+{
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        $latest_update = date_create(get_option('easproj_latest_vat_rates_update', 'today -1 year'));
+
+        // check once on first day of each month
+        if ( date_create()->format('d') == '01' && date_diff($latest_update, date_create('today'))->days > 1) {
+
+			eascompliance_log('info', 'Monthly tax rates check');
+
+            update_option('easproj_latest_vat_rates_update', $latest_update->format('Y-m-d'));
+
+			$url = 'https://cc.easproject.com/api/vat_rate_updates';
+			$req = (new WP_Http)->request($url);
+			if (is_wp_error($req)) {
+				throw new Exception($req->get_error_message());
+			}
+			$status = (string)$req['response']['code'];
+            if ( $status != '200' ) {
+				throw new Exception('Failed to update VAT rates, got status '. $status . "\n" . $req);
+            }
+
+			$vat_rates = json_decode($req['http_response']->get_data(), true, 512, JSON_THROW_ON_ERROR);
+
+            global $wpdb;
+			$tax_rates = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}woocommerce_tax_rates"), ARRAY_A);
+			if ($wpdb->last_error) {
+				throw new Exception($wpdb->last_error);
+			}
+
+            foreach($tax_rates as $tax_rate) {
+				foreach ($vat_rates as $vat_rate) {
+                    if ($vat_rate['countryCode'] == $tax_rate['tax_rate_country']
+                        && !empty($vat_rate['oldRate'])
+                        && date_create($vat_rate['startDate']) <= date_create('today')
+                        && (float)$vat_rate['newRate'] != (float)$tax_rate['tax_rate'])
+                    {
+						$tax_rate['tax_rate'] = $vat_rate['newRate'];
+						$tax_rate_id = WC_Tax::_update_tax_rate($tax_rate['tax_rate_id'], $tax_rate);
+
+                        eascompliance_log('info', 'Updated tax rate id $tid for country $c to $tr', ['tid'=>$tax_rate['tax_rate_id'], 'c'=>$tax_rate['tax_rate_country'], 'tr'=>$vat_rate['newRate']]);
+                    }
+				}
+            }
+		}
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
 }
 
 
