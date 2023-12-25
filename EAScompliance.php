@@ -440,7 +440,7 @@ function eascompliance_vat_rates_update()
 
 			eascompliance_log('info', 'Monthly tax rates check');
 
-            update_option('easproj_latest_vat_rates_update', $latest_update->format('Y-m-d'));
+            update_option('easproj_latest_vat_rates_update',  date_create('today')->format('Y-m-d'));
 
 			$url = 'https://cc.easproject.com/api/vat_rate_updates';
 			$req = (new WP_Http)->request($url);
