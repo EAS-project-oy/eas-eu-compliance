@@ -4752,6 +4752,14 @@ function eascompliance_woocommerce_checkout_order_created($order)
             throw new Exception($notify_status . ' ' . $notify_response['response']['message']);
         }
 
+		// fix: remove zero-total tax items
+		foreach( $order->get_items('tax') as $tax_item_id=>$tax_item ) {
+			if ($tax_item->get_tax_total() == '0') {
+				eascompliance_log('place_order', 'remove zero-total tax item, rate id $ri', ['ri'=>$tax_item->get_rate_id()]);
+				$order->remove_item($tax_item_id);
+			}
+		}
+
         $order->add_meta_data('_easproj_order_number_notified', 'yes', true);
         $order->save();
 
