@@ -5,8 +5,8 @@ Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.1.1
-Tested up to: 6.3.1
-Stable tag: 1.4.92
+Tested up to: 6.4.2
+Stable tag: 1.15.0
 Last updated time: 15.05.2023
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -127,10 +127,12 @@ EAS project providing service for assistance installation.
 == Changelog ==
 
 = 1.5.0 =
-* Implemented support of Woo Gift Cards by WooCommerce.
-* Added feature for checkout page beeing reloaded after landed cost done, in case when stores theme do not properly displays payment methods.
-* Fixed issue with url encode/decode of checkout data. Some plugins encoded checkout form data that was not properly handled.
-
+* Implemented support for Woo Gift Cards within WooCommerce, enhancing the plugins's capability for gift card handling.
+* Developed a feature ensuring the checkout page reloads after landed cost calculation, addressing compatibility issues with certain store themes that were not displaying payment methods correctly. 
+* Rectified the problem related to URL encoding/decoding of checkout data, resolving inconsistencies caused by plugins encoding checkout form data improperly.
+* Introduced an automated update feature for VAT (Value Added Tax) rates, enhancing the system's ability to dynamically manage tax rate changes.
+* Resolved an issue where Tax columns were duplicating on the Order admin view page, ensuring a streamlined and accurate view for administrators.
+* Conducted miscellaneous enhancements and bug fixes to improve the user experience and streamline functionalities within the EAS EU Compliance plugin.
 
 = 1.4.92 =
 * Validation of EU VAT ID for B2B sales added. Validation implemented in a separate popup window. 

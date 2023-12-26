@@ -6,8 +6,8 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.4.103
- * Tested up to 6.3
+ * Version: 1.5.0
+ * Tested up to 6.4.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
  * WC tested up to: 8.1.1
@@ -5799,8 +5799,8 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
             class="button button-primary eascompliance-orderdata"><?php esc_html_e('Log EAS order data', 'woocommerce'); ?></button>
     <?php
 
-
-    if ($order->is_editable() && $order->get_meta('_easproj_order_json') === '') {
+    $shipping_country = @$order->get_shipping_country() ?: $order->get_billing_country(); 
+    if ($order->is_editable() && $order->get_meta('_easproj_order_json') === '' && in_array($shipping_country, eascompliance_supported_countries())) {
         ?>
         <button type="button"
                 class="button button-primary eascompliance-recalculate"><?php esc_html_e('Calculate Taxes & Duties EAS', 'woocommerce'); ?></button>
@@ -5808,7 +5808,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
     }
 
     //allow re-export of paid order to EAS in standard mode
-    if (eascompliance_order_status_paid($order->get_status()) && get_option('easproj_standard_mode') === 'yes') {
+    if (eascompliance_order_status_paid($order->get_status()) && get_option('easproj_standard_mode') === 'yes'&& in_array($shipping_country, eascompliance_supported_countries())) {
         ?>
         <button type="button"
                 class="button button-primary eascompliance-reexport-order"><?php esc_html_e('Re-Export to EAS', 'woocommerce'); ?></button>
