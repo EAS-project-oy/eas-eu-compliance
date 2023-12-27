@@ -5799,6 +5799,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
             class="button button-primary eascompliance-orderdata"><?php esc_html_e('Log EAS order data', 'woocommerce'); ?></button>
     <?php
 
+    // show Calculate button for supported countries only
     $shipping_country = @$order->get_shipping_country() ?: $order->get_billing_country(); 
     if ($order->is_editable() && $order->get_meta('_easproj_order_json') === '' && in_array($shipping_country, eascompliance_supported_countries())) {
         ?>
