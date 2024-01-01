@@ -465,7 +465,7 @@ function eascompliance_vat_rates_update()
                     if ($vat_rate['countryCode'] == $tax_rate['tax_rate_country']
                         && !empty($vat_rate['oldRate'])
                         && date_create($vat_rate['startDate']) <= date_create('today')
-                        && (float)$vat_rate['newRate'] != (float)$tax_rate['tax_rate'])
+                        && (float)$vat_rate['oldRate'] = (float)$tax_rate['tax_rate'])
                     {
 						$tax_rate['tax_rate'] = $vat_rate['newRate'];
 						$tax_rate_id = WC_Tax::_update_tax_rate($tax_rate['tax_rate_id'], $tax_rate);
