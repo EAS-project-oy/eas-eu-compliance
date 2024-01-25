@@ -304,6 +304,8 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_before_attribute_delete', 'eascompliance_woocommerce_before_attribute_delete', 10, 3);
 			add_filter('wcml_load_multi_currency_in_ajax','eascompliance_wcml_load_multi_currency_in_ajax');
 			add_filter('woocommerce_cart_remove_taxes_zero_rate_id','eascompliance_woocommerce_cart_remove_taxes_zero_rate_id');
+			add_filter('woocommerce_validate_postcode','eascompliance_woocommerce_validate_postcode', 10, 3);
+			add_filter('woocommerce_format_postcode','eascompliance_woocommerce_format_postcode', 10, 2);
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -731,7 +733,71 @@ function eascompliance_supported_countries()
 	try {
 		set_error_handler('eascompliance_error_handler');
 
-		return array_merge(EUROPEAN_COUNTRIES, (array)get_option('easproj_supported_countries_outside_eu'));
+		$supported_countries = array_merge(EUROPEAN_COUNTRIES, (array)get_option('easproj_supported_countries_outside_eu'));
+
+        // add GB when Northern Ireland support is enabled
+		if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
+            if (!in_array('GB', $supported_countries)) {
+				$supported_countries[] = 'GB';
+            }
+		}
+
+		return $supported_countries;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+/**
+ * Northern Ireland support for post code validation
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_validate_postcode($is_valid, $postcode, $country)
+{
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        if ($country == 'GB' && get_option('easproj_handle_norther_ireland_as_ioss') === 'yes') {
+            if (preg_match('/^BT\d{1,2}$/', $postcode)) {
+                $is_valid = true;
+            }
+        }
+
+		return $is_valid;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+
+/**
+ * Northern Ireland support for post code format
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_format_postcode($postcode, $country)
+{
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        if ($country == 'GB' && get_option('easproj_handle_norther_ireland_as_ioss') === 'yes') {
+			$postcode = str_replace( ' ', '', $postcode );
+        }
+
+		return $postcode;
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -1662,6 +1728,12 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
     $calc_jreq['delivery_postal_code'] = $checkout['shipping_postcode'];
     $calc_jreq['delivery_country'] = $checkout['shipping_country'];
+	// When Northern Ireland support is enabled, shipping is to GB and postal code starts from BT then delivery country is XI
+	if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
+		if ($calc_jreq['delivery_country'] === 'GB' && substr($calc_jreq['delivery_postal_code'],0, 2) == 'BT') {
+			$calc_jreq['delivery_country'] = 'XI';
+		}
+	}
     $calc_jreq['delivery_phone'] = eascompliance_array_get($checkout, 'billing_phone', '');
     $calc_jreq['delivery_email'] = eascompliance_array_get($checkout, 'billing_email', '');
 
@@ -1890,7 +1962,6 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 		$shipping_country = $order->get_billing_country();
 		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
     }
-
     $calc_jreq['recipient_title'] = 'Mr.';
     $calc_jreq['recipient_first_name'] = $shipping_first_name;
     $calc_jreq['recipient_last_name'] = $shipping_last_name;
@@ -1902,6 +1973,12 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
     $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
     $calc_jreq['delivery_postal_code'] = $shipping_postal_code;
     $calc_jreq['delivery_country'] = $shipping_country;
+	// When Northern Ireland support is enabled, shipping is to GB and postal code starts from BT then delivery country is XI
+	if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
+		if ($calc_jreq['delivery_country'] === 'GB' && substr($calc_jreq['delivery_postal_code'],0, 2) == 'BT') {
+			$calc_jreq['delivery_country'] = 'XI';
+		}
+	}
     $calc_jreq['delivery_phone'] = $order->get_billing_phone();
     $calc_jreq['delivery_email'] = $order->get_billing_email();
     $countries = array_flip(WORLD_COUNTRIES);
@@ -2118,6 +2195,13 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? 'Central' : $delivery_state_province;
     $calc_jreq['delivery_postal_code'] = $shipping_postal_code;
     $calc_jreq['delivery_country'] = $shipping_country;
+	// When Northern Ireland support is enabled, shipping is to GB and postal code starts from BT then delivery country is XI
+	if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
+		if ($calc_jreq['delivery_country'] === 'GB' && substr($calc_jreq['delivery_postal_code'],0, 2) == 'BT') {
+			$calc_jreq['delivery_country'] = 'XI';
+		}
+	}
+
     $calc_jreq['delivery_phone'] = $order->get_billing_phone();
     $calc_jreq['delivery_email'] = $order->get_billing_email();
     $countries = array_flip(WORLD_COUNTRIES);
@@ -6261,6 +6345,13 @@ function eascompliance_settings()
             'id' => 'easproj_deduct_vat_outside_eu',
             'default' => '',
             'custom_attributes' => array('min' => 0, 'max' => 100, 'step' => 0.01, 'prices_include_tax' => get_option('woocommerce_prices_include_tax')),
+        ),
+        'handle_norther_ireland_as_ioss' => array(
+            'name' => EAS_TR('Handle Northern Ireland as IOSS'),
+            'type' => 'checkbox',
+            'desc' => 'This option enables handling of orders to the Northern Ireland as IOSS. Before enabling please carefully read  <a href="https://help.easproject.com/how-to-handle-sales-to-northern-ireland">EAS KB article</a> to ensure that your store is ready for this.',
+            'id' => 'easproj_handle_norther_ireland_as_ioss',
+            'default' => 'no',
         ),
         'supported_countries_outside_eu' => array(
 			'name' => EAS_TR('Non-EU Countries support'),
