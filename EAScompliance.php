@@ -699,8 +699,9 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
             $show_payment_methods = true;
         } else {
             // non-EU countries
-            $delivery_country = WC()->customer->get_shipping_country();
-            if (!array_key_exists($delivery_country, array_flip(eascompliance_supported_countries()))) {
+            $shipping_country = WC()->customer->get_shipping_country();
+            $shipping_postcode = WC()->customer->get_shipping_postcode();
+            if (!eascompliance_supported_country($shipping_country, $shipping_postcode)) {
                 $show_payment_methods = true;
             }
         }
@@ -735,14 +736,36 @@ function eascompliance_supported_countries()
 
 		$supported_countries = array_merge(EUROPEAN_COUNTRIES, (array)get_option('easproj_supported_countries_outside_eu'));
 
-        // add GB when Northern Ireland support is enabled
-		if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
-            if (!in_array('GB', $supported_countries)) {
-				$supported_countries[] = 'GB';
-            }
-		}
-
 		return $supported_countries;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+/**
+ * Check if country is supported for tax calculation
+ *
+ * @returns boolean
+ * @throws Exception May throw exception.
+ */
+function eascompliance_supported_country($shipping_country, $shipping_postcode)
+{
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+		return in_array($shipping_country, eascompliance_supported_countries())
+		||
+		( // Northern Ireland support
+			get_option('easproj_handle_norther_ireland_as_ioss') === 'yes'
+			&& $shipping_country == 'GB'
+			&& substr($shipping_postcode,0, 2) == 'BT'
+		);
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -1077,6 +1100,7 @@ function eascompliance_javascript()
         , array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'supported_countries' =>  eascompliance_supported_countries(),
+			'easproj_handle_norther_ireland_as_ioss' =>  get_option('easproj_handle_norther_ireland_as_ioss'),
          )
     );
 }
@@ -1241,9 +1265,15 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             if ($param[0] === 'billing_country') {
                 $new_billing_country = urldecode($param[1]);
             }
+            if ($param[0] === 'billing_postcode') {
+                $new_billing_postcode = urldecode($param[1]);
+            }
             if ($param[0] === 'shipping_country') {
                 $new_shipping_country = urldecode($param[1]);
             }
+			if ($param[0] === 'shipping_postcode') {
+				$new_shipping_postcode = urldecode($param[1]);
+			}
             if ($param[0] === 'ship_to_different_address') {
                 $ship_to_different_address = urldecode($param[1]);
 				$ship_to_different_address = ('true' === $ship_to_different_address || '1' === $ship_to_different_address);
@@ -1261,6 +1291,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 
 		if ($is_user_checkout && !$ship_to_different_address) {
 			$new_shipping_country = $new_billing_country;
+			$new_shipping_postcode = $new_billing_postcode;
 		}
 
         // During calculate_shipping() get_zone_matching_package() checks for $package['destination']['country'] which is taken from $_POST['s_country']
@@ -1277,7 +1308,7 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
         }
 
 		// if country changes to non-supported and taxes were set then reset calculations
-		if ( !empty($new_shipping_country) && !in_array($new_shipping_country, eascompliance_supported_countries()) && eascompliance_is_set()) {
+		if ( $is_user_checkout && !empty($new_shipping_country) && !eascompliance_supported_country($new_shipping_country, $new_shipping_postcode) && eascompliance_is_set()) {
 			eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
 
 			eascompliance_unset();
@@ -2973,8 +3004,9 @@ function eascompliance_is_deduct_vat_outside_eu()
 
         $store_country = explode(':', get_option('woocommerce_default_country'))[0];
         $shipping_country = WC()->customer->get_shipping_country();
+        $shipping_postcode = WC()->customer->get_shipping_postcode();
 
-        if ($shipping_country === $store_country || in_array($shipping_country, eascompliance_supported_countries())) {
+        if ($shipping_country === $store_country || eascompliance_supported_country($shipping_country, $shipping_postcode)) {
             return false;
         }
 
@@ -3080,8 +3112,9 @@ function eascompliance_order_status($order)
 		$status = $is_set ? 'present' : 'not present';
 
 		$shipping_country = $order->get_shipping_country();
+        $shipping_postcode = $order->get_shipping_postcode();
 
-        if ($status == 'not present' && in_array($shipping_country, eascompliance_supported_countries())) {
+        if ($status == 'not present' && eascompliance_supported_country($shipping_country, $shipping_postcode)) {
 		    $status = 'taxable';
 		}
 
@@ -3109,7 +3142,11 @@ function eascompliance_status_ajax()
 
 		$status = eascompliance_status();
 
-        wp_send_json(array('eascompliance_status' => $status));
+        $shipping_country = eascompliance_array_get($_POST, 'shipping_country', '');
+        $shipping_postcode = eascompliance_array_get($_POST, 'shipping_postcode', '');
+        $eascompliance_supported_country = eascompliance_supported_country($shipping_country, $shipping_postcode);
+
+        wp_send_json(array('eascompliance_status' => $status, 'eascompliance_supported_country'=>$eascompliance_supported_country));
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -3141,15 +3178,15 @@ function eascompliance_order_createpostsaleorder($order)
     $shipping_address_1 = $order->get_shipping_address_1();
     $shipping_address_2 = $order->get_shipping_address_2();
     $shipping_city = $order->get_shipping_city();
-    $shipping_postal_code = $order->get_shipping_postcode();
+    $shipping_postcode = $order->get_shipping_postcode();
     $shipping_country = $order->get_shipping_country();
-    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
+    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postcode === '') {
         $shipping_first_name = $order->get_billing_first_name();
         $shipping_last_name = $order->get_billing_last_name();
         $shipping_address_1 = $order->get_billing_address_1();
         $shipping_address_2 = $order->get_billing_address_2();
         $shipping_city = $order->get_billing_city();
-        $shipping_postal_code = $order->get_billing_postcode();
+        $shipping_postcode = $order->get_billing_postcode();
         $shipping_country = $order->get_billing_country();
         $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
     }
@@ -3162,7 +3199,7 @@ function eascompliance_order_createpostsaleorder($order)
         throw new Exception(EAS_TR('Landed cost calculation can’t be processed until Delivery Name and address provided'));
     }
 
-    if (!in_array($shipping_country, eascompliance_supported_countries())) {
+    if (!eascompliance_supported_country($shipping_country, $shipping_postcode)) {
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
     }
 
@@ -4647,12 +4684,14 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
 
         // only work for supported countries //.
-        $delivery_country = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_country', sanitize_text_field(eascompliance_array_get($_POST, 'billing_country', 'XX'))));
+        $shipping_country = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_country', sanitize_text_field(eascompliance_array_get($_POST, 'billing_country', 'XX'))));
+        $shipping_postcode = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_postcode', sanitize_text_field(eascompliance_array_get($_POST, 'billing_postcode', '00'))));
         $ship_to_different_address = sanitize_text_field(eascompliance_array_get($_POST, 'ship_to_different_address', ''));
         if (!('true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
-            $delivery_country = eascompliance_array_get($_POST, 'billing_country', 'XX');
+            $shipping_country = eascompliance_array_get($_POST, 'billing_country', 'XX');
+            $shipping_postcode = eascompliance_array_get($_POST, 'billing_postcode', '00');
         }
-        if (!array_key_exists($delivery_country, array_flip(eascompliance_supported_countries()))) {
+        if (!eascompliance_supported_country($shipping_country, $shipping_postcode)) {
             return;
         }
 
@@ -5884,8 +5923,13 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
     <?php
 
     // show Calculate button for supported countries only
-    $shipping_country = @$order->get_shipping_country() ?: $order->get_billing_country(); 
-    if ($order->is_editable() && $order->get_meta('_easproj_order_json') === '' && in_array($shipping_country, eascompliance_supported_countries())) {
+    $shipping_country = $order->get_shipping_country() ?: $order->get_billing_country();
+	$shipping_postcode = $order->get_shipping_postcode() ?: $order->get_billing_postcode();
+    if (
+            $order->is_editable()
+            && $order->get_meta('_easproj_order_json') === ''
+			&& eascompliance_supported_country($shipping_country, $shipping_postcode)
+    ) {
         ?>
         <button type="button"
                 class="button button-primary eascompliance-recalculate"><?php esc_html_e('Calculate Taxes & Duties EAS', 'woocommerce'); ?></button>
@@ -5893,7 +5937,7 @@ function eascompliance_woocommerce_order_item_add_action_buttons($order)
     }
 
     //allow re-export of paid order to EAS in standard mode
-    if (eascompliance_order_status_paid($order->get_status()) && get_option('easproj_standard_mode') === 'yes'&& in_array($shipping_country, eascompliance_supported_countries())) {
+    if (eascompliance_order_status_paid($order->get_status()) && get_option('easproj_standard_mode') === 'yes' && eascompliance_supported_country($shipping_country, $shipping_postcode)) {
         ?>
         <button type="button"
                 class="button button-primary eascompliance-reexport-order"><?php esc_html_e('Re-Export to EAS', 'woocommerce'); ?></button>

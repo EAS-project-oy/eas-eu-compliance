@@ -292,17 +292,21 @@ jQuery(document).ready(function ($) {
 
     $(document.body).on("updated_checkout checkout_error", async function () {
         // only work in supported countries
-        var delivery_country = $('#shipping_country').val()
+        var shipping_country = $('#shipping_country').val()
+        var shipping_postcode = $('#shipping_postcode').val()
         if (!$('#ship-to-different-address-checkbox').prop('checked')) {
-            delivery_country = $('#billing_country').val()
+            shipping_country = $('#billing_country').val()
+            shipping_postcode = $('#billing_postcode').val()
         }
 
         //take needs-recalculate from server because it may change without checkout page reloading
         var j = await $.post({
             url: plugin_ajax_object.ajax_url
-            , data: {'action': 'eascompliance_status_ajax'}
+            , data: {'action': 'eascompliance_status_ajax', 'shipping_country': shipping_country, 'shipping_postcode': shipping_postcode}
             , dataType: 'json'
         })
+
+        var eascompliance_supported_country = j.eascompliance_supported_country
 
         var $status = j.eascompliance_status
         $('.eascompliance_status').text($status)
@@ -310,7 +314,7 @@ jQuery(document).ready(function ($) {
 
         if
         (
-            plugin_ajax_object.supported_countries.indexOf(delivery_country) < 0
+            !eascompliance_supported_country
             ||
             (
                 $status === 'present'
