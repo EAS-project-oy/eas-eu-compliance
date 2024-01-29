@@ -4492,6 +4492,10 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
 
         $order = $order_item->get_order();
 
+        if ($order === false) {
+            return $order_item;
+        }
+
         if ( 'taxable' != eascompliance_order_status($order) ) {
             return $order_item;
         }
