@@ -1461,7 +1461,11 @@ function eascompliance_woocommerce_review_order_before_payment()
 
         ?>
         <div class="form-row eascompliance">
+            <?php if ($status !=='standard_mode') { ?>
+
             <button type="button" class="button alt button_calc"><?php echo esc_html($button_name); ?></button>
+        <?php    } ?>
+        
             <input type="hidden" id="eascompliance_nonce_calc" name="eascompliance_nonce_calc"
                    value="<?php echo esc_attr($nonce_calc); ?>"/>
             <p class="eascompliance_status"
