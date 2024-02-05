@@ -17,6 +17,7 @@
  * @package eascompliance
  **/
 
+
 define('EASCOMPLIANCE_PLUGIN_NAME', 'EAS EU compliance');
 
 define('EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties');
