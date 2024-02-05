@@ -307,6 +307,9 @@ function eascompliance_woocommerce_init()
 			add_filter('woocommerce_cart_remove_taxes_zero_rate_id','eascompliance_woocommerce_cart_remove_taxes_zero_rate_id');
 			add_filter('woocommerce_validate_postcode','eascompliance_woocommerce_validate_postcode', 10, 3);
 			add_filter('woocommerce_format_postcode','eascompliance_woocommerce_format_postcode', 10, 2);
+
+            add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_action', 10, 4);
+            add_action( 'add_meta_boxes', 'eascompliance_woocommerce_add_order_meta_boxes', 10, 2);
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -7597,4 +7600,153 @@ function eascompliance_bulk_update($request)
 }
 
 
+
+if (!function_exists('eascompliance_woocommerce_order_action')) {
+    function eascompliance_woocommerce_order_action($order_id, $status_from, $status_to, $order)
+    {
+        eascompliance_woocommerce_get_B2B_info($order);
+    }
+}
+
+if (!function_exists('eascompliance_woocommerce_get_B2B_info')) {
+    function eascompliance_woocommerce_get_B2B_info($order)
+    {
+        eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+        if ($order->get_meta('_easproj_em_order_list')) {
+            return;
+        }
+
+        try {
+            set_error_handler('eascompliance_error_handler');
+
+            $auth_token = eascompliance_get_oauth_token();
+            $confirmation_token = $order->get_meta('_easproj_token');
+            // JWT token is not present during STANDARD_CHECKOUT //.
+            if ('' === $confirmation_token) {
+                eascompliance_log('payment', 'verification cancelled due to token not found');
+                return;
+            }
+
+            $options = array(
+                'method' => 'GET',
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $auth_token,
+                ),
+                'timeout' => 15,
+                'sslverify' => false,
+            );
+            $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
+            $em_order_list_response = (new WP_Http)->request($url, $options);
+
+            if (is_wp_error($em_order_list_response)) {
+                throw new Exception($em_order_list_response->get_error_message());
+            }
+
+            $response_status = (string)$em_order_list_response['response']['code'];
+
+            if ('200' === $response_status) {
+                eascompliance_log('info', 'em_order_list successful');
+            } else {
+                eascompliance_log('error', 'Order get EM $r', array('$r' => $response_status));
+                throw new Exception($response_status . ' ' . $em_order_list_response['response']['message']);
+            }
+
+            $data = json_decode($em_order_list_response['body'], true);
+            $order_data = [];
+            if ($data['rows']) {
+                foreach ($data['rows'] as $order_data) {
+                    if ($order_data['external_order_id'] === $order->get_order_number()) {
+                        break;
+                    }
+                }
+            }
+
+            $order->add_meta_data('_easproj_em_order_list', $order_data, true);
+            $order->save();
+
+            eascompliance_log('info', "Notify Order ".$order->get_order_number()." status change successful");
+
+        } catch (Exception $ex) {
+            eascompliance_log('error', $ex);
+            $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
+        } finally {
+            restore_error_handler();
+        }
+    }
+}
+
+if (!function_exists('eascompliance_woocommerce_add_order_meta_boxes')) {
+    function eascompliance_woocommerce_add_order_meta_boxes($postType, $post)
+    {
+        if (!eascompliance_woocommerce_get_company_info($post)) {
+            return;
+        }
+
+        add_meta_box('eascompliance_woocommerce_custom_other_field', EAS_TR('B2B Sale'), 'eascompliance_woocommerce_add_order_single_metabox', ['shop_order', 'shop_order_placehold', 'woocommerce_page_wc-orders', $postType], 'side', 'core');
+    }
+}
+
+if (!function_exists('eascompliance_woocommerce_add_order_single_metabox')) {
+    function eascompliance_woocommerce_add_order_single_metabox($post)
+    {
+        $company = eascompliance_woocommerce_get_company_info($post);
+        if (!$company) {
+            return;
+        }
+
+        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+                <span ><strong>'.EAS_TR('Company name').':</strong></span>
+                <span >'.$company['name'].'</span>
+            </div>';
+
+        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+                <span ><strong>'.EAS_TR('Company VAT Number').':</strong></span>
+                <span >'.$company['vat_number'].'</span>
+            </div>';
+
+        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+                <span ><strong>'.EAS_TR('Valid VAT Number').':</strong></span>
+                <span >'.$company['vat_validated'].'</span>
+            </div>';
+
+        echo '<div style="margin-top: 30px; padding:15px 0;">'.EAS_TR('VAT number can be validated manually at').'
+                 <a href="https://ec.europa.eu/taxation_custom/vies/#/vat-validation" target="_blank">'.EAS_TR('European Commission VIES').'</a> 
+            </div>';
+    }
+}
+
+function eascompliance_woocommerce_get_company_info($post)
+{
+    $order = wc_get_order($post->ID);
+    if (!$order) {
+        return [];
+    }
+
+    eascompliance_woocommerce_get_B2B_info($order);
+
+    $payload = $order->get_meta('_easproj_em_order_list');
+    if (empty($payload)) {
+        return [];
+    }
+
+    if ($payload['recipient_company_name'] === 'No company') {
+        return [];
+    }
+
+    $vatValidated = strtolower($payload['recipient_company_vat_validated']);
+    switch ($vatValidated) {
+        case 'not_validated': $vatValidated = 'NO'; break;
+        case 'validated': $vatValidated = 'YES'; break;
+        default: $vatValidated = 'UNKNOWN'; break;
+    }
+
+    return [
+        'name' => $payload['recipient_company_name'] ?? '',
+        'vat_number' => $payload['recipient_company_vat'] ?? '',
+        'vat_validated' => $vatValidated,
+    ];
+}
+
 restore_error_handler();
+
