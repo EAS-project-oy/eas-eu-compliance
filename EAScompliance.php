@@ -3107,6 +3107,10 @@ function eascompliance_order_status($order)
     try {
         set_error_handler('eascompliance_error_handler');
 
+        if (!$order) {
+            return;
+        }
+
         $is_set = !empty($order->get_meta('easproj_payload'));
 
 		$status = $is_set ? 'present' : 'not present';
