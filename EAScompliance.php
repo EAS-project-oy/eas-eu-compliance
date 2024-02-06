@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.5.3
+ * Version: 1.5.4
  * Tested up to 6.4.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -6726,7 +6726,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
             $post = get_post(get_option( 'woocommerce_checkout_page_id' ));
             //$isShortCode = str_contains($post->post_content, 'woocommerce_checkout'); PHP 7+
             $position = strpos($post->post_content, 'woocommerce_checkout');
-            var_dump($position);
+            
         ?>
         <?php if ($position === false) : ?>
             <div class="easproject-error-banner">
