@@ -3115,6 +3115,10 @@ function eascompliance_order_status($order)
     try {
         set_error_handler('eascompliance_error_handler');
 
+        if (!$order) {
+            return;
+        }
+
         $is_set = !empty($order->get_meta('easproj_payload'));
 
 		$status = $is_set ? 'present' : 'not present';
@@ -6717,6 +6721,22 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
                 <div style="font-size:1em;"><b>Current version</b>:  <?php echo $version ?></div>
             </div>
         </div>
+
+        <?php
+            $post = get_post(get_option( 'woocommerce_checkout_page_id' ));
+            //$isShortCode = str_contains($post->post_content, 'woocommerce_checkout'); PHP 7+
+            $position = strpos($post->post_content, 'woocommerce_checkout');
+            var_dump($position);
+        ?>
+        <?php if ($position === false) : ?>
+            <div class="easproject-error-banner">
+                <p class="easproject-error-banner-heading">We noticed that you are using "Wordpress Blocks" for the "Checkout" page</p>
+                <p>EAS EU compliance team is currently working on integrating the plugin with "Woocommerce Blocks"</p>
+                <p>To continue working with "EAS EU compliance Plugin" you need to disable "Woocommerce Blocks" and go back to using "Woocommerce Shortсode".</p>
+                <p>Please follow instructions at <a href="https://help.easproject.com/how-to-enable-woocommerce-checkout-page-supported-by-eas-solution" target="_blank">"EAS knowledge base article"</a> to change checkout settings.
+                <p>If you have any questions, you can contact our technical support: <a href="mailto:support@easproject.com">support@easproject.com</a>.</p>
+            </div>
+        <?php endif; ?>
 
         <?php
         woocommerce_admin_fields(eascompliance_settings());

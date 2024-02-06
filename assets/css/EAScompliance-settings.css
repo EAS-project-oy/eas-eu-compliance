@@ -50,3 +50,24 @@ label[for="eas_design_label"] {
     vertical-align: middle;
 }
 
+.easproject-error-banner {
+    padding: 15px;
+    border: 1px solid rgba(217,79,79, 0.8);
+    border-radius: 10px;
+    margin: 30px 0;
+    background: rgba(217,79,79, 0.2);
+}
+
+.easproject-error-banner p:last-child {
+    margin-bottom: 0;
+}
+
+.easproject-error-banner p {
+    margin-top: 0;
+}
+
+.easproject-error-banner-heading {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(217,79,79, 1);
+}
