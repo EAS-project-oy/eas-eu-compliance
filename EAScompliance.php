@@ -1185,6 +1185,12 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
             ),
         );
 
+		$address_fields['billing_company_vat'] = array(
+			'label'        => EAS_TR('Company VAT number'),
+			'priority'     => 31,
+			'required'     => $address_fields['billing_company']['required'],
+		);
+
         $address_fields = array_replace_recursive($address_fields, $required_fields);
         if (is_null($address_fields)) {
             throw new Exception(EAS_TR('Unable to set required fields', 'eascompliance'));
@@ -1236,6 +1242,12 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
                 'hidden' => false,
             ),
         );
+
+        $address_fields['shipping_company_vat'] = array(
+			'label'        => EAS_TR('Company VAT number'),
+			'priority'     => 31,
+			'required'     => $address_fields['shipping_company']['required'],
+		);
 
         $address_fields = array_replace_recursive($address_fields, $required_fields);
         if (is_null($address_fields)) {
@@ -1717,6 +1729,7 @@ function eascompliance_make_eas_api_request_json()
         $checkout['shipping_country'] = eascompliance_array_get($checkout, 'billing_country', '');
         $checkout['shipping_state'] = eascompliance_array_get($checkout, 'billing_state', '');
         $checkout['shipping_company'] = eascompliance_array_get($checkout, 'billing_company', '');
+        $checkout['shipping_company_vat'] = eascompliance_array_get($checkout, 'billing_company_vat', '');
         $checkout['shipping_first_name'] = eascompliance_array_get($checkout, 'billing_first_name', '');
         $checkout['shipping_last_name'] = eascompliance_array_get($checkout, 'billing_last_name', '');
         $checkout['shipping_address_1'] = eascompliance_array_get($checkout, 'billing_address_1', '');
@@ -1760,7 +1773,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['recipient_first_name'] = $checkout['shipping_first_name'];
     $calc_jreq['recipient_last_name'] = $checkout['shipping_last_name'];
     $calc_jreq['recipient_company_name'] = eascompliance_array_get($checkout, 'shipping_company', '') === '' ? 'No company' : $checkout['shipping_company'];
-    $calc_jreq['recipient_company_vat'] = '';
+    $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'];
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
     $calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '');//$checkout['shipping_address_2'];
     $calc_jreq['delivery_city'] = eascompliance_array_get($checkout, 'shipping_city', '');
@@ -1848,6 +1861,105 @@ function eascompliance_make_eas_api_request_json()
 	eascompliance_log('request', 'api request json is $j ', array('$j'=>$calc_jreq));
 
     return $calc_jreq;
+}
+
+
+
+/**
+ * Company VAT number check
+ *
+ * @param object $company_vat vat number.
+ * @param string $settings_key settings key.
+ * @throws Exception May throw exception.
+ */
+function eascompliance_company_vat_check($company_vat, $country)
+{
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        if (strlen($company_vat) < 2) {
+            return -1;
+        }
+
+        // only allow two capital letters for country
+        if ( !preg_match('/^[A-Z][A-Z]$/', $country)) {
+            return -2;
+        }
+
+        // only take digits for vat number
+        $vat = preg_replace('/[^0-9]/', '', $company_vat);
+
+		$url = 'http://ec.europa.eu/taxation_customs/vies/services/checkVatService';
+		$options = array(
+			'method' => 'POST',
+			'timeout' => 5,
+			'headers' => array(
+				'Content-type' => ' text/xml;charset=UTF-8',
+				'SOAPAction' => '',
+			),
+			'body' => eascompliance_format('
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
+                   <soapenv:Header/>
+                   <soapenv:Body>
+                      <urn:checkVat>
+                         <urn:countryCode>$country</urn:countryCode>
+                         <urn:vatNumber>$vat</urn:vatNumber>
+                      </urn:checkVat>
+                   </soapenv:Body>
+                </soapenv:Envelope>', ['country'=>$country, 'vat'=>$vat]),
+		);
+
+		$req = (new WP_Http)->request($url, $options);
+		if (is_wp_error($req)) {
+            eascompliance_log('error', 'Company VAT check request failed. $r', ['r'=>$req] );
+            return -3;
+		}
+		$status = (string)$req['response']['code'];
+		if ( $status != '200' ) {
+			eascompliance_log('error', 'Company VAT check request failed with status ' . $status);
+			return -4;
+		}
+
+        $body_sample = '<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+                           <env:Header/>
+                           <env:Body>
+                              <ns2:checkVatResponse xmlns:ns2="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
+                                 <ns2:countryCode>FI</ns2:countryCode>
+                                 <ns2:vatNumber>23442004</ns2:vatNumber>
+                                 <ns2:requestDate>2024-02-06+01:00</ns2:requestDate>
+                                 <ns2:valid>true</ns2:valid>
+                                 <ns2:name>Posti Oy</ns2:name>
+                                 <ns2:address>Postintaival 7 A
+                                    00230 HELSINKI</ns2:address>
+                              </ns2:checkVatResponse>
+                           </env:Body>
+                        </env:Envelope>';
+
+		$body =  $req['http_response']->get_data();
+
+        //strip namespaces
+		$body = preg_replace('/<[a-z0-9]+:/', '<', $body);
+		$body = preg_replace('/<\/[a-z0-9]+:/', '</', $body);
+
+		$xml = new SimpleXMLElement($body);
+
+		foreach($xml->xpath('/Envelope/Body/checkVatResponse/valid') as $node) {
+            if ($node == 'true') {
+                return 1;
+            }
+            if ($node == 'false') {
+                return 0;
+            }
+        };
+
+        return -5;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		return -6;
+	} finally {
+		restore_error_handler();
+	}
 }
 
 
@@ -2345,6 +2457,13 @@ class EAScomplianceAuthorizationFaliedException extends Exception
 {
 }
 
+/**
+ * EAScomplianceBreakException class
+ */
+class EAScomplianceBreakException extends Exception
+{
+}
+
 ;
 
 /**
@@ -2369,6 +2488,57 @@ function eascompliance_ajaxhandler()
 
         $jdebug['step'] = 'make EAS API request json';
         $calc_jreq = eascompliance_make_eas_api_request_json();
+
+
+		//verify company VAT number
+		try {
+            $company_name = $calc_jreq['recipient_company_name'];
+            $company_vat = $calc_jreq['recipient_company_vat'];
+			$delivery_country = $calc_jreq['delivery_country'];
+
+			// skip when no company
+			if ($company_name == 'No company') throw new EAScomplianceBreakException();
+
+			// require company VAT number
+			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number.'));
+
+			$session_company_vat = eascompliance_session_get('company_vat');
+			$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
+
+			// skip when company VAT number was validated before
+			if ($company_vat == $session_company_vat && $session_company_vat_validated == 'validated') throw new EAScomplianceBreakException();
+
+			eascompliance_session_set('company_vat', $company_vat);
+			eascompliance_session_set('company_vat_validated', 'not_validated');
+
+			if (eascompliance_company_vat_check($company_vat, $delivery_country) == 1) {
+				eascompliance_session_set('company_vat_validated', 'validated');
+			}
+			else {
+				eascompliance_session_set('company_vat_validated', 'not_validated');
+
+				// allow order with non_validated VAT number on 3rd attempt
+				if ( get_option('easproj_skip_vat_validation_with_warning') == 'yes' ) {
+					$vat_check_attempt = eascompliance_session_get('company_vat_check_attempt') ?? 0;
+					$vat_check_attempt += 1;
+					eascompliance_session_set('company_vat_check_attempt', $vat_check_attempt);
+
+					if ($vat_check_attempt == 1 || $vat_check_attempt == 2) {
+						throw new Exception(EAS_TR('Entered VAT number is not valid. Please check VAT number and try again.'));
+					}
+
+					if ($vat_check_attempt == 3) {
+						throw new Exception(EAS_TR('System was not able to check entered VAT number. You can proceed with order. You will be contacted for VAT number check.'));
+					}
+
+					if ($vat_check_attempt == 4) {
+						eascompliance_session_set('company_vat_check_attempt', 0);
+						throw new EAScomplianceBreakException();
+					}
+				}
+				throw new Exception(EAS_TR('Provided VAT number invalid. Please check it and try again.'));
+			}
+		} catch (EAScomplianceBreakException) {}
 
         // save request json into session //.
 		eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq);
@@ -2910,6 +3080,9 @@ function eascompliance_unset()
             $cart_item0['EAScompliance SET'] = false;
 			$cart_item0['EAScompliance declined'] = 0;
 			eascompliance_session_set('EAS CART DISCOUNT', null);
+			eascompliance_session_set('company_vat', null);
+			eascompliance_session_set('company_vat_validated', null);
+			eascompliance_session_set('company_vat_check_attempt', null);
             WC()->cart->set_session();
             eascompliance_log('calculate', 'calculation unset');
         }
@@ -3595,6 +3768,7 @@ function eascompliance_logorderdata_ajax()
                 '_easproj_order_created_with_createpostsaleorder' => $order->get_meta('_easproj_order_created_with_createpostsaleorder'),
                 '_easproj_create_post_sale_without_lc_orders_json' => $order->get_meta('_easproj_create_post_sale_without_lc_orders_json'),
                 '_easproj_order_created_with_create_post_sale_without_lc_orders' => $order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders'),
+                '_easproj_company_vat_validated' => $order->get_meta('_easproj_company_vat_validated'),
             ), true));
 
 
@@ -4734,7 +4908,16 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
 
         $calc_jreq_new = eascompliance_make_eas_api_request_json();
-      
+
+        // save company VAT validation results into order
+        $company_vat = $calc_jreq_new['recipient_company_vat'];
+		$session_company_vat = eascompliance_session_get('company_vat');
+		$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
+        if ($session_company_vat == $company_vat) {
+			$order->add_meta_data('_easproj_company_vat_validated', $session_company_vat_validated);
+			eascompliance_session_set('company_vat', null);
+			eascompliance_session_set('company_vat_validated', null);
+		}
 
         // exclude external_order_id because get_cart_hash is always different //.
         $calc_jreq_saved['external_order_id'] = '';
@@ -6376,6 +6559,13 @@ function eascompliance_settings()
             'id' => 'easproj_limit_ioss_sales',
             'default' => 'no',
         ),
+        'skip_vat_validation_with_warning' => array(
+            'name' => EAS_TR('Skip B2B VAT number validation with warning'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('This option allows B2B customer orders with 3rd failed attempt for VAT validation'),
+            'id' => 'easproj_skip_vat_validation_with_warning',
+            'default' => 'no',
+        ),
         'limit_ioss_sales_message' => array(
             'name' => EAS_TR('Notification text for the customer will be displayed. '),
             'type' => 'text',
@@ -7754,7 +7944,8 @@ function eascompliance_woocommerce_get_company_info($post)
         return [];
     }
 
-    $vatValidated = strtolower($payload['recipient_company_vat_validated']);
+    // $vatValidated = strtolower($payload['recipient_company_vat_validated']);
+    $vatValidated = $order->get_meta('_easproj_company_vat_validated');
     switch ($vatValidated) {
         case 'not_validated': $vatValidated = 'NO'; break;
         case 'validated': $vatValidated = 'YES'; break;
