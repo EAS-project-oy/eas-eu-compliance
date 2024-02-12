@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 8.1.1
-Tested up to: 6.4.2
-Stable tag: 1.15.0
-Last updated time: 15.05.2023
+WC tested up to: 8.5.2
+Tested up to: 6.4.3
+Stable tag: 1.5.4
+Last updated time: 01.02.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -125,6 +125,15 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.5.4 =
+* Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.
+* Resolved an issue related to the display of the checkout page within the editor.
+* Incorporated validation for the usage of WordPress blocks on the checkout page.
+
+= 1.5.1 =
+* Small update in the Tax rates updating logic
+
 
 = 1.5.0 =
 * Implemented support for Woo Gift Cards within WooCommerce, enhancing the plugins's capability for gift card handling.

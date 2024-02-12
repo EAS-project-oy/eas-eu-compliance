@@ -1,6 +1,12 @@
-*** EAS EU compliance plugin Changelog ***
-
 == Changelog ==
+= 1.5.4 =
+* Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.
+* Resolved an issue related to the display of the checkout page within the editor.
+* Incorporated validation for the usage of WordPress blocks on the checkout page.
+
+= 1.5.1 =
+* Small update in the Tax rates updating logic
+
 = 1.5.0 =
 * Implemented support for Woo Gift Cards within WooCommerce, enhancing the plugins's capability for gift card handling.
 * Developed a feature ensuring the checkout page reloads after landed cost calculation, addressing compatibility issues with certain store themes that were not displaying payment methods correctly. 

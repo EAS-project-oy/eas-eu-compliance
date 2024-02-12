@@ -7905,22 +7905,22 @@ if (!function_exists('eascompliance_woocommerce_add_order_single_metabox')) {
             return;
         }
 
-        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
                 <span ><strong>'.EAS_TR('Company name').':</strong></span>
                 <span >'.$company['name'].'</span>
             </div>';
 
-        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
                 <span ><strong>'.EAS_TR('Company VAT Number').':</strong></span>
                 <span >'.$company['vat_number'].'</span>
             </div>';
 
-        echo '<div style="border-bottom:solid 1px #eee;padding:15px 0;">
+        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
                 <span ><strong>'.EAS_TR('Valid VAT Number').':</strong></span>
                 <span >'.$company['vat_validated'].'</span>
             </div>';
 
-        echo '<div style="margin-top: 30px; padding:15px 0;">'.EAS_TR('VAT number can be validated manually at').'
+        echo '<div style="margin-top: 10px; padding:5px 0;">'.EAS_TR('VAT number can be validated manually at').'
                  <a href="https://ec.europa.eu/taxation_custom/vies/#/vat-validation" target="_blank">'.EAS_TR('European Commission VIES').'</a> 
             </div>';
     }
@@ -7940,7 +7940,7 @@ function eascompliance_woocommerce_get_company_info($post)
         return [];
     }
 
-    if ($payload['recipient_company_name'] === 'No company') {
+    if ($payload['recipient_company_name'] === 'No company' || empty($payload['recipient_company_name'])) {
         return [];
     }
 
