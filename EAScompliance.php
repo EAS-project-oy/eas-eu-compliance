@@ -2481,16 +2481,14 @@ function eascompliance_ajaxhandler()
 
     try {
         set_error_handler('eascompliance_error_handler');
-        $jdebug = array();
 
-        $jdebug['step'] = 'get OAUTH token';
         $auth_token = eascompliance_get_oauth_token();
 
-        $jdebug['step'] = 'make EAS API request json';
         $calc_jreq = eascompliance_make_eas_api_request_json();
 
 
 		//verify company VAT number
+		$company_vat = '';
 		try {
             $company_name = $calc_jreq['recipient_company_name'];
             $company_vat = $calc_jreq['recipient_company_vat'];
@@ -2547,8 +2545,6 @@ function eascompliance_ajaxhandler()
         $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
 		eascompliance_session_set('EAS CART DISCOUNT', $cart_discount);
 
-        $jdebug['CALC request'] = $calc_jreq;
-
         $confirm_hash = base64_encode(
             json_encode(
                 array(
@@ -2566,9 +2562,8 @@ function eascompliance_ajaxhandler()
 		}
 
         $redirect_uri = $admin_url . '?action=eascompliance_redirect_confirm&confirm_hash=' . $confirm_hash;
-        $jdebug['redirect_uri'] = $redirect_uri;
 
-        $jdebug['step'] = 'prepare EAS API /calculate request';
+        // EAS API /calculate request';
         $options = array(
             'method' => 'POST',
             'timeout' => 15,
@@ -2582,13 +2577,11 @@ function eascompliance_ajaxhandler()
             'sslverify' => false,
         );
 
-        $jdebug['step'] = 'send /calculate request';
         $calc_url = woocommerce_settings_get_option('easproj_eas_api_url') . '/calculate';
         $response = (new WP_Http)->request($calc_url, $options);
         if (is_wp_error($response)) {
             throw new Exception($response->get_error_message());
         }
-        $jdebug['CALC response body'] = $response;
 
         $calc_status = (string)$response['response']['code'];
 
@@ -2598,11 +2591,9 @@ function eascompliance_ajaxhandler()
         );
 
         if ('200' !== $calc_status) {
-            $jdebug['CALC response headers'] = $response['headers'];
-            $jdebug['CALC response status'] = $calc_status;
             $error_message = $response['response']['message'];
  
-            $calc_error = json_decode($response['http_response']->get_data(), true);
+            $calc_error = (array)json_decode($response['http_response']->get_data(), true);
             if (array_key_exists('code', $calc_error) && array_key_exists('type', $calc_error)) {
 
                 // STANDARD_CHECKOUT //.
@@ -2639,21 +2630,96 @@ function eascompliance_ajaxhandler()
                 unset($calc_error['errors']['type']);
                 $error_message = join(' ', array_values($calc_error['errors']));
             }
-            $jdebug['CALC response error'] = $error_message;
             throw new Exception($error_message);
         }
 
-        $jdebug['step'] = 'parse /calculate response';
-        // CALC response should be quoted link to EAS confirmation page from which user is later sent to eascompliance_redirect_confirm
+        // Parse /calculate response.
+        // It should be quoted link to EAS confirmation page from which user is later sent to eascompliance_redirect_confirm
         // or it is link to eascompliance_redirect_confirm
         // "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"
         $calc_response = trim(json_decode($response['http_response']->get_data()));
         $calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 
-        $jdebug['CALC response'] = $calc_response;
-
         eascompliance_log('calculate', '/calculate request successful, $calc_response ' . $calc_response);
-        // throw new Exception('debug');   //.
+
+        // if /calculate response is a link to confirmation page and company VAT is present
+        // then automate user confirmation popup dialog and return eascompliance_redirect_confirm link
+        if (preg_match('/^https:\/\/confirmation1\.easproject\.com/', $calc_response) && !empty($company_vat)) {
+            eascompliance_log('calculate', 'automate VAT confirmation process');
+
+            // obtain token from calc response
+			$parts = parse_url($calc_response);
+			parse_str($parts['query'], $query);
+			$token = $query['token'];
+
+			// fc/data request to obtain 'id' for confirmation requrest
+			$options = array(
+				'method' => 'GET',
+				'timeout' => 5,
+				'headers' => array(
+					'Content-type' => 'application/json',
+				),
+			);
+
+			$url = 'https://confirmation1.easproject.com/api/fc/data/' . $token;
+
+			$req = (new WP_Http)->request($url, $options);
+			if (is_wp_error($req)) {
+				eascompliance_log('error', 'Company VAT validation fc/data request request failed. $r', ['r'=>$req] );
+				throw new Exception('Company VAT validation confirmation request failed');
+			}
+			$status = (string)$req['response']['code'];
+			if ( $status != '200' ) {
+				eascompliance_log('error', 'Company VAT validation fc/data request request failed with status $s. $r ', ['s'=>$status, 'r'=>$req] );
+				throw new Exception('Company VAT validation confirmation request failed');
+			}
+
+			$body =  $req['http_response']->get_data();
+            $fcc_id = json_decode($body, true)['id'];
+
+            // confirmation request
+            $params = array(
+                    'fcc_recipient_company_vat' => $company_vat,
+                    'fc_representation_confirm' => true,
+                    'fcc_special_note' => 'N/A',
+                    'id' => $fcc_id,
+                    'redirectURI' => $redirect_uri,
+                    'timestamp_year' => (int)date_create('today')->format('Y'),
+                    'fcc_recipient_company_vat_validated' => eascompliance_session_get('company_vat_validated') == 'validated',
+            );
+			$options = array(
+				'method' => 'POST',
+				'timeout' => 5,
+				'headers' => array(
+					'Content-type' => 'application/json',
+
+				),
+				'body' => json_encode($params, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
+			);
+
+			$url = 'https://confirmation1.easproject.com/api/confirmation';
+
+			$req = (new WP_Http)->request($url, $options);
+			if (is_wp_error($req)) {
+				eascompliance_log('error', 'Company VAT validation confirmation request failed. $r', ['r'=>$req] );
+				throw new Exception('Company VAT validation confirmation request failed');
+			}
+			$status = (string)$req['response']['code'];
+			if ( $status != '200' ) {
+				eascompliance_log('error', 'Company VAT validation confirmation request failed with status $s. $r ', ['s'=>$status, 'r'=>$req] );
+				throw new Exception('Company VAT validation confirmation request failed');
+			}
+
+            // extract eas_checkout_token from confirmation response body
+			$body =  $req['http_response']->get_data();
+			$url = json_decode($body, true)['paymentURL'];
+			$parts = parse_url($url);
+			parse_str($parts['query'], $query);
+			$eas_checkout_token = $query['eas_checkout_token'];
+
+            //replace calc_response url with link to eascompliance_redirect_confirm
+			$calc_response = $redirect_uri . '&eas_checkout_token=' . $eas_checkout_token;
+        }
 
         $jres['reload_checkout_page'] = get_option('easproj_reload_checkout_page');
         $jres['status'] = 'ok';
@@ -2672,14 +2738,8 @@ function eascompliance_ajaxhandler()
         $jres['status'] = 'error';
         $jres['message'] = $ex->getMessage();
         eascompliance_log('error', $ex);
-        eascompliance_log('calculate', $jdebug);
     } finally {
         restore_error_handler();
-    }
-
-    // send json reply  //.
-    if (eascompliance_log_level('debug')) {
-        $jres['debug'] = $jdebug;
     }
 
     wp_send_json($jres);
