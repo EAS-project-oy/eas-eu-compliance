@@ -351,6 +351,57 @@ jQuery(document).ready(function ($) {
             $('.button_calc').show()
             place_order_visible(false)
         }
+
+
+        // Company VAT validate button for billing and shipping sections
+        $('.eascompliance_company_vat_button')
+            .fadeOut()
+            .remove()
+        $('.eascompliance_vat_message')
+            .fadeOut()
+            .remove()
+
+        let shipping = 'shipping'
+        if ($('#ship-to-different-address-checkbox').prop('checked') === false) {
+            shipping = 'billing'
+        }
+
+        let $company_vat_validate = $('<button>', {"text": "Validate", "class": "button eascompliance_company_vat_button", "id": shipping + "_company_vat_validate"})
+        let $company_vat = $('#'+shipping+'_company_vat')
+
+        $company_vat
+            .after($company_vat_validate)
+            .on('focusin', async function () {
+                $('.eascompliance_vat_message').remove()
+            })
+
+        $company_vat_validate
+            .fadeIn()
+            .on('click', async function (event) {
+                event.preventDefault()
+
+                $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
+
+                let j = await $.post({
+                    url: plugin_ajax_object.ajax_url,
+                    data: {
+                        'action': 'eascompliance_company_vat_validate_ajax',
+                        'shipping_company_vat':  $company_vat.val(),
+                        'shipping_country': $('#'+shipping+'_country').val()
+                    },
+                    dataType: 'json'
+                })
+
+                if (j.company_vat_validated) {
+                    let $ok = $('<div>', {"text": plugin_dictionary.vat_validation_successful, "class": "eascompliance_vat_message eascompliance_company_vat_message_success"})
+                    $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
+                    $company_vat_validate.after($ok)
+                } else {
+                    let $err = $('<div>', {"text": plugin_dictionary.vat_validation_failed, "class": "eascompliance_vat_message eascompliance_company_vat_message_fail"})
+                    $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
+                    $company_vat_validate.after($err)
+                }
+            })
     })
 
     //for most of themes styles 'submit' buttons we copy some styles from #place_order

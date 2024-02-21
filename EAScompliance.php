@@ -276,6 +276,8 @@ function eascompliance_woocommerce_init()
 			add_action('wp_ajax_nopriv_eascompliance_redirect_confirm', 'eascompliance_redirect_confirm');
 			add_action('wp_ajax_eascompliance_status_ajax', 'eascompliance_status_ajax');
 			add_action('wp_ajax_nopriv_eascompliance_status_ajax', 'eascompliance_status_ajax');
+			add_action('wp_ajax_eascompliance_company_vat_validate_ajax', 'eascompliance_company_vat_validate_ajax');
+			add_action('wp_ajax_nopriv_eascompliance_company_vat_validate_ajax', 'eascompliance_company_vat_validate_ajax');
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save', 10, 1);
 			add_action('woocommerce_after_order_object_save', 'eascompliance_woocommerce_after_order_object_save2', 10, 1);
 			add_action('wp_ajax_eascompliance_recalculate_ajax', 'eascompliance_recalculate_ajax');
@@ -1084,6 +1086,8 @@ function eascompliance_javascript()
             'reload_link' => EAS_TR('reload'),
             'security_check' => EAS_TR('Security check, please reload page. '),
             'limit_ioss_sales_message' => get_option( 'easproj_limit_ioss_sales_message' ),
+            'vat_validation_successful' => EAS_TR('VAT validation successful'),
+            'vat_validation_failed' => EAS_TR('VAT validation failed'),
         )
     );
     wp_localize_script(
@@ -2464,7 +2468,6 @@ class EAScomplianceBreakException extends Exception
 {
 }
 
-;
 
 /**
  * Customs Duties Calculation
@@ -2735,6 +2738,67 @@ function eascompliance_ajaxhandler()
     } catch (Exception $ex) {
 
         // // build json reply
+        $jres['status'] = 'error';
+        $jres['message'] = $ex->getMessage();
+        eascompliance_log('error', $ex);
+    } finally {
+        restore_error_handler();
+    }
+
+    wp_send_json($jres);
+}
+
+
+/**
+ * Company VAT validate via ajax call
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_company_vat_validate_ajax()
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+	$jres = array();
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        $company_vat =  eascompliance_array_get($_POST, 'shipping_company_vat', '');
+		$jres['company_vat'] = $company_vat;
+
+		$delivery_country = eascompliance_array_get($_POST, 'shipping_country', '');
+
+        $company_vat_validated = false;
+		try {
+			$company_vat =  eascompliance_array_get($_POST, 'shipping_company_vat', '');
+			$delivery_country = eascompliance_array_get($_POST, 'shipping_country', '');
+
+            if ($company_vat == '') throw new EAScomplianceBreakException();
+
+            if ($delivery_country == '') throw new EAScomplianceBreakException();
+
+			$session_company_vat = eascompliance_session_get('company_vat');
+			$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
+
+			// skip when company VAT number was validated before
+			if ($company_vat == $session_company_vat && $session_company_vat_validated == 'validated') {
+				$company_vat_validated = true;
+                throw new EAScomplianceBreakException();
+			}
+
+			if (eascompliance_company_vat_check($company_vat, $delivery_country) == 1) {
+				$company_vat_validated = true;
+
+                // save successful validation in session
+				eascompliance_session_set('company_vat', $company_vat);
+				eascompliance_session_set('company_vat_validated', 'not_validated');
+			}
+
+		} catch (EAScomplianceBreakException) {}
+
+        $jres['status'] = 'ok';
+        $jres['message'] = 'CALC response successful';
+        $jres['company_vat_validated'] = $company_vat_validated;
+    } catch (Exception $ex) {
         $jres['status'] = 'error';
         $jres['message'] = $ex->getMessage();
         eascompliance_log('error', $ex);

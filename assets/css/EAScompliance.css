@@ -12,3 +12,21 @@
     float: initial;
     margin:10px;
 }
+
+.eascompliance_company_vat_button {
+    float: right;
+    position: absolute;
+    height: 50px;
+    margin-left: 10px;
+    display: none;
+}
+
+.eascompliance_company_vat_message_success {
+    color: #00a32a;
+    font-size: .75em;
+}
+
+.eascompliance_company_vat_message_fail {
+    color: #cc1818;
+    font-size: .75em;
+}
