@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.2
 Tested up to: 6.4.3
-Stable tag: 1.5.4
+Stable tag: 1.5.7
 Last updated time: 01.02.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -37,6 +37,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * WooCommerce High-Performance Order Storage (HPOS) supported.
 * PHP 8.0 support verified.
 * Prohibition of ordering over the amount of threshold establisehd in EU for IOSS orders.
+* EU Company VAT number online validation 
 
 **How to get started?**
 
@@ -125,6 +126,8 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.5.7 =
+* New freature implemented. EU Company VAT number validation added on the checkout page. 
 
 = 1.5.4 =
 * Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.

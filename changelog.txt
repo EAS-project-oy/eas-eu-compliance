@@ -1,3 +1,6 @@
+= 1.5.7 =
+* New freature implemented. EU Company VAT number validation added on the checkout page. 
+
 == Changelog ==
 = 1.5.4 =
 * Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.
