@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.5.7
+ * Version: 1.5.8
  * Tested up to 6.4.2
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -2647,7 +2647,7 @@ function eascompliance_ajaxhandler()
 
         // if /calculate response is a link to confirmation page and company VAT is present
         // then automate user confirmation popup dialog and return eascompliance_redirect_confirm link
-        if (preg_match('/^https:\/\/confirmation1\.easproject\.com/', $calc_response) && !empty($company_vat)) {
+        if (preg_match('/^https:\/\/apieas\.easproject\.com/', $calc_response) && !empty($company_vat)) {
             eascompliance_log('calculate', 'automate VAT confirmation process');
 
             // obtain token from calc response
@@ -2664,7 +2664,7 @@ function eascompliance_ajaxhandler()
 				),
 			);
 
-			$url = 'https://confirmation1.easproject.com/api/fc/data/' . $token;
+			$url = 'https://apieas.easproject.com/api/fc/data/' . $token;
 
 			$req = (new WP_Http)->request($url, $options);
 			if (is_wp_error($req)) {
@@ -2700,7 +2700,7 @@ function eascompliance_ajaxhandler()
 				'body' => json_encode($params, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
 			);
 
-			$url = 'https://confirmation1.easproject.com/api/confirmation';
+			$url = 'https://apieas.easproject.com/api/confirmation';
 
 			$req = (new WP_Http)->request($url, $options);
 			if (is_wp_error($req)) {
