@@ -14,11 +14,8 @@
 }
 
 .eascompliance_company_vat_button {
-    /* float: right;
-    position: absolute;
-    h*/ 
-    eight: 50px;
-    margin-top: 15px;
+    margin-top:5px;
+    height: 40px;
     display: none;
 }
 
