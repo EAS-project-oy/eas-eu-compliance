@@ -2539,7 +2539,7 @@ function eascompliance_ajaxhandler()
 				}
 				throw new Exception(EAS_TR('Provided VAT number invalid. Please check it and try again.'));
 			}
-		} catch (EAScomplianceBreakException) {}
+		} catch (EAScomplianceBreakException $ex) {}
 
         // save request json into session //.
 		eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq);
@@ -2793,7 +2793,7 @@ function eascompliance_company_vat_validate_ajax()
 				eascompliance_session_set('company_vat_validated', 'not_validated');
 			}
 
-		} catch (EAScomplianceBreakException) {}
+		} catch (EAScomplianceBreakException $ex) {}
 
         $jres['status'] = 'ok';
         $jres['message'] = 'CALC response successful';
