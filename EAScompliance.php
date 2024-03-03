@@ -1189,11 +1189,13 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
             ),
         );
 
-		$address_fields['billing_company_vat'] = array(
-			'label'        => EAS_TR('Company VAT number'),
-			'priority'     => 31,
-			'required'     => $address_fields['billing_company']['required'],
-		);
+        if (get_option('easproj_company_vat_validate') === 'yes') {
+			$address_fields['billing_company_vat'] = array(
+				'label'        => EAS_TR('Company VAT number for EU customers only'),
+				'priority'     => 31,
+				'required'     => $address_fields['billing_company']['required'],
+			);
+        }
 
         $address_fields = array_replace_recursive($address_fields, $required_fields);
         if (is_null($address_fields)) {
@@ -1247,11 +1249,13 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
             ),
         );
 
-        $address_fields['shipping_company_vat'] = array(
-			'label'        => EAS_TR('Company VAT number'),
-			'priority'     => 31,
-			'required'     => $address_fields['shipping_company']['required'],
-		);
+		if (get_option('easproj_company_vat_validate') === 'yes') {
+			$address_fields['shipping_company_vat'] = array(
+				'label' => EAS_TR('Company VAT number for EU customers only'),
+				'priority' => 31,
+				'required' => $address_fields['shipping_company']['required'],
+			);
+		}
 
         $address_fields = array_replace_recursive($address_fields, $required_fields);
         if (is_null($address_fields)) {
@@ -2497,6 +2501,9 @@ function eascompliance_ajaxhandler()
             $company_vat = $calc_jreq['recipient_company_vat'];
 			$delivery_country = $calc_jreq['delivery_country'];
 
+			// skip when company vat validate option is disabled
+			if (get_option('easproj_company_vat_validate') !== 'yes') throw new EAScomplianceBreakException();
+
 			// skip when no company
 			if ($company_name == 'No company') throw new EAScomplianceBreakException();
 
@@ -2647,7 +2654,8 @@ function eascompliance_ajaxhandler()
 
         // if /calculate response is a link to confirmation page and company VAT is present
         // then automate user confirmation popup dialog and return eascompliance_redirect_confirm link
-        if (preg_match('/^https:\/\/apieas\.easproject\.com/', $calc_response) && !empty($company_vat)) {
+        $confirm_url = rtrim(get_option('easproj_company_vat_confirm_url', 'https://apieas.easproject.com/'), '/');
+        if ( !empty($company_vat) && substr($calc_response, 0, strlen($confirm_url))==$confirm_url ) {
             eascompliance_log('calculate', 'automate VAT confirmation process');
 
             // obtain token from calc response
@@ -2664,7 +2672,7 @@ function eascompliance_ajaxhandler()
 				),
 			);
 
-			$url = 'https://apieas.easproject.com/api/fc/data/' . $token;
+			$url = $confirm_url . '/api/fc/data/' . $token;
 
 			$req = (new WP_Http)->request($url, $options);
 			if (is_wp_error($req)) {
@@ -2700,7 +2708,7 @@ function eascompliance_ajaxhandler()
 				'body' => json_encode($params, EASCOMPLIANCE_JSON_THROW_ON_ERROR),
 			);
 
-			$url = 'https://apieas.easproject.com/api/confirmation';
+			$url = $confirm_url . '/api/confirmation';
 
 			$req = (new WP_Http)->request($url, $options);
 			if (is_wp_error($req)) {
@@ -2769,6 +2777,10 @@ function eascompliance_company_vat_validate_ajax()
 
         $company_vat_validated = false;
 		try {
+
+			// skip when option is disabled
+			if (get_option('easproj_company_vat_validate') !== 'yes') throw new EAScomplianceBreakException();
+
 			$company_vat =  eascompliance_array_get($_POST, 'shipping_company_vat', '');
 			$delivery_country = eascompliance_array_get($_POST, 'shipping_country', '');
 
@@ -5037,7 +5049,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $company_vat = $calc_jreq_new['recipient_company_vat'];
 		$session_company_vat = eascompliance_session_get('company_vat');
 		$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
-        if ($session_company_vat == $company_vat) {
+        if (get_option('easproj_company_vat_validate') === 'yes' && $session_company_vat == $company_vat) {
 			$order->add_meta_data('_easproj_company_vat_validated', $session_company_vat_validated);
 			eascompliance_session_set('company_vat', null);
 			eascompliance_session_set('company_vat_validated', null);
@@ -6683,8 +6695,22 @@ function eascompliance_settings()
             'id' => 'easproj_limit_ioss_sales',
             'default' => 'no',
         ),
+        'company_vat_validate' => array(
+            'name' => EAS_TR('B2B VAT validation'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('Add company VAT number validation on the checkout page'),
+            'id' => 'easproj_company_vat_validate',
+            'default' => 'no',
+        ),
+        'company_vat_confirm_url' => array(
+            'name' => EAS_TR('B2B VAT confirmation url'),
+            'type' => 'text',
+            'desc' => EAS_TR('B2B VAT confirmation url'),
+            'id' => 'easproj_company_vat_confirm_url',
+            'default' => 'https://apieas.easproject.com/',
+        ),
         'skip_vat_validation_with_warning' => array(
-            'name' => EAS_TR('Skip B2B VAT number validation with warning'),
+            'name' => EAS_TR('B2B skip VAT number validation with warning'),
             'type' => 'checkbox',
             'desc' => EAS_TR('This option allows B2B customer orders with 3rd failed attempt for VAT validation'),
             'id' => 'easproj_skip_vat_validation_with_warning',
@@ -6731,7 +6757,7 @@ function eascompliance_settings()
 			'name' => EAS_TR('Non-EU Countries support'),
 			'type' => 'multiselect',
 			'class' => 'wc-enhanced-select',
-			'desc' => 'Supported countries outside EU',
+			'desc' => EAS_TR('Supported countries outside EU'),
 			'id' => 'easproj_supported_countries_outside_eu',
 			'default' => array(),
 			'options' => $countries_outside_eu,
