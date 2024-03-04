@@ -1,7 +1,7 @@
 ===  EAS EU compliance  ===
 
 Contributors: easyaccesssystem
-Tags: IOSS, OSS, EU VAT, VAT RETURNS, VAT calculator, full landed cost
+Tags: IOSS, OSS, EU VAT, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.2
