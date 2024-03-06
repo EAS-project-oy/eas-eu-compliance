@@ -28,7 +28,7 @@ jQuery(document).ready(function($) {
     // Lookup WC sources: meta-boxes-product.js:407 $( '.product_attributes' ).on( 'click', 'button.add_new_attribute'))
     old_prompt = window.prompt
     window.prompt = function (what, def) {
-        if ($(window.event.target).closest('.woocommerce_attribute').hasClass('pa_easproj_hs6p_received')) {
+        if (window.event && $(window.event.target).closest('.woocommerce_attribute').hasClass('pa_easproj_hs6p_received')) {
             what = 'Please enter HS6PCODE, digits only'
             res = '00000000'
             while (1) {
