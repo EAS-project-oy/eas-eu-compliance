@@ -3,9 +3,9 @@ jQuery(document).ready(function ($) {
     window.$ = $
 
     // some themes clone checkout forms, use offsetWidth to detect visible form
-    var checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0)
+    let checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0)
 
-    var place_order_visible = function(is_visible) {
+    let place_order_visible = function(is_visible) {
         // Place Order button and grodonkey theme 'continue to payment' button
         const PLACE_ORDER_BUTTON = '#place_order, #gro_go_to_checkout_step_two'
         if (is_visible) {
@@ -20,15 +20,15 @@ jQuery(document).ready(function ($) {
     }
 
     //// block, unblock UI when request is processed
-    var unblock = function ($node) {
+    let unblock = function ($node) {
         $node.removeClass('processing').unblock()
     }
 
-    var is_blocked = function ($node) {
+    let is_blocked = function ($node) {
         return $node.is('.processing') || $node.parents('.processing').length
     }
 
-    var block = function ($node) {
+    let block = function ($node) {
         if (!is_blocked($node)) {
             $node.addClass('processing').block({
                 message: null,
@@ -40,7 +40,7 @@ jQuery(document).ready(function ($) {
         }
     }
 
-    var show_error = function (error_message) {
+    let show_error = function (error_message) {
         $el = $('<div class="woocommerce-error eascompliance-error">').text(error_message)
         $el.css('border-color','red')
         $('.woocommerce-notices-wrapper:first').prepend($el)
@@ -49,8 +49,15 @@ jQuery(document).ready(function ($) {
         $('.woocommerce-notices-wrapper .woocommerce-error:contains("Security check")').text(plugin_dictionary.security_check).first().append($('<a id=error_security_check href="./">').text(plugin_dictionary.reload_link))
     }
 
-    var clear_errors = function () {
+    let clear_errors = function () {
         $('div.eascompliance-error').remove()
+    }
+
+    let button_copy_style = function (from, to) {
+        let button_styles = 'background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+        for (let i = 0; i < button_styles.length; i++) {
+            $(to).css(button_styles[i], $(from).css(button_styles[i]))
+        }
     }
 
     // block calculate button during checkout update
@@ -106,11 +113,11 @@ jQuery(document).ready(function ($) {
             form_data_str += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(v)
         }
 
-        var request = {
+        let request = {
             form_data: form_data_str
         }
 
-        var j = await $.post({
+        let j = await $.post({
             url: plugin_ajax_object.ajax_url
             ,
             data: {
@@ -141,7 +148,7 @@ jQuery(document).ready(function ($) {
 
                 confirmation_url = new URL(j['CALC response'])
 
-                var reload_checkout_page = Boolean(j['reload_checkout_page'] == 'yes')
+                let reload_checkout_page = Boolean(j['reload_checkout_page'] == 'yes')
 
                 if (confirmation_url.hostname === window.location.hostname) {
                     // EAS confirmation page is not necessary, update status and update checkout
@@ -162,17 +169,17 @@ jQuery(document).ready(function ($) {
                     // EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
                     $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
-                    var width = 760, height = 1000
-                    var left = window.top.outerWidth / 2 + window.top.screenX - width / 2
-                    var top = window.top.outerHeight / 2 + window.top.screenY - height / 2
-                    var popup = window.open(confirmation_url.href, 'eascompliance', `popup,width=${width},height=${height},scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,left=${left},top=${top}`)
+                    let width = 760, height = 1000
+                    let left = window.top.outerWidth / 2 + window.top.screenX - width / 2
+                    let top = window.top.outerHeight / 2 + window.top.screenY - height / 2
+                    let popup = window.open(confirmation_url.href, 'eascompliance', `popup,width=${width},height=${height},scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,left=${left},top=${top}`)
                     if (!popup) {
                         //open EAS confirmation page in same window if popup was blocked by browser
                         window.open(confirmation_url.href, '_self')
                     }
 
-                    var popupInterval = 500
-                    var popupHandler = function () {
+                    let popupInterval = 500
+                    let popupHandler = function () {
                         if (popup.closed) {
                             unblock($('.woocommerce-checkout'))
                             checkout_form.append('<input type=hidden id=is_user_checkout name=is_user_checkout value="false">')
@@ -257,20 +264,20 @@ jQuery(document).ready(function ($) {
     }
 
     $(document.body).one("updated_checkout", async function () {
-        var $status = $('.eascompliance_status').attr('data-eascompliance-status')
+        let $status = $('.eascompliance_status').attr('data-eascompliance-status')
         if ($status == 'present') {
             //(($('.eascompliance_status').text() == 'present')||(($(".eascompliance_status").attr('eascompliance-p-content')=='present')&&($('.eascompliance_status').text() == 'this'))) {
             // restore fields from what was submitted upon 'Calculate'
 
             $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
-            var form_data = atob($(".eascompliance_status").attr('checkout-form-data'))
+            let form_data = atob($(".eascompliance_status").attr('checkout-form-data'))
 
             //restore form elements from form_data
-            var chunks = form_data.split('&')
-            for (var i = 0; i < chunks.length; i++) {
+            let chunks = form_data.split('&')
+            for (let i = 0; i < chunks.length; i++) {
                 chunk = chunks[i]
-                var [k, v] = chunk.split('=')
+                let [k, v] = chunk.split('=')
                 k = decodeURIComponent(k)
                 v = decodeURIComponent(v)
                 if (k === 'ship_to_different_address') {
@@ -292,23 +299,23 @@ jQuery(document).ready(function ($) {
 
     $(document.body).on("updated_checkout checkout_error", async function () {
         // only work in supported countries
-        var shipping_country = $('#shipping_country').val()
-        var shipping_postcode = $('#shipping_postcode').val()
+        let shipping_country = $('#shipping_country').val()
+        let shipping_postcode = $('#shipping_postcode').val()
         if (!$('#ship-to-different-address-checkbox').prop('checked')) {
             shipping_country = $('#billing_country').val()
             shipping_postcode = $('#billing_postcode').val()
         }
 
         //take needs-recalculate from server because it may change without checkout page reloading
-        var j = await $.post({
+        let j = await $.post({
             url: plugin_ajax_object.ajax_url
             , data: {'action': 'eascompliance_status_ajax', 'shipping_country': shipping_country, 'shipping_postcode': shipping_postcode}
             , dataType: 'json'
         })
 
-        var eascompliance_supported_country = j.eascompliance_supported_country
+        let eascompliance_supported_country = j.eascompliance_supported_country
 
-        var $status = j.eascompliance_status
+        let $status = j.eascompliance_status
         $('.eascompliance_status').text($status)
         $('.eascompliance_status').attr('data-eascompliance-status', $status)
 
@@ -362,11 +369,11 @@ jQuery(document).ready(function ($) {
             .remove()
 
         let shipping = 'shipping'
-        if ($('#ship-to-different-address-checkbox').prop('checked') === false) {
+        if ($('#ship-to-different-address-checkbox').prop('checked') !== true) {
             shipping = 'billing'
         }
 
-        let $company_vat_validate = $('<button>', {"text": "Validate", "class": "button eascompliance_company_vat_button", "id": shipping + "_company_vat_validate"})
+        let $company_vat_validate = $('<button>', {"text": "Validate", "class": "button alt eascompliance_company_vat_button", "id": shipping + "_company_vat_validate"})
         let $company_vat = $('#'+shipping+'_company_vat')
 
         $company_vat
@@ -374,6 +381,7 @@ jQuery(document).ready(function ($) {
             .on('focusin', async function () {
                 $('.eascompliance_vat_message').remove()
             })
+        button_copy_style('#place_order', '.eascompliance_company_vat_button')
 
         $company_vat_validate
             .fadeIn()
@@ -405,12 +413,10 @@ jQuery(document).ready(function ($) {
     })
 
     //for most of themes styles 'submit' buttons we copy some styles from #place_order
-    var button_styles = 'background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
-    for (var i = 0; i < button_styles.length; i++) {
-        $('.button_calc').css(button_styles[i], $('#place_order').css(button_styles[i]))
-    }
-    var div_styles = 'display flex-direction background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing transition padding font-size color border cursor z-index text-transform'.split(' ')
-    for (var i = 0; i < div_styles.length; i++) {
+    button_copy_style('#place_order', '.button_calc')
+
+    let div_styles = 'display flex-direction background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing transition padding font-size color border cursor z-index text-transform'.split(' ')
+    for (let i = 0; i < div_styles.length; i++) {
         $('.eascompliance').css(div_styles[i], $("#payment > div").css(div_styles[i]))
     }
     
