@@ -54,7 +54,7 @@ jQuery(document).ready(function ($) {
     }
 
     let button_copy_style = function (from, to) {
-        let button_styles = 'background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor z-index text-transform'.split(' ')
+        let button_styles = 'background background-color font-family position vertical-align outline line-height float letter-spacing font-weight box-sizing margin -webkit-transition -moz-transition transition padding font-size color border cursor text-transform'.split(' ')
         for (let i = 0; i < button_styles.length; i++) {
             $(to).css(button_styles[i], $(from).css(button_styles[i]))
         }
