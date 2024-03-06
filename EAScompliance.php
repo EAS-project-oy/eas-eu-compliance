@@ -6712,7 +6712,7 @@ function eascompliance_settings()
         'skip_vat_validation_with_warning' => array(
             'name' => EAS_TR('B2B skip VAT number validation with warning'),
             'type' => 'checkbox',
-            'desc' => EAS_TR('This option allows B2B customer orders with 3rd failed attempt for VAT validation'),
+            'desc' => EAS_TR('The option allows for B2B customer to finalise order even after three unsuccessful attempts of their VAT number validation.'),
             'id' => 'easproj_skip_vat_validation_with_warning',
             'default' => 'no',
         ),
