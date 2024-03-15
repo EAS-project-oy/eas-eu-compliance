@@ -3853,7 +3853,7 @@ function eascompliance_reexport_order()
         if ($res == 0) {
             eascompliance_log('info', 'Order $order_id re-export to EAS scheduled', array('$order_id'=>$order_num));
         } else {
-            eascompliance_log('info', 'Order $order_id re-export to EAS schedule failed with code $res', array('$order_id'=>$order_num, 'c'=>$res));
+            eascompliance_log('info', 'Order $order_id re-export to EAS schedule failed with code $res', array('$order_id'=>$order_num, 'res'=>$res));
         }
 
 
