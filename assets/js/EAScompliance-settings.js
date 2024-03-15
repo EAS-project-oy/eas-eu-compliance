@@ -143,7 +143,12 @@ jQuery(document).ready(function($) {
         if ( 'ok' !== j.status) {
             window.alert('EAS Order re-export failed: '+j.message)
         } else {
-            window.alert('EAS Order re-exported to EAS, return code ' + j['return code'])
+            if ( j['return code'] === 0 ) {
+                window.alert('EAS Order re-export to EAS scheduled successfully')
+            } else {
+                window.alert('EAS Order re-export to EAS schedule failed with code ' + j['return code'])
+            }
+
             window.location.reload();
         }
     } )
