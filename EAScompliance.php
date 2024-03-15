@@ -3850,7 +3850,12 @@ function eascompliance_reexport_order()
 		$res = eascompliance_woocommerce_order_status_changed4($order_id, $status_from, $status_to, $order);
         $order_num = $order->get_order_number();
 
-		eascompliance_log('info', 'Order $order_id re-exported to EAS, return code $c', array('$order_id'=>$order_num, 'c'=>$res));
+        if ($res == 0) {
+            eascompliance_log('info', 'Order $order_id re-export to EAS scheduled', array('$order_id'=>$order_num));
+        } else {
+            eascompliance_log('info', 'Order $order_id re-export to EAS schedule failed with code $res', array('$order_id'=>$order_num, 'c'=>$res));
+        }
+
 
 		wp_send_json(array('status' => 'ok', 'return code'=>$res));
 
@@ -5663,15 +5668,18 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			throw new Exception($response_status . ' ' . $request['response']['message']);
 		}
 
+        return 0;
+
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
         $order_num = $order->get_order_number();
 		$order->add_order_note(EAS_TR("Order $order_num payment notification failed: ") . $ex->getMessage());
+
+        return -1;
 	} finally {
 		restore_error_handler();
 	}
 
-    return 0;
 }
 
 /**
