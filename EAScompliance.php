@@ -1125,7 +1125,7 @@ function eascompliance_settings_scripts()
     wp_enqueue_style('EAScompliance', plugins_url('/assets/css/EAScompliance-settings.css', __FILE__), array(), filemtime(dirname(__FILE__) . '/assets/css/EAScompliance-settings.css'));
 
     // include javascript //.
-    wp_enqueue_script('EAScompliance', plugins_url('/assets/js/EAScompliance-settings.js', __FILE__), array('jquery', 'jquery-ui-accordion', 'jquery-tiptip'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-settings.js'), true);
+    wp_enqueue_script('EAScompliance', plugins_url('/assets/js/EAScompliance-settings.js', __FILE__), array('jquery', 'jquery-ui-accordion', 'jquery-tiptip', 'select2'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-settings.js'), true);
 
 	$attributes = array();
 	foreach(EASCOMPLIANCE_PRODUCT_ATTRIBUTES as $att_name) {
