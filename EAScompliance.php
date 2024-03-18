@@ -421,12 +421,20 @@ add_action(
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_tax_rate_id()
+function eascompliance_tax_rate_id($tax_rate_country = '')
 {
     global $wpdb;
     $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
+
+    // substitute tax_rate_id with country tax_rate_id when it is present
+    if (!empty($tax_rate_country)) {
+        $tax_rates_countries = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s", $tax_rate_country), ARRAY_A);
+        if (!empty($tax_rates_countries)) {
+            $tax_rates = $tax_rates_countries;
+        }
+    }
     if (count($tax_rates) === 0) {
-		$tax_rate_id0 = eascompliance_tax_rate_insert();
+        $tax_rate_id0 = eascompliance_tax_rate_insert();
     }
     $tax_rate_id0 = $tax_rates[0]['tax_rate_id'];
     return (int)$tax_rate_id0;
@@ -1781,7 +1789,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['recipient_first_name'] = $checkout['shipping_first_name'];
     $calc_jreq['recipient_last_name'] = $checkout['shipping_last_name'];
     $calc_jreq['recipient_company_name'] = eascompliance_array_get($checkout, 'shipping_company', '') === '' ? 'No company' : $checkout['shipping_company'];
-    $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'];
+    $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?: '';
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
     $calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '');//$checkout['shipping_address_2'];
     $calc_jreq['delivery_city'] = eascompliance_array_get($checkout, 'shipping_city', '');
@@ -3943,7 +3951,8 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
 			return $order_item_tax;
 		}
 
-        $tax_rate_id0 = eascompliance_tax_rate_id();
+        $shipping_country = $order->get_shipping_country();
+        $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country);
 
         // no taxes for deducted VAT outside EU
         $deduct_vat_outside_eu = (float)0;
@@ -4055,11 +4064,13 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
     try {
         set_error_handler('eascompliance_error_handler');
 
-		$tax_rate_id0 = eascompliance_tax_rate_id();
+        $shipping_country = WC()->cart->get_customer()->get_shipping_country();
+		$tax_rate_id0 = eascompliance_tax_rate_id($shipping_country);
 
         //Skip adding EAS tax when it should not present
 		if (!eascompliance_is_set()) {
-            unset($taxes[$tax_rate_id0]);
+            //only unset default tax_rate_id
+            unset($taxes[eascompliance_tax_rate_id()]);
 			return $taxes;
 		}
 
