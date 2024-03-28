@@ -1908,7 +1908,7 @@ function eascompliance_company_vat_check($company_vat, $country)
 		$url = 'http://ec.europa.eu/taxation_customs/vies/services/checkVatService';
 		$options = array(
 			'method' => 'POST',
-			'timeout' => 5,
+			'timeout' => 10,
 			'headers' => array(
 				'Content-type' => ' text/xml;charset=UTF-8',
 				'SOAPAction' => '',
@@ -2516,7 +2516,7 @@ function eascompliance_ajaxhandler()
 			if ($company_name == 'No company') throw new EAScomplianceBreakException();
 
 			// require company VAT number
-			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number.'));
+			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales.'));
 
 			$session_company_vat = eascompliance_session_get('company_vat');
 			$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
@@ -2674,7 +2674,7 @@ function eascompliance_ajaxhandler()
 			// fc/data request to obtain 'id' for confirmation requrest
 			$options = array(
 				'method' => 'GET',
-				'timeout' => 5,
+				'timeout' => 10,
 				'headers' => array(
 					'Content-type' => 'application/json',
 				),
@@ -2708,7 +2708,7 @@ function eascompliance_ajaxhandler()
             );
 			$options = array(
 				'method' => 'POST',
-				'timeout' => 5,
+				'timeout' => 10,
 				'headers' => array(
 					'Content-type' => 'application/json',
 
