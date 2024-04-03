@@ -1,0 +1,36 @@
+{
+    "name": "eas-eu-compliance",
+    "author": "EAS Project",
+    "license": "GPL-2.0-or-later",
+    "private": true,
+    "files": [
+        "*.php",
+        "README.md",
+        "LICENSE",
+        "build/*",
+        "include/*",
+        "languages/*",
+        "doc/*",
+        "assets/*"
+    ],
+    "scripts": {
+        "build": "wp-scripts build",
+        "format": "wp-scripts format",
+        "lint:css": "wp-scripts lint-style",
+        "lint:js": "wp-scripts lint-js",
+        "packages-update": "wp-scripts packages-update",
+        "plugin-zip": "wp-scripts plugin-zip",
+        "start": "wp-scripts start"
+    },
+    "devDependencies": {
+        "@woocommerce/block-library": "^2.3.0",
+        "@woocommerce/dependency-extraction-webpack-plugin": "^2.3.0",
+        "@woocommerce/eslint-plugin": "^2.2.0",
+        "@wordpress/blocks": "^12.6.0",
+        "@wordpress/components": "^23.8.0",
+        "@wordpress/scripts": "^26.0.0"
+    },
+    "dependencies": {
+        "jquery": "^3.7.1"
+    }
+}

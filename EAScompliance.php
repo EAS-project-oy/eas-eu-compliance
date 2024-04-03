@@ -417,6 +417,19 @@ add_action(
 
 
 /**
+ * Register checkout block
+ *
+ * @throws Exception May throw exception.
+ */
+add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
+function eascompliance_woocommerce_blocks_loaded() {
+    if (eascompliance_is_active() && get_option('easproj_company_vat_validate') === 'yes') {
+        require_once 'EAScompliance-block.php';
+    }
+}
+
+
+/**
  * Get tax rate id
  *
  * @throws Exception May throw exception.
@@ -682,6 +695,11 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 
     try {
         set_error_handler('eascompliance_error_handler');
+
+        if (\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default()) {
+            //TODO WIP for checkout blocks
+            return $available_gateways;
+        }
 
         $show_payment_methods = false;
 
@@ -1066,6 +1084,30 @@ function eascompliance_is_standard_mode()
 
 
 /**
+ *  plugin_dictionary array used in frontend block
+ */
+function eascompliance_frontend_dictionary()
+{
+    return array(
+        'error_required_billing_details' => EAS_TR('Please check for required billing details. All fields marked as required should be filled.'),
+        'error_required_shipping_details' => EAS_TR('Please check for required shipping details. All fields marked as required should be filled.'),
+        'calculating_taxes' => EAS_TR('Calculating taxes and duties ...'),
+        'taxes_added' => EAS_TR('Customs taxes and duties added...'),
+        'waiting_for_confirmation' => EAS_TR('Waiting for Customs Duties Calculation and confirmation details'),
+        'confirmation' => EAS_TR('confirmation'),
+        'sorry_didnt_work' => EAS_TR("Sorry, didn't work, please try again"),
+        'recalculate_taxes' => EAS_TR('Recalculate Taxes and Duties'),
+        'standard_checkout' => EAS_TR('Standard Checkout'),
+        'reload_link' => EAS_TR('reload'),
+        'security_check' => EAS_TR('Security check, please reload page. '),
+        'limit_ioss_sales_message' => get_option( 'easproj_limit_ioss_sales_message' ),
+        'vat_validation_successful' => EAS_TR('VAT validation successful'),
+        'vat_validation_failed' => EAS_TR('VAT validation failed'),
+        'company_vat' => EAS_TR('Company VAT number for EU customers only (optional)'),
+        'company_vat_validate' => EAS_TR('Validate'),
+    );
+}
+/**
  * Browser client scripts
  */
 function eascompliance_javascript()
@@ -1081,22 +1123,7 @@ function eascompliance_javascript()
     wp_localize_script(
         'EAScompliance',
         'plugin_dictionary',
-        array(
-            'error_required_billing_details' => EAS_TR('Please check for required billing details. All fields marked as required should be filled.'),
-            'error_required_shipping_details' => EAS_TR('Please check for required shipping details. All fields marked as required should be filled.'),
-            'calculating_taxes' => EAS_TR('Calculating taxes and duties ...'),
-            'taxes_added' => EAS_TR('Customs taxes and duties added...'),
-            'waiting_for_confirmation' => EAS_TR('Waiting for Customs Duties Calculation and confirmation details'),
-            'confirmation' => EAS_TR('confirmation'),
-            'sorry_didnt_work' => EAS_TR("Sorry, didn't work, please try again"),
-            'recalculate_taxes' => EAS_TR('Recalculate Taxes and Duties'),
-            'standard_checkout' => EAS_TR('Standard Checkout'),
-            'reload_link' => EAS_TR('reload'),
-            'security_check' => EAS_TR('Security check, please reload page. '),
-            'limit_ioss_sales_message' => get_option( 'easproj_limit_ioss_sales_message' ),
-            'vat_validation_successful' => EAS_TR('VAT validation successful'),
-            'vat_validation_failed' => EAS_TR('VAT validation failed'),
-        )
+        eascompliance_frontend_dictionary()
     );
     wp_localize_script(
         'EAScompliance',
@@ -5125,7 +5152,8 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
-            eascompliance_log('place_order', '$calc_jreq_saved ' . print_r($calc_jreq_saved, true) . '  $calc_jreq_new  ' . print_r($calc_jreq_new, true));
+            eascompliance_log('place_order', '$calc_jreq_saved: ' . json_encode($calc_jreq_saved));
+            eascompliance_log('place_order', '$calc_jreq_new: ' . json_encode($calc_jreq_new));
             // reset EAScompliance if json's mismatch //.
             eascompliance_unset();
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
