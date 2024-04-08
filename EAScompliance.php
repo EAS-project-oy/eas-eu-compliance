@@ -1047,6 +1047,17 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         $txt .= "\n Callstack: " . $trace;
     }
 
+    // log plugin version once a day
+    $latest_version_log_day = get_option('easproj_plugin_version_log_day');
+    $day = date_create('today')->format('d');
+    if ($latest_version_log_day !== $day) {
+        update_option('easproj_plugin_version_log_day', $day);
+        if( !function_exists('get_plugin_data') ){
+            require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+        }
+        eascompliance_logger()->info('Plugin version is '. get_plugin_data(__FILE__)['Version']);
+    }
+
     // log $txt
     if ($level === 'info') {
         eascompliance_logger()->info($txt);
