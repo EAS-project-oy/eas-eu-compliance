@@ -5,10 +5,12 @@ const WooCommerceDependencyExtractionWebpackPlugin = require('@woocommerce/depen
 
 module.exports = {
 	...defaultConfig,
-	mode: 'development',
+	context: path.resolve(__dirname, 'assets/blocks'),
 	entry: {
-		'editor': path.resolve(process.cwd(), 'src', 'editor.js' ),
-		'frontend':	path.resolve(process.cwd(), 'src', 'frontend.js'),
+		'eascompliance-checkout-company-vat-editor':  './eascompliance-checkout-company-vat/editor.js',
+		'eascompliance-checkout-company-vat-frontend':  './eascompliance-checkout-company-vat/frontend.js',
+		'eascompliance-checkout-calculate-taxes-editor':  './eascompliance-checkout-calculate-taxes/editor.js',
+		'eascompliance-checkout-calculate-taxes-frontend':  './eascompliance-checkout-calculate-taxes/frontend.js',
 	},
 	optimization: {
 		minimize: false,

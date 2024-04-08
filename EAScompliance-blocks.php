@@ -19,41 +19,31 @@ use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
 class EascomplianceCheckoutIntegration implements IntegrationInterface {
 
     public function get_name() {
-        return 'company-vat';
+        return 'eascompliance-checkout-integration';
     }
 
     public function initialize() {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        // register frontend scripts, translation, ajax data
-        $script_asset = require 'build/frontend.asset.php';
-        wp_register_script(
-            'eascompliance-block-frontend',
-            plugins_url('/build/frontend.js', __FILE__),
-            $script_asset['dependencies']+['jquery'],
-            $script_asset['version'],
-            true
-        ) or throw new Exception('register frontend script failed');
-        wp_localize_script('eascompliance-block-frontend', 'plugin_dictionary', eascompliance_frontend_dictionary() );
-        wp_localize_script('eascompliance-block-frontend', 'plugin_ajax_object'
-            , array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'supported_countries' =>  eascompliance_supported_countries(),
-                'easproj_handle_norther_ireland_as_ioss' =>  get_option('easproj_handle_norther_ireland_as_ioss'),
-            )
+        // register frontend and editor scripts
+        $script_handles = array(
+            'eascompliance-checkout-company-vat-frontend',
+            'eascompliance-checkout-company-vat-editor',
+            'eascompliance-checkout-calculate-taxes-frontend',
+            'eascompliance-checkout-calculate-taxes-editor',
         );
 
-        // register editor script
-        $script_asset = require 'build/editor.asset.php';
-        wp_register_script(
-            'eascompliance-block-editor',
-            plugins_url('/build/editor.js', __FILE__),
-            $script_asset['dependencies'],
-            $script_asset['version'],
-            true
-        ) or throw new Exception('register editor script failed');
-        wp_localize_script('eascompliance-block-editor', 'plugin_dictionary', eascompliance_frontend_dictionary() );
+        foreach ($script_handles as $script_handle ) {
+            $script_asset = require "build/$script_handle.asset.php";
+            wp_register_script(
+                $script_handle,
+                plugins_url("/build/$script_handle.js", __FILE__),
+                $script_asset['dependencies'],
+                $script_asset['version'],
+                true
+            ) or throw new Exception("register script $script_handle failed");
+        }
 
 
     } catch (Exception $ex) {
@@ -67,17 +57,25 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface {
 
     public function get_script_handles() {
         // array of script handles to enqueue in the frontend context
-        return array( 'eascompliance-block-frontend' );
+        return array( 'eascompliance-checkout-company-vat-frontend', 'eascompliance-checkout-calculate-taxes-frontend' );
     }
 
     public function get_editor_script_handles() {
         // array of script handles to enqueue in the editor context.
-        return array( 'eascompliance-block-editor' );
+        return array( 'eascompliance-checkout-company-vat-editor', 'eascompliance-checkout-calculate-taxes-editor' );
     }
 
     public function get_script_data() {
-        // array of key, value pairs of data made available to the block on the client side.
-        return array('plugin_dictionary'=>eascompliance_frontend_dictionary());
+        // array of key, value pairs of data made available to block props
+        eascompliance_log('debug', 'script data called');
+        return array(
+            'plugin_dictionary'=>eascompliance_frontend_dictionary(),
+            'plugin_ajax_object'=>array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'supported_countries' =>  eascompliance_supported_countries(),
+                'easproj_handle_norther_ireland_as_ioss' =>  get_option('easproj_handle_norther_ireland_as_ioss'),
+            )
+        );
     }
 
     protected function get_file_version( $file )
@@ -112,6 +110,12 @@ function eascompliance_checkout_schema_callback() {
             'type'        => array( 'string', 'null' ),
             'readonly'    => true,
         ),
+        'nonce'  => array(
+            'description' =>  'nonce',
+            'type'        => array( 'string', 'null' ),
+            'readonly'    => true,
+        ),
+
     );
 }
 
@@ -119,6 +123,7 @@ function eascompliance_checkout_schema_callback() {
 function eascompliance_checkout_data_callback() {
     return array(
         'company_vat' => eascompliance_session_get('session_company_vat'),
+        'nonce' => wp_create_nonce('eascompliance_nonce_calc'),
     );
 }
 

@@ -424,7 +424,7 @@ add_action(
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
     if (eascompliance_is_active() && get_option('easproj_company_vat_validate') === 'yes') {
-        require_once 'EAScompliance-block.php';
+        //require_once 'EAScompliance-blocks.php';
     }
 }
 
@@ -1099,6 +1099,11 @@ function eascompliance_is_standard_mode()
  */
 function eascompliance_frontend_dictionary()
 {
+    $button_calc_name = EAS_TR('Calculate Taxes and Duties');
+    if (!empty(eascompliance_woocommerce_settings_get_option_sql('eas_button_text'))) {
+        $button_name = eascompliance_woocommerce_settings_get_option_sql('eas_button_text');
+    }
+
     return array(
         'error_required_billing_details' => EAS_TR('Please check for required billing details. All fields marked as required should be filled.'),
         'error_required_shipping_details' => EAS_TR('Please check for required shipping details. All fields marked as required should be filled.'),
@@ -1116,6 +1121,8 @@ function eascompliance_frontend_dictionary()
         'vat_validation_failed' => EAS_TR('VAT validation failed'),
         'company_vat' => EAS_TR('Company VAT number for EU customers only (optional)'),
         'company_vat_validate' => EAS_TR('Validate'),
+        'button_calc_name' => $button_calc_name,
+        'calculate_status_initial' => EAS_TR('Please calculate taxes before placing order'),
     );
 }
 /**
