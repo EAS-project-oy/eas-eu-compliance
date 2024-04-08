@@ -434,14 +434,14 @@ function eascompliance_woocommerce_blocks_loaded() {
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_tax_rate_id($tax_rate_country = '')
+function eascompliance_tax_rate_id($tax_rate_country = '', $vat_rate = 0)
 {
     global $wpdb;
     $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_name = %s", EASCOMPLIANCE_TAX_RATE_NAME), ARRAY_A);
 
-    // substitute tax_rate_id with country tax_rate_id when it is present
+    // substitute tax_rate_id with country tax_rate_id when it's tax_rate matches vat_rate from EAS payload
     if (!empty($tax_rate_country)) {
-        $tax_rates_countries = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s", $tax_rate_country), ARRAY_A);
+        $tax_rates_countries = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s AND tax_rate = %d", $tax_rate_country, $vat_rate), ARRAY_A);
         if (!empty($tax_rates_countries)) {
             $tax_rates = $tax_rates_countries;
         }
@@ -3105,6 +3105,7 @@ function eascompliance_redirect_confirm()
 			$cart_item['EAScompliance item price'] = $cart_item_price;
 			$cart_item['EAScompliance item price log'] = eascompliance_format('item price set to $p from quantity $q multiplied by unit_cost_excl_vat $c;', ['p'=>$cart_item['EAScompliance item price'], 'q'=>$item_payload['quantity'], 'c'=>$item_payload['unit_cost_excl_vat']]);
             $cart_item['EAScompliance item tax'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_delivery_charge_vat'];
+            $cart_item['EAScompliance item vat_rate'] = $item_payload['vat_rate'];
 			$cart_item['EAScompliance item discount'] = 0;
 
             if ($discount > 0 && $total_price > 0) {
@@ -3990,7 +3991,6 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
 		}
 
         $shipping_country = $order->get_shipping_country();
-        $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country);
 
         // no taxes for deducted VAT outside EU
         $deduct_vat_outside_eu = (float)0;
@@ -4000,6 +4000,9 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
             $cart_items = array_values(WC()->cart->cart_contents);
             foreach ($order->get_items() as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
+
+                $vat_rate = $cart_item['EAScompliance item vat_rate'];
+                $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country, $vat_rate);
 
                 $item_tax = 0;
                 $order_item->set_taxes(
@@ -4041,6 +4044,9 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
             foreach ($order_items as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
                 $item_payload = $cart_item['EAScompliance item payload'];
+
+                $vat_rate = $cart_item['EAScompliance item vat_rate'];
+                $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country, $vat_rate);
 
                 if (array_key_exists('EAScompliance DELIVERY CHARGE VAT', $cart_item)) {
                     $delivery_charge_vat = $cart_item['EAScompliance DELIVERY CHARGE VAT'];
@@ -4103,7 +4109,6 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
         set_error_handler('eascompliance_error_handler');
 
         $shipping_country = WC()->cart->get_customer()->get_shipping_country();
-		$tax_rate_id0 = eascompliance_tax_rate_id($shipping_country);
 
         //Skip adding EAS tax when it should not present
 		if (!eascompliance_is_set()) {
@@ -4117,6 +4122,9 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
 
 		foreach ($cart_items as $k => $cart_item) {
 			$total_tax += $cart_item['EAScompliance item tax'];
+
+            $vat_rate = $cart_item['EAScompliance item vat_rate'];
+            $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country, $vat_rate);
 		}
         return array( $tax_rate_id0 => $total_tax );
 
