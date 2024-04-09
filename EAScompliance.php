@@ -3955,6 +3955,7 @@ function eascompliance_logorderdata_ajax()
                 'refunds' => $refund_tokens,
                 '_easproj_order_json' => $order->get_meta('_easproj_order_json'),
                 '_easproj_order_number_notified' => $order->get_meta('_easproj_order_number_notified'),
+                '_easproj_payment_processing' => $order->get_meta('_easproj_payment_processing'),
                 '_easproj_payment_processed' => $order->get_meta('_easproj_payment_processed'),
                 '_easproj_api_save_notified' => $order->get_meta('_easproj_api_save_notified'),
                 '_easproj_order_sent_to_eas' => $order->get_meta('_easproj_order_sent_to_eas'),
@@ -5340,11 +5341,7 @@ function eascompliance_order_status_paid($status_to) {
  */
 function eascompliance_woocommerce_order_status_changed($order_id, $status_from, $status_to, $order)
 {
-
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
-    if ($status_to === 'completed') {
-        eascompliance_log('WP-82', 'Order $order_id status is changed from $from to $to', array('$order_id' => $order->get_order_number(), '$from' => $status_from, '$to' => $status_to));
-    }
 
     try {
         set_error_handler('eascompliance_error_handler');
@@ -5354,6 +5351,13 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
             array('order' => $order->get_order_number(),
                 'from' => $status_from,
                 'to' => $status_to)));
+
+        if ( 'yes' === $order->get_meta('_easproj_payment_processing') ) {
+            eascompliance_log('payment', 'verification cancelled due to payment processing');
+            return;
+        }
+        $order->add_meta_data('_easproj_payment_processing', 'yes', true);
+        $order->save_meta_data();
 
         // ignore orders created with createpostsaleorder
         if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') === '1') {
@@ -5428,6 +5432,8 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
         eascompliance_log('error', $ex);
         $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
     } finally {
+        $order->add_meta_data('_easproj_payment_processing', 'no', true);
+        $order->save_meta_data();
         restore_error_handler();
     }
 
