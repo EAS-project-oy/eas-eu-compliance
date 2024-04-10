@@ -5726,10 +5726,26 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
             $job_id = json_decode($request['http_response']->get_data(), true)['job_id'];
 
             // schedule WP-Cron task to download order information later
-			$res = wp_schedule_single_event( time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, 1), true);
-            if (is_wp_error($res)) {
-				throw new Exception($res->get_error_message());
-			}
+            // log variables that may prevent scheduler from working, https://developer.wordpress.org/apis/wp-config-php/#alternative-cron
+            eascompliance_log('payment', 'scheduling eascompliance_get_post_sale_without_lc_job_status() for job_id $j. DISABLE_WP_CRON is $s, ALTERNATE_WP_CRON is $a, WP_CRON_LOCK_TIMEOUT is $t, as_schedule_single_action is $as',
+                [
+                        'j'=>$job_id,
+                        's'=>defined('DISABLE_WP_CRON') ? DISABLE_WP_CRON :'not defined',
+                        'a'=>defined('ALTERNATE_WP_CRON') ? ALTERNATE_WP_CRON :'not defined',
+                        't'=>defined('WP_CRON_LOCK_TIMEOUT') ? WP_CRON_LOCK_TIMEOUT :'not defined',
+                        'as'=>function_exists('as_schedule_single_action') ? 'present' :'not present',
+                ]);
+            if (function_exists('as_schedule_single_action')) {
+                $res = as_schedule_single_action(time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, 1));
+                if ($res === 0) {
+                    throw new Exception('scheduling with as_schedule_single_action() failed, check error_log');
+                }
+            } else {
+                $res = wp_schedule_single_event(time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, 1), true);
+                if (is_wp_error($res)) {
+                    throw new Exception($res->get_error_message());
+                }
+            }
 
 			$order->add_meta_data('_easproj_create_post_sale_without_lc_orders_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
 			$order->add_meta_data('_easproj_order_created_with_create_post_sale_without_lc_orders', '1', true);
