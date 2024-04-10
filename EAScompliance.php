@@ -5905,9 +5905,16 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
         }
         elseif ( $attempt_no < 5 ) {
             // retry schedule
-            $res = wp_schedule_single_event( time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, $attempt_no+1), true);
-            if (is_wp_error($res)) {
-                throw new Exception($res->get_error_message());
+            if (function_exists('as_schedule_single_action')) {
+                $res = as_schedule_single_action(time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, $attempt_no+1));
+                if ($res === 0) {
+                    throw new Exception('scheduling with as_schedule_single_action() failed, check error_log');
+                }
+            } else {
+                $res = wp_schedule_single_event(time() + 5, 'eascompliance_get_post_sale_without_lc_job_status', array($order_id, $job_id, $attempt_no+1), true);
+                if (is_wp_error($res)) {
+                    throw new Exception($res->get_error_message());
+                }
             }
         }
         else {
