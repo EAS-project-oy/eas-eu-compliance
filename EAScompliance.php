@@ -1893,10 +1893,23 @@ function eascompliance_make_eas_api_request_json()
 
 		// line_tax is positive when other tax rates for supported countries present
         $cost_provided_by_em = round((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
+
+        $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
+        // append suffix if items with same id_provided_by_em already present in order_breakdown_items
+        $suffix = 1;
+        foreach($order_breakdown_items as $item) {
+            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+                $suffix += 1;
+            }
+        }
+        if ($suffix > 1) {
+            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+        }
+
         $order_breakdown_items[] = array(
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
-            'id_provided_by_em' => '' . $product->get_sku() === '' ? $k : $product->get_sku(),
+            'id_provided_by_em' => $id_provided_by_em,
             'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
@@ -2232,10 +2245,24 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 			$type_of_goods = 'GIFTCARD';
 		}
 
+
+        $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
+        // append suffix if items with same id_provided_by_em already present in order_breakdown_items
+        $suffix = 1;
+        foreach($items as $item) {
+            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+                $suffix += 1;
+            }
+        }
+        if ($suffix > 1) {
+            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+        }
+
+
         $items[] = array(
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
-            'id_provided_by_em' => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
+            'id_provided_by_em' => $id_provided_by_em,
             'quantity' => $order_item['quantity'],
             'cost_provided_by_em' => round((float)$order_item['line_total'] / $order_item['quantity'], 2),
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
@@ -2461,10 +2488,23 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             $type_of_goods = 'GIFTCARD';
         }
 
+        $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
+        // append suffix if items with same id_provided_by_em already present in order_breakdown_items
+        $suffix = 1;
+        foreach($items as $item) {
+            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+                $suffix += 1;
+            }
+        }
+        if ($suffix > 1) {
+            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+        }
+
+
         $item = array(
             'short_description' => $product->get_name(),
             'long_description' => $product->get_name(),
-            'id_provided_by_em' => '' . ($product->get_sku() === '' ? $k : $product->get_sku()),
+            'id_provided_by_em' => $id_provided_by_em,
             'quantity' => $order_item['quantity'],
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
 			'type_of_goods' => $type_of_goods,
