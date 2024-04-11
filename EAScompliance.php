@@ -1898,7 +1898,7 @@ function eascompliance_make_eas_api_request_json()
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
         $suffix = 1;
         foreach($order_breakdown_items as $item) {
-            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+            if ( $item['id_provided_by_em'] == $id_provided_by_em . ($suffix == 1 ? '' : "#{$suffix}") ) {
                 $suffix += 1;
             }
         }
@@ -2250,7 +2250,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
         $suffix = 1;
         foreach($items as $item) {
-            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+            if ( $item['id_provided_by_em'] == $id_provided_by_em . ($suffix == 1 ? '' : "#{$suffix}") ) {
                 $suffix += 1;
             }
         }
@@ -2492,7 +2492,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
         $suffix = 1;
         foreach($items as $item) {
-            if ( $item['id_provided_by_em'] . ($suffix == 1 ? '' : "#{$suffix}") == $id_provided_by_em ) {
+            if ( $item['id_provided_by_em'] == $id_provided_by_em . ($suffix == 1 ? '' : "#{$suffix}") ) {
                 $suffix += 1;
             }
         }
