@@ -1892,7 +1892,7 @@ function eascompliance_make_eas_api_request_json()
 		}
 
 		// line_tax is positive when other tax rates for supported countries present
-        $cost_provided_by_em = round((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
+        $cost_provided_by_em = number_format((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2);
 
         $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
@@ -2264,7 +2264,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
             'long_description' => $product->get_name(),
             'id_provided_by_em' => $id_provided_by_em,
             'quantity' => $order_item['quantity'],
-            'cost_provided_by_em' => round((float)$order_item['line_total'] / $order_item['quantity'], 2),
+            'cost_provided_by_em' => number_format((float)$order_item['line_total'] / $order_item['quantity'], 2),
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
             'hs6p_received' => eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'),
 
