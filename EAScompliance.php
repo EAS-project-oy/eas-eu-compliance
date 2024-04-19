@@ -1903,7 +1903,7 @@ function eascompliance_make_eas_api_request_json()
             }
         }
         if ($suffix > 1) {
-            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+            $id_provided_by_em = $id_provided_by_em . "#{$suffix}";
         }
 
         $order_breakdown_items[] = array(
@@ -2255,7 +2255,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
             }
         }
         if ($suffix > 1) {
-            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+            $id_provided_by_em = $id_provided_by_em . "#{$suffix}";
         }
 
         // avoid -0
@@ -2499,7 +2499,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             }
         }
         if ($suffix > 1) {
-            $id_provided_by_em = $id_provided_by_em + "#{$suffix}";
+            $id_provided_by_em = $id_provided_by_em . "#{$suffix}";
         }
 
 
