@@ -1,23 +1,43 @@
-import metadata from './block.json'
+window.metadata = {
+    "name": "eascompliance/eascompliance-checkout-calculate-taxes",
+    "parent": ["woocommerce/checkout-order-summary-block"],
+    "attributes": {
+        "lock": {
+            "type": "object",
+            "default": {
+                "remove": false,
+                "move": false,
+            }
+        }
+    },
+}
 
-import { registerBlockType } from '@wordpress/blocks'
-import { Button } from '@woocommerce/blocks-checkout'
+window.Editor = (props) => {
+    const E = window.wp.element.createElement
+    const { Fragment } = wp.element
+    const { Button } = wc.blocksCheckout
+    const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 
-const { getSetting } = wc.wcSettings
-const { plugin_dictionary } = getSetting('eascompliance-checkout-integration_data')
-
-
-
-const Edit = (props) => {
-	return 	<Button
-		id="eascompliance_button_calculate_taxes"
-		text={ plugin_dictionary.button_calc_name }
-	/>
+    return E(Fragment, {},
+        E(
+            Button, {
+                'id': 'eascompliance_button_calculate_taxes',
+                'text': plugin_dictionary.button_calc_name,
+                'onClick': (event) => {console.log ('Dummy Calculate click')},
+            }
+        )
+    )
 }
 
 
-registerBlockType(metadata, {
-	icon: 'book-alt',
-	edit: Edit,
-	save: ()=> null
-})
+wp.blocks.registerBlockType(metadata, {
+        icon: 'book-alt',
+        title: 'EAS Company Calculate Taxes Editor',
+        edit: Editor,
+        save: () => null
+    }
+)
+
+// avoid polluting window object
+delete window.metadata
+delete window.Editor

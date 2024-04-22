@@ -15,43 +15,65 @@ use Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface;
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
 
+class EascomplianceCheckoutIntegration implements IntegrationInterface
+{
 
-class EascomplianceCheckoutIntegration implements IntegrationInterface {
-
-    public function get_name() {
+    public function get_name()
+    {
         return 'eascompliance-checkout-integration';
     }
 
-    public function initialize() {
-    try {
-        set_error_handler('eascompliance_error_handler');
+    public function initialize()
+    {
+        try {
+            set_error_handler('eascompliance_error_handler');
 
-        // register frontend and editor scripts
-        $script_handles = array(
-            'eascompliance-checkout-company-vat-frontend',
-            'eascompliance-checkout-company-vat-editor',
-            'eascompliance-checkout-calculate-taxes-frontend',
-            'eascompliance-checkout-calculate-taxes-editor',
-        );
 
-        foreach ($script_handles as $script_handle ) {
-            $script_asset = require "build/$script_handle.asset.php";
+            $block = 'eascompliance-checkout-calculate-taxes';
             wp_register_script(
-                $script_handle,
-                plugins_url("/build/$script_handle.js", __FILE__),
-                $script_asset['dependencies'],
-                $script_asset['version'],
+                $block . '-editor',
+                plugins_url("/assets/blocks/$block/editor.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor'),
+                filemtime(__DIR__ . "/assets/blocks/$block/editor.js"),
                 true
-            ) or throw new Exception("register script $script_handle failed");
+            )
+            or throw new Exception("register script $block-editor failed");
+
+            wp_register_script(
+                $block . '-frontend',
+                plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor'),
+                filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
+                true
+            )
+            or throw new Exception("register script $block-frontend failed");
+
+
+            $block = 'eascompliance-checkout-company-vat';
+            wp_register_script(
+                $block . '-editor',
+                plugins_url("/assets/blocks/$block/editor.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor'),
+                filemtime(__DIR__ . "/assets/blocks/$block/editor.js"),
+                true
+            )
+            or throw new Exception("register script $block-editor failed");
+
+            wp_register_script(
+                $block . '-frontend',
+                plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor'),
+                filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
+                true
+            )
+            or throw new Exception("register script $block-frontend failed");
+
+        } catch (Exception $ex) {
+            eascompliance_log('error', $ex);
+            throw $ex;
+        } finally {
+            restore_error_handler();
         }
-
-
-    } catch (Exception $ex) {
-        eascompliance_log('error', $ex);
-        throw $ex;
-    } finally {
-        restore_error_handler();
-    }
     }
 
 
@@ -61,13 +83,12 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface {
     }
 
     public function get_editor_script_handles() {
-        // array of script handles to enqueue in the editor context.
-        return array( 'eascompliance-checkout-company-vat-editor', 'eascompliance-checkout-calculate-taxes-editor' );
+        // array of script handles to enqueue in the editor context
+        return array( 'eascompliance-checkout-company-vat-editor',  'eascompliance-checkout-calculate-taxes-editor' );
     }
 
     public function get_script_data() {
         // array of key, value pairs of data made available to block props
-        eascompliance_log('debug', 'script data called');
         return array(
             'plugin_dictionary'=>eascompliance_frontend_dictionary(),
             'plugin_ajax_object'=>array(

@@ -1,17 +1,37 @@
-import metadata from './block.json'
+window.metadata = {
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "eascompliance/eascompliance-checkout-company-vat",
+	"version": "1.0.0",
+	"title": "EAS Company VAT",
+	"category": "woocommerce",
+	"parent": [ "woocommerce/checkout-shipping-address-block" ],
+	"attributes": {
+		"lock": {
+			"type": "object",
+			"default": {
+				"remove": true,
+				"move": true
+			}
+		}
+	},
+	"textdomain": "eas-eu-compliance"
+}
 
-import { ValidatedTextInput, registerCheckoutBlock, Button } from '@woocommerce/blocks-checkout'
-import { useEffect, useState, useCallback } from '@wordpress/element'
-import $ from 'jquery'
+window.Frontend = (props) => {
+	const E = wp.element.createElement
+	const { useEffect, useState, useCallback } = wp.element
+	const { ValidatedTextInput } = wc.blocksCheckout
+	const { Button } = wc.blocksCheckout
 
-const { getSetting } = wc.wcSettings
-const { plugin_dictionary, plugin_ajax_object } = getSetting('eascompliance-checkout-integration_data')
+	const { useBlockProps } = wp.blockEditor.useBlockProps
+	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
+	const { setExtensionData } = props.checkoutExtensionData
 
-const Frontend = (props) => {
-	const [ companyVat, setCompanyVat ] = useState('')
 	const [ loading, setLoading ] = useState(false)
+	const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
+	const [ companyVat, setCompanyVat ] = useState('')
 	const [ companyVatValidated, setCompanyVatValidated ] = useState(false)
-    const { setExtensionData } = props.checkoutExtensionData
 
 
     const onInputChange = ( value ) => {
@@ -35,14 +55,19 @@ const Frontend = (props) => {
 				url: plugin_ajax_object.ajax_url,
 				data: {
 					'action': 'eascompliance_company_vat_validate_ajax',
-					'shipping_company_vat':  companyVat,
+					'shipping_company_vat': companyVat,
 					'shipping_country': props.cart.shippingAddress.country
 				},
 				dataType: 'json'
 			})
 
 			setCompanyVatValidated(j.company_vat_validated)
-
+			if (j.company_vat_validated) {
+				setMessage(plugin_dictionary.vat_validation_successful)
+			}
+			else {
+				setMessage(plugin_dictionary.vat_validation_failed)
+			}
 
 		} catch (err) {
 			throw err
@@ -52,28 +77,42 @@ const Frontend = (props) => {
 
 	}
 
-    return <div>
-                <ValidatedTextInput
-                        id="company_vat"
-                        type="text"
-                        required={false}
-                        className={'company-vat'}
-                        label={ plugin_dictionary.company_vat }
-                        value={ companyVat }
-                        onChange={ onInputChange }
-                />
-				<Button
-					id="company_vat_validate"
-					onClick={onCompanyValidateClick}
-					showSpinner={loading}
-					text={ plugin_dictionary.company_vat_validate }
-				/>
-				<div style={{display: 'inline', marginLeft: '20px'}}>{ companyVatValidated ? 'Validated' : 'Not Validated'}</div>
-		</div>
+	return E(wp.element.Fragment, {
+			'style': {display: ''}
+		},
+		E( ValidatedTextInput, {
+				'id': 'company_vat',
+				'type': 'text',
+				'required': false,
+				'label': plugin_dictionary.company_vat,
+				'value': companyVat,
+				'onChange': onInputChange,
+				'className': 'company-vat',
+			},
+		),
+		E( Button, {
+				'id': "company_vat_validate",
+				'onClick': onCompanyValidateClick,
+				'showSpinner': loading,
+				'text': plugin_dictionary.company_vat_validate
+			},
+		),
+		E( 'div', {
+				'style': {display: 'inline', marginLeft: '20px'}
+			},
+			message
+		),
+	)
+
 }
 
 
-registerCheckoutBlock(  {
-	metadata,
+wc.blocksCheckout.registerCheckoutBlock({
+	metadata: metadata,
 	component: Frontend
 })
+
+// avoid polluting window object
+delete window.metadata
+delete window.Frontend
+

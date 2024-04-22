@@ -1,18 +1,39 @@
-import metadata from './block.json'
 
-import { ValidatedTextInput, registerCheckoutBlock, Button } from '@woocommerce/blocks-checkout'
-import { useEffect, useState, useCallback } from '@wordpress/element'
-import $ from 'jquery'
+window.metadata = {
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "eascompliance/eascompliance-checkout-calculate-taxes-block",
+	"version": "1.0.0",
+	"title": "EAS Company Calculate Taxes",
+	"category": "woocommerce",
+	"parent": [ "woocommerce/checkout-order-summary-block" ],
+	"attributes": {
+		"lock": {
+			"type": "object",
+			"default": {
+				"remove": true,
+				"move": true
+			}
+		}
+	},
+	"textdomain": "eas-eu-compliance"
+}
 
-const { getSetting } = wc.wcSettings
-const { plugin_dictionary, plugin_ajax_object } = getSetting('eascompliance-checkout-integration_data')
+window.Frontend = (props) => {
+	const E = wp.element.createElement
+	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
+	const { useEffect, useState, useCallback } = wp.element
 
+	const { useBlockProps } = wp.blockEditor.useBlockProps
 
-const Frontend = (props) => {
 	const [ loading, setLoading ] = useState(false)
-    const { setExtensionData } = props.checkoutExtensionData
+	const [ taxesCalculated, setTaxesCalculated ] = useState(false)
+	const { setExtensionData } = props.checkoutExtensionData
 	const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
 	const [ buttonText, setButtonText ] = useState(plugin_dictionary.button_calc_name)
+
+
+	$('.wc-block-components-checkout-place-order-button').toggle(taxesCalculated)
 
 
 	const onCalculateClick = async () => {
@@ -22,6 +43,7 @@ const Frontend = (props) => {
 
 		try {
 			setLoading(true)
+			setMessage(plugin_dictionary.calculating_taxes)
 
 			let form_data = {
 				billing_first_name: props.cart.billingAddress.first_name,
@@ -65,7 +87,7 @@ const Frontend = (props) => {
 				data: {
 					'action': 'eascompliance_ajaxhandler',
 					'request': JSON.stringify(request),
-					// 'eascompliance_nonce_calc': plugin_ajax_object.nonce
+					'eascompliance_nonce_calc': plugin_ajax_object.nonce
 				}
 				,
 				dataType: 'json'
@@ -73,29 +95,37 @@ const Frontend = (props) => {
 
 			if (j.status !== 'ok') {
 				setMessage(j['message'])
+			} else {
+				setMessage(plugin_dictionary.taxes_added)
+				setTaxesCalculated(true)
 			}
-
 
 		} catch (err) {
 			throw err
 		} finally {
 			setLoading(false)
 		}
-
 	}
 
-    return 	<>
-		<Button
-				id="eascompliance_button_calculate_taxes"
-				onClick={onCalculateClick}
-				text={ buttonText }
-		/>
-		<div>{ message }</div>
-	</>
+	return E(wp.element.Fragment, {},
+		E( wc.blocksCheckout.Button, {
+				'id': "eascompliance_button_calculate_taxes",
+				'onClick': onCalculateClick,
+				'text': buttonText,
+				'style': {'display': taxesCalculated ? 'none' : 'block'}
+			},
+		),
+		E('div', {}, message),
+	)
+
 }
 
-
-registerCheckoutBlock(  {
-	metadata,
+wc.blocksCheckout.registerCheckoutBlock({
+	metadata: metadata,
 	component: Frontend
 })
+
+// avoid polluting window object
+delete window.metadata
+delete window.Frontend
+

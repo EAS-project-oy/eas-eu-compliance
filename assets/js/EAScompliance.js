@@ -2,6 +2,33 @@
 jQuery(document).ready(function ($) {
     window.$ = $
 
+    // generator to traverse nested objects and yield its paths
+    function* nestedPaths (obj, path=[]) {
+        for ( let [k, v] of Object.entries(obj) ) {
+            if (v === obj) { continue } // skip keys referencing object
+
+            yield [...path, k]
+
+            // limit max depth
+            if ( Object(v) === v && path.length < 7 ) {
+                yield* nestedPaths (v, [...path, k])
+            }
+        }
+    }
+
+    // search key in nested object keys
+    // Sample: eascompliance.find_key_paths({window}, 'Button$')
+    const find_key_paths = (obj, key) => {
+        res = []
+        for (let path of nestedPaths(obj) ) {
+            if ( path.join('.').match(key) !== null ) res.push( path.join('.') )
+        }
+        return res
+    }
+
+    window.eascompliance = { find_key_paths }
+
+
     // some themes clone checkout forms, use offsetWidth to detect visible form
     let checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0)
 

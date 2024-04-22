@@ -1,35 +1,52 @@
-import metadata from './block.json'
-
-import { registerBlockType } from '@wordpress/blocks'
-import { ValidatedTextInput } from '@woocommerce/blocks-checkout'
-import { InspectorControls } from '@wordpress/block-editor'
-import { PanelBody } from '@wordpress/components'
-
-const { getSetting } = wc.wcSettings
-const { plugin_dictionary } = getSetting('eascompliance-checkout-integration_data')
-
-const Edit = (props) => {
-	return <div>
-			<InspectorControls>
-				<PanelBody title={ 'Block options' }>
-					Options for the block go here.
-				</PanelBody>
-			</InspectorControls>
-			<div>
-				<ValidatedTextInput
-					id="company_vat"
-					type="text"
-					required={false}
-					label={	 plugin_dictionary.company_vat }
-					value={ '1234567' }
-				/>
-			</div>
-		</div>
+window.metadata = {
+    "name": "eascompliance/eascompliance-checkout-company-vat",
+    "parent": [ "woocommerce/checkout-shipping-address-block" ],
+    "attributes": {
+        "lock": {
+            "type": "object",
+            "default": {
+                "remove": true,
+                "move": true
+            }
+        }
+    },
 }
 
+window.Editor = (props) => {
+    const E = window.wp.element.createElement
+    const { InspectorControls }= wp.blockEditor
+    const { Fragment } = wp.element
+    const { PanelBody } = wp.components
+    const { ValidatedTextInput } = wc.blocksCheckout
+    const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 
-registerBlockType(metadata, {
-	icon: 'book-alt',
-	edit: Edit,
-	save: ()=> null
-})
+    return E(Fragment, {},
+            E(
+                InspectorControls, {},
+                E(PanelBody, {'title': 'Block options', 'text': 'Options for the block go here'})
+            ),
+            E(
+                'div', {},
+                E(ValidatedTextInput, {
+                    'id': 'company_vat',
+                    'type': 'text',
+                    'text': 'Options for the block go here',
+                    'required': false,
+                    'label': plugin_dictionary.company_vat,
+                    'value': '12345678',
+                })
+            ),
+    )
+}
+
+wp.blocks.registerBlockType(metadata, {
+        icon: 'book-alt',
+        title: 'EAS Company Company VAT',
+        edit: Editor,
+        save: () => null
+    }
+)
+
+// avoid polluting window object
+delete window.metadata
+delete window.Editor
