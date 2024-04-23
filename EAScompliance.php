@@ -4168,15 +4168,17 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
 		}
 
         $cart_items = array_values(WC()->cart->cart_contents);
-		$total_tax = 0;
 
+        // take taxes and tax rate ids from payload
+        $taxes2 = array();
 		foreach ($cart_items as $k => $cart_item) {
-			$total_tax += $cart_item['EAScompliance item tax'];
-
             $vat_rate = $cart_item['EAScompliance item vat_rate'];
             $tax_rate_id0 = eascompliance_tax_rate_id($shipping_country, $vat_rate);
+            $taxes2[$tax_rate_id0] += $cart_item['EAScompliance item tax'];
 		}
-        return array( $tax_rate_id0 => $total_tax );
+
+        eascompliance_log('calculate', 'cart taxes are $t', ['t'=>$taxes2]);
+        return $taxes2;
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -4559,7 +4561,7 @@ function eascompliance_cart_tax_caption_html() {
 	$cart_taxes = $cart->get_cart_contents_taxes();
 	foreach($cart_taxes as $tax_rate_id=>$tax_amount) {
 		if ($tax_amount != 0) {
-			$tax_name = ($tax_name == '' ? '' : ',') . WC_Tax::get_rate_label($tax_rate_id);
+			$tax_name .= ($tax_name == '' ? '' : ', ') . WC_Tax::get_rate_label($tax_rate_id);
 		}
 	}
 
