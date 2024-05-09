@@ -1388,6 +1388,16 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             eascompliance_unset();
         }
 
+        // display vat validation notice on 3rd failed attempt when configured
+        if ( get_option('easproj_skip_vat_validation_with_warning') == 'yes' ) {
+            $vat_check_attempt = eascompliance_session_get('company_vat_check_attempt') ?? 0;
+            if ($vat_check_attempt == 3) {
+                $vat_validate_message = EAS_TR('System was not able to check entered VAT number. You can proceed with order. You will be contacted for VAT number check.');
+                wc_add_notice($vat_validate_message, 'success');
+                eascompliance_session_set('company_vat_check_attempt', 0);
+            }
+        }
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -2624,12 +2634,8 @@ function eascompliance_ajaxhandler()
 					}
 
 					if ($vat_check_attempt == 3) {
-						throw new Exception(EAS_TR('System was not able to check entered VAT number. You can proceed with order. You will be contacted for VAT number check.'));
-					}
-
-					if ($vat_check_attempt == 4) {
-						eascompliance_session_set('company_vat_check_attempt', 0);
-						throw new EAScomplianceBreakException();
+                        // notice is displayed and attempt reset in eascompliance_woocommerce_checkout_update_order_review()
+                        throw new EAScomplianceBreakException();
 					}
 				}
 				throw new Exception(EAS_TR('Provided VAT number invalid. Please check it and try again.'));
