@@ -222,6 +222,98 @@ function eascompliance_plugin_activation()
 
 
 /**
+ * Plugin status change notification
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_plugin_status_change_notification($status)
+{
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (!in_array($status, ['enabled', 'disabled', 'removed'])) {
+            throw new Exception('Invalid status $s'. ['s'=>$status]);
+        }
+
+        $url = 'https://woo-info.easproject.com/api/data/woo/plugin';
+
+        $store_data = array(
+            'ClientId' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_id'),
+            'Status' => $status,
+            'StoreName' => get_bloginfo('name'),
+            'Domain' => get_option('siteurl'),
+        );
+
+        $body = json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+
+        $options = array(
+            'method' => 'POST',
+            'headers' => array(
+                'Content-type' => 'application/json',
+                'X-Auth-Id' => 'EB27386D-7F26-4549-B57D-4EEFBAE6B1B5'
+            ),
+            'body' => $body,
+            'sslverify' => true,
+        );
+
+        $req = (new WP_Http)->request($url, $options);
+        if (is_wp_error($req)) {
+            eascompliance_log('error', 'Auth request failed: ' . $req->get_error_message());
+            throw new Exception(EAS_TR('Plugin activation request failed'));
+        }
+
+        $response_status = (string)$req['response']['code'];
+        if ('200' === $response_status) {
+            eascompliance_log('info', 'plugin status notification successful: $s', ['s'=>$status]);
+        } else {
+            eascompliance_log('error', 'plugin status notification failed: $r', array('$r' => $req));
+        }
+
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+register_activation_hook(__FILE__, 'eascompliance_plugin_activation_hook');
+function eascompliance_plugin_activation_hook() {
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        eascompliance_plugin_status_change_notification('enabled');
+
+        register_uninstall_hook(__FILE__, 'eascompliance_plugin_uninstall_hook');
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+function eascompliance_plugin_uninstall_hook() {
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        eascompliance_plugin_status_change_notification('removed');
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+/**
  * Plugin disable for incompatible WC_VERSION
  *
  * @throws Exception May throw exception.
@@ -7737,10 +7829,12 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
                     );
                     throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
                 }
+                eascompliance_log('info', 'Plugin activated');
             }
-        
-
-        eascompliance_log('info', 'Plugin activated');
+            else {
+                eascompliance_log('info', 'Plugin deactivated');
+                eascompliance_plugin_status_change_notification('disabled');
+            }
         } 
         else {
             WC_Admin_Settings::add_error(EAS_TR('Sorry, your WooCommerce version "'.WC_VERSION.'" is not supported by EAS EU compliance plugin. Plugin is deactivated.'));
