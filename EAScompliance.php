@@ -1235,7 +1235,7 @@ function eascompliance_woocommerce_billing_fields($address_fields, $country)
             ),
         );
 
-        if (get_option('easproj_company_vat_validate') === 'yes') {
+        if (get_option('easproj_company_vat_validate') === 'yes' && array_key_exists('billing_company', $address_fields)) {
 			$address_fields['billing_company_vat'] = array(
 				'label'        => EAS_TR('Company VAT number for EU customers only'),
 				'priority'     => 31,
@@ -1295,7 +1295,7 @@ function eascompliance_woocommerce_shipping_fields($address_fields, $country)
             ),
         );
 
-		if (get_option('easproj_company_vat_validate') === 'yes') {
+		if (get_option('easproj_company_vat_validate') === 'yes' && array_key_exists('shipping_company', $address_fields)) {
 			$address_fields['shipping_company_vat'] = array(
 				'label' => EAS_TR('Company VAT number for EU customers only'),
 				'priority' => 31,
