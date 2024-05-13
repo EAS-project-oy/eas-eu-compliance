@@ -255,6 +255,7 @@ function eascompliance_plugin_status_change_notification($status)
             ),
             'body' => $body,
             'sslverify' => true,
+            'timeout' => 5,
         );
 
         $req = (new WP_Http)->request($url, $options);
@@ -273,7 +274,6 @@ function eascompliance_plugin_status_change_notification($status)
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-        throw $ex;
     } finally {
         restore_error_handler();
     }
@@ -285,9 +285,9 @@ function eascompliance_plugin_activation_hook() {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        eascompliance_plugin_status_change_notification('enabled');
-
-        register_uninstall_hook(__FILE__, 'eascompliance_plugin_uninstall_hook');
+        if (get_option('easproj_active') === 'yes') {
+            eascompliance_plugin_status_change_notification('enabled');
+        }
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -297,12 +297,27 @@ function eascompliance_plugin_activation_hook() {
     }
 }
 
-
+register_uninstall_hook(__FILE__, 'eascompliance_plugin_uninstall_hook');
 function eascompliance_plugin_uninstall_hook() {
     try {
         set_error_handler('eascompliance_error_handler');
 
         eascompliance_plugin_status_change_notification('removed');
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+register_deactivation_hook(__FILE__, 'eascompliance_plugin_deactivation_hook');
+function eascompliance_plugin_deactivation_hook() {
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        eascompliance_plugin_status_change_notification('disabled');
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -7830,6 +7845,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
                     throw new Exception('Plugin deactivated. ' . $ex->getMessage(), 0, $ex);
                 }
                 eascompliance_log('info', 'Plugin activated');
+                eascompliance_plugin_status_change_notification('enabled');
             }
             else {
                 eascompliance_log('info', 'Plugin deactivated');
