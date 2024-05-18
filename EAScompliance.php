@@ -5319,8 +5319,33 @@ function eascompliance_woocommerce_checkout_create_order($order)
             eascompliance_log('place_order', '$calc_jreq_saved: ' . json_encode($calc_jreq_saved));
             eascompliance_log('place_order', '$calc_jreq_new: ' . json_encode($calc_jreq_new));
             // reset EAScompliance if json's mismatch //.
+
+            $unset_reason = EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES');
+
+            // specify reason on why re-calculation is needed
+            if ($calc_jreq_saved['order_breakdown'] == $calc_jreq_new['order_breakdown']) {
+                $unset_reason = EAS_TR('Customer information/delivery address changed. This might influence on the taxes in your order. Please press button “Recalculate taxes and duties”');
+            } else {
+                $unset_reason = EAS_TR('Cart contend changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+
+                if (count($calc_jreq_saved['order_breakdown']) == count($calc_jreq_new['order_breakdown']) ) {
+                    $total_cost_saved = 0;
+                    foreach($calc_jreq_saved['order_breakdown'] as $item_saved) {
+                        $total_cost_saved += $item_saved['cost_provided_by_em'];
+                    }
+
+                    $total_cost_new = 0;
+                    foreach($calc_jreq_new['order_breakdown'] as $item_new) {
+                        $total_cost_new += $item_new['cost_provided_by_em'];
+                    }
+                    if ( $total_cost_saved !== $total_cost_new) {
+                        $unset_reason = EAS_TR('Total order amount unexpectedly changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+                    }
+                }
+            }
+
             eascompliance_unset();
-            throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
+            throw new Exception($unset_reason);
         }
         // save payload in order metadata //.
         $payload = $cart_item0['EASPROJ API PAYLOAD'];
