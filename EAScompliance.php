@@ -416,6 +416,7 @@ function eascompliance_woocommerce_init()
 			add_filter('woocommerce_cart_remove_taxes_zero_rate_id','eascompliance_woocommerce_cart_remove_taxes_zero_rate_id');
 			add_filter('woocommerce_validate_postcode','eascompliance_woocommerce_validate_postcode', 10, 3);
 			add_filter('woocommerce_format_postcode','eascompliance_woocommerce_format_postcode', 10, 2);
+			add_filter('woocommerce_order_item_display_meta_key','eascompliance_woocommerce_order_item_display_meta_key', 10, 3);
 
             add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_action', 10, 4);
             add_action( 'add_meta_boxes', 'eascompliance_woocommerce_add_order_meta_boxes', 10, 2);
@@ -953,6 +954,30 @@ function eascompliance_woocommerce_format_postcode($postcode, $country)
         }
 
 		return $postcode;
+
+	} catch (Exception $ex) {
+		eascompliance_log('error', $ex);
+		throw $ex;
+	} finally {
+		restore_error_handler();
+	}
+}
+
+
+/**
+ * Translate order item displayed meta data keys
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_order_item_display_meta_key( $display_key, $meta, $order_item)
+{
+	eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+	try {
+		set_error_handler('eascompliance_error_handler');
+
+        return EAS_TR($display_key);
+
 
 	} catch (Exception $ex) {
 		eascompliance_log('error', $ex);
@@ -3780,6 +3805,15 @@ function eascompliance_order_createpostsaleorder($order)
             // paranoid check that payload_item matching order_item was found
             if (!$payload_item_found) {
                 throw new Exception('no $payload_item found for $order_item key ' . print_r($k, true) . ' $sku ' . $sku . ' $payload_items ' . print_r($payload_items, true));
+            }
+
+            // enable translation
+            if (false) {
+                EAS_TR('Customs duties');
+                EAS_TR('VAT Amount');
+                EAS_TR('VAT Rate');
+                EAS_TR('Other fees');
+                EAS_TR('VAT on Other fees');
             }
 
             // temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
