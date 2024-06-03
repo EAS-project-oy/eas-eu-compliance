@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: eascompliance\n"
-"POT-Creation-Date: 2023-07-13 15:53+0300\n"
+"POT-Creation-Date: 2024-06-03 11:17+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -15,18 +15,24 @@ msgstr ""
 "_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;"
 "esc_html_e;esc_html_x:1,2c;EAS_TR;Description\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.4.4\n"
 "X-Poedit-SearchPath-0: ./EAScompliance.php\n"
 
-#: EAScompliance.php:91
+#: EAScompliance.php:95
 msgid "Settings"
 msgstr "Nastavení"
 
-#: EAScompliance.php:200
+#: EAScompliance.php:204 EAScompliance.php:264
 msgid "Plugin activation request failed"
 msgstr "Požadavek na aktivaci pluginu se nezdařil"
 
-#: EAScompliance.php:231
+#: EAScompliance.php:425
+msgid ""
+"Sorry, we don't support sales over 150€. Please remove some items from the "
+"cart to place the order."
+msgstr ""
+
+#: EAScompliance.php:442
 msgid ""
 "Plugin '$plugin' deactivated. Sorry we don’t support your WooCommerce "
 "version $wc. Please upgrade WooCommerce to latest version."
@@ -34,21 +40,21 @@ msgstr ""
 "Plugin '$plugin' byl deaktivován. Omlouváme se, ale vaše verze WooCommerce "
 "$wc již není podporována. Upgradujte WooCommerce na nejnovější verzi."
 
-#: EAScompliance.php:331
-msgid "No tax rate found, please check plugin settings"
-msgstr "Nebyla nalezena žádná daňová sazba, zkontrolujte nastavení pluginu"
-
-#: EAScompliance.php:364 EAScompliance.php:517
-msgid "Taxes & Duties"
-msgstr "Daně a cla"
-
-#: EAScompliance.php:481
+#: EAScompliance.php:990
 msgid "Please calculate taxes and duties to proceed with order payment"
 msgstr ""
 "Please calculate taxes and duties to proceed with order paymentVypočítejte "
 "daně a cla, abyste mohli pokračovat v platbě objednávky"
 
-#: EAScompliance.php:701
+#: EAScompliance.php:1023
+msgid "Taxes & Duties"
+msgstr "Daně a cla"
+
+#: EAScompliance.php:1202 EAScompliance.php:1644 EAScompliance.php:7207
+msgid "Calculate Taxes and Duties"
+msgstr "Vypočítat daně a cla"
+
+#: EAScompliance.php:1208
 msgid ""
 "Please check for required billing details. All fields marked as required "
 "should be filled."
@@ -56,7 +62,7 @@ msgstr ""
 "Zkontrolujte prosím požadované fakturační údaje. Všechna pole označená jako "
 "povinná by měla být vyplněna."
 
-#: EAScompliance.php:702
+#: EAScompliance.php:1209
 msgid ""
 "Please check for required shipping details. All fields marked as required "
 "should be filled."
@@ -64,53 +70,88 @@ msgstr ""
 "Zkontrolujte prosím požadované dodací údaje. Všechna pole označená jako "
 "povinná by měla být vyplněna."
 
-#: EAScompliance.php:703
+#: EAScompliance.php:1210
 msgid "Calculating taxes and duties ..."
 msgstr "Výpočet daní a cel..."
 
-#: EAScompliance.php:704
+#: EAScompliance.php:1211
 msgid "Customs taxes and duties added..."
 msgstr "Přidány daně a cla..."
 
-#: EAScompliance.php:705
+#: EAScompliance.php:1212
 msgid "Waiting for Customs Duties Calculation and confirmation details"
 msgstr "Čekání na výpočet cel a podrobnosti o potvrzení"
 
-#: EAScompliance.php:706
+#: EAScompliance.php:1213
 msgid "confirmation"
 msgstr "potvrzení"
 
-#: EAScompliance.php:707
+#: EAScompliance.php:1214
 msgid "Sorry, didn't work, please try again"
 msgstr ""
 "Sorry, didn't work, please try againOmlouváme se, něco nefunguje, zkuste to "
 "prosím znovu"
 
-#: EAScompliance.php:708
+#: EAScompliance.php:1215
 msgid "Recalculate Taxes and Duties"
 msgstr "Přepočítat daně a cla"
 
-#: EAScompliance.php:709
+#: EAScompliance.php:1216
 msgid "Standard Checkout"
 msgstr "Standartní pokladna"
 
-#: EAScompliance.php:710
+#: EAScompliance.php:1217
 msgid "reload"
 msgstr "znovu načís"
 
-#: EAScompliance.php:711
+#: EAScompliance.php:1218
 msgid "Security check, please reload page. "
 msgstr "Bezpečnostní kontrola, znovu načtěte stránku, "
 
-#: EAScompliance.php:810 EAScompliance.php:865
+#: EAScompliance.php:1220
+msgid "VAT validation successful"
+msgstr ""
+
+#: EAScompliance.php:1221
+msgid "VAT validation failed"
+msgstr ""
+
+#: EAScompliance.php:1222
+msgid "Company VAT number for EU customers only (optional)"
+msgstr ""
+
+#: EAScompliance.php:1223
+msgid "Validate"
+msgstr ""
+
+#: EAScompliance.php:1225
+#, fuzzy
+#| msgid "Please calculate taxes and duties to proceed with order payment"
+msgid "Please calculate taxes before placing order"
+msgstr ""
+"Please calculate taxes and duties to proceed with order paymentVypočítejte "
+"daně a cla, abyste mohli pokračovat v platbě objednávky"
+
+#: EAScompliance.php:1294
+msgid ""
+"This attribute is required for EAScompliance plugin. Please don't delete"
+msgstr ""
+
+#: EAScompliance.php:1347 EAScompliance.php:1407
+msgid "Company VAT number for EU customers only"
+msgstr ""
+
+#: EAScompliance.php:1355 EAScompliance.php:1415
 msgid "Unable to set required fields"
 msgstr "Nelze nastavit povinná pole"
 
-#: EAScompliance.php:1080 EAScompliance.php:5936
-msgid "Calculate Taxes and Duties"
-msgstr "Vypočítat daně a cla"
+#: EAScompliance.php:1502
+msgid ""
+"System was not able to check entered VAT number. You can proceed with order. "
+"You will be contacted for VAT number check."
+msgstr ""
 
-#: EAScompliance.php:1201 EAScompliance.php:1213 EAScompliance.php:1216
+#: EAScompliance.php:1758 EAScompliance.php:1770 EAScompliance.php:1773
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
@@ -118,7 +159,7 @@ msgstr ""
 "Služba výpočtu daně EU je dočasně nedostupná. Zkuste prosím zadat objednávku "
 "později."
 
-#: EAScompliance.php:1208
+#: EAScompliance.php:1765
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
@@ -126,15 +167,7 @@ msgstr ""
 "Byly zadány neplatné přihlašovací údaje. Zkontrolujte ID klienta EAS a tajný "
 "klíč klienta EAS."
 
-#: EAScompliance.php:1384
-msgid "Multiple coupons not supported, please contact support"
-msgstr "Více kuponů není podporováno, kontaktujte prosím podporu"
-
-#: EAScompliance.php:1405
-msgid "Selected coupon type is not supported, please contact support"
-msgstr "Vybraný typ kupónu není podporován, kontaktujte prosím podporu"
-
-#: EAScompliance.php:1427
+#: EAScompliance.php:1933
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is disabled. Please contact support to fix the issue."
@@ -143,7 +176,7 @@ msgstr ""
 "doručovací adresy „$field_name“ je zakázáno. Chcete-li problém vyřešit, "
 "kontaktujte podporu."
 
-#: EAScompliance.php:1430
+#: EAScompliance.php:1936
 msgid ""
 "We can’t proceed landed cost calculation because required delivery address "
 "field '$field_name' is empty."
@@ -151,27 +184,42 @@ msgstr ""
 "Nemůžeme pokračovat ve výpočtu ceny za vykládku, protože pole požadované "
 "dodací adresy '$field_name' je prázdné."
 
-#: EAScompliance.php:1734 EAScompliance.php:1950
+#: EAScompliance.php:2334 EAScompliance.php:2573
 msgid "Field $fields is required, please enter $fields and try again."
 msgstr "Pole $fields je povinné, zadejte $fields a zkuste to znovu."
 
-#: EAScompliance.php:1736 EAScompliance.php:1952
+#: EAScompliance.php:2336 EAScompliance.php:2575
 msgid "Fields [$fields] are required, please enter [$fields], and try again."
 msgstr ""
 "Pole [$fields] jsou povinná, zadejte prosím [$fields] a zkuste to znovu."
 
-#: EAScompliance.php:2149
+#: EAScompliance.php:2716
+msgid ""
+"Please provide company VAT number. If your company is not registered for "
+"VAT, please enter any number and press \"...try again\" 3 times.  Do not "
+"leave the VAT field empty for B2B sales."
+msgstr ""
+
+#: EAScompliance.php:2740
+msgid "Entered VAT number is not valid. Please check VAT number and try again."
+msgstr ""
+
+#: EAScompliance.php:2748
+msgid "Provided VAT number invalid. Please check it and try again."
+msgstr ""
+
+#: EAScompliance.php:2828
 msgid "Sorry, duplicate item Ids found for these items: "
 msgstr "Je nám líto, pro tyto položky byla nalezena duplicitní ID položek: "
 
-#: EAScompliance.php:2150
+#: EAScompliance.php:2829
 msgid ""
 "Please correct the item Ids to be unique within the order and try again."
 msgstr ""
 "Opravte prosím ID položek, aby byla v objednávce jedinečná, a zkuste to "
 "znovu."
 
-#: EAScompliance.php:2811
+#: EAScompliance.php:3721
 msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
@@ -179,29 +227,39 @@ msgstr ""
 "Výpočet nákladů na vykládku nelze zpracovat, dokud nebude uvedeno dodací "
 "jméno a adresa"
 
-#: EAScompliance.php:2815
+#: EAScompliance.php:3725
 msgid "Order shipping country must be in EU"
 msgstr "Země odeslání objednávky musí být v EU"
 
-#: EAScompliance.php:2918
+#: EAScompliance.php:3832
 msgid "createpostsaleorder failed"
 msgstr "vytvoření poprodejní objednávky se nezdařilo"
 
-#: EAScompliance.php:3249
+#: EAScompliance.php:4197
 msgid "number of order_items does not match number of items in cart"
 msgstr ""
 "number of order_items does not match number of items in cartpočet položek "
 "objednávky neodpovídá počtu položek v košíku"
 
-#: EAScompliance.php:3754
-msgid "Incl. Taxes & Duties: "
-msgstr "Vč. Daně a cla: "
+#: EAScompliance.php:4673
+#, fuzzy
+#| msgid "Taxes & Duties"
+msgid " & duties"
+msgstr "Daně a cla"
 
-#: EAScompliance.php:3758
+#: EAScompliance.php:4742
+msgid "incl."
+msgstr ""
+
+#: EAScompliance.php:4782
+msgid "Incl."
+msgstr ""
+
+#: EAScompliance.php:4786
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr "Ceny jsou bez DPH, můžete být povinni zaplatit DPH při dodání"
 
-#: EAScompliance.php:4189
+#: EAScompliance.php:5242
 msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
@@ -209,19 +267,37 @@ msgstr ""
 "Chybí celní poplatky. Našli jsme chybu ve vašem košíku. Načtěte stránku "
 "znovu. <a href=\"./\">reload</a>"
 
-#: EAScompliance.php:4201 EAScompliance.php:4228 EAScompliance.php:4260
+#: EAScompliance.php:5254 EAScompliance.php:5290 EAScompliance.php:5327
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "PROSÍM PŘEPOČÍTEJTE CELNÍ POVINNOST"
 
-#: EAScompliance.php:4352
+#: EAScompliance.php:5331
+msgid ""
+"Customer information/delivery address changed. This might influence on the "
+"taxes in your order. Please press button “Recalculate taxes and duties”"
+msgstr ""
+
+#: EAScompliance.php:5333
+msgid ""
+"Cart contend changed. Taxes should be recalculated. Please press button "
+"“Recalculate taxes and duties”"
+msgstr ""
+
+#: EAScompliance.php:5346
+msgid ""
+"Total order amount unexpectedly changed. Taxes should be recalculated. "
+"Please press button “Recalculate taxes and duties”"
+msgstr ""
+
+#: EAScompliance.php:5445
 msgid "Notify Order number $order_id successful"
 msgstr "Oznámení čísla objednávky $order_id bylo úspěšné"
 
-#: EAScompliance.php:4364
+#: EAScompliance.php:5465
 msgid "Notify Order number $order_id failed: "
 msgstr "Oznámení čísla objednávky $order_id bylo neúspěšné "
 
-#: EAScompliance.php:4479
+#: EAScompliance.php:5581
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -229,15 +305,15 @@ msgstr ""
 "Stav objednávky se změnil z $status_from na $status_to . EAS API platba "
 "oznámena"
 
-#: EAScompliance.php:4498
+#: EAScompliance.php:5600 EAScompliance.php:8304
 msgid "Order status change notification failed: "
 msgstr "Oznámení o změně stavu objednávky se nezdařilo: "
 
-#: EAScompliance.php:4566
+#: EAScompliance.php:5671
 msgid "Order $order_id payment notified to EAS"
 msgstr "Objednávka $order_id platba oznámena EAS"
 
-#: EAScompliance.php:4576
+#: EAScompliance.php:5681
 msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
@@ -245,15 +321,15 @@ msgstr ""
 "EAS EU complince: Objednávka vytvořena. Zaslání nelze provést protože S10 "
 "není k dispozici. Přihlaste se do řídicího panelu a vytvořte zásilky"
 
-#: EAScompliance.php:4586
+#: EAScompliance.php:5691
 msgid "Order "
 msgstr "Objednávka "
 
-#: EAScompliance.php:4659
+#: EAScompliance.php:5761
 msgid "Order status changed to Canceled. EAS API notified."
 msgstr "Stav objednávky se změnil na Zrušeno. EAS API oznámeno."
 
-#: EAScompliance.php:4737
+#: EAScompliance.php:5840
 msgid ""
 "Order was processed by EAS solution, but returns should be handled in the "
 "EAS dashboard https:///dashaboard.easproject.com "
@@ -261,7 +337,7 @@ msgstr ""
 "Objednávka byla zpracována řešením EAS, ale vrácení by se mělo zpracovávat "
 "na řídicím panelu EAS https:///dashaboard.easproject.com "
 
-#: EAScompliance.php:5242
+#: EAScompliance.php:6368
 msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
@@ -269,11 +345,11 @@ msgstr ""
 "Vrácení peněz je zrušeno. Tato objednávka byla vytvořena jiným EM, než který "
 "je nakonfigurován v pluginu EAS EU compliance."
 
-#: EAScompliance.php:5257
+#: EAScompliance.php:6383
 msgid "Refund create failed: "
 msgstr "Vytvoření refundace se nezdařilo: "
 
-#: EAScompliance.php:5299
+#: EAScompliance.php:6422
 msgid ""
 "Refund $refund_id cancelled and removed due to insufficient remaining "
 "quantity. "
@@ -281,13 +357,13 @@ msgstr ""
 "Refundace $refund_id byla zrušena a odstraněna z důvodu nedostatečného "
 "zbývajícího množství. "
 
-#: EAScompliance.php:5306
+#: EAScompliance.php:6429
 msgid "Refund $refund_id cancelled and removed due containing Giftcard. "
 msgstr ""
 "Refundace $refund_id byla zrušena a odstraněna v souvislosti s dárkovou "
 "kartou. "
 
-#: EAScompliance.php:5313
+#: EAScompliance.php:6436
 msgid ""
 "Refund $refund_id cancelled and removed due EAS return management service "
 "temporary unavailable. Please try to create Refund later "
@@ -296,7 +372,7 @@ msgstr ""
 "nedostupnosti služby správy refundací EAS. Zkuste prosím vytvořit refundaci "
 "později "
 
-#: EAScompliance.php:5320
+#: EAScompliance.php:6443
 msgid ""
 "Refund $refund_id cancelled and removed. Please enter quantity greater then "
 "0 for items to be returned and try again. "
@@ -304,7 +380,7 @@ msgstr ""
 "Refundace $refund_id byla zrušena a odstraněna. Celková refundace nemůže být "
 "vyšší než celková částka objednávky. "
 
-#: EAScompliance.php:5328
+#: EAScompliance.php:6451
 msgid ""
 "Refund $refund_id cancelled and removed. Refund total cannot be more than "
 "order total."
@@ -312,215 +388,283 @@ msgstr ""
 "Refundace $refund_id byla zrušena a odstraněna. Stav odpovědi na vrácení "
 "peněz nebyla OK."
 
-#: EAScompliance.php:5336
+#: EAScompliance.php:6459
 msgid ""
 "Refund $refund_id cancelled and removed. Refund response status is not OK."
 msgstr ""
 "Refundace $refund_id byla zrušena a odstraněna. Stav odpovědi na vrácení "
 "peněz nebyla OK."
 
-#: EAScompliance.php:5377
+#: EAScompliance.php:6500
 msgid "Refund confirmed to EAS"
 msgstr "Vrácení peněz potvrzeno EAS"
 
-#: EAScompliance.php:5382
+#: EAScompliance.php:6505
 msgid "Refund confirm failed: "
 msgstr "Potvrzení vrácení peněz se nezdařilo: "
 
-#: EAScompliance.php:5406
+#: EAScompliance.php:6526
 msgid "Log EAS order data"
 msgstr "Protokol dat objednávky EAS"
 
-#: EAScompliance.php:5413
+#: EAScompliance.php:6539
 msgid "Calculate Taxes & Duties EAS"
 msgstr "Vypočítat daně a cla EAS"
 
-#: EAScompliance.php:5642
+#: EAScompliance.php:6547
+msgid "Re-Export to EAS"
+msgstr ""
+
+#: EAScompliance.php:6872
 msgid "Info"
 msgstr "Info"
 
-#: EAScompliance.php:5643
+#: EAScompliance.php:6873
 msgid "Error"
 msgstr "Error"
 
-#: EAScompliance.php:5660
+#: EAScompliance.php:6890
 msgid "General"
 msgstr "Obecné"
 
-#: EAScompliance.php:5664
+#: EAScompliance.php:6894
 msgid "Enable/Disable"
 msgstr "Povolit/Zakázat"
 
-#: EAScompliance.php:5671
+#: EAScompliance.php:6901
 msgid "Language"
 msgstr "Jayzk"
 
-#: EAScompliance.php:5673
+#: EAScompliance.php:6903
 msgid "Choose language for user interface of plugin"
 msgstr "Vyberte jazyk uživatelského rozhraní pluginu"
 
-#: EAScompliance.php:5675
+#: EAScompliance.php:6905
 msgid "Default"
 msgstr "Výchozí"
 
-#: EAScompliance.php:5677
+#: EAScompliance.php:6907
 msgid "Store Default"
 msgstr "Výchzí obchodu"
 
-#: EAScompliance.php:5678
+#: EAScompliance.php:6908
 msgid "English"
 msgstr "English"
 
-#: EAScompliance.php:5679
+#: EAScompliance.php:6909
 msgid "Finnish"
 msgstr "Suomi"
 
-#: EAScompliance.php:5680
+#: EAScompliance.php:6910
 msgid "French"
 msgstr "Français"
 
-#: EAScompliance.php:5681
+#: EAScompliance.php:6911
 msgid "German"
 msgstr "Deutsch"
 
-#: EAScompliance.php:5682
+#: EAScompliance.php:6912
 msgid "Italian"
 msgstr "Italiano"
 
-#: EAScompliance.php:5683
+#: EAScompliance.php:6913
 msgid "Netherlands"
 msgstr "Dutch"
 
-#: EAScompliance.php:5684
+#: EAScompliance.php:6914
 msgid "Swedish"
 msgstr "Svensk"
 
-#: EAScompliance.php:5685
+#: EAScompliance.php:6915
 msgid "Czech"
 msgstr "Češka"
 
-#: EAScompliance.php:5691
+#: EAScompliance.php:6921
 msgid "EAS API Base URL"
 msgstr "EAS API Base URL"
 
-#: EAScompliance.php:5693
+#: EAScompliance.php:6923
 msgid "API URL"
 msgstr "API URL"
 
-#: EAScompliance.php:5699
+#: EAScompliance.php:6929
 msgid "EAS client ID"
 msgstr "EAS ID klienta"
 
-#: EAScompliance.php:5701
+#: EAScompliance.php:6931
 msgid "Use the client ID you received from EAS Project"
 msgstr "Použijte ID klienta, které jste obdrželi od EAS Project"
 
-#: EAScompliance.php:5707
+#: EAScompliance.php:6937
 msgid "EAS client secret"
 msgstr "EAS skrytý klient"
 
-#: EAScompliance.php:5709
+#: EAScompliance.php:6939
 msgid "Use the secret you received from EAS Project"
 msgstr "Použijte skrytý klíč, který jste obdrželi od EAS Project"
 
-#: EAScompliance.php:5716
+#: EAScompliance.php:6946
 msgid "Process imported orders"
 msgstr "Zpracovat importované objednávky"
 
-#: EAScompliance.php:5724
+#: EAScompliance.php:6954
 msgid "Standard mode"
 msgstr "Standardní režim"
 
-#: EAScompliance.php:5731
+#: EAScompliance.php:6956
+msgid ""
+"This integration type is to be used predominantly by Non-EU electronic "
+"merchants that use only IOSS special VAT scheme. Do not use this option if "
+"you supply goods from within EU territory. VAT will be calculated by "
+"WooCommerce or any third party plugins."
+msgstr ""
+
+#: EAScompliance.php:6961
+msgid "Prohibit non IOSS sales to EU countries"
+msgstr ""
+
+#: EAScompliance.php:6963
+msgid ""
+"This option will prohibit sales for orders over 150€ (intrinsic value - the "
+"cost of merchandise only without VAT and shipping rate)"
+msgstr ""
+
+#: EAScompliance.php:6968
+msgid "B2B VAT validation"
+msgstr ""
+
+#: EAScompliance.php:6970
+msgid "Add company VAT number validation on the checkout page"
+msgstr ""
+
+#: EAScompliance.php:6975 EAScompliance.php:6977
+#, fuzzy
+#| msgid "confirmation"
+msgid "B2B VAT confirmation url"
+msgstr "potvrzení"
+
+#: EAScompliance.php:6982
+msgid "B2B skip VAT number validation with warning"
+msgstr ""
+
+#: EAScompliance.php:6984
+msgid ""
+"The option allows for B2B customer to finalise order even after three "
+"unsuccessful attempts of their VAT number validation."
+msgstr ""
+
+#: EAScompliance.php:6989
+msgid "Notification text for the customer will be displayed. "
+msgstr ""
+
+#: EAScompliance.php:6991
+msgid ""
+"You can change the text. Notice, text will be saved for default store "
+"language only."
+msgstr ""
+
+#: EAScompliance.php:6995
 msgid "Log levels"
 msgstr "Úrovně protokolu"
 
-#: EAScompliance.php:5744
+#: EAScompliance.php:6998
+msgid "Debug messages levels"
+msgstr ""
+
+#: EAScompliance.php:7008
 msgid "Taxation"
 msgstr "Zdanění"
 
-#: EAScompliance.php:5747
+#: EAScompliance.php:7011
 msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
 msgstr ""
 "Odečíst domácí DPH za dodávky do zemí, kde nejsou podporovány výpočty daně"
 
-#: EAScompliance.php:5755
+#: EAScompliance.php:7019
+msgid "Handle Northern Ireland as IOSS"
+msgstr ""
+
+#: EAScompliance.php:7026
 msgid "Non-EU Countries support"
 msgstr "Podpora – země mimo EU"
 
-#: EAScompliance.php:5764
+#: EAScompliance.php:7029
+msgid "Supported countries outside EU"
+msgstr ""
+
+#: EAScompliance.php:7035
 msgid "Shipping methods by post"
 msgstr "Způsoby dopravy poštou"
 
-#: EAScompliance.php:5767
+#: EAScompliance.php:7038
 msgid "Select shipping methods for delivery by post"
 msgstr "Vyberte způsoby dopravy pro doručení poštou"
 
-#: EAScompliance.php:5772 EAScompliance.php:5774
+#: EAScompliance.php:7043 EAScompliance.php:7045
 msgid "Default product type"
 msgstr "Výchozí typ produktu"
 
-#: EAScompliance.php:5777
+#: EAScompliance.php:7048
 msgid "Physical goods"
 msgstr "Fyzické zboží"
 
-#: EAScompliance.php:5780
+#: EAScompliance.php:7051
 msgid "Paid order statuses"
 msgstr "Stav zaplacených objednávek"
 
-#: EAScompliance.php:5783
+#: EAScompliance.php:7054
 msgid "Status(es) denoting orders which have been paid for"
 msgstr "Stav(y) označující objednávky, které byly zaplaceny"
 
-#: EAScompliance.php:5789
+#: EAScompliance.php:7060
 msgid "Giftcard product types"
 msgstr "Produkty typu dárkových poukazů"
 
-#: EAScompliance.php:5792
+#: EAScompliance.php:7063
 msgid "Product type(s) used for Gift cards management"
 msgstr "Typ(y) produktu používané pro správu dárkových karet"
 
-#: EAScompliance.php:5810
+#: EAScompliance.php:7081
 msgid "Product Attributes"
 msgstr "Vlastnosti produktu"
 
-#: EAScompliance.php:5813
+#: EAScompliance.php:7084
 msgid "Additional products attributes settings"
 msgstr "Další nastavení atributů produktů"
 
-#: EAScompliance.php:5820
+#: EAScompliance.php:7091
 msgid "HSCODE"
 msgstr "HS kód (celní nomenklatura)"
 
-#: EAScompliance.php:5823
+#: EAScompliance.php:7094
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr "Slug atributu HS kódu. Pokud atribut neexistuje, bude vytvořen."
 
-#: EAScompliance.php:5832
+#: EAScompliance.php:7103
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
 msgstr ""
 "Slug atributu země umístění skladu. Pokud atribut neexistuje, bude vytvořen."
 
-#: EAScompliance.php:5838
+#: EAScompliance.php:7109
 msgid "Reduced VAT for TBE"
 msgstr "Snížená DPH pro TBE"
 
-#: EAScompliance.php:5841
+#: EAScompliance.php:7112
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
 msgstr ""
 "Slug atributu Snížené DPH pro TBE. Pokud atribut neexistuje, bude vytvořen."
 
-#: EAScompliance.php:5847
+#: EAScompliance.php:7118
 msgid "Act as Disclosed Agent"
 msgstr "Působení jako odhalený agent"
 
-#: EAScompliance.php:5850
+#: EAScompliance.php:7121
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
@@ -528,11 +672,11 @@ msgstr ""
 "Slug atributu Působení jako Odhalený Agent. Pokud atribut neexistuje, bude "
 "vytvořen."
 
-#: EAScompliance.php:5856
+#: EAScompliance.php:7127
 msgid "Seller registration country"
 msgstr "Země registrace prodejce"
 
-#: EAScompliance.php:5859
+#: EAScompliance.php:7130
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
@@ -540,21 +684,21 @@ msgstr ""
 "Slug atributu Země registrace prodejce. Pokud atribut neexistuje, bude "
 "vytvořen."
 
-#: EAScompliance.php:5865
+#: EAScompliance.php:7136
 msgid "Originating Country"
 msgstr "Země původu"
 
-#: EAScompliance.php:5868
+#: EAScompliance.php:7139
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr "Slug atributu země původu. Pokud atribut neexistuje, bude vytvořen."
 
-#: EAScompliance.php:5878 EAScompliance.php:5881
+#: EAScompliance.php:7149 EAScompliance.php:7152
 msgid "Design"
 msgstr "DesignDesign"
 
-#: EAScompliance.php:5885
+#: EAScompliance.php:7156
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
@@ -562,55 +706,65 @@ msgstr ""
 "Pokud zůstanou prázdné hodnoty, na tlačítko se použijí výchozí barvy a "
 "velikost písma."
 
-#: EAScompliance.php:5889
+#: EAScompliance.php:7160
 msgid "Button text"
 msgstr "Text tlačítka"
 
-#: EAScompliance.php:5895
+#: EAScompliance.php:7166
 msgid "Button font size"
 msgstr "Button font sizeVelikost fontu textu tlačítka"
 
-#: EAScompliance.php:5898
+#: EAScompliance.php:7169
 msgid "Please select font size (without px , only number)"
 msgstr "Vyberte prosím velikost písma (bez pixelů, pouze číslo)"
 
-#: EAScompliance.php:5902
+#: EAScompliance.php:7173
 msgid "Button text color"
 msgstr "Barva textu tlačítka"
 
-#: EAScompliance.php:5905
+#: EAScompliance.php:7176
 msgid "Please select color for text on button"
 msgstr "Vyberte prosím barvu textu na tlačítku"
 
-#: EAScompliance.php:5909
+#: EAScompliance.php:7180
 msgid "Button background color"
 msgstr "Barva pozadí tlačítka"
 
-#: EAScompliance.php:5912
+#: EAScompliance.php:7183
 msgid "Please select background color"
 msgstr "Vyberte prosím barvu pozadí"
 
-#: EAScompliance.php:5916
+#: EAScompliance.php:7187
 msgid "Button background color on mouse over"
 msgstr "Barva pozadí tlačítka při umístění kurzoru"
 
-#: EAScompliance.php:5919
+#: EAScompliance.php:7190
 msgid "Please select background color on mouse over"
 msgstr "Zvolte barvu pozadí při umístění kurzoru"
 
-#: EAScompliance.php:5923
+#: EAScompliance.php:7194
 msgid "Font color on mouse over"
 msgstr "Barva textu tlačítka při umístění kurzoru"
 
-#: EAScompliance.php:5926
+#: EAScompliance.php:7197
 msgid "Please select mouse over color for text on button"
 msgstr "Zvolte barvu textu při umístění kurzoru"
 
-#: EAScompliance.php:5931
+#: EAScompliance.php:7202
 msgid "Button Example"
 msgstr "Příklad tlačítka"
 
-#: EAScompliance.php:5973
+#: EAScompliance.php:7211
+msgid "Reload Checkout Page"
+msgstr ""
+
+#: EAScompliance.php:7215
+msgid ""
+"Please use this option only if payment step in the store’s theme can’t be "
+"reached, until checkout page is reloaded"
+msgstr ""
+
+#: EAScompliance.php:7253
 msgid ""
 "Attention! EAS plugin detected gift card Product type(s),  please if you are "
 "selling Gift cards please enter Product type(s) in relevant configuration "
@@ -619,7 +773,7 @@ msgstr ""
 "Pozor! Plugin EAS detekoval produkt Typu(s) dárková karta, pokud prodáváte "
 "dárkové karty, zadejte typ(s) v příslušných konfiguračních nastaveních"
 
-#: EAScompliance.php:5977
+#: EAScompliance.php:7257
 #, fuzzy
 #| msgid ""
 #| "Landed cost calculation will be prohibbited for EU on checkout because "
@@ -637,37 +791,37 @@ msgstr ""
 "Přizpůsobit. Vyberte „WooCommerce“, poté „Pokladna“ a změňte nastavení pro "
 "pole Telefon na Volitelné nebo Povinné."
 
-#: EAScompliance.php:6005 EAScompliance.php:6012
+#: EAScompliance.php:7285 EAScompliance.php:7292
 msgid "EAS MPM"
 msgstr "EAS MPM"
 
-#: EAScompliance.php:6005 EAScompliance.php:6014 EAScompliance.php:6107
+#: EAScompliance.php:7285 EAScompliance.php:7294 EAScompliance.php:7403
 msgid "EAS Logs"
 msgstr "EAS MPM"
 
-#: EAScompliance.php:6005 EAScompliance.php:6013 EAScompliance.php:6141
+#: EAScompliance.php:7285 EAScompliance.php:7293 EAScompliance.php:7437
 msgid "Connection status"
 msgstr "Stav připojení"
 
-#: EAScompliance.php:6069
+#: EAScompliance.php:7365
 msgid "EAS Merchandise module"
 msgstr "Modul EAS Zboží"
 
-#: EAScompliance.php:6071
+#: EAScompliance.php:7367
 msgid "To connect to the EAS Merchandise module, follow these steps:"
 msgstr "Chcete-li se připojit k modulu EAS Zboží, postupujte takto:"
 
-#: EAScompliance.php:6073
+#: EAScompliance.php:7369
 #, fuzzy
 #| msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
 msgid "Go to WooCommerce > Settings > Advanced > REST API menu."
 msgstr "Přejděte do nabídky WooCommerce → Nastavení → Upřesnit → REST API."
 
-#: EAScompliance.php:6074
+#: EAScompliance.php:7370
 msgid "Press the button “Add key”."
 msgstr "Stiskněte tlačítko „Přidat klíč“."
 
-#: EAScompliance.php:6075
+#: EAScompliance.php:7371
 #, fuzzy
 #| msgid ""
 #| "In opened window, fill Description with any name, set permissions to → "
@@ -682,15 +836,15 @@ msgstr ""
 "Čtení/zápis. Uživatelské pole bude\n"
 "                 automaticky vyplněno systémem, ponechte jej tak, jak je."
 
-#: EAScompliance.php:6078
+#: EAScompliance.php:7374
 msgid "Press the “Generate API key” button."
 msgstr "Stiskněte tlačítko „Generovat klíč API“."
 
-#: EAScompliance.php:6079
+#: EAScompliance.php:7375
 msgid "A window with key details will appear. Leave it open."
 msgstr "Zobrazí se okno s klíčovými detaily. To ponchte otevřené."
 
-#: EAScompliance.php:6080
+#: EAScompliance.php:7376
 msgid ""
 "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
 "easproject.com/</a>"
@@ -698,7 +852,7 @@ msgstr ""
 "Jděte na <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://"
 "mpm.easproject.com/</a>"
 
-#: EAScompliance.php:6081
+#: EAScompliance.php:7377
 msgid ""
 "Authenticate using your login and password to the EAS Merchandise module. "
 "Login and password are the\n"
@@ -708,13 +862,13 @@ msgstr ""
 "Zboží. Přihlášení a heslo jsou\n"
 "                 stejné jako u EAS Dashboard."
 
-#: EAScompliance.php:6083
+#: EAScompliance.php:7379
 msgid ""
 "Inside EAS Merchandise module, press button “Create” and select WooCommerce."
 msgstr ""
 "Uvnitř modulu EAS Zboží stiskněte tlačítko „Vytvořit“ a vyberte WooCommerce."
 
-#: EAScompliance.php:6084
+#: EAScompliance.php:7380
 msgid ""
 "In the opened window, insert the following data: Name of the Store, Full URL "
 "and generated API keys\n"
@@ -726,7 +880,7 @@ msgstr ""
 "                 během kroku 4. Stiskněte Uložit. Pokud jsou vložená data "
 "správná, spojení se naváže."
 
-#: EAScompliance.php:6087
+#: EAScompliance.php:7383
 msgid ""
 "Afterwards, the mapping process is initiated, a new window is opened. Map "
 "fields according to the\n"
@@ -745,7 +899,7 @@ msgstr ""
 "                        target=\"_blank\">EAS Merchandise module, connecting "
 "and configuration"
 
-#: EAScompliance.php:6091
+#: EAScompliance.php:7387
 msgid ""
 "After proper mapping, Press the “Start processing” button to parse SKU data "
 "from the shop into the\n"
@@ -757,7 +911,7 @@ msgstr ""
 "                 Modul zboží. Analýza trvá nějakou dobu v závislosti na "
 "počtu SKU v obchodě obchodníka."
 
-#: EAScompliance.php:6094
+#: EAScompliance.php:7390
 msgid ""
 "The connection now is established and products from the Merchant’s store are "
 "linked to EAS Merchandise\n"
@@ -766,7 +920,7 @@ msgstr ""
 "Spojení je nyní navázáno a produkty z obchodu obchodníka jsou propojeny s "
 "modulem EAS Zboží."
 
-#: EAScompliance.php:6109
+#: EAScompliance.php:7405
 msgid ""
 "EAS EU compliance plugin stores logs to the WooCommerce default logging "
 "folder.<br><br> To see logs, please choose required log file with the "
@@ -783,43 +937,43 @@ msgstr ""
 "<a href=\"/wp-admin/admin.php?page=wc-status&tab=logs\n"
 "\">Logs page</a>"
 
-#: EAScompliance.php:6147
+#: EAScompliance.php:7443
 msgid "Your EAS Identifier:"
 msgstr "Váš EAS identifikátor:"
 
-#: EAScompliance.php:6150
+#: EAScompliance.php:7446
 msgid "EM legal status:"
 msgstr "Právní status EM:"
 
-#: EAScompliance.php:6153
+#: EAScompliance.php:7449
 msgid "In EAS EM  registered as:"
 msgstr "V EAS EM registrován jako:"
 
-#: EAScompliance.php:6156
+#: EAScompliance.php:7452
 msgid "Electronic Interface"
 msgstr "Elektronické rozhraní"
 
-#: EAScompliance.php:6159
+#: EAScompliance.php:7455
 msgid "Not electronic Interface"
 msgstr "Bez elektronického rozhraní"
 
-#: EAScompliance.php:6163
+#: EAScompliance.php:7459
 msgid "OSS Registered:"
 msgstr "Registrováno OSS:"
 
-#: EAScompliance.php:6166
+#: EAScompliance.php:7462
 msgid "YES"
 msgstr "ANO"
 
-#: EAScompliance.php:6168
+#: EAScompliance.php:7464
 msgid "NO"
 msgstr "NE"
 
-#: EAScompliance.php:6172
+#: EAScompliance.php:7468
 msgid "Product Description language:"
 msgstr "Jazyk popisu produktu:"
 
-#: EAScompliance.php:6571
+#: EAScompliance.php:7847
 msgid ""
 "VAT rates for European countries detected in the WooCommerce Tax Settings. "
 "EAS solution will consider all prices as VAT included. Please contact EAS "
@@ -831,7 +985,7 @@ msgstr ""
 "podporu EAS na adrese support@easproject.com a zkontrolujte, zda je řešení "
 "EAS správně nakonfigurováno."
 
-#: EAScompliance.php:6584
+#: EAScompliance.php:7860
 msgid ""
 "Authorisation failed, wrong credentials provided. Please check your Client "
 "ID and Client secret."
@@ -839,10 +993,46 @@ msgstr ""
 "Autorizace se nezdařila, byly zadány nesprávné přihlašovací údaje. "
 "Zkontrolujte prosím své ID klienta a tajný klíč klienta."
 
-#: EAScompliance.php:6606
+#: EAScompliance.php:7885
 msgid "Sorry, your WooCommerce version \""
 msgstr "Je nám líto, vaše verze WooCommerce \""
 
-#: EAScompliance.php:6712
+#: EAScompliance.php:7991
 msgid "EAS processed"
 msgstr "Zpracováno EAS"
+
+#: EAScompliance.php:8318
+msgid "B2B Sale"
+msgstr ""
+
+#: EAScompliance.php:8331
+msgid "Company name"
+msgstr ""
+
+#: EAScompliance.php:8336
+msgid "Company VAT Number"
+msgstr ""
+
+#: EAScompliance.php:8341
+msgid "Valid VAT Number"
+msgstr ""
+
+#: EAScompliance.php:8345
+msgid "VAT number can be validated manually at"
+msgstr ""
+
+#: EAScompliance.php:8346
+msgid "European Commission VIES"
+msgstr ""
+
+#~ msgid "No tax rate found, please check plugin settings"
+#~ msgstr "Nebyla nalezena žádná daňová sazba, zkontrolujte nastavení pluginu"
+
+#~ msgid "Multiple coupons not supported, please contact support"
+#~ msgstr "Více kuponů není podporováno, kontaktujte prosím podporu"
+
+#~ msgid "Selected coupon type is not supported, please contact support"
+#~ msgstr "Vybraný typ kupónu není podporován, kontaktujte prosím podporu"
+
+#~ msgid "Incl. Taxes & Duties: "
+#~ msgstr "Vč. Daně a cla: "
