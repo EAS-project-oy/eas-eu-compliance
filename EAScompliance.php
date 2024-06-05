@@ -6999,7 +6999,7 @@ function eascompliance_settings()
             'type' => 'checkbox',
             'desc' => EAS_TR('Add company VAT number validation on the checkout page'),
             'id' => 'easproj_company_vat_validate',
-            'default' => 'no',
+            'default' => 'yes',
         ),
         'company_vat_confirm_url' => array(
             'name' => EAS_TR('B2B VAT confirmation url'),
