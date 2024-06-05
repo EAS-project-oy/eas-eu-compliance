@@ -16,7 +16,7 @@ EAS solution automates the complicated EU VAT, IOSS, OSS and UK VAT and customs 
  
 == Description ==
 
-__Note!__ EAS Registration is required. Register at [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY")
+__Note!__ EAS Registration is required. Register at [https://easproject.com/reg](https://easproject.com/reg "Get credentials by registering to EAS project OY")
 
 **IOSS, OSS, Non-Union OSS and UK VAT - EAS automates your EU & UK VAT and Customs compliance.** 
 
@@ -43,7 +43,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 
 Getting started is easy!  EAS makes you EU and UK compliant within minutes.
 
-1. Register at  [https://easproject.com](https://easproject.com "Get credentials by registering to EAS project OY") 
+1. Register at  [https://easproject.com/reg](https://easproject.com/reg "Get credentials by registering to EAS project OY") 
 2. Install the EAS Plugin, or request free EAS installation assistance
 3. If you decide to install the plugin your self, please follow setup instructions at the [EAS Help Center](https://help.easproject.com/eas-for-woocommerce "EAS Help Centre").
 
@@ -126,6 +126,17 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.5.20 = 
+
+* The EU company VAT validation feature can be disabled in the settings.
+* The EU company VAT validation feature will not be used if the Company Name field is hidden in the WooCommerce Checkout settings.
+* Administrators can translate the price breakdown information.
+* Minor bugs with popup windows have been fixed.
+* Minor style updates have been implemented.
+* Log details have been enhanced.
+* The issue with duplicated items in the order has been fixed.
+* Detailed information about why an order needs to be recalculated has been added.
+
 = 1.5.7 =
 * New freature implemented. EU Company VAT number validation added on the checkout page. 
 

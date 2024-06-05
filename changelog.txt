@@ -1,7 +1,17 @@
+== Changelog ==
+= 1.5.20 =
+* The EU company VAT validation feature can be disabled in the settings.
+* The EU company VAT validation feature will not be used if the Company Name field is hidden in the WooCommerce Checkout settings.
+* Administrators can translate the price breakdown information.
+* Minor bugs with popup windows have been fixed.
+* Minor style updates have been implemented.
+* Log details have been enhanced.
+* The issue with duplicated items in the order has been fixed.
+* Detailed information about why an order needs to be recalculated has been added.
+
 = 1.5.7 =
 * New freature implemented. EU Company VAT number validation added on the checkout page. 
 
-== Changelog ==
 = 1.5.4 =
 * Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.
 * Resolved an issue related to the display of the checkout page within the editor.
