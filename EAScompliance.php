@@ -5326,13 +5326,19 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
 */
         foreach ($calc_jreq_new['order_breakdown'] as $k => &$item) {
-            $saved_cost_provided_by_em = $calc_jreq_saved['order_breakdown'][$k]['cost_provided_by_em'];
+            $saved_item = $calc_jreq_saved['order_breakdown'][$k];
+            $saved_cost_provided_by_em = $saved_item['cost_provided_by_em'];
             $margin = abs($item['cost_provided_by_em'] - $saved_cost_provided_by_em);
             if (0 < $margin && $margin <= 0.014) {
                 eascompliance_log('place_order', 'adjusting cost_provided_by_em difference by 1 cent for item $item $cost -> $saved_cost margin $margin',
-                    array('$item' => $calc_jreq_saved['order_breakdown'][$k]['id_provided_by_em'], '$cost' => $item['cost_provided_by_em'], '$saved_cost' => $saved_cost_provided_by_em, '$margin' => $margin));
+                    array('$item' => $saved_item['id_provided_by_em'], '$cost' => $item['cost_provided_by_em'], '$saved_cost' => $saved_cost_provided_by_em, '$margin' => $margin));
                 $item['cost_provided_by_em'] = $saved_cost_provided_by_em;
             }
+
+            // exclude  short and long descriptions from comparison due to some plugins change product names
+            $item['short_description'] = $saved_item['short_description'];
+            $item['long_description'] = $saved_item['long_description'];
+
         }
 
         // save new request in first item //.
@@ -5347,10 +5353,6 @@ function eascompliance_woocommerce_checkout_create_order($order)
         
         //fixing issue with cyber security plugin
         $calc_jreq_new['delivery_phone'] = $calc_jreq_saved['delivery_phone'];
-
-        // exclude  short and long descriptions from comparison due to some plugins change product names
-        $calc_jreq_new['short_description'] = $calc_jreq_saved['short_description'];
-        $calc_jreq_new['long_description'] = $calc_jreq_saved['long_description'];
 
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
