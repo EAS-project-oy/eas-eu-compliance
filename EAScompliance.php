@@ -7,7 +7,7 @@
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
  * Version: 1.5.23
- * Tested up to 6.5.2
+ * Tested up to 6.5.4
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
  * WC tested up to: 8.7.0

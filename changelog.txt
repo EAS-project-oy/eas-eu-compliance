@@ -1,4 +1,8 @@
 == Changelog ==
+= 1.5.23 = 
+
+* Some plugins changing product description on the fly, that caused unnecessary calculations in EAS plugin.  Additional validations added to prevent this.
+
 = 1.5.21 =
 * The EU company VAT validation feature can be disabled in the settings.
 * The EU company VAT validation feature will not be used if the Company Name field is hidden in the WooCommerce Checkout settings.

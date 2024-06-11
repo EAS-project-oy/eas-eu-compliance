@@ -5,9 +5,9 @@ Tags: IOSS, OSS, EU VAT, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.2
-Tested up to: 6.4.3
-Stable tag: 1.5.21
-Last updated time: 01.02.2024
+Tested up to: 6.5.4
+Stable tag: 1.5.23
+Last updated time: 11.06.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.5.23 = 
+
+* Some plugins changing product description on the fly, that caused unnecessary calculations in EAS plugin.  Additional validations added to prevent this.
+
 = 1.5.21 = 
 
 * The EU company VAT validation feature can be disabled in the settings.
