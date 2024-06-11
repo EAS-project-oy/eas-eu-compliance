@@ -5348,6 +5348,10 @@ function eascompliance_woocommerce_checkout_create_order($order)
         //fixing issue with cyber security plugin
         $calc_jreq_new['delivery_phone'] = $calc_jreq_saved['delivery_phone'];
 
+        // exclude  short and long descriptions from comparison due to some plugins change product names
+        $calc_jreq_new['short_description'] = $calc_jreq_saved['short_description'];
+        $calc_jreq_new['long_description'] = $calc_jreq_saved['long_description'];
+
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
             eascompliance_log('place_order', '$calc_jreq_saved: ' . json_encode($calc_jreq_saved));
