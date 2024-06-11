@@ -1,5 +1,5 @@
 == Changelog ==
-= 1.5.20 =
+= 1.5.21 =
 * The EU company VAT validation feature can be disabled in the settings.
 * The EU company VAT validation feature will not be used if the Company Name field is hidden in the WooCommerce Checkout settings.
 * Administrators can translate the price breakdown information.
