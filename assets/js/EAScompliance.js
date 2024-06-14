@@ -40,9 +40,17 @@ jQuery(document).ready(function ($) {
                 if (($(".eascompliance_status").attr('data-eascompliance-status')=='present')&&($(".woocommerce-error").children().length==0)){
                 $(PLACE_ORDER_BUTTON)[0].scrollIntoView(false)
             }
+
+            // show payment methods and remove information message
+            $('ul.wc_payment_methods').children('li').show()
+            $('ul.wc_payment_methods').find('.woocommerce-info').parent().remove()
         }
         else {
             $(PLACE_ORDER_BUTTON).hide().css('z-index', '-1000').css('opacity', '0')
+
+            // hide payment methods and display information message
+            $('ul.wc_payment_methods').children('li').hide()
+            $('ul.wc_payment_methods').append($('<li>').append($('<div>').attr('class', "woocommerce-info").text(window.plugin_dictionary.payment_methods_message)))
         }
     }
 

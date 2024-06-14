@@ -804,6 +804,11 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 
         $show_payment_methods = false;
 
+        // woocommerce-payments needs available gateways for scripts loading
+        if ( 'yes' === get_option('easproj_show_payment_methods') ) {
+            $show_payment_methods = true;
+        }
+
 		if ( 'yes' === get_option('easproj_standard_mode') ) {
 			$show_payment_methods = true;
 		}
@@ -1248,6 +1253,7 @@ function eascompliance_frontend_dictionary()
         'company_vat_validate' => EAS_TR('Validate'),
         'button_calc_name' => $button_calc_name,
         'calculate_status_initial' => EAS_TR('Please calculate taxes before placing order'),
+        'payment_methods_message' => EAS_TR('Please calculate taxes and duties to proceed with order payment'),
     );
 }
 /**
@@ -7026,6 +7032,13 @@ function eascompliance_settings()
             'type' => 'text',
             'desc' => EAS_TR('You can change the text. Notice, text will be saved for default store language only.'),
             'id' => 'easproj_limit_ioss_sales_message',
+        ),
+        'show_payment_methods' => array(
+            'name' => EAS_TR('Show payment methods'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('Load payment methods from server before taxes are calculated'),
+            'id' => 'easproj_show_payment_methods',
+            'default' => 'no',
         ),
 		'debug' => array(
 			'name' => EAS_TR('Log levels'),
