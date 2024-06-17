@@ -1,4 +1,10 @@
 == Changelog ==
+
+= 1.5.24 =
+
+* Compatibility issue with latest WooPayments fixed. New option in the plugin settings implemented "Load payments methods from server before taxes were calculated". The option should be enabled only if WooPayments compatibility issue identfied. When calculations are finished, payment methods do not display input forms to enter credit card information. 
+
+
 = 1.5.23 = 
 
 * Some plugins changing product description on the fly, that caused unnecessary calculations in EAS plugin.  Additional validations added to prevent this.

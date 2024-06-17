@@ -4,9 +4,9 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 8.5.2
+WC tested up to: 8.5.4
 Tested up to: 6.5.4
-Stable tag: 1.5.23
+Stable tag: 1.5.24
 Last updated time: 11.06.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -126,6 +126,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.5.24 =
+
+* Compatibility issue with latest WooPayments fixed. New option in the plugin settings implemented "Load payments methods from server before taxes were calculated". The option should be enabled only if WooPayments compatibility issue identfied. When calculations are finished, payment methods do not display input forms to enter credit card information. 
+
 = 1.5.23 = 
 
 * Some plugins changing product description on the fly, that caused unnecessary calculations in EAS plugin.  Additional validations added to prevent this.
