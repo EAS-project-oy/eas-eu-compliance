@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: EAS EU compliance
- * Description: EAS EU compliance plugin automates your EU & UK VAT and Customs compliance. EAS EU compliance  is a comprehensive fully automated solution of EU VAT and Customs for new special EU VAT schemes and UK VAT and Customs compiance.  With EAS selling to all EU countries and UK is just as easy as your domestic sales, oreven easier! EAS removes all the tax and customs compliance barriers preventing your sales throughout the whole EU and UK!
+ * Description: EAS EU compliance is a comprehensive fully automated solution of EU VAT  for new special EU VATand customs schemes and UK VAT and customs compiance!
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
