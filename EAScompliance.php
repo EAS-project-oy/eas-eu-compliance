@@ -1952,7 +1952,10 @@ function eascompliance_make_eas_api_request_json()
     if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
         $multi_currency = WC_Payments_Multi_Currency();
         $currency = $multi_currency->get_selected_currency()->get_code();
-        eascompliance_log('request', 'WC_Payments_Multi_Currency currency is $c', array('$c' => $currency));
+
+        $delivery_cost_new = eascompliance_convert_price_to_selected_currency((float)($cart->get_shipping_total() + $cart->get_shipping_tax()));
+        $delivery_cost = $delivery_cost_new;
+        eascompliance_log('request', 'WC_Payments_Multi_Currency currency is $c, converting delivery_cost from $old to $new', array('$c' => $currency, 'old'=>$delivery_cost, 'new'=>$delivery_cost_new));
     }
     $calc_jreq['payment_currency'] = $currency;
     $calc_jreq['delivery_cost'] = $delivery_cost;
@@ -2034,6 +2037,13 @@ function eascompliance_make_eas_api_request_json()
 
 		// line_tax is positive when other tax rates for supported countries present, avoid -0
         $cost_provided_by_em = (float)number_format((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2, '.', '');
+
+        if ($wcml_enabled === false && function_exists('WC_Payments_Multi_Currency')) {
+            $cost_provided_by_em_new = eascompliance_convert_price_to_selected_currency((float)number_format((float)($cart_item['line_total'] + $cart_item['line_tax']) / $cart_item['quantity'], 2, '.', ''));
+            eascompliance_log('request','converting cost_provided_by_em from $old to $new',
+                ['old'=>$cost_provided_by_em,'new'=>$cost_provided_by_em_new]);
+            $cost_provided_by_em = $cost_provided_by_em_new;
+        }
 
         $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
@@ -4356,9 +4366,6 @@ function eascompliance_woocommerce_cart_remove_taxes_zero_rate_id($zero_rated)
 function eascompliance_convert_price_to_selected_currency($price)
 {
     eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
-
-	// price conversion rules currently disabled, but function may be needed later
-	return $price;
 
     $price_old = $price;
     if (function_exists('WC_Payments_Multi_Currency')) {
