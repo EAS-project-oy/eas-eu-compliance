@@ -531,8 +531,8 @@ add_action(
  */
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
-    if (eascompliance_is_active() && get_option('easproj_company_vat_validate') === 'yes') {
-        //require_once 'EAScompliance-blocks.php';
+    if (eascompliance_is_active()) {
+        require_once 'EAScompliance-blocks.php';
     }
 }
 
@@ -1939,6 +1939,11 @@ function eascompliance_make_eas_api_request_json()
         $checkout['shipping_city'] = eascompliance_array_get($checkout, 'billing_city', '');
         $checkout['shipping_postcode'] = eascompliance_array_get($checkout, 'billing_postcode', '');
         $checkout['shipping_phone'] = eascompliance_array_get($checkout, 'billing_phone', '');
+    }
+
+    // take checkout from blocks when present
+    if (array_key_exists('blocks_checkout', $_POST) and did_action('woocommerce_blocks_loaded')) {
+        $checkout = $_POST['blocks_checkout'];
     }
 
     $delivery_state_province = eascompliance_array_get($checkout, 'shipping_state', '') === '' ? '' : '' . eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $checkout['shipping_country'], array()), $checkout['shipping_state'], $checkout['shipping_state']);
@@ -4504,7 +4509,7 @@ function eascompliance_cart_total($current_total = null)
 	} finally {
         static $cart_total_saved;
         if ($cart_total_saved != $cart_total) {
-			eascompliance_log('cart_total', 'cart_total is $total, cart_total_log value was $tl', array('$total' => $cart_total, 'tl'=>$cart_total_log));
+			eascompliance_log('debug', 'cart_total is $total, cart_total_log value was $tl', array('$total' => $cart_total, 'tl'=>$cart_total_log));
             $cart_total_saved = $cart_total;
         }
 	}
@@ -4603,7 +4608,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
  * @param string $cart_item_key cart_item_key.
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $cart_item_key)
+function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $cart_item_key, $formatted=true)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
@@ -4644,7 +4649,7 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
 		}
 
         // $item_total = eascompliance_convert_price_to_selected_currency($item_total);
-        return wc_price($cart_item_total);
+        return $formatted ? wc_price($cart_item_total) : $cart_item_total;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;

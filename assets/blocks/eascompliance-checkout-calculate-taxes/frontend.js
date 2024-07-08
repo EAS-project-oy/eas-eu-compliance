@@ -19,6 +19,7 @@ window.metadata = {
 	"textdomain": "eas-eu-compliance"
 }
 
+// React component that displays calculate button, hides/shows Place Order button
 window.Frontend = (props) => {
 	const E = wp.element.createElement
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
@@ -27,15 +28,84 @@ window.Frontend = (props) => {
 	const { useBlockProps } = wp.blockEditor.useBlockProps
 
 	const [ loading, setLoading ] = useState(false)
-	const [ taxesCalculated, setTaxesCalculated ] = useState(false)
+	const [ placeOrderVisible, setPlaceOrderVisible ] = useState(window.wcSettings.checkoutData.extensions.eascompliance.status === 'present')
 	const { setExtensionData } = props.checkoutExtensionData
+	const { useSelect, useDispatch } = wp.data
+
+	const { CART_STORE_KEY, CHECKOUT_STORE_KEY } = wc.wcBlocksData
+
+	const core_actions = useDispatch( 'core/notices')
+	const cart_state = useSelect(CART_STORE_KEY)
+	const cart_actions = useDispatch(CART_STORE_KEY)
+	const checkout_state = useSelect(CHECKOUT_STORE_KEY)
+	const checkout_actions = useDispatch( CHECKOUT_STORE_KEY )
+
+
 	const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
 	const [ buttonText, setButtonText ] = useState(plugin_dictionary.button_calc_name)
 
 
-	$('.wc-block-components-checkout-place-order-button').toggle(taxesCalculated)
+	$('.wc-block-components-checkout-place-order-button').toggle(placeOrderVisible)
+
+	// Effect that fires when customer data changes
+	useEffect( () => {
+		// run effect after user stopped editing shipping/billing details
+		const timeoutId = setTimeout(async ()=> {
+
+			// reset calculations when checkout data is updated
+			await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'eascompliance_unset'}})
+			setPlaceOrderVisible(false)
+			setMessage(plugin_dictionary.calculate_status_initial)
+
+			let j = await $.post({
+				url: plugin_ajax_object.ajax_url,
+				data: {
+					'action': 'eascompliance_status_ajax',
+					'shipping_country': props.cart.shippingAddress.country,
+					'shipping_postcode': props.cart.shippingAddress.postcode,
+				},
+				dataType: 'json'
+			})
+
+			if
+			(
+				!j.eascompliance_supported_country
+				||
+				(
+					j.eascompliance_status === 'present'
+				)
+				||
+				(
+					j.eascompliance_status === 'standard_checkout'
+				)
+				||
+				(
+					j.eascompliance_status === 'standard_mode'
+				)
+				||
+				(
+					j.eascompliance_status === 'limit_ioss_sales'
+				)
+			) {
+				if (j.eascompliance_status === 'limit_ioss_sales') {
+					setMessage(plugin_dictionary.limit_ioss_sales_message)
+					setPlaceOrderVisible(false)
+				}
+				else {
+					setPlaceOrderVisible(true)
+				}
+			} else {
+				setPlaceOrderVisible(false)
+			}
+
+		}, 1000)
+		return () => {
+			clearTimeout(timeoutId)
+		}
+	}, [...Object.values(props.cart.shippingAddress), ...Object.values(props.cart.billingAddress)], [...Object.keys(props.cart.shippingAddress), ...Object.keys(props.cart.billingAddress)])
 
 
+	//Calculate button click handler
 	const onCalculateClick = async () => {
 		if (loading) {
 			return
@@ -95,12 +165,86 @@ window.Frontend = (props) => {
 
 			if (j.status !== 'ok') {
 				setMessage(j['message'])
+				throw j['message']
 			} else {
-				setMessage(plugin_dictionary.taxes_added)
-				setTaxesCalculated(true)
+				// 'CALC response' should be quoted link to confirmation page or STANDARD_CHECKOUT
+				if (j['CALC response'] === 'STANDARD_CHECKOUT') {
+					setMessage(j['message'])
+					setPlaceOrderVisible(true)
+				} else {
+					setMessage(plugin_dictionary.waiting_for_confirmation)
+
+					confirmation_url = new URL(j['CALC response'])
+
+					let reload_checkout_page = Boolean(j['reload_checkout_page'] === 'yes')
+
+					if (confirmation_url.hostname === window.location.hostname) {
+						// EAS confirmation page is not necessary, update status and update checkout
+						setMessage(plugin_dictionary.taxes_added)
+
+						res = await $.get ( {'url': confirmation_url.href} )
+						setPlaceOrderVisible(true)
+
+						if (reload_checkout_page) {
+							location.reload()
+						}
+
+						// update cart extension data to load new cart
+						await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'calculate'}})
+
+						core_actions.createInfoNotice('CALCULATED', {
+							context: 'wc/cart',
+							speak: true,
+							type: 'snackbar',
+							id: 'eascompliance-notice-calculated'})
+					} else {
+						// EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
+						setMessage(plugin_dictionary.recalculate_taxes)
+
+						let width = 760, height = 1000
+						let left = window.top.outerWidth / 2 + window.top.screenX - width / 2
+						let top = window.top.outerHeight / 2 + window.top.screenY - height / 2
+						let popup = window.open(confirmation_url.href, 'eascompliance', `popup,width=${width},height=${height},scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,left=${left},top=${top}`)
+						if (!popup) {
+							//open EAS confirmation page in same window if popup was blocked by browser
+							window.open(confirmation_url.href, '_self')
+						}
+
+						let popupInterval = 500
+						let popupHandler = async function () {
+							if (popup.closed) {
+								if (reload_checkout_page) {
+									location.reload()
+								}
+								await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'calculate'}})
+							}
+							else {
+								$.post({
+									url: plugin_ajax_object.ajax_url
+									, data: {'action': 'eascompliance_status_ajax'}
+									, dataType: 'json'
+									, success: (j) => {
+										if ( j.eascompliance_status === 'not present' ) {
+											setTimeout(popupHandler, popupInterval)
+										} else {
+											popup.close()
+											popupHandler()
+										}
+									}
+								})
+							}
+						}
+						setTimeout(popupHandler, popupInterval)
+					}
+				}
 			}
 
 		} catch (err) {
+			core_actions.createErrorNotice(err, {
+				context: 'wc/cart',
+				speak: true,
+				type: 'snackbar',
+				id: 'eascompliance-notice-error'})
 			throw err
 		} finally {
 			setLoading(false)
@@ -112,7 +256,7 @@ window.Frontend = (props) => {
 				'id': "eascompliance_button_calculate_taxes",
 				'onClick': onCalculateClick,
 				'text': buttonText,
-				'style': {'display': taxesCalculated ? 'none' : 'block'}
+				'style': {'display': placeOrderVisible ? 'none' : 'block'}
 			},
 		),
 		E('div', {}, message),
