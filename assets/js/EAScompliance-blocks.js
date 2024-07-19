@@ -1,7 +1,7 @@
 // Woocommerce blocks utility functions
 
 jQuery(document).ready(function ($) {
-
+    window.$ = $
 
     const { useRef, useEffect } = wp.element
 

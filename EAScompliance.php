@@ -1938,11 +1938,10 @@ function eascompliance_make_eas_api_request_json()
         $checkout['shipping_address_2'] = eascompliance_array_get($checkout, 'billing_address_2', '');
         $checkout['shipping_city'] = eascompliance_array_get($checkout, 'billing_city', '');
         $checkout['shipping_postcode'] = eascompliance_array_get($checkout, 'billing_postcode', '');
-        $checkout['shipping_phone'] = eascompliance_array_get($checkout, 'billing_phone', '');
     }
 
     // take checkout from blocks when present
-    if (array_key_exists('blocks_checkout', $_POST) and did_action('woocommerce_blocks_loaded')) {
+    if (array_key_exists('blocks_checkout', $_POST) && did_action('woocommerce_blocks_loaded') ) {
         $checkout = $_POST['blocks_checkout'];
     }
 
@@ -1986,6 +1985,10 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?: '';
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
     $calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '');//$checkout['shipping_address_2'];
+    if (did_action('woocommerce_blocks_loaded')) {
+        $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'];
+    }
+
     $calc_jreq['delivery_city'] = eascompliance_array_get($checkout, 'shipping_city', '');
     $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
     $calc_jreq['delivery_postal_code'] = $checkout['shipping_postcode'];

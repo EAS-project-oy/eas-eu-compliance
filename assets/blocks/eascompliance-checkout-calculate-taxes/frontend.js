@@ -24,25 +24,54 @@ window.Frontend = (props) => {
 	const E = wp.element.createElement
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 	const { useEffect, useState, useCallback } = wp.element
+	const { useEffectDebugger } = window.eascompliance
 
 	const { useBlockProps } = wp.blockEditor.useBlockProps
 
 	const [ loading, setLoading ] = useState(false)
 	const [ placeOrderVisible, setPlaceOrderVisible ] = useState(window.wcSettings.checkoutData.extensions.eascompliance.status === 'present')
 	const { setExtensionData } = props.checkoutExtensionData
-	const { useSelect, useDispatch } = wp.data
-
-	const { CART_STORE_KEY, CHECKOUT_STORE_KEY } = wc.wcBlocksData
+	const { useSelect, useDispatch, subscribe } = wp.data
+	const { CART_STORE_KEY, CHECKOUT_STORE_KEY, PAYMENT_STORE_KEY } = wc.wcBlocksData
 
 	const core_actions = useDispatch( 'core/notices')
+	const core_state = useSelect( 'core/notices')
+	const payment_actions = useDispatch( PAYMENT_STORE_KEY )
+	const payment_state = useSelect( PAYMENT_STORE_KEY )
 	const cart_state = useSelect(CART_STORE_KEY)
 	const cart_actions = useDispatch(CART_STORE_KEY)
 	const checkout_state = useSelect(CHECKOUT_STORE_KEY)
 	const checkout_actions = useDispatch( CHECKOUT_STORE_KEY )
-
-
 	const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
 	const [ buttonText, setButtonText ] = useState(plugin_dictionary.button_calc_name)
+
+
+	const [ saved_available_payment_methods, saved_available_payment_methods_set] = useState({})
+
+	// save available payment methods in component state
+	const available_payment_methods = useSelect( (select) => {
+		apm = select(PAYMENT_STORE_KEY).getAvailablePaymentMethods()
+		if (! $.isEmptyObject(apm) && $.isEmptyObject(saved_available_payment_methods)) {
+			saved_available_payment_methods_set(apm)
+		}
+		return apm
+	})
+
+	// empty payment methods notices and display custom message in payment section before tax calculation happened
+	useEffect(()=> {
+		$('.wc-block-checkout__payment-method .eascompliance-message').remove()
+		if (placeOrderVisible) {
+			payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
+			$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
+		} else {
+
+			$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
+			$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
+			payment_actions.__internalSetAvailablePaymentMethods([])
+		}
+	}, [available_payment_methods, placeOrderVisible])
+
+
 
 
 	$('.wc-block-components-checkout-place-order-button').toggle(placeOrderVisible)
@@ -192,7 +221,7 @@ window.Frontend = (props) => {
 						// update cart extension data to load new cart
 						await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'calculate'}})
 
-						core_actions.createInfoNotice('CALCULATED', {
+						core_actions.createInfoNotice(plugin_dictionary.taxes_added, {
 							context: 'wc/cart',
 							speak: true,
 							type: 'snackbar',
@@ -255,9 +284,9 @@ window.Frontend = (props) => {
 		E( wc.blocksCheckout.Button, {
 				'id': "eascompliance_button_calculate_taxes",
 				'onClick': onCalculateClick,
-				'text': buttonText,
 				'style': {'display': placeOrderVisible ? 'none' : 'block'}
 			},
+			buttonText
 		),
 		E('div', {}, message),
 	)

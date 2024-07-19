@@ -5,7 +5,7 @@ window.metadata = {
 	"version": "1.0.0",
 	"title": "EAS Company VAT",
 	"category": "woocommerce",
-	"parent": [ "woocommerce/checkout-shipping-address-block" ],
+	"parent": [ "woocommerce/checkout-shipping-address-block", "woocommerce/checkout-billing-address-block" ],
 	"attributes": {
 		"lock": {
 			"type": "object",
@@ -20,7 +20,7 @@ window.metadata = {
 
 window.Frontend = (props) => {
 	const E = wp.element.createElement
-	const { useEffect, useState, useCallback } = wp.element
+	const { useEffect, useState, useCallback, createPortal, useRef } = wp.element
 	const { ValidatedTextInput } = wc.blocksCheckout
 	const { Button } = wc.blocksCheckout
 
@@ -28,14 +28,29 @@ window.Frontend = (props) => {
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 	const { setExtensionData } = props.checkoutExtensionData
 
-	const [ loading, setLoading ] = useState(false)
-	const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
-	const [ companyVat, setCompanyVat ] = useState('')
-	const [ companyVatValidated, setCompanyVatValidated ] = useState(false)
+	const [ loading, loadingSet ] = useState(false)
+	const [ message, messageSet ] = useState(plugin_dictionary.calculate_status_initial)
+	const [ companyVat, companyVatSet ] = useState('')
+	const [ companyVatValidated, companyVatValidatedSet ] = useState(false)
+
+	const [ isVisible, isVisibleSet] = useState(false)
+
+	// show VAT validate component if Edit button was clicked or when address card is editing
+	useEffect(() => {
+		// TODO what is 'react' way to access CustomerAddress->editing state?
+
+		$('.wc-block-components-address-address-wrapper').one('click', (event) => {
+			isVisibleSet(true)
+		})
+
+		if ($('.wc-block-components-address-address-wrapper.is-editing').length) {
+			isVisibleSet(true)
+		}
+	}, [])
 
 
     const onInputChange = ( value ) => {
-			setCompanyVat( value )
+			companyVatSet( value )
 			setExtensionData( 'eascompliance', 'company_vat', value )
 		}
 
@@ -49,7 +64,7 @@ window.Frontend = (props) => {
 		}
 
 		try {
-			setLoading(true)
+			loadingSet(true)
 
 			let j = await $.post({
 				url: plugin_ajax_object.ajax_url,
@@ -61,25 +76,23 @@ window.Frontend = (props) => {
 				dataType: 'json'
 			})
 
-			setCompanyVatValidated(j.company_vat_validated)
+			companyVatValidatedSet(j.company_vat_validated)
 			if (j.company_vat_validated) {
-				setMessage(plugin_dictionary.vat_validation_successful)
+				messageSet(plugin_dictionary.vat_validation_successful)
 			}
 			else {
-				setMessage(plugin_dictionary.vat_validation_failed)
+				messageSet(plugin_dictionary.vat_validation_failed)
 			}
 
 		} catch (err) {
 			throw err
 		} finally {
-			setLoading(false)
+			loadingSet(false)
 		}
 
 	}
 
-	return E(wp.element.Fragment, {
-			'style': {display: ''}
-		},
+	return isVisible && E(wp.element.Fragment, {},
 		E( ValidatedTextInput, {
 				'id': 'company_vat',
 				'type': 'text',
@@ -94,8 +107,8 @@ window.Frontend = (props) => {
 				'id': "company_vat_validate",
 				'onClick': onCompanyValidateClick,
 				'showSpinner': loading,
-				'text': plugin_dictionary.company_vat_validate
 			},
+			plugin_dictionary.company_vat_validate
 		),
 		E( 'div', {
 				'style': {display: 'inline', marginLeft: '20px'}

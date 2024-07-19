@@ -105,7 +105,7 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
     }
 }
 
-wp_enqueue_script('EAScompliance-blocks', plugins_url('/assets/js/EAScompliance-blocks.js', __FILE__), array('EAScompliance', 'wc-blocks'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-blocks.js'), true);
+wp_enqueue_script('EAScompliance-blocks', plugins_url('/assets/js/EAScompliance-blocks.js', __FILE__), array('EAScompliance', 'wc-blocks', 'jquery'), filemtime(dirname(__FILE__) . '/assets/js/EAScompliance-blocks.js'), true);
 
 add_action('woocommerce_blocks_checkout_block_registration',
     function ($integration_registry) {
@@ -193,6 +193,13 @@ function eascompliance_cart($cart)
 
             $cart_item_subtotal = eascompliance_woocommerce_cart_item_subtotal((float)$item['totals']->line_subtotal / 100, $cart_item, $item['key'], false);
             $cart_subtotal += $cart_item_subtotal;
+
+            $line_subtotal_tax = 0;
+            // 0-priced items should have 0 rate
+            if ((float)0 !== (float)$cart_item_subtotal) {
+                $line_subtotal_tax = intval(floor(10000 * $cart_item['EAScompliance item tax'] / $cart_item_subtotal) / 10000);
+            }
+
             $cart_item_subtotal_formatted = number_format($cart_item_subtotal, 2, '', '');
 
             $item['prices']->price = $cart_item_subtotal_formatted;
@@ -200,6 +207,8 @@ function eascompliance_cart($cart)
             $item['prices']->raw_prices['price'] = $cart_item_subtotal_formatted;
             $item['prices']->raw_prices['sale_price'] = $cart_item_subtotal_formatted;
             $item['totals']->line_subtotal = $cart_item_subtotal_formatted;
+            $item['totals']->line_subtotal_tax = $line_subtotal_tax;
+            $item['totals']->line_total_tax = $line_subtotal_tax;
             $item['totals']->line_total = $cart_item_subtotal_formatted;
 
         }
@@ -217,6 +226,7 @@ function eascompliance_cart($cart)
         );
 
         $cart['totals']->tax_lines[0] = $tax_line;
+        $cart['totals']->total_items_tax = 0;
         $cart['totals']->total_tax = number_format($total_tax, 2, '', '');
         $cart['totals']->total_price = number_format($cart_total, 2,'','');
         $cart['totals']->total_items = number_format($cart_subtotal, 2, '', '');
@@ -314,17 +324,32 @@ function eascompliance_woocommerce_store_api_checkout_order_processed( $order ) 
 
         // mock checkout data for use in eascompliance_make_eas_api_request_json()
         $checkout = array();
-        $checkout['shipping_country'] = $order->get_shipping_country();
-        $checkout['shipping_state'] = $order->get_shipping_state();
-        $checkout['shipping_company'] = $order->get_shipping_company();
-        $checkout['shipping_company_vat'] = ''; //TODO take it from company vat input?
-        $checkout['shipping_first_name'] = $order->get_shipping_first_name();
-        $checkout['shipping_last_name'] = $order->get_shipping_last_name();
-        $checkout['shipping_address_1'] = $order->get_shipping_address_1();
-        $checkout['shipping_address_2'] = $order->get_shipping_address_2();
-        $checkout['shipping_city'] = $order->get_shipping_city();
-        $checkout['shipping_postcode'] = $order->get_shipping_postcode();
-        $checkout['shipping_phone'] = $order->get_billing_phone();
+        if (wc_ship_to_billing_address_only()) {
+            eascompliance_log('debug', 'wc_ship_to_billing_address_only');
+            $checkout['shipping_country'] = $order->get_billing_country() ;
+            $checkout['shipping_state'] = $order->get_billing_state();
+            $checkout['shipping_company'] = $order->get_billing_company();
+            $checkout['shipping_company_vat'] = ''; //TODO take it from company vat input?
+            $checkout['shipping_first_name'] = $order->get_billing_first_name();
+            $checkout['shipping_last_name'] = $order->get_billing_last_name();
+            $checkout['shipping_address_1'] = $order->get_billing_address_1();
+            $checkout['shipping_address_2'] = $order->get_billing_address_2();
+            $checkout['shipping_city'] = $order->get_billing_city();
+            $checkout['shipping_postcode'] = $order->get_billing_postcode();
+        } else {
+            $checkout['shipping_country'] = $order->get_shipping_country() ;
+            $checkout['shipping_state'] = $order->get_shipping_state();
+            $checkout['shipping_company'] = $order->get_shipping_company();
+            $checkout['shipping_company_vat'] = ''; //TODO take it from company vat input?
+            $checkout['shipping_first_name'] = $order->get_shipping_first_name();
+            $checkout['shipping_last_name'] = $order->get_shipping_last_name();
+            $checkout['shipping_address_1'] = $order->get_shipping_address_1();
+            $checkout['shipping_address_2'] = $order->get_shipping_address_2();
+            $checkout['shipping_city'] = $order->get_shipping_city();
+            $checkout['shipping_postcode'] = $order->get_shipping_postcode();
+        }
+//        $checkout['billing_address_2'] = $checkout['shipping_address_2'];
+        $checkout['billing_phone'] = $order->get_billing_phone();
         $checkout['billing_email'] = $order->get_billing_email();
         $_POST['blocks_checkout'] = $checkout;
 
@@ -469,6 +494,11 @@ function eascompliance_woocommerce_store_api_checkout_order_processed( $order ) 
             //TODO logic here may involve multiple taxes
             break;
         }
+
+        // save order id and order subtotal in session while cart is present
+        eascompliance_session_set('ORDER ID', $order->get_id());
+        eascompliance_session_set('ORDER SUBTOTAL', eascompliance_woocommerce_cart_subtotal((float)WC()->cart->get_subtotal(), false, WC()->cart));
+
         $order->set_total(eascompliance_cart_total());
 
 
@@ -494,6 +524,14 @@ function eascompliance_woocommerce_store_api_checkout_order_processed( $order ) 
     }
 }
 
+// order subtotal is re-calculated in add_order_item_totals_subtotal_row(), restore order subtotal value from session
+add_action('woocommerce_order_subtotal_to_display', 'eascompliance_woocommerce_order_subtotal_to_display', 10, 3);
+function eascompliance_woocommerce_order_subtotal_to_display($subtotal, $compound, $order) {
+    if (eascompliance_session_get('ORDER ID')==$order->get_id()) {
+        $subtotal = eascompliance_session_get('ORDER SUBTOTAL');
+    }
+    return $subtotal;
+}
 
 
 woocommerce_store_api_register_update_callback(
