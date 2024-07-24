@@ -4186,6 +4186,7 @@ function eascompliance_logorderdata_ajax()
 
 /**
  * Replace order_item taxes with EAScompliance during order creation
+ * Checkout Blocks calls this method multiple times during checkout
  *
  * @param object $order_item_tax order_item_tax.
  * @param int $tax_rate_id tax_rate_id.
@@ -4259,11 +4260,11 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
                     $delivery_charge_vat = $cart_item['EAScompliance DELIVERY CHARGE VAT'];
                 }
                 $item_amount = $cart_item['EAScompliance item tax'];
-                $order_item->add_meta_data('Customs duties', $item_payload['item_customs_duties']);
-                $order_item->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT']);
-                $order_item->add_meta_data('VAT Rate', $item_payload['vat_rate']);
-                $order_item->add_meta_data('Other fees', $item_payload['item_eas_fee']);
-                $order_item->add_meta_data('VAT on Other fees', $item_payload['item_eas_fee_vat']);
+                $order_item->add_meta_data('Customs duties', $item_payload['item_customs_duties'], true);
+                $order_item->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT'], true);
+                $order_item->add_meta_data('VAT Rate', $item_payload['vat_rate'], true);
+                $order_item->add_meta_data('Other fees', $item_payload['item_eas_fee'], true);
+                $order_item->add_meta_data('VAT on Other fees', $item_payload['item_eas_fee_vat'], true);
 
                 $order_item->set_taxes(
                     array(
