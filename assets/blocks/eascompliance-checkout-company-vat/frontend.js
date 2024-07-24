@@ -29,7 +29,7 @@ window.Frontend = (props) => {
 	const { setExtensionData } = props.checkoutExtensionData
 
 	const [ loading, loadingSet ] = useState(false)
-	const [ message, messageSet ] = useState(plugin_dictionary.calculate_status_initial)
+	const [ message, messageSet ] = useState('')
 	const [ companyVat, companyVatSet ] = useState('')
 	const [ companyVatValidated, companyVatValidatedSet ] = useState(false)
 
