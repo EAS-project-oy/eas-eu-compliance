@@ -8159,8 +8159,15 @@ function eascompliance_bulk_update($request)
         $auth = apache_request_headers();
 
         //Get only Authorization header
+
         $auth_token = $auth['Authorization'];
         $auth_token_eas = $auth['Authorizationeas'];
+        if (empty($auth_token_eas) )
+        {
+            $auth_token_eas = $auth['authorizationeas'];
+        }
+
+        eascompliance_log('info', 'headers '.print_r($auth,true) );
         $auth_token = (empty($auth_token) ? $auth_token_eas: $auth_token);
 
         if (empty($auth_token)) {
