@@ -3808,6 +3808,7 @@ function eascompliance_order_createpostsaleorder($order)
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
         $order->add_meta_data('easproj_payload', $payload_j, true);
         $order->add_meta_data('_easproj_order_created_with_createpostsaleorder', '1', true);
+        $order->save_meta_data();
         $payload_items = $payload_j['items'];
 
         $tax_rate_id0 = eascompliance_tax_rate_id();
@@ -5590,6 +5591,11 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
             return;
         }
 
+        // skip orders that were notified with sale_date
+        if ($order->get_meta('_easproj_order_sent_to_eas') === '1') {
+            return;
+        }
+
         if ( !eascompliance_order_status_paid($status_to) ) {
 			eascompliance_log('payment', 'verification cancelled due to not paid status');
             return;
@@ -5684,6 +5690,11 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
 		if ( !eascompliance_order_status_paid($status_to) ) {
 			return;
 		}
+
+        // skip orders that were notified with sale_date
+        if ($order->get_meta('_easproj_order_sent_to_eas') === '1') {
+            return;
+        }
 
         // process only orders created with createpostsaleorder
         if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') !== '1') {
