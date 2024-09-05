@@ -5691,11 +5691,6 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
 			return;
 		}
 
-        // skip orders that were notified with sale_date
-        if ($order->get_meta('_easproj_order_sent_to_eas') === '1') {
-            return;
-        }
-
         // process only orders created with createpostsaleorder
         if ($order->get_meta('_easproj_order_created_with_createpostsaleorder') !== '1') {
             return;
