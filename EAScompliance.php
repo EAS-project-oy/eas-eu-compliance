@@ -7406,9 +7406,10 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
             $post = get_post(get_option( 'woocommerce_checkout_page_id' ));
             //$isShortCode = str_contains($post->post_content, 'woocommerce_checkout'); PHP 7+
             $position = strpos($post->post_content, 'woocommerce_checkout');
+            $position_new = strpos($post->post_content, '{"shortcode":"checkout"}');
             
         ?>
-        <?php if ($position === false) : ?>
+        <?php if (($position === false)&& ($position_new=== false)) : ?>
             <div class="easproject-error-banner">
                 <p class="easproject-error-banner-heading">We noticed that you are using "Wordpress Blocks" for the "Checkout" page</p>
                 <p>EAS EU compliance team is currently working on integrating the plugin with "Woocommerce Blocks"</p>
