@@ -3804,8 +3804,7 @@ function eascompliance_order_createpostsaleorder($order)
         }
     }
     if (!$country_found) {
-        eascompliance_log('error', 'Order $o shipping country $c is not supported by EAS API. ', ['o'=>$order->get_order_number(), 'c'=>$shipping_country]);
-        throw new Exception(EAS_TR('Order shipping country is not supported by EAS API'));
+        return;
     }
 
     $sales_order_json = array(
