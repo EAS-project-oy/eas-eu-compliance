@@ -6497,13 +6497,13 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
 
         // insufficient remaining quantity //.
         if ('1' === $reason) {
-            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution reported "insufficient remaining quantity". Please create create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution reported "insufficient remaining quantity". Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
             return;
         }
 
         // refunded giftcards  //.
         if ('2' === $reason) {
-            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution does not support gift card refunds. No action required.')));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution does not support gift card refunds. No actions required.')));
             return;
         }
 
