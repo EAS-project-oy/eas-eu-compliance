@@ -413,6 +413,7 @@ function eascompliance_woocommerce_init()
 			add_action('woocommerce_tax_rate_deleted', 'eascompliance_woocommerce_tax_rate_deleted');
 			add_action('woocommerce_before_attribute_delete', 'eascompliance_woocommerce_before_attribute_delete', 10, 3);
 			add_filter('wcml_load_multi_currency_in_ajax','eascompliance_wcml_load_multi_currency_in_ajax');
+			add_filter('woocommerce_adjust_non_base_location_prices', 'eascompliance_woocommerce_adjust_non_base_location_prices' );
 			add_filter('woocommerce_cart_remove_taxes_zero_rate_id','eascompliance_woocommerce_cart_remove_taxes_zero_rate_id');
 			add_filter('woocommerce_validate_postcode','eascompliance_woocommerce_validate_postcode', 10, 3);
 			add_filter('woocommerce_format_postcode','eascompliance_woocommerce_format_postcode', 10, 2);
@@ -532,7 +533,7 @@ add_action(
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
     if (eascompliance_is_active()) {
-        require_once 'EAScompliance-blocks.php';
+        //require_once 'EAScompliance-blocks.php';
     }
 }
 
@@ -4341,6 +4342,19 @@ function eascompliance_woocommerce_cart_get_cart_contents_taxes($taxes)
     }
 }
 
+/**
+ * Avoid prices change when prices are tax-inclusive and taxes are collected in store country
+ *
+ */
+function eascompliance_woocommerce_adjust_non_base_location_prices($adjust) {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    if ( get_option('easproj_freeze_prices_for_countries') === 'yes') {
+        $adjust = false;
+    }
+
+    return $adjust;
+};
 
 /**
  * Skip adding EAS tax when it should not present
@@ -6913,10 +6927,6 @@ function eascompliance_settings()
         $order_statuses[$id] = $label;
     }
 
-
-    global $wpdb;
-    $res = $wpdb->get_results('SELECT * FROM {$wpdb->prefix}woocommerce_attribute_taxonomies att', ARRAY_A);
-
     $attributes = array();
     foreach(EASCOMPLIANCE_PRODUCT_ATTRIBUTES as $att_name) {
 		$attributes[$att_name] = '(add new) - '.$att_name;
@@ -7143,6 +7153,13 @@ function eascompliance_settings()
             'options' => $shipping_methods,
             'css' => 'background-color: grey;display:none',
             'value' => array_keys($shipping_methods),
+        ),
+        'freeze_prices_for_countries' => array(
+            'name' => EAS_TR('Freeze prices for all countries.'),
+            'type' => 'checkbox',
+            'desc' => 'When enabled, prices will be the same for all customers.',
+            'id' => 'easproj_freeze_prices_for_countries',
+            'default' => 'no',
         ),
 		'section_vat_end' => array(
 			'type' => 'sectionend',
