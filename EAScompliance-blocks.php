@@ -433,9 +433,9 @@ function eascompliance_woocommerce_store_api_checkout_order_processed( $order ) 
 
             // specify reason on why re-calculation is needed
             if ($calc_jreq_saved['order_breakdown'] == $calc_jreq_new['order_breakdown']) {
-                $unset_reason = EAS_TR('Customer information/delivery address changed. This might influence on the taxes in your order. Please press button “Recalculate taxes and duties”');
+                $unset_reason = EAS_TR('Customer information/delivery address changed. This might influence on the taxes in your order. Please press button "Recalculate taxes and duties"');
             } else {
-                $unset_reason = EAS_TR('Cart contend changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+                $unset_reason = EAS_TR('Cart contend changed. Taxes should be recalculated. Please press button "Recalculate taxes and duties"');
 
                 if (count($calc_jreq_saved['order_breakdown']) == count($calc_jreq_new['order_breakdown']) ) {
                     $total_cost_saved = 0;
@@ -448,7 +448,7 @@ function eascompliance_woocommerce_store_api_checkout_order_processed( $order ) 
                         $total_cost_new += $item_new['cost_provided_by_em'];
                     }
                     if ( $total_cost_saved !== $total_cost_new) {
-                        $unset_reason = EAS_TR('Total order amount unexpectedly changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+                        $unset_reason = EAS_TR('Total order amount unexpectedly changed. Taxes should be recalculated. Please press button "Recalculate taxes and duties"');
                     }
                 }
             }

@@ -5401,9 +5401,9 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
             // specify reason on why re-calculation is needed
             if ($calc_jreq_saved['order_breakdown'] == $calc_jreq_new['order_breakdown']) {
-                $unset_reason = EAS_TR('Customer information/delivery address changed. This might influence on the taxes in your order. Please press button “Recalculate taxes and duties”');
+                $unset_reason = EAS_TR('Customer information/delivery address changed. This might influence on the taxes in your order. Please press button "Recalculate taxes and duties"');
             } else {
-                $unset_reason = EAS_TR('Cart contend changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+                $unset_reason = EAS_TR('Cart contend changed. Taxes should be recalculated. Please press button "Recalculate taxes and duties"');
 
                 if (count($calc_jreq_saved['order_breakdown']) == count($calc_jreq_new['order_breakdown']) ) {
                     $total_cost_saved = 0;
@@ -5416,7 +5416,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
                         $total_cost_new += $item_new['cost_provided_by_em'];
                     }
                     if ( $total_cost_saved !== $total_cost_new) {
-                        $unset_reason = EAS_TR('Total order amount unexpectedly changed. Taxes should be recalculated. Please press button “Recalculate taxes and duties”');
+                        $unset_reason = EAS_TR('Total order amount unexpectedly changed. Taxes should be recalculated. Please press button "Recalculate taxes and duties"');
                     }
                 }
             }
@@ -6494,47 +6494,39 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
 
         eascompliance_log('refund', 'order $order_id refund $refund_id deletion reason $reason', array('$order_id' => $order->get_order_number(), '$refund_id' => $refund_id, '$reason' => $reason));
 
-        // Delete refund that is invalid due to  insufficient remaining quantity //.
+        // insufficient remaining quantity //.
         if ('1' === $reason) {
-            wp_delete_post($refund_id, true);
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed due to insufficient remaining quantity. '), array('refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution reported "insufficient remaining quantity". Please create create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
             return;
         }
 
-        // Delete refund with refunded giftcards  //.
+        // refunded giftcards  //.
         if ('2' === $reason) {
-            wp_delete_post($refund_id, true);
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed due containing Giftcard. '), array('refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution does not support gift card refunds. No action required.')));
             return;
         }
 
-        // Delete refund with too many failed attempts  //.
+        // refund with too many failed attempts  //.
         if ('3' === $reason) {
-            wp_delete_post($refund_id, true);
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed due EAS return management service temporary unavailable. Please try to create Refund later '), array('refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution was not able to process refund. Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
             return;
         }
 
-        // Delete refund with no items to refund //.
+        // refund with no items to refund //.
         if ('4' === $reason) {
-            wp_delete_post($refund_id, true);
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed. Please enter quantity greater then 0 for items to be returned and try again. '), array('$refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS does not support zero quantity refunds. Refund $refund_id was not captured by EAS solution. Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.'), array('$refund_id' => $refund_id)));
             return;
         }
 
-        // Delete refund when its total is larger than order total //.
+        // refund when its total is larger than order total //.
         if ('5' === $reason) {
-            wp_delete_post($refund_id, true);
-
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed. Refund total cannot be more than order total.'), array('$refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution reported "Refund total cannot be more than order total". Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
             return;
         }
 
-        // Delete refund when /create_return_with_lc request status is not OK //.
+        // refund when /create_return_with_lc request status is not OK //.
         if ('6' === $reason) {
-            wp_delete_post($refund_id, true);
-
-            $order->add_order_note(eascompliance_format(EAS_TR('Refund $refund_id cancelled and removed. Refund response status is not OK.'), array('$refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS solution was not able to process refund. Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.')));
             return;
         }
 
@@ -7456,16 +7448,16 @@ function eascompliance_settings_merchant_module_tab()
         <b><?php echo EAS_TR('To connect to the EAS Merchandise module, follow these steps:'); ?></b>
         <ol>
             <li><?php echo EAS_TR('Go to WooCommerce > Settings > Advanced > REST API menu.'); ?></li>
-            <li><?php echo EAS_TR('Press the button “Add key”.'); ?></li>
+            <li><?php echo EAS_TR('Press the button "Add key".'); ?></li>
             <li><?php echo EAS_TR('In opened window, fill Description with any name, set permissions to > Read/write. User field will be
                 filled automatically by the system, leave it as is.'); ?>
             </li>
-            <li><?php echo EAS_TR('Press the “Generate API key” button.'); ?></li>
+            <li><?php echo EAS_TR('Press the "Generate API key" button.'); ?></li>
             <li><?php echo EAS_TR('A window with key details will appear. Leave it open.'); ?></li>
             <li><?php echo EAS_TR('Go to <a target="_blank" href="https://mpm.easproject.com/">https://mpm.easproject.com/</a>'); ?></li>
             <li><?php echo EAS_TR('Authenticate using your login and password to the EAS Merchandise module. Login and password are the
                 same as for EAS Dashboard.'); ?></li>
-            <li><?php echo EAS_TR('Inside EAS Merchandise module, press button “Create” and select WooCommerce.'); ?></li>
+            <li><?php echo EAS_TR('Inside EAS Merchandise module, press button "Create" and select WooCommerce.'); ?></li>
             <li><?php echo EAS_TR('In the opened window, insert the following data: Name of the Store, Full URL and generated API keys
                 during step 4. Press Save. If inserted data is correct, the connection will be established.'); ?>
             </li>
@@ -7473,7 +7465,7 @@ function eascompliance_settings_merchant_module_tab()
                 detailed instructions available in WC manual (Section 3.7). Please find the manual in our Help desk: <a
                         href="https://easproject.zendesk.com/hc/en-us/articles/6152957985053-WooCommerce-full-manual"
                         target="_blank">https://easproject.zendesk.com/hc/en-us/articles/6152957985053-WooCommerce-full-manual'); ?></a></li>
-            <li><?php echo EAS_TR('After proper mapping, Press the “Start processing” button to parse SKU data from the shop into the
+            <li><?php echo EAS_TR('After proper mapping, Press the "Start processing" button to parse SKU data from the shop into the
                 Merchandise module. Parsing make take some time, depending on the number of SKUs in the Merchant store.'); ?>
             </li>
             <li><?php echo EAS_TR('The connection now is established and products from the Merchant’s store are linked to EAS Merchandise
