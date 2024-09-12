@@ -1799,7 +1799,7 @@ function eascompliance_get_oauth_token()
         } elseif ('401' === $auth_response_status) {
             // Unauthorized
             eascompliance_log('error', 'Authorization failed: $r', array('$r' => $auth_response));
-            throw new EAScomplianceAuthorizationFaliedException(EAS_TR('EU tax calculation service temporary unavailable. Please try to place an order later.'));
+            throw new EAScomplianceAuthorizationFaliedException(EAS_TR('Invalid Client credentials provided. Please check EAS client ID and EAS client secret.'));
         } else {
             eascompliance_log('error', 'Auth response not OK: $r', array('$r' => $auth_response));
             throw new Exception(EAS_TR('EU tax calculation service temporary unavailable. Please try to place an order later.'));
@@ -7491,74 +7491,6 @@ function eascompliance_settings_logs_tab()
     </div>
 <?php }
 
-/**
- * Render EAS Connection status page
- */
-function eascompliance_settings_connection_status_page()
-{
-    $auth_token = eascompliance_get_oauth_token();
-
-    $options = array(
-        'method' => 'GET',
-        'headers' => array(
-            'Content-type' => 'application/json',
-            'Authorization' => 'Bearer ' . $auth_token,
-        ),
-        'sslverify' => false,
-    );
-    $status_request = woocommerce_settings_get_option('easproj_eas_api_url') . '/user/self/';
-    $response = (new WP_Http)->request($status_request, $options);
-    if (is_wp_error($response)) {
-        throw new Exception($response->get_error_message());
-    }
-    $status_request_code = (string)$response['response']['code'];
-    if ('200' === $status_request_code) {
-        $client_details = json_decode($response['body']);
-
-
-        echo '<h2>' . EAS_TR('Connection status') . '</h2>
-            <div id="--description">';
-        foreach ($client_details as $key => $client_detail) {
-            echo '<ul>';
-            switch ($key) {
-                case 'identifier' :
-                    $key = EAS_TR('Your EAS Identifier:');
-                    break;
-                case 'legal_status':
-                    $key = EAS_TR('EM legal status:');
-                    break;
-                case 'is_ei':
-                    $key = EAS_TR('In EAS EM  registered as:');
-                    // is_ei
-                    if ($client_details->is_ei == true) {
-                      $client_detail = EAS_TR('Electronic Interface');
-                    } 
-                    else {
-                      $client_detail = EAS_TR('Not electronic Interface');
-                    }
-                    break;
-                case 'oss_registered':
-                    $key = EAS_TR('OSS Registered:');
-                    // oss_registered
-                    if ($client_details->oss_registered == true) {
-                       $client_detail = EAS_TR('YES');
-                    } else {
-                      $client_detail = EAS_TR('NO');
-                    }
-                    break;
-                case 'product_description_language':
-                    $key = EAS_TR('Product Description language:');
-                    break;
-            }
-
-          
-
-            echo '<li><b>' . $key . '</b>  - ' . $client_detail . '</li>';
-
-        }
-        echo '</ul></div>';
-    }
-}
 
 add_action('woocommerce_settings_tabs_settings_tab_merchant', 'eascompliance_woocommerce_settings_tabs_settings_tab_merchant');
 /**
@@ -7612,10 +7544,68 @@ function eascompliance_woocommerce_settings_tab_settings_tab_connection_status()
 
     try {
         set_error_handler('eascompliance_error_handler');
-        eascompliance_settings_connection_status_page();
+
+        $auth_token = eascompliance_get_oauth_token();
+
+        $options = array(
+            'method' => 'GET',
+            'headers' => array(
+                'Content-type' => 'application/json',
+                'Authorization' => 'Bearer ' . $auth_token,
+            ),
+            'sslverify' => false,
+        );
+        $status_request = woocommerce_settings_get_option('easproj_eas_api_url') . '/user/self/';
+        $res = (new WP_Http)->request($status_request, $options);
+        if (is_wp_error($res)) {
+            throw new Exception($res->get_error_message());
+        }
+        $status = (string)$res['response']['code'];
+        $res_j = json_decode($res['body']);
+        if ('200' !== $status) {
+            throw new Exception($res_j['message']);
+        }
+
+        echo '<h2>' . EAS_TR('Connection status') . '</h2><div id="--description"><ul>';
+        foreach ($res_j as $key => $client_detail) {
+            switch ($key) {
+                case 'identifier' :
+                    $key = EAS_TR('Your EAS Identifier:');
+                    break;
+                case 'legal_status':
+                    $key = EAS_TR('EM legal status:');
+                    break;
+                case 'is_ei':
+                    $key = EAS_TR('In EAS EM  registered as:');
+                    // is_ei
+                    if ($res_j->is_ei == true) {
+                        $client_detail = EAS_TR('Electronic Interface');
+                    }
+                    else {
+                        $client_detail = EAS_TR('Not electronic Interface');
+                    }
+                    break;
+                case 'oss_registered':
+                    $key = EAS_TR('OSS Registered:');
+                    // oss_registered
+                    if ($res_j->oss_registered == true) {
+                        $client_detail = EAS_TR('YES');
+                    } else {
+                        $client_detail = EAS_TR('NO');
+                    }
+                    break;
+                case 'product_description_language':
+                    $key = EAS_TR('Product Description language:');
+                    break;
+            }
+            echo '<li><b>' . $key . '</b>  - ' . $client_detail . '</li>';
+
+        }
+        echo '</ul></div>';
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-        throw $ex;
+        echo eascompliance_format('<h2>$caption</h2><div id="error">$msg</div>', ['caption'=>esc_html(EAS_TR('Connection status')), 'msg'=> esc_html($ex->getMessage())]);
     } finally {
         restore_error_handler();
     }
