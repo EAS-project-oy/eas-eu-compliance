@@ -3775,7 +3775,7 @@ function eascompliance_order_createpostsaleorder($order)
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
     }
 
-    // check that shipping country is be supported by EAS API
+    // check that shipping country is supported by EAS API
     // https://api-doc.easproject.com/order-management/fetch_supported_country_list_for_em
     $options = array(
         'method' => 'GET',
@@ -3804,6 +3804,7 @@ function eascompliance_order_createpostsaleorder($order)
         }
     }
     if (!$country_found) {
+        //no logging or exception needed
         return;
     }
 
