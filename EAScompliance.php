@@ -3983,7 +3983,8 @@ function eascompliance_woocommerce_after_order_object_save2($order)
             return;
         }
 
-		if ($order->get_meta('_eascompliance_tracking_number_notified') === $tracking_no) {
+        // notify only initial tracking number, subsequent tracking number changes are not notified
+		if (!empty($order->get_meta('_eascompliance_tracking_number_notified'))) {
 			return;
 		}
 
