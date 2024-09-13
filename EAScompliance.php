@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.5.30
+ * Version: 1.5.31
  * Tested up to 6.5.4
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -3773,6 +3773,39 @@ function eascompliance_order_createpostsaleorder($order)
 
     if (!eascompliance_supported_country($shipping_country, $shipping_postcode)) {
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
+    }
+
+    // check that shipping country is supported by EAS API
+    // https://api-doc.easproject.com/order-management/fetch_supported_country_list_for_em
+    $options = array(
+        'method' => 'GET',
+        'headers' => array(
+            'Authorization' => 'Bearer ' . $auth_token,
+        ),
+        'timeout' => 5,
+        'sslverify' => false,
+    );
+    $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/fetch_supported_country_list_for_em';
+    $res = (new WP_Http)->request($url, $options);
+    if (is_wp_error($res)) {
+        throw new Exception($res->get_error_message());
+    }
+    $status = (string)$res['response']['code'];
+    if ('200' !== $status) {
+        throw new Exception($res['response']['message']);
+    }
+    $api_countries = json_decode($res['body'], true);
+
+    $country_found = false;
+    foreach($api_countries as $c) {
+        if ($c['country_code'] === $shipping_country) {
+            $country_found = true;
+            break;
+        }
+    }
+    if (!$country_found) {
+        //no logging or exception needed
+        return;
     }
 
     $sales_order_json = array(
