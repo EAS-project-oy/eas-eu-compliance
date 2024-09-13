@@ -6576,7 +6576,7 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
 
         // refund with no items to refund //.
         if ('4' === $reason) {
-            $order->add_order_note(eascompliance_format(EAS_TR('EAS does not support zero quantity refunds. Refund $refund_id was not captured by EAS solution. Please create refund in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.'), array('$refund_id' => $refund_id)));
+            $order->add_order_note(eascompliance_format(EAS_TR('EAS does not support zero quantity refunds. Refund $refund_id was not captured by EAS solution. Please create refund/discount in <a href="https://dashboard.easproject.com">EAS dashboard</a> manually.'), array('$refund_id' => $refund_id)));
             return;
         }
 
