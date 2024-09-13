@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.4
 Tested up to: 6.5.4
-Stable tag: 1.5.24
+Stable tag: 1.5.30
 Last updated time: 11.06.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,9 +35,9 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
 * All the data available in accountant friendly format, further reducing the need for manual work. 
 * WooCommerce High-Performance Order Storage (HPOS) supported.
-* PHP 8.0 support verified.
 * Prohibition of ordering over the amount of threshold establisehd in EU for IOSS orders.
 * EU Company VAT number online validation 
+
 
 **How to get started?**
 
@@ -126,6 +126,13 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.5.30 =
+
+* New feature added, "Freeze Prices," which enables the sale of products across all EU countries at a uniform price, inclusive of taxes
+* Refunds processing logic changed. Notification messages rephrased for better undestanding
+* Minor changes to the paid orders and shipping infromation processing logic done 
+* Minor changes to the translations done 
+
 = 1.5.24 =
 
 * Compatibility issue with latest WooPayments fixed. New option in the plugin settings implemented "Load payments methods from server before taxes were calculated". The option should be enabled only if WooPayments compatibility issue identfied. When calculations are finished, payment methods do not display input forms to enter credit card information. 
