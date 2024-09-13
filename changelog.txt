@@ -1,6 +1,6 @@
 == Changelog ==
 
-= 1.5.30 =
+15-09-24 - version 1.5.30
 
 * New feature added, "Freeze Prices," which enables the sale of products across all EU countries at a uniform price, inclusive of taxes
 * Refunds processing logic changed. Notification messages rephrased for better undestanding
@@ -8,16 +8,16 @@
 * Minor changes to the translations done 
 
 
-= 1.5.24 =
+15-06-24 - version 1.5.24
 
 * Compatibility issue with latest WooPayments fixed. New option in the plugin settings implemented "Load payments methods from server before taxes were calculated". The option should be enabled only if WooPayments compatibility issue identfied. When calculations are finished, payment methods do not display input forms to enter credit card information. 
 
 
-= 1.5.23 = 
+11-06-24 - version 1.5.23
 
 * Some plugins changing product description on the fly, that caused unnecessary calculations in EAS plugin.  Additional validations added to prevent this.
 
-= 1.5.21 =
+05-06-24 - version 1.5.21
 * The EU company VAT validation feature can be disabled in the settings.
 * The EU company VAT validation feature will not be used if the Company Name field is hidden in the WooCommerce Checkout settings.
 * Administrators can translate the price breakdown information.
@@ -27,18 +27,18 @@
 * The issue with duplicated items in the order has been fixed.
 * Detailed information about why an order needs to be recalculated has been added.
 
-= 1.5.7 =
+21-02-24 - version 1.5.7
 * New freature implemented. EU Company VAT number validation added on the checkout page. 
 
-= 1.5.4 =
+07-02-24 - version 1.5.4
 * Integrated into the admin order view visualization for B2B customers' VAT numbers gathered during the checkout process.
 * Resolved an issue related to the display of the checkout page within the editor.
 * Incorporated validation for the usage of WordPress blocks on the checkout page.
 
-= 1.5.1 =
+15-01-24 - version 1.5.1
 * Small update in the Tax rates updating logic
 
-= 1.5.0 =
+10-01-24 - version 1.5.0
 * Implemented support for Woo Gift Cards within WooCommerce, enhancing the plugins's capability for gift card handling.
 * Developed a feature ensuring the checkout page reloads after landed cost calculation, addressing compatibility issues with certain store themes that were not displaying payment methods correctly. 
 * Rectified the problem related to URL encoding/decoding of checkout data, resolving inconsistencies caused by plugins encoding checkout form data improperly.
@@ -47,14 +47,14 @@
 * Conducted miscellaneous enhancements and bug fixes to improve the user experience and streamline functionalities within the EAS EU Compliance plugin.
 
 
-= 1.4.92 =
+23-11-23 - version 1.4.92
 * Validation of Company EU VAT identification number for B2B sales added. Validation implemented as separate popup window. 
 
-= 1.4.89 =
+17-11-23 - version 1.4.89
 * Bug fixed when after landed cost calculated WooCommerce returns delivery options for store registration company.
 * Additional validation added for B2B sales
 
-= 1.4.87 =
+15-11-23 - version 1.4.87 
 * Removed unnecessary checkout page reload. 
 * Refactored plugin behaviour on the checkout steps.
 * Support of WooCommerce Multilingual and Multicurrency plugin refactored.
@@ -63,10 +63,10 @@
 * Some minor updates implemented.
 
 
-= 1.4.82 =
+13-11-23 - version 1.4.82 
 * Fully refactored dscount handling process. Starting from 1.4.82 EAS EU plugin supports multi coupons.
 
-= 1.4.72 =
+14-09-23 - version 1.4.72
 * New feature implemented: "Prevent orders being paid over 150€ threshold."
 * PHP 8.0 support verified
 * Improved whole performance of the plugin
@@ -75,16 +75,16 @@
 * Some unnecessary API calls removed.
 * Added support of VAT naming in EU countries
 
-= 1.4.70 =
+11-08-23 - version 1.4.70
 * New feature implemented: Prohibition of ordering over the amount of threshold establisehd in EU for IOSS.
 * PHP 8.0 support verified
 * Improved whole performance of the plugin
 * Fixed issue with unnecessary data in the event log posted.
 
-17-07-23 1.4.63 =
+17-07-23 - version 1.4.63
 * Hotfix for the detected issue with init process released
 
- 1.4.62 =
+14-07-23 - version 1.4.62
 * Issue with unsaved checkout form data fixed
 
 13-07-23 - version 1.4.59 
