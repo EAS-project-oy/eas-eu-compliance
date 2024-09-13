@@ -1,5 +1,13 @@
 == Changelog ==
 
+= 1.5.30 =
+
+* New feature added, "Freeze Prices," which enables the sale of products across all EU countries at a uniform price, inclusive of taxes
+* Refunds processing logic changed. Notification messages rephrased for better undestanding
+* Minor changes to the paid orders and shipping infromation processing logic done 
+* Minor changes to the translations done 
+
+
 = 1.5.24 =
 
 * Compatibility issue with latest WooPayments fixed. New option in the plugin settings implemented "Load payments methods from server before taxes were calculated". The option should be enabled only if WooPayments compatibility issue identfied. When calculations are finished, payment methods do not display input forms to enter credit card information. 
