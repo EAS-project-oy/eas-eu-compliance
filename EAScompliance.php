@@ -3728,6 +3728,57 @@ function eascompliance_status_ajax()
     }
 }
 
+/**
+ * Check that order shipping country is supported by EAS API
+ * https://api-doc.easproject.com/order-management/fetch_supported_country_list_for_em
+ *
+ * @param object $order order.
+ * @param string $auth_token auth token.
+ * @returns bool
+ * @throws Exception May throw exception.
+ */
+function eascompliance_order_shipping_country_supported($order, $auth_token=null) {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+    $shipping_country = $order->get_shipping_country();
+
+    if (is_null($auth_token)) {
+        $auth_token = eascompliance_get_oauth_token();
+    }
+
+    $options = array(
+        'method' => 'GET',
+        'headers' => array(
+            'Authorization' => 'Bearer ' . $auth_token,
+        ),
+        'timeout' => 5,
+        'sslverify' => false,
+    );
+
+    $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/fetch_supported_country_list_for_em';
+    $res = (new WP_Http)->request($url, $options);
+    if (is_wp_error($res)) {
+        throw new Exception($res->get_error_message());
+    }
+    $status = (string)$res['response']['code'];
+    if ('200' !== $status) {
+        throw new Exception($res['response']['message']);
+    }
+    $api_countries = json_decode($res['body'], true);
+
+    $country_found = false;
+    foreach($api_countries as $c) {
+        if ($c['country_code'] === $shipping_country) {
+            $country_found = true;
+            break;
+        }
+    }
+    if (!$country_found) {
+        return false;
+    }
+
+    return true;
+}
 
 /**
  * Call /createpostsaleorder and save received order data
@@ -3775,38 +3826,10 @@ function eascompliance_order_createpostsaleorder($order)
         throw new Exception(EAS_TR('Order shipping country must be in EU'));
     }
 
-    // check that shipping country is supported by EAS API
-    // https://api-doc.easproject.com/order-management/fetch_supported_country_list_for_em
-    $options = array(
-        'method' => 'GET',
-        'headers' => array(
-            'Authorization' => 'Bearer ' . $auth_token,
-        ),
-        'timeout' => 5,
-        'sslverify' => false,
-    );
-    $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/fetch_supported_country_list_for_em';
-    $res = (new WP_Http)->request($url, $options);
-    if (is_wp_error($res)) {
-        throw new Exception($res->get_error_message());
-    }
-    $status = (string)$res['response']['code'];
-    if ('200' !== $status) {
-        throw new Exception($res['response']['message']);
-    }
-    $api_countries = json_decode($res['body'], true);
-
-    $country_found = false;
-    foreach($api_countries as $c) {
-        if ($c['country_code'] === $shipping_country) {
-            $country_found = true;
-            break;
-        }
-    }
-    if (!$country_found) {
+    if (!eascompliance_order_shipping_country_supported($order, $auth_token)) {
         //no logging or exception needed
         return;
-    }
+    };
 
     $sales_order_json = array(
         'order' => $order_json,
@@ -5971,6 +5994,11 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
         )));
 
 		$auth_token = eascompliance_get_oauth_token();
+
+        if (!eascompliance_order_shipping_country_supported($order, $auth_token)) {
+            return 6;
+        };
+
         $boundary = uniqid();
         $body = "--$boundary\r\nContent-Disposition: form-data; name=\"json\"; filename=\"json\"\r\nContent-Type: application/json; charset=utf-8\r\n\r\n"
             .json_encode($request_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR)
