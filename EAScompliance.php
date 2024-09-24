@@ -4449,7 +4449,9 @@ function eascompliance_convert_price_to_selected_currency($price)
     eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
 
     $price_old = $price;
-    if (function_exists('WC_Payments_Multi_Currency')) {
+
+    // Multicurrency conversion should happen when $cart_item['line_total'] does not depend on client selected currency
+    if (function_exists('WC_Payments_Multi_Currency') && get_option('easproj_multicurrency_convert_cart_prices') === 'yes') {
         $multi_currency = WC_Payments_Multi_Currency();
         $currency = $multi_currency->get_selected_currency()->get_code();
         $price = $multi_currency->get_price($price, 'product');
@@ -7209,10 +7211,17 @@ function eascompliance_settings()
             'value' => array_keys($shipping_methods),
         ),
         'freeze_prices_for_countries' => array(
-            'name' => EAS_TR('Freeze prices for all countries.'),
+            'name' => EAS_TR('Freeze prices for all countries'),
             'type' => 'checkbox',
             'desc' => 'When enabled, prices will be the same for all customers.',
             'id' => 'easproj_freeze_prices_for_countries',
+            'default' => 'no',
+        ),
+        'multicurrency_convert_cart_prices' => array(
+            'name' => EAS_TR('Multi-currency convert cart prices'),
+            'type' => 'checkbox',
+            'desc' => 'When enabled along with <a href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/" target="_blank">Multi-Currency with WooPayments</a>, converts cart prices to client currency upon sending to EAS',
+            'id' => 'easproj_multicurrency_convert_cart_prices',
             'default' => 'no',
         ),
 		'section_vat_end' => array(
