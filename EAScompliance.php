@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: EAS EU compliance
- * Description: EAS EU compliance is a comprehensive fully automated solution for new special EU VAT and customs schemes and UK VAT and customs compiance!
+ * Description: EAS EU compliance is a comprehensive fully automated solution for new special EU VAT and customs schemes and UK VAT and customs compliance
  * Author: EAS project
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
@@ -7220,8 +7220,7 @@ function eascompliance_settings()
         'multicurrency_convert_cart_prices' => array(
             'name' => EAS_TR('Multi-currency convert cart prices'),
             'type' => 'checkbox',
-            'desc' => 'When enabled along with <a href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/" target="_blank">Multi-Currency with WooPayments</a>, converts cart prices to client currency upon sending to EAS',
-            'id' => 'easproj_multicurrency_convert_cart_prices',
+            'desc' => '<span style="color:red;font-weight:bold;">Use with caution!</span> When enabled along with <a href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/" target="_blank">Multi-Currency with WooPayments</a>, converts cart prices to client currency upon sending to EAS. <b>Please double check that prices are properly displayed at checkout after taxes are calculated</b>',
             'default' => 'no',
         ),
 		'section_vat_end' => array(
