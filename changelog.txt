@@ -1,4 +1,6 @@
 == Changelog ==
+01-10-24 - version 1.5.30
+* Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options. 
 
 15-09-24 - version 1.5.30
 

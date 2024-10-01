@@ -126,6 +126,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.5.34 =
+* Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options.
+
 = 1.5.30 =
 
 * New feature added, "Freeze Prices," which enables the sale of products across all EU countries at a uniform price, inclusive of taxes
