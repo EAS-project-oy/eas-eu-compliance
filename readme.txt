@@ -1,18 +1,17 @@
 ===  EAS EU compliance  ===
 
 Contributors: easyaccesssystem
-Tags: IOSS, OSS, EU VAT, VAT calculator, IOSS registration
+Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.4
 Tested up to: 6.5.4
-Stable tag: 1.5.30
-Last updated time: 11.06.2024
+Stable Tag: 1.5.35
+Last updated time: 01.10.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
-EAS solution automates the complicated EU VAT, IOSS, OSS and UK VAT and customs compliance. With the comprehensive solution and full automation, you can focus on the important - sales.
+EAS solution automates the complicated EU VAT and UK VAT compliance. With the comprehensive solution and full automation, you focus only on sales.
  
 == Description ==
 
@@ -127,7 +126,8 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
-= 1.5.34 =
+= 1.5.35 =
+
 * Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options.
 
 = 1.5.30 =
