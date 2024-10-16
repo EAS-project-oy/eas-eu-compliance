@@ -7508,42 +7508,6 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
     }
 }
 
-/**
- * Render Merchant Module settings page
- */
-function eascompliance_settings_merchant_module_tab()
-{ ?>
-    <h2><?php echo EAS_TR('EAS Merchandise module'); ?></h2>
-    <div id="-description">
-        <b><?php echo EAS_TR('To connect to the EAS Merchandise module, follow these steps:'); ?></b>
-        <ol>
-            <li><?php echo EAS_TR('Go to WooCommerce > Settings > Advanced > REST API menu.'); ?></li>
-            <li><?php echo EAS_TR('Press the button "Add key".'); ?></li>
-            <li><?php echo EAS_TR('In opened window, fill Description with any name, set permissions to > Read/write. User field will be
-                filled automatically by the system, leave it as is.'); ?>
-            </li>
-            <li><?php echo EAS_TR('Press the "Generate API key" button.'); ?></li>
-            <li><?php echo EAS_TR('A window with key details will appear. Leave it open.'); ?></li>
-            <li><?php echo EAS_TR('Go to <a target="_blank" href="https://mpm.easproject.com/">https://mpm.easproject.com/</a>'); ?></li>
-            <li><?php echo EAS_TR('Authenticate using your login and password to the EAS Merchandise module. Login and password are the
-                same as for EAS Dashboard.'); ?></li>
-            <li><?php echo EAS_TR('Inside EAS Merchandise module, press button "Create" and select WooCommerce.'); ?></li>
-            <li><?php echo EAS_TR('In the opened window, insert the following data: Name of the Store, Full URL and generated API keys
-                during step 4. Press Save. If inserted data is correct, the connection will be established.'); ?>
-            </li>
-            <li><?php echo EAS_TR('Afterwards, the mapping process is initiated, a new window is opened. Map fields according to the
-                detailed instructions available in WC manual (Section 3.7). Please find the manual in our Help desk: <a
-                        href="https://easproject.zendesk.com/hc/en-us/articles/6152957985053-WooCommerce-full-manual"
-                        target="_blank">https://easproject.zendesk.com/hc/en-us/articles/6152957985053-WooCommerce-full-manual'); ?></a></li>
-            <li><?php echo EAS_TR('After proper mapping, Press the "Start processing" button to parse SKU data from the shop into the
-                Merchandise module. Parsing make take some time, depending on the number of SKUs in the Merchant store.'); ?>
-            </li>
-            <li><?php echo EAS_TR('The connection now is established and products from the Merchant’s store are linked to EAS Merchandise
-                module.'); ?>
-            </li>
-        </ol>
-    </div>
-<?php }
 
 /**
  * Render EAS Settings logs page
@@ -7563,7 +7527,7 @@ function eascompliance_settings_logs_tab()
 
 add_action('woocommerce_settings_tabs_settings_tab_merchant', 'eascompliance_woocommerce_settings_tabs_settings_tab_merchant');
 /**
- * Merchant module settings page
+ * EAS Merchantdise Module (MPM) settings page
  *
  * @throws Exception May throw exception.
  */
@@ -7571,15 +7535,159 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_merchant()
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
+    $status_message = 'MPM connection';
+
     try {
         set_error_handler('eascompliance_error_handler');
-        eascompliance_settings_merchant_module_tab();
+
+        global $wpdb;
+
+        $key_descr = 'EAS MPM Key';
+        $key_user_id = get_current_user_id();
+        $key = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM  {$wpdb->prefix}woocommerce_api_keys WHERE description = %s AND user_id = %d"
+            , $key_descr, $key_user_id), ARRAY_A);
+        if ($wpdb->last_error) {
+            throw new Exception($wpdb->last_error);
+        }
+
+        if (count($key) > 0) {
+            $status_message = 'MPM connection key present';
+        } else {
+            $status_message = 'MPM connection key not present';
+        }
+
+        if (array_key_exists('eascompliance_connect_mpm', $_POST) && count($key) === 0) {
+            // connect  with EAS Merchandise module (MPM)
+
+            $customer_key = 'ck_' . wc_rand_hash();
+            $customer_secret = 'cs_' . wc_rand_hash();
+
+            $store_data = array(
+                'email' => get_site_option('admin_email'),
+                'url' => get_option('siteurl'),
+                'clientKey' => $customer_key,
+                'clientSecret' => $customer_secret,
+
+                // EASCOMPLIANCE_PRODUCT_ATTRIBUTES
+                'hs6PReceived' => eascompliance_woocommerce_settings_get_option_sql('easproj_hs6p_received'),
+                'warehouseCountry' => eascompliance_woocommerce_settings_get_option_sql('easproj_warehouse_country'),
+                'reducedVatGroup' => eascompliance_woocommerce_settings_get_option_sql('easproj_reduced_vat_group'),
+                'disclosedAgent' => eascompliance_woocommerce_settings_get_option_sql('easproj_disclosed_agent'),
+                'sellerRegCountry' => eascompliance_woocommerce_settings_get_option_sql('easproj_seller_reg_country'),
+                'originatingCountry' => eascompliance_woocommerce_settings_get_option_sql('easproj_originating_country'),
+            );
+
+            $body = json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+
+            $url = 'https://mpm.easproject.com/api/woo/save-woo-key';
+            if (eascompliance_log_level('mpm_dev')) {
+                $url = 'https://mpm-dev.easproject.com/api/woo/save-woo-key';
+            }
+            $options = array(
+                'method' => 'POST',
+                'headers' => array(
+                    'Content-type' => 'application/json',
+                    'Authorization' => 'EB27386D-7F26-4549-B57D-4EEFBAE6B1B5'
+                ),
+                'body' => $body,
+                'sslverify' => true,
+            );
+
+            $req = (new WP_Http)->request($url, $options);
+            if (is_wp_error($req)) {
+                eascompliance_log('error', 'MPM server request failed: $r', array('$r' => $req));
+                throw new Exception($req->get_error_message());
+            }
+
+            $response_status = (string)$req['response']['code'];
+            if ('200' !== $response_status) {
+                eascompliance_log('error', 'MPM server key exchange failed: url $url store data $sd', array('sd'=>$store_data, 'url'=>$url));
+                throw new Exception(eascompliance_format('MPM server key exchange failed: $r', ['r'=>$req['response']['message']]));
+            }
+
+            $conn_id = json_decode($req['body'], true)['connection_id'];
+
+            update_option('eascompliance_merchant_module_connection_id', $conn_id);
+
+            $key = [
+                'user_id' => $key_user_id,
+                'description' => $key_descr,
+                'permissions' => 'read_write',
+                'consumer_key' => $customer_key,
+                'consumer_secret' => $customer_secret,
+                'truncated_key' => substr($customer_key, -7),
+            ];
+
+            $wpdb->insert(
+                $wpdb->prefix . 'woocommerce_api_keys',
+                $key,
+                array('%d', '%s', '%s', '%s', '%s', '%s',)
+            );
+            if ($wpdb->last_error) {
+                throw new Exception($wpdb->last_error);
+            }
+            $key_id = $wpdb->insert_id;
+
+            eascompliance_log('info', 'created REST API key_id $k, merchant module connection id $id', ['k' => $key_id, 'id'=>$conn_id]);
+            $status_message = 'MPM connection key created';
+
+        }
+
+
+        if (array_key_exists('eascompliance_disconnect_mpm', $_POST) && count($key) > 0) {
+            // delete REST API key and connection id
+
+            $key_id = $key[0]['key_id'];
+            $res = $wpdb->delete(
+                $wpdb->prefix . 'woocommerce_api_keys',
+                array('key_id'=>$key_id),
+                array('%d')
+            );
+            if ($wpdb->last_error) {
+                throw new Exception($wpdb->last_error);
+            }
+            if ($key_id) {
+                eascompliance_log('info', 'deleted REST API key_id $k', ['k'=>$key_id]);
+                $status_message = 'MPM connection key removed';
+            }
+
+            update_option('eascompliance_merchant_module_connection_id', '');
+
+        }
+
+        // TODO Is this possible to check and confirm MPM connection here?
+
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
-        throw $ex;
+        $status_message = $ex->getMessage();
     } finally {
         restore_error_handler();
     }
+
+    $conn_id = get_option('eascompliance_merchant_module_connection_id', '');
+
+    ?>
+    <h2><?php echo EAS_TR('EAS Merchandise module'); ?></h2>
+    <div class="eascompliance_mpm_auto">
+        <div>
+            Make Woocommerce REST API keys and send them to <a href="https://mpm.easproject.com/">EAS Merchandise module</a> (MPM) following <a href="https://help.easproject.com/how-to-connect-and-configure-eas-merchandise-module" target="_blank"> manual guide</a>
+        </div>
+        <?php echo empty($conn_id) ?
+            '<button type="submit" name="eascompliance_connect_mpm" class="button-primary woocommerce-save-button">connect MPM</button>'
+            : '<button type="submit" name="eascompliance_disconnect_mpm" class="button-primary woocommerce-save-button">disconnect MPM</button>';
+        ?>
+        <div>
+            <?php echo empty($conn_id) ?
+                'MPM connection id not present' :
+                "Please use connection id $conn_id at <a href='https://mpm.easproject.com/'>MPM</a> to establish connection" ;
+            ?>
+        </div>
+        <div><?php echo htmlspecialchars($status_message); ?></div>
+    </div>
+    <?php
+
 }
 
 add_action('woocommerce_settings_tabs_settings_tab_logs', 'eascompliance_woocommerce_settings_tabs_settings_tab_logs');

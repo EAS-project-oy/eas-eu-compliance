@@ -71,3 +71,7 @@ label[for="eas_design_label"] {
     font-weight: bold;
     color: rgba(217,79,79, 1);
 }
+
+.eascompliance_mpm_auto {
+    line-height: 3;
+}
