@@ -2763,7 +2763,7 @@ function eascompliance_ajaxhandler()
 			if ($company_name == 'No company') throw new EAScomplianceBreakException();
 
 			// require company VAT number
-			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales.'));
+			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales. Note that VAT validation field may be visible in the "Shipping address" section.'));
 
 			$session_company_vat = eascompliance_session_get('company_vat');
 			$session_company_vat_validated = eascompliance_session_get('company_vat_validated');

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: eascompliance\n"
-"POT-Creation-Date: 2024-09-12 10:04+0300\n"
+"POT-Creation-Date: 2024-10-22 09:09+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: info@easproject.com\n"
@@ -18,31 +18,31 @@ msgstr ""
 "X-Generator: Poedit 3.4.4\n"
 "X-Poedit-SearchPath-0: ./EAScompliance.php\n"
 
-#: EAScompliance-blocks.php:309 EAScompliance.php:5305
+#: EAScompliance-blocks.php:309 EAScompliance.php:5368
 msgid ""
 "Customs Duties Missing. We found error in your cart. Please reload page. <a "
 "href=\"./\">reload</a>"
 msgstr "TULLAR SAKNAS. Please reload page. <a href=\"./\">reload</a>"
 
 #: EAScompliance-blocks.php:321 EAScompliance-blocks.php:389
-#: EAScompliance-blocks.php:432 EAScompliance.php:5317 EAScompliance.php:5353
-#: EAScompliance.php:5396
+#: EAScompliance-blocks.php:432 EAScompliance.php:5380 EAScompliance.php:5416
+#: EAScompliance.php:5459
 msgid "PLEASE RE-CALCULATE CUSTOMS DUTIES"
 msgstr "RÄKNA OM TULLARNA"
 
-#: EAScompliance-blocks.php:436 EAScompliance.php:5400
+#: EAScompliance-blocks.php:436 EAScompliance.php:5463
 msgid ""
 "Customer information/delivery address changed. This might influence on the "
 "taxes in your order. Please press button \"Recalculate taxes and duties\""
 msgstr ""
 
-#: EAScompliance-blocks.php:438 EAScompliance.php:5402
+#: EAScompliance-blocks.php:438 EAScompliance.php:5465
 msgid ""
 "Cart contend changed. Taxes should be recalculated. Please press button "
 "\"Recalculate taxes and duties\""
 msgstr ""
 
-#: EAScompliance-blocks.php:451 EAScompliance.php:5415
+#: EAScompliance-blocks.php:451 EAScompliance.php:5478
 msgid ""
 "Total order amount unexpectedly changed. Taxes should be recalculated. "
 "Please press button \"Recalculate taxes and duties\""
@@ -76,7 +76,7 @@ msgstr "Beräkna skatter och avgifter för att fortsätta med orderbetalningen"
 msgid "Taxes & Duties"
 msgstr "Skatter och tull"
 
-#: EAScompliance.php:1233 EAScompliance.php:1676 EAScompliance.php:7276
+#: EAScompliance.php:1233 EAScompliance.php:1676 EAScompliance.php:7357
 msgid "Calculate Taxes and Duties"
 msgstr "Beräkna skatter och avgifter"
 
@@ -173,7 +173,7 @@ msgid ""
 "You will be contacted for VAT number check."
 msgstr ""
 
-#: EAScompliance.php:1790 EAScompliance.php:1802 EAScompliance.php:1805
+#: EAScompliance.php:1790 EAScompliance.php:1805
 msgid ""
 "EU tax calculation service temporary unavailable. Please try to place an "
 "order later."
@@ -185,6 +185,18 @@ msgstr ""
 msgid ""
 "Invalid Credentials provided. Please check EAS client ID and EAS client "
 "secret."
+msgstr ""
+"Felaktiga autentiseringsuppgifter har angetts. Kontrollera EAS-klient-ID och "
+"EAS-klienthemlighet."
+
+#: EAScompliance.php:1802
+#, fuzzy
+#| msgid ""
+#| "Invalid Credentials provided. Please check EAS client ID and EAS client "
+#| "secret."
+msgid ""
+"Invalid Client credentials provided. Please check EAS client ID and EAS "
+"client secret."
 msgstr ""
 "Felaktiga autentiseringsuppgifter har angetts. Kontrollera EAS-klient-ID och "
 "EAS-klienthemlighet."
@@ -219,7 +231,8 @@ msgstr ""
 msgid ""
 "Please provide company VAT number. If your company is not registered for "
 "VAT, please enter any number and press \"...try again\" 3 times.  Do not "
-"leave the VAT field empty for B2B sales."
+"leave the VAT field empty for B2B sales. Note that VAT validation field may "
+"be visible in the \"Shipping address\" section."
 msgstr ""
 
 #: EAScompliance.php:2790
@@ -239,7 +252,7 @@ msgid ""
 "Please correct the item Ids to be unique within the order and try again."
 msgstr ""
 
-#: EAScompliance.php:3771
+#: EAScompliance.php:3822
 msgid ""
 "Landed cost calculation can’t be processed until Delivery Name and address "
 "provided"
@@ -247,68 +260,68 @@ msgstr ""
 "Beräkning av landad kostnad kan inte bearbetas förrän leveransnamn och "
 "adress har angetts"
 
-#: EAScompliance.php:3775
+#: EAScompliance.php:3826
 msgid "Order shipping country must be in EU"
 msgstr "Beställningens leveransland måste vara inom EU"
 
-#: EAScompliance.php:3838
+#: EAScompliance.php:3894
 #, fuzzy
 #| msgid "Taxes & Duties"
 msgid "Customs duties"
 msgstr "Skatter och tull"
 
-#: EAScompliance.php:3839
+#: EAScompliance.php:3895
 msgid "VAT Amount"
 msgstr ""
 
-#: EAScompliance.php:3840
+#: EAScompliance.php:3896
 msgid "VAT Rate"
 msgstr ""
 
-#: EAScompliance.php:3841
+#: EAScompliance.php:3897
 msgid "Other fees"
 msgstr ""
 
-#: EAScompliance.php:3842
+#: EAScompliance.php:3898
 msgid "VAT on Other fees"
 msgstr ""
 
-#: EAScompliance.php:3888
+#: EAScompliance.php:3944
 msgid "createpostsaleorder failed"
 msgstr "createpostsaleorder  misslyckas"
 
-#: EAScompliance.php:4254
+#: EAScompliance.php:4311
 msgid "number of order_items does not match number of items in cart"
 msgstr "antal order_items matchar inte antalet varor i kundvagnen"
 
-#: EAScompliance.php:4736
+#: EAScompliance.php:4799
 #, fuzzy
 #| msgid "Taxes & Duties"
 msgid " & duties"
 msgstr "Skatter och tull"
 
-#: EAScompliance.php:4805
+#: EAScompliance.php:4868
 msgid "incl."
 msgstr ""
 
-#: EAScompliance.php:4845
+#: EAScompliance.php:4908
 msgid "Incl."
 msgstr ""
 
-#: EAScompliance.php:4849
+#: EAScompliance.php:4912
 msgid "Prices are VAT exclusive, you might be obligated to pay VAT on delivery"
 msgstr ""
 "Priserna är exklusive moms, du kan bli skyldig att betala moms vid leverans"
 
-#: EAScompliance.php:5514
+#: EAScompliance.php:5577
 msgid "Notify Order number $order_id successful"
 msgstr "Ordernummer meddelat $order_id"
 
-#: EAScompliance.php:5534
+#: EAScompliance.php:5597
 msgid "Notify Order number $order_id failed: "
 msgstr "Ordernummer meddelades inte $order_id: "
 
-#: EAScompliance.php:5655
+#: EAScompliance.php:5718
 msgid ""
 "Order status changed from $status_from to $status_to .  EAS API payment "
 "notified"
@@ -316,15 +329,15 @@ msgstr ""
 "Orderstatus har ändrats från $status_from till $status_to. EAS API-betalning "
 "anmäld"
 
-#: EAScompliance.php:5674 EAScompliance.php:8380
+#: EAScompliance.php:5737 EAScompliance.php:8560
 msgid "Order status change notification failed: "
 msgstr "Anmälan om ändring av orderstatus misslyckades: "
 
-#: EAScompliance.php:5745
+#: EAScompliance.php:5808
 msgid "Order $order_id payment notified to EAS"
 msgstr "Order $order_id betalning anmäld till EAS"
 
-#: EAScompliance.php:5755
+#: EAScompliance.php:5818
 msgid ""
 "EAS EU compliance: Order created. Cannot make shipments as S10 is not "
 "provided. Login to dashboard to create shipments"
@@ -333,11 +346,11 @@ msgstr ""
 "S10 inte tillhandahålls. Logga in på instrumentpanelen för att skapa "
 "försändelser"
 
-#: EAScompliance.php:5765
+#: EAScompliance.php:5828
 msgid "Order "
 msgstr ""
 
-#: EAScompliance.php:5835
+#: EAScompliance.php:5898
 #, fuzzy
 #| msgid ""
 #| "Order status changed from $status_from to $status_to .  EAS API payment "
@@ -347,13 +360,13 @@ msgstr ""
 "Orderstatus har ändrats från $status_from till $status_to. EAS API-betalning "
 "anmäld"
 
-#: EAScompliance.php:5914
+#: EAScompliance.php:5977
 msgid ""
 "Order was processed by EAS solution, but returns should be handled in the "
 "EAS dashboard https:///dashaboard.easproject.com "
 msgstr ""
 
-#: EAScompliance.php:6442
+#: EAScompliance.php:6510
 msgid ""
 "Refund is cancelled. This order was created by different EM from that is "
 "configured in EAS EU compliance plugin."
@@ -361,165 +374,165 @@ msgstr ""
 "Återbetalning annulleras. Denna ordning skapades av olika EM från den som är "
 "konfigurerad i EAS EU compliance plugin."
 
-#: EAScompliance.php:6457
+#: EAScompliance.php:6525
 msgid "Refund create failed: "
 msgstr "Återbetalning misslyckades: "
 
-#: EAScompliance.php:6495
+#: EAScompliance.php:6563
 msgid ""
 "EAS solution reported \"insufficient remaining quantity\". Please create "
-"create refund in <a href=\"https://dashboard.easproject.com\">EAS dashboard</"
-"a> manually."
+"refund in <a href=\"https://dashboard.easproject.com\">EAS dashboard</a> "
+"manually."
 msgstr ""
 
-#: EAScompliance.php:6501
-msgid "EAS solution does not support gift card refunds. No action required."
+#: EAScompliance.php:6569
+msgid "EAS solution does not support gift card refunds. No actions required."
 msgstr ""
 
-#: EAScompliance.php:6507 EAScompliance.php:6525
+#: EAScompliance.php:6575 EAScompliance.php:6593
 msgid ""
 "EAS solution was not able to process refund. Please create refund in <a "
 "href=\"https://dashboard.easproject.com\">EAS dashboard</a> manually."
 msgstr ""
 
-#: EAScompliance.php:6513
+#: EAScompliance.php:6581
 msgid ""
 "EAS does not support zero quantity refunds. Refund $refund_id was not "
-"captured by EAS solution. Please create refund in <a href=\"https://"
+"captured by EAS solution. Please create refund/discount in <a href=\"https://"
 "dashboard.easproject.com\">EAS dashboard</a> manually."
 msgstr ""
 
-#: EAScompliance.php:6519
+#: EAScompliance.php:6587
 msgid ""
 "EAS solution reported \"Refund total cannot be more than order total\". "
 "Please create refund in <a href=\"https://dashboard.easproject.com\">EAS "
 "dashboard</a> manually."
 msgstr ""
 
-#: EAScompliance.php:6566
+#: EAScompliance.php:6634
 msgid "Refund confirmed to EAS"
 msgstr "Återbetalning bekräftad till EAS"
 
-#: EAScompliance.php:6571
+#: EAScompliance.php:6639
 msgid "Refund confirm failed: "
 msgstr "Återbetalning bekräfta misslyckades:"
 
-#: EAScompliance.php:6592
+#: EAScompliance.php:6660
 msgid "Log EAS order data"
 msgstr "Logga EAS-orderdata"
 
-#: EAScompliance.php:6605
+#: EAScompliance.php:6673
 msgid "Calculate Taxes & Duties EAS"
 msgstr "Beräkna skatter och avgifter EAS"
 
-#: EAScompliance.php:6613
+#: EAScompliance.php:6681
 msgid "Re-Export to EAS"
 msgstr ""
 
-#: EAScompliance.php:6934
+#: EAScompliance.php:7002
 msgid "Info"
 msgstr "Info"
 
-#: EAScompliance.php:6935
+#: EAScompliance.php:7003
 msgid "Error"
 msgstr "Error"
 
-#: EAScompliance.php:6952
+#: EAScompliance.php:7020
 msgid "General"
 msgstr "Allmänna"
 
-#: EAScompliance.php:6956
+#: EAScompliance.php:7024
 msgid "Enable/Disable"
 msgstr "Aktivera/inaktivera"
 
-#: EAScompliance.php:6963
+#: EAScompliance.php:7031
 msgid "Language"
 msgstr "Språk"
 
-#: EAScompliance.php:6965
+#: EAScompliance.php:7033
 msgid "Choose language for user interface of plugin"
 msgstr "Välj språk för användargränssnittet för insticksprogrammet"
 
-#: EAScompliance.php:6967
+#: EAScompliance.php:7035
 msgid "Default"
 msgstr "Standard"
 
-#: EAScompliance.php:6969
+#: EAScompliance.php:7037
 msgid "Store Default"
 msgstr "Standardbutik"
 
-#: EAScompliance.php:6970
+#: EAScompliance.php:7038
 msgid "English"
 msgstr "English"
 
-#: EAScompliance.php:6971
+#: EAScompliance.php:7039
 msgid "Finnish"
 msgstr "Suomi"
 
-#: EAScompliance.php:6972
+#: EAScompliance.php:7040
 msgid "French"
 msgstr "Français"
 
-#: EAScompliance.php:6973
+#: EAScompliance.php:7041
 msgid "German"
 msgstr "Deutsch"
 
-#: EAScompliance.php:6974
+#: EAScompliance.php:7042
 msgid "Italian"
 msgstr "Italiano"
 
-#: EAScompliance.php:6975
+#: EAScompliance.php:7043
 msgid "Netherlands"
 msgstr "Dutch"
 
-#: EAScompliance.php:6976
+#: EAScompliance.php:7044
 msgid "Swedish"
 msgstr "Svensk"
 
-#: EAScompliance.php:6977
+#: EAScompliance.php:7045
 msgid "Czech"
 msgstr "Češka"
 
-#: EAScompliance.php:6983
+#: EAScompliance.php:7051
 msgid "EAS API Base URL"
 msgstr "Bas-URL för EAS API"
 
-#: EAScompliance.php:6985
+#: EAScompliance.php:7053
 msgid "API URL"
 msgstr "API-URL"
 
-#: EAScompliance.php:6991
+#: EAScompliance.php:7059
 msgid "EAS client ID"
 msgstr "EAS klient-ID"
 
-#: EAScompliance.php:6993
+#: EAScompliance.php:7061
 msgid "Use the client ID you received from EAS Project"
 msgstr ""
 "Använd det klient-ID som du fick från EAS Project Dashboard <a "
 "href=\"https://dashboard.easproject.com\">https://dashboard.easproject.com</"
 "a>"
 
-#: EAScompliance.php:6999
+#: EAScompliance.php:7067
 msgid "EAS client secret"
 msgstr "EAS-klienthemlighet"
 
-#: EAScompliance.php:7001
+#: EAScompliance.php:7069
 msgid "Use the secret you received from EAS Project"
 msgstr ""
 "Använd hemligheten som du fick från EAS Project Dashboard <a href=\"https://"
 "dashboard.easproject.com\">https://dashboard.easproject.com</a>"
 
-#: EAScompliance.php:7008
+#: EAScompliance.php:7076
 msgid "Process imported orders"
 msgstr "Hantera importerade ordrar"
 
-#: EAScompliance.php:7016
+#: EAScompliance.php:7084
 #, fuzzy
 #| msgid "Standard Checkout"
 msgid "Standard mode"
 msgstr "Standardkassa"
 
-#: EAScompliance.php:7018
+#: EAScompliance.php:7086
 msgid ""
 "This integration type is to be used predominantly by Non-EU electronic "
 "merchants that use only IOSS special VAT scheme. Do not use this option if "
@@ -527,142 +540,150 @@ msgid ""
 "WooCommerce or any third party plugins."
 msgstr ""
 
-#: EAScompliance.php:7023
+#: EAScompliance.php:7091
 msgid "Prohibit non IOSS sales to EU countries"
 msgstr ""
 
-#: EAScompliance.php:7025
+#: EAScompliance.php:7093
 msgid ""
 "This option will prohibit sales for orders over 150€ (intrinsic value - the "
 "cost of merchandise only without VAT and shipping rate)"
 msgstr ""
 
-#: EAScompliance.php:7030
+#: EAScompliance.php:7098
 msgid "B2B VAT validation"
 msgstr ""
 
-#: EAScompliance.php:7032
+#: EAScompliance.php:7100
 msgid "Add company VAT number validation on the checkout page"
 msgstr ""
 
-#: EAScompliance.php:7037 EAScompliance.php:7039
+#: EAScompliance.php:7105 EAScompliance.php:7107
 #, fuzzy
 #| msgid "confirmation"
 msgid "B2B VAT confirmation url"
 msgstr "bekräftelse"
 
-#: EAScompliance.php:7044
+#: EAScompliance.php:7112
 msgid "B2B skip VAT number validation with warning"
 msgstr ""
 
-#: EAScompliance.php:7046
+#: EAScompliance.php:7114
 msgid ""
 "The option allows for B2B customer to finalise order even after three "
 "unsuccessful attempts of their VAT number validation."
 msgstr ""
 
-#: EAScompliance.php:7051
+#: EAScompliance.php:7119
 msgid "Notification text for the customer will be displayed. "
 msgstr ""
 
-#: EAScompliance.php:7053
+#: EAScompliance.php:7121
 msgid ""
 "You can change the text. Notice, text will be saved for default store "
 "language only."
 msgstr ""
 
-#: EAScompliance.php:7057
+#: EAScompliance.php:7125
 msgid "Show payment methods"
 msgstr ""
 
-#: EAScompliance.php:7059
+#: EAScompliance.php:7127
 msgid "Load payment methods from server before taxes are calculated"
 msgstr ""
 
-#: EAScompliance.php:7064
+#: EAScompliance.php:7132
 msgid "Log levels"
 msgstr "Felsök"
 
-#: EAScompliance.php:7067
+#: EAScompliance.php:7135
 msgid "Debug messages levels"
 msgstr ""
 
-#: EAScompliance.php:7077
+#: EAScompliance.php:7145
 #, fuzzy
 #| msgid "Tax options"
 msgid "Taxation"
 msgstr "Skattealternativ"
 
-#: EAScompliance.php:7080
+#: EAScompliance.php:7148
 msgid ""
 "Deduct home VAT for deliveries to countries where tax calculations are  not "
 "supported"
 msgstr ""
 "Dra av hemmoms för leveranser till länder där skatteberäkningar inte stöds"
 
-#: EAScompliance.php:7088
+#: EAScompliance.php:7156
 msgid "Handle Northern Ireland as IOSS"
 msgstr ""
 
-#: EAScompliance.php:7095
+#: EAScompliance.php:7163
 msgid "Non-EU Countries support"
 msgstr "Stöd från länder utanför EU"
 
-#: EAScompliance.php:7098
+#: EAScompliance.php:7166
 msgid "Supported countries outside EU"
 msgstr ""
 
-#: EAScompliance.php:7104
+#: EAScompliance.php:7172
 msgid "Shipping methods by post"
 msgstr "Fraktmetoder per post"
 
-#: EAScompliance.php:7107
+#: EAScompliance.php:7175
 msgid "Select shipping methods for delivery by post"
 msgstr "Välj fraktmetoder för leverans med post"
 
-#: EAScompliance.php:7112 EAScompliance.php:7114
+#: EAScompliance.php:7180 EAScompliance.php:7182
 #, fuzzy
 #| msgid "Giftcard product types"
 msgid "Default product type"
 msgstr "Produkttyper för presentkort"
 
-#: EAScompliance.php:7117
+#: EAScompliance.php:7185
 msgid "Physical goods"
 msgstr "Fysiska varor"
 
-#: EAScompliance.php:7120
+#: EAScompliance.php:7188
 msgid "Paid order statuses"
 msgstr "Betalda orderstatus"
 
-#: EAScompliance.php:7123
+#: EAScompliance.php:7191
 msgid "Status(es) denoting orders which have been paid for"
 msgstr "Status  som anger order som har betalats för"
 
-#: EAScompliance.php:7129
+#: EAScompliance.php:7197
 msgid "Giftcard product types"
 msgstr "Produkttyper för presentkort"
 
-#: EAScompliance.php:7132
+#: EAScompliance.php:7200
 msgid "Product type(s) used for Gift cards management"
 msgstr "Produkttyp(er) som används för hantering av presentkort"
 
-#: EAScompliance.php:7150
+#: EAScompliance.php:7214
+msgid "Freeze prices for all countries"
+msgstr ""
+
+#: EAScompliance.php:7221
+msgid "Multi-currency convert cart prices"
+msgstr ""
+
+#: EAScompliance.php:7231
 msgid "Product Attributes"
 msgstr "Produktattribut"
 
-#: EAScompliance.php:7153
+#: EAScompliance.php:7234
 msgid "Additional products attributes settings"
 msgstr "Ytterligare produkter attribut inställningar"
 
-#: EAScompliance.php:7160
+#: EAScompliance.php:7241
 msgid "HSCODE"
 msgstr "HSCODE"
 
-#: EAScompliance.php:7163
+#: EAScompliance.php:7244
 msgid "HSCode attribute slug. Attribute will be created if does not exist."
 msgstr "HSCode attribute slug Om attributet inte finns kommer det att skapas."
 
-#: EAScompliance.php:7172
+#: EAScompliance.php:7253
 msgid ""
 "Location warehouse country attribute slug. Attribute will be created if does "
 "not exist."
@@ -670,11 +691,11 @@ msgstr ""
 "Landattributslug för platsen för lager. Om attributet inte finns kommer det "
 "att skapas."
 
-#: EAScompliance.php:7178
+#: EAScompliance.php:7259
 msgid "Reduced VAT for TBE"
 msgstr "Sänkt moms för TBE"
 
-#: EAScompliance.php:7181
+#: EAScompliance.php:7262
 msgid ""
 "Reduced VAT for TBE attribute attribute slug. Attribute will be created if "
 "does not exist."
@@ -682,11 +703,11 @@ msgstr ""
 "Sänkt moms för TBE-attributet attribut slug. Om attributet inte finns kommer "
 "det att skapas."
 
-#: EAScompliance.php:7187
+#: EAScompliance.php:7268
 msgid "Act as Disclosed Agent"
 msgstr "Agera som ett utlämnat ombud"
 
-#: EAScompliance.php:7190
+#: EAScompliance.php:7271
 msgid ""
 "Act as Disclosed Agent attribute slug. Attribute will be created if does not "
 "exist."
@@ -694,11 +715,11 @@ msgstr ""
 "Agera som en utlämnat ombud attribut slug. Om attributet inte finns kommer "
 "det att skapas."
 
-#: EAScompliance.php:7196
+#: EAScompliance.php:7277
 msgid "Seller registration country"
 msgstr "Säljarens registreringsland"
 
-#: EAScompliance.php:7199
+#: EAScompliance.php:7280
 msgid ""
 "Seller registration country attribute slug. Attribute will be created if "
 "does not exist."
@@ -706,22 +727,22 @@ msgstr ""
 "Säljarens registreringsland attribut slug. Om attributet inte finns kommer "
 "det att skapas."
 
-#: EAScompliance.php:7205
+#: EAScompliance.php:7286
 msgid "Originating Country"
 msgstr "Ursprungsland"
 
-#: EAScompliance.php:7208
+#: EAScompliance.php:7289
 msgid ""
 "Originating Country attribute slug. Attribute will be created if does not "
 "exist."
 msgstr ""
 "Ursprungsland attribut slug. Om attributet inte finns kommer det att skapas."
 
-#: EAScompliance.php:7218 EAScompliance.php:7221
+#: EAScompliance.php:7299 EAScompliance.php:7302
 msgid "Design"
 msgstr "Design"
 
-#: EAScompliance.php:7225
+#: EAScompliance.php:7306
 msgid ""
 "If empty values are left, default colors and font size will be applied to "
 "the button."
@@ -729,65 +750,65 @@ msgstr ""
 "Om tomma värden finns kvar tillämpas standardfärger och teckenstorlek på "
 "knappen."
 
-#: EAScompliance.php:7229
+#: EAScompliance.php:7310
 msgid "Button text"
 msgstr "Knapptext"
 
-#: EAScompliance.php:7235
+#: EAScompliance.php:7316
 msgid "Button font size"
 msgstr "Knapp teckenstorlek"
 
-#: EAScompliance.php:7238
+#: EAScompliance.php:7319
 msgid "Please select font size (without px , only number)"
 msgstr "Vänligen välj teckenstorlek (utan px, endast nummer)"
 
-#: EAScompliance.php:7242
+#: EAScompliance.php:7323
 msgid "Button text color"
 msgstr "Knapp textfärg"
 
-#: EAScompliance.php:7245
+#: EAScompliance.php:7326
 msgid "Please select color for text on button"
 msgstr "Välj färg för text på knappen"
 
-#: EAScompliance.php:7249
+#: EAScompliance.php:7330
 msgid "Button background color"
 msgstr "Knapp bakgrundsfärg"
 
-#: EAScompliance.php:7252
+#: EAScompliance.php:7333
 msgid "Please select background color"
 msgstr "Vänligen Välj bakgrundsfärg"
 
-#: EAScompliance.php:7256
+#: EAScompliance.php:7337
 msgid "Button background color on mouse over"
 msgstr "Knapp bakgrundsfärg på musen över"
 
-#: EAScompliance.php:7259
+#: EAScompliance.php:7340
 msgid "Please select background color on mouse over"
 msgstr "Vänligen Välj bakgrundsfärg på musen över"
 
-#: EAScompliance.php:7263
+#: EAScompliance.php:7344
 msgid "Font color on mouse over"
 msgstr "Teckensnittsfärg på musen över"
 
-#: EAScompliance.php:7266
+#: EAScompliance.php:7347
 msgid "Please select mouse over color for text on button"
 msgstr "Vänligen välj musen över färg för text på knappen"
 
-#: EAScompliance.php:7271
+#: EAScompliance.php:7352
 msgid "Button Example"
 msgstr "Knapp Exempel"
 
-#: EAScompliance.php:7280
+#: EAScompliance.php:7361
 msgid "Reload Checkout Page"
 msgstr ""
 
-#: EAScompliance.php:7284
+#: EAScompliance.php:7365
 msgid ""
 "Please use this option only if payment step in the store’s theme can’t be "
 "reached, until checkout page is reloaded"
 msgstr ""
 
-#: EAScompliance.php:7322
+#: EAScompliance.php:7403
 msgid ""
 "Attention! EAS plugin detected gift card Product type(s),  please if you are "
 "selling Gift cards please enter Product type(s) in relevant configuration "
@@ -797,7 +818,7 @@ msgstr ""
 "säljer presentkort kan du ange produkttyp(er) i relevanta "
 "konfigurationsinställningar"
 
-#: EAScompliance.php:7326
+#: EAScompliance.php:7407
 #, fuzzy
 #| msgid ""
 #| "Landed cost calculation will be prohibbited for EU on checkout because "
@@ -815,153 +836,20 @@ msgstr ""
 "Välj \"WooCommerce\" och sedan \"Checkout\" och ändra inställningar för "
 "Telefonfältinställningarna till valfritt eller obligatoriskt."
 
-#: EAScompliance.php:7354 EAScompliance.php:7361
+#: EAScompliance.php:7435 EAScompliance.php:7442
 msgid "EAS MPM"
 msgstr "EAS MPM"
 
-#: EAScompliance.php:7354 EAScompliance.php:7363 EAScompliance.php:7472
+#: EAScompliance.php:7435 EAScompliance.php:7444 EAScompliance.php:7518
 msgid "EAS Logs"
 msgstr "EAS loggar"
 
-#: EAScompliance.php:7354 EAScompliance.php:7362 EAScompliance.php:7506
+#: EAScompliance.php:7435 EAScompliance.php:7443 EAScompliance.php:7746
+#: EAScompliance.php:7785
 msgid "Connection status"
 msgstr "Anslutningsstatus"
 
-#: EAScompliance.php:7434
-msgid "EAS Merchandise module"
-msgstr "EAS Merchandise module"
-
-#: EAScompliance.php:7436
-msgid "To connect to the EAS Merchandise module, follow these steps:"
-msgstr "Följ dessa steg för att ansluta till EAs Merchandise-modulen:"
-
-#: EAScompliance.php:7438
-#, fuzzy
-#| msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
-msgid "Go to WooCommerce > Settings > Advanced > REST API menu."
-msgstr "Gå till WooCommerce →  Inställningar → Avancerat → REST API-menyn."
-
-#: EAScompliance.php:7439
-#, fuzzy
-#| msgid "Press the button “Add key”."
-msgid "Press the button \"Add key\"."
-msgstr "Tryck på knappen \"Lägg till Nyckel\"."
-
-#: EAScompliance.php:7440
-#, fuzzy
-#| msgid ""
-#| "In opened window, fill Description with any name, set permissions to → "
-#| "Read/write. User field will be\n"
-#| "                filled automatically by the system, leave it as is."
-msgid ""
-"In opened window, fill Description with any name, set permissions to > Read/"
-"write. User field will be\n"
-"                filled automatically by the system, leave it as is."
-msgstr ""
-"I det öppnade fönstret fyller du beskrivningen med vilket namn som helst, "
-"ställer in behörigheterna för att läsa/skriva för att läsa / skriva. "
-"Användarfältet kommer att vara\n"
-"              fylls automatiskt av systemet, lämna det som det är."
-
-#: EAScompliance.php:7443
-#, fuzzy
-#| msgid "Press the “Generate API key” button."
-msgid "Press the \"Generate API key\" button."
-msgstr "Tryck på knappen \"Generera API-nyckel\"."
-
-#: EAScompliance.php:7444
-msgid "A window with key details will appear. Leave it open."
-msgstr "Ett fönster med viktiga detaljer visas. Låt det vara öppet."
-
-#: EAScompliance.php:7445
-msgid ""
-"Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://mpm."
-"easproject.com/</a>"
-msgstr ""
-"Gå till <a target=\" _blank \" href=\"https://npm.öst project.com/ "
-"\">https://mpm.easproject.com/ </a>"
-
-#: EAScompliance.php:7446
-msgid ""
-"Authenticate using your login and password to the EAS Merchandise module. "
-"Login and password are the\n"
-"                same as for EAS Dashboard."
-msgstr ""
-"Autentisera med din inloggning och lösenord till EAs Merchandise-modulen. "
-"Inloggning och lösenord är\n"
-"                desamma som för EAS Dashboard."
-
-#: EAScompliance.php:7448
-#, fuzzy
-#| msgid ""
-#| "Inside EAS Merchandise module, press button “Create” and select "
-#| "WooCommerce."
-msgid ""
-"Inside EAS Merchandise module, press button \"Create\" and select "
-"WooCommerce."
-msgstr ""
-"Inuti EAs Merchandise module, tryck på knappen \"Skapa\" och välj "
-"WooCommerce."
-
-#: EAScompliance.php:7449
-msgid ""
-"In the opened window, insert the following data: Name of the Store, Full URL "
-"and generated API keys\n"
-"                during step 4. Press Save. If inserted data is correct, the "
-"connection will be established."
-msgstr ""
-"I det öppnade fönstret sätter du in följande data: Butikens namn, "
-"fullständig URL och genererade API-nycklar\n"
-"                under Steg 4. Tryck På Spara. Om infogade data är korrekta "
-"kommer anslutningen att upprättas."
-
-#: EAScompliance.php:7452
-msgid ""
-"Afterwards, the mapping process is initiated, a new window is opened. Map "
-"fields according to the\n"
-"                detailed instructions available in WC manual (Section 3.7). "
-"Please find the manual in our Help desk: <a\n"
-"                        href=\"https://easproject.zendesk.com/hc/en-us/"
-"articles/6152957985053-WooCommerce-full-manual\"\n"
-"                        target=\"_blank\">https://easproject.zendesk.com/hc/"
-"en-us/articles/6152957985053-WooCommerce-full-manual"
-msgstr ""
-"Därefter initieras kartläggningsprocessen, ett nytt fönster öppnas. Kartfält "
-"enligt detaljerade instruktioner \n"
-"            som finns i WC-manualen (avsnitt 3.7). Vänligen hitta manualen i "
-"vår Helpdesk: \n"
-"<a href=\"https://help.easproject.com/hc/en-us/articles/11829479851549\" "
-"target= \"_blank\">EAS Merchandise module, connecting and configuration"
-
-#: EAScompliance.php:7456
-#, fuzzy
-#| msgid ""
-#| "After proper mapping, Press the “Start processing” button to parse SKU "
-#| "data from the shop into the\n"
-#| "                Merchandise module. Parsing make take some time, "
-#| "depending on the number of SKUs in the Merchant store."
-msgid ""
-"After proper mapping, Press the \"Start processing\" button to parse SKU "
-"data from the shop into the\n"
-"                Merchandise module. Parsing make take some time, depending "
-"on the number of SKUs in the Merchant store."
-msgstr ""
-"Efter korrekt kartläggning, tryck på knappen \"Starta bearbetning\" för att "
-"analysera SKU-data från butiken till\n"
-"                Merchandise module. Parsning gör ta lite tid, beroende på "
-"antalet SKU i handelsbutiken."
-
-#: EAScompliance.php:7459
-msgid ""
-"The connection now is established and products from the Merchant’s store are "
-"linked to EAS Merchandise\n"
-"                module."
-msgstr ""
-"Anslutningen är nu etablerad och produkter från handlarens butik är kopplade "
-"till EAS Merchandise\n"
-"                modul."
-
-#: EAScompliance.php:7474
+#: EAScompliance.php:7520
 msgid ""
 "EAS EU compliance plugin stores logs to the WooCommerce default logging "
 "folder.<br><br> To see logs, please choose required log file with the "
@@ -977,43 +865,47 @@ msgstr ""
 "            <a href= \"/wp-admin/admin.php?page=WC-status&tab=logs\">Loggar "
 "sida</a>"
 
-#: EAScompliance.php:7512
+#: EAScompliance.php:7672
+msgid "EAS Merchandise module"
+msgstr "EAS Merchandise module"
+
+#: EAScompliance.php:7750
 msgid "Your EAS Identifier:"
 msgstr "Din EAS-identifierare:"
 
-#: EAScompliance.php:7515
+#: EAScompliance.php:7753
 msgid "EM legal status:"
 msgstr "EM juridisk status:"
 
-#: EAScompliance.php:7518
+#: EAScompliance.php:7756
 msgid "In EAS EM  registered as:"
 msgstr "I EAS Kund registrerad som:"
 
-#: EAScompliance.php:7521
+#: EAScompliance.php:7759
 msgid "Electronic Interface"
 msgstr "Elektroniskt Gränssnitt"
 
-#: EAScompliance.php:7524
+#: EAScompliance.php:7762
 msgid "Not electronic Interface"
 msgstr "Inte elektroniskt gränssnitt"
 
-#: EAScompliance.php:7528
+#: EAScompliance.php:7766
 msgid "OSS Registered:"
 msgstr "OSS registrerade:"
 
-#: EAScompliance.php:7531
+#: EAScompliance.php:7769
 msgid "YES"
 msgstr "Ja"
 
-#: EAScompliance.php:7533
+#: EAScompliance.php:7771
 msgid "NO"
 msgstr "Nej"
 
-#: EAScompliance.php:7537
+#: EAScompliance.php:7775
 msgid "Product Description language:"
 msgstr "Produktbeskrivning språk:"
 
-#: EAScompliance.php:7916
+#: EAScompliance.php:8096
 msgid ""
 "VAT rates for European countries detected in the WooCommerce Tax Settings. "
 "EAS solution will consider all prices as VAT included. Please contact EAS "
@@ -1021,7 +913,7 @@ msgid ""
 "configured."
 msgstr ""
 
-#: EAScompliance.php:7929
+#: EAScompliance.php:8109
 msgid ""
 "Authorisation failed, wrong credentials provided. Please check your Client "
 "ID and Client secret."
@@ -1029,37 +921,154 @@ msgstr ""
 "Auktoriseringen misslyckades, fel autentiseringsuppgifter har angetts. "
 "Kontrollera ditt klient-ID och din klienthemlighet."
 
-#: EAScompliance.php:7954
+#: EAScompliance.php:8134
 msgid "Sorry, your WooCommerce version \""
 msgstr ""
 
-#: EAScompliance.php:8060
+#: EAScompliance.php:8240
 msgid "EAS processed"
 msgstr "EAS bearbetade"
 
-#: EAScompliance.php:8394
+#: EAScompliance.php:8574
 msgid "B2B Sale"
 msgstr ""
 
-#: EAScompliance.php:8407
+#: EAScompliance.php:8587
 msgid "Company name"
 msgstr ""
 
-#: EAScompliance.php:8412
+#: EAScompliance.php:8592
 msgid "Company VAT Number"
 msgstr ""
 
-#: EAScompliance.php:8417
+#: EAScompliance.php:8597
 msgid "Valid VAT Number"
 msgstr ""
 
-#: EAScompliance.php:8421
+#: EAScompliance.php:8601
 msgid "VAT number can be validated manually at"
 msgstr ""
 
-#: EAScompliance.php:8422
+#: EAScompliance.php:8602
 msgid "European Commission VIES"
 msgstr ""
+
+#~ msgid "To connect to the EAS Merchandise module, follow these steps:"
+#~ msgstr "Följ dessa steg för att ansluta till EAs Merchandise-modulen:"
+
+#, fuzzy
+#~| msgid "Go to WooCommerce → Settings → Advanced → REST API menu."
+#~ msgid "Go to WooCommerce > Settings > Advanced > REST API menu."
+#~ msgstr "Gå till WooCommerce →  Inställningar → Avancerat → REST API-menyn."
+
+#, fuzzy
+#~| msgid "Press the button “Add key”."
+#~ msgid "Press the button \"Add key\"."
+#~ msgstr "Tryck på knappen \"Lägg till Nyckel\"."
+
+#, fuzzy
+#~| msgid ""
+#~| "In opened window, fill Description with any name, set permissions to → "
+#~| "Read/write. User field will be\n"
+#~| "                filled automatically by the system, leave it as is."
+#~ msgid ""
+#~ "In opened window, fill Description with any name, set permissions to > "
+#~ "Read/write. User field will be\n"
+#~ "                filled automatically by the system, leave it as is."
+#~ msgstr ""
+#~ "I det öppnade fönstret fyller du beskrivningen med vilket namn som helst, "
+#~ "ställer in behörigheterna för att läsa/skriva för att läsa / skriva. "
+#~ "Användarfältet kommer att vara\n"
+#~ "              fylls automatiskt av systemet, lämna det som det är."
+
+#, fuzzy
+#~| msgid "Press the “Generate API key” button."
+#~ msgid "Press the \"Generate API key\" button."
+#~ msgstr "Tryck på knappen \"Generera API-nyckel\"."
+
+#~ msgid "A window with key details will appear. Leave it open."
+#~ msgstr "Ett fönster med viktiga detaljer visas. Låt det vara öppet."
+
+#~ msgid ""
+#~ "Go to <a target=\"_blank\" href=\"https://mpm.easproject.com/\">https://"
+#~ "mpm.easproject.com/</a>"
+#~ msgstr ""
+#~ "Gå till <a target=\" _blank \" href=\"https://npm.öst project.com/ "
+#~ "\">https://mpm.easproject.com/ </a>"
+
+#~ msgid ""
+#~ "Authenticate using your login and password to the EAS Merchandise module. "
+#~ "Login and password are the\n"
+#~ "                same as for EAS Dashboard."
+#~ msgstr ""
+#~ "Autentisera med din inloggning och lösenord till EAs Merchandise-modulen. "
+#~ "Inloggning och lösenord är\n"
+#~ "                desamma som för EAS Dashboard."
+
+#, fuzzy
+#~| msgid ""
+#~| "Inside EAS Merchandise module, press button “Create” and select "
+#~| "WooCommerce."
+#~ msgid ""
+#~ "Inside EAS Merchandise module, press button \"Create\" and select "
+#~ "WooCommerce."
+#~ msgstr ""
+#~ "Inuti EAs Merchandise module, tryck på knappen \"Skapa\" och välj "
+#~ "WooCommerce."
+
+#~ msgid ""
+#~ "In the opened window, insert the following data: Name of the Store, Full "
+#~ "URL and generated API keys\n"
+#~ "                during step 4. Press Save. If inserted data is correct, "
+#~ "the connection will be established."
+#~ msgstr ""
+#~ "I det öppnade fönstret sätter du in följande data: Butikens namn, "
+#~ "fullständig URL och genererade API-nycklar\n"
+#~ "                under Steg 4. Tryck På Spara. Om infogade data är "
+#~ "korrekta kommer anslutningen att upprättas."
+
+#~ msgid ""
+#~ "Afterwards, the mapping process is initiated, a new window is opened. Map "
+#~ "fields according to the\n"
+#~ "                detailed instructions available in WC manual (Section "
+#~ "3.7). Please find the manual in our Help desk: <a\n"
+#~ "                        href=\"https://easproject.zendesk.com/hc/en-us/"
+#~ "articles/6152957985053-WooCommerce-full-manual\"\n"
+#~ "                        target=\"_blank\">https://easproject.zendesk.com/"
+#~ "hc/en-us/articles/6152957985053-WooCommerce-full-manual"
+#~ msgstr ""
+#~ "Därefter initieras kartläggningsprocessen, ett nytt fönster öppnas. "
+#~ "Kartfält enligt detaljerade instruktioner \n"
+#~ "            som finns i WC-manualen (avsnitt 3.7). Vänligen hitta "
+#~ "manualen i vår Helpdesk: \n"
+#~ "<a href=\"https://help.easproject.com/hc/en-us/articles/11829479851549\" "
+#~ "target= \"_blank\">EAS Merchandise module, connecting and configuration"
+
+#, fuzzy
+#~| msgid ""
+#~| "After proper mapping, Press the “Start processing” button to parse SKU "
+#~| "data from the shop into the\n"
+#~| "                Merchandise module. Parsing make take some time, "
+#~| "depending on the number of SKUs in the Merchant store."
+#~ msgid ""
+#~ "After proper mapping, Press the \"Start processing\" button to parse SKU "
+#~ "data from the shop into the\n"
+#~ "                Merchandise module. Parsing make take some time, "
+#~ "depending on the number of SKUs in the Merchant store."
+#~ msgstr ""
+#~ "Efter korrekt kartläggning, tryck på knappen \"Starta bearbetning\" för "
+#~ "att analysera SKU-data från butiken till\n"
+#~ "                Merchandise module. Parsning gör ta lite tid, beroende på "
+#~ "antalet SKU i handelsbutiken."
+
+#~ msgid ""
+#~ "The connection now is established and products from the Merchant’s store "
+#~ "are linked to EAS Merchandise\n"
+#~ "                module."
+#~ msgstr ""
+#~ "Anslutningen är nu etablerad och produkter från handlarens butik är "
+#~ "kopplade till EAS Merchandise\n"
+#~ "                modul."
 
 #~ msgid ""
 #~ "Refund $refund_id cancelled and removed due to insufficient remaining "
