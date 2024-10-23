@@ -8340,7 +8340,12 @@ function eascompliance_bulk_update($request)
 		set_error_handler('eascompliance_error_handler');
 
         //Get HTTP request headers
-        $auth = apache_request_headers();
+         foreach($_SERVER as $key=>$value) { 
+                if (substr($key,0,5)=="HTTP_") { 
+                    $key=str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5))))); 
+                    $auth[$key]=$value; 
+                } 
+            } 
 
         //Get only Authorization header
 
@@ -8351,7 +8356,7 @@ function eascompliance_bulk_update($request)
             $auth_token_eas = $auth['authorizationeas'];
         }
 
-        eascompliance_log('info', 'headers '.print_r($auth,true) );
+        //eascompliance_log('info', 'headers '.print_r($auth,true) );
         $auth_token = (empty($auth_token) ? $auth_token_eas: $auth_token);
 
         if (empty($auth_token)) {
