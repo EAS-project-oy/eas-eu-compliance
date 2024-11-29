@@ -158,7 +158,8 @@ jQuery(document).ready(function ($) {
             data: {
                 'action': 'eascompliance_ajaxhandler',
                 'request': JSON.stringify(request),
-                'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val()
+                'eascompliance_nonce_calc': $('#eascompliance_nonce_calc').val(),
+                'hostname': window.location.hostname
             }
             ,
             dataType: 'json'
@@ -181,15 +182,12 @@ jQuery(document).ready(function ($) {
             } else {
                 $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 
-                confirmation_url = new URL(j['CALC response'])
-
                 let reload_checkout_page = Boolean(j['reload_checkout_page'] == 'yes')
 
-                if (confirmation_url.hostname === window.location.hostname) {
+                if (j['CALC response'] === 'REDIRECT_CONFIRMED') {
                     // EAS confirmation page is not necessary, update status and update checkout
                     $('.button_calc').text(plugin_dictionary.taxes_added)
 
-                    res = await $.get ( {'url': confirmation_url.href} )
                     $('.eascompliance_status').text('present')
                     $('.eascompliance_status').attr('data-eascompliance-status', 'present')
                     $('.button_calc').text(plugin_dictionary.recalculate_taxes)
@@ -201,6 +199,8 @@ jQuery(document).ready(function ($) {
                     }
                     await $( document.body ).trigger( 'update_checkout')
                 } else {
+
+                    let confirmation_url = new URL(j['CALC response'])
                     // EAS confirmation page is necessary, display popup and monitor for status changed or popup closed before updating checkout
                     $('.button_calc').text(plugin_dictionary.recalculate_taxes)
 

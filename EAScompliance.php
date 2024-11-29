@@ -2899,6 +2899,12 @@ function eascompliance_ajaxhandler()
         // or it is link to eascompliance_redirect_confirm
         // "https://confirmation1.easproject.com/fc/confirm/?token=b1176d415ee151a414dde45d3ee8dce7.196c04702c8f0c97452a31fe7be27a0f8f396a4903ad831660a19504fd124457&redirect_uri=undefined"
         $calc_response = trim(json_decode($response['http_response']->get_data()));
+
+        // save checkout token
+        $parts = parse_url($calc_response);
+        parse_str($parts['query'], $query);
+        $eas_checkout_token = $query['eas_checkout_token'];
+
         $calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 
         eascompliance_log('calculate', '/calculate request successful, $calc_response ' . $calc_response);
@@ -2981,6 +2987,13 @@ function eascompliance_ajaxhandler()
 
             //replace calc_response url with link to eascompliance_redirect_confirm
 			$calc_response = $redirect_uri . '&eas_checkout_token=' . $eas_checkout_token;
+        }
+
+        // call redirect_confirm immediately if hostname of redirect_uri matches store hostname
+        $hostname = strval(eascompliance_array_get($_POST, 'hostname', ''));
+        if (parse_url($redirect_uri, PHP_URL_HOST) === $hostname) {
+            eascompliance_redirect_confirm($eas_checkout_token);
+            $calc_response = 'REDIRECT_CONFIRMED';
         }
 
         $jres['reload_checkout_page'] = get_option('easproj_reload_checkout_page');
@@ -3134,32 +3147,38 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
  *
  * @throws Exception May throw exception.
  */
-function eascompliance_redirect_confirm()
+function eascompliance_redirect_confirm($eas_checkout_token=null)
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
 
-        $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
-        if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
-			    eascompliance_log('warning', 'Security check');
-        };
+        $redirect = false;
+        if (is_null($eas_checkout_token)) {
+            $redirect = true;
 
-        if (!array_key_exists('eas_checkout_token', $_GET)) {
-            // confirmation was declined
-            $cart_item0 = &eascompliance_cart_item0();
-			$cart_item0['EAScompliance SET'] = false;
-			$cart_item0['EAScompliance declined'] = time();
+            $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+            if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
+                eascompliance_log('warning', 'Security check');
+            };
 
-			WC()->cart->set_session();
+            if (!array_key_exists('eas_checkout_token', $_GET)) {
+                // confirmation was declined
+                $cart_item0 = &eascompliance_cart_item0();
+                $cart_item0['EAScompliance SET'] = false;
+                $cart_item0['EAScompliance declined'] = time();
 
-            // redirect back to checkout //.
-            wp_safe_redirect(wc_get_checkout_url());
-            exit();
+                WC()->cart->set_session();
+
+                // redirect back to checkout //.
+                wp_safe_redirect(wc_get_checkout_url());
+                exit();
+            }
+
+            $eas_checkout_token = strval(eascompliance_array_get($_GET, 'eas_checkout_token', ''));
         }
 
-        $eas_checkout_token = strval(eascompliance_array_get($_GET, 'eas_checkout_token', ''));
         $payload_j = eascompliance_checkout_token_payload($eas_checkout_token);
 
 
@@ -3375,9 +3394,11 @@ function eascompliance_redirect_confirm()
         restore_error_handler();
     }
 
-    // redirect back to checkout //.
-    wp_safe_redirect(wc_get_checkout_url());
-    exit();
+    if ($redirect) {
+        // redirect back to checkout //.
+        wp_safe_redirect(wc_get_checkout_url());
+        exit();
+    }
 }
 
 /**
