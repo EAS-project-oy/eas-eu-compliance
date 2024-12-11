@@ -4318,7 +4318,6 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
         // add EAScompliance tax with values taken from EAS API response and save EAScompliance in order_item meta-data //.
         if ($tax_rate_id === $tax_rate_id0 && eascompliance_is_set()) {
             $cart_items = array_values(WC()->cart->cart_contents);
-            $ix = 0;
 
             //WP-66 fix: sometimes there are multiple order_items, but only right ones have property legacy_values
             $order_items = [];
@@ -4331,7 +4330,43 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
                 eascompliance_log('error', 'number of order_items $oi does not match number of items in cart $ci, please check', array('$oi' => count($order_items), '$ci' => count($cart_items)));
                 throw new Exception(EAS_TR('number of order_items does not match number of items in cart'));
             }
+
+            // check if item_customs_duties and item_eas_fee are zero for every item in payload
+            $duties_and_fees_zero = true;
+            $ix = 0;
+            foreach ($order_items as $k => $order_item) {
+                $cart_item = $cart_items[$ix];
+                $item_payload = $cart_item['EAScompliance item payload'];
+
+                if ($item_payload['item_eas_fee'] != 0 || $item_payload['item_customs_duties'] != 0) {
+                    $duties_and_fees_zero = false;
+                    break;
+                }
+
+                ++$ix;
+            }
+
+            // if duties and fees are zero then try to use tax_rate_id of selected shipping country
+            $tax_rate_id2 = $tax_rate_id0;
+            if ($duties_and_fees_zero) {
+                $tax_rate_country = $order->get_shipping_country();
+                if (!empty($tax_rate_country)) {
+                    global $wpdb;
+                    $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id, tax_rate_name, tax_rate  FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s", $tax_rate_country), ARRAY_A);
+                    if ($wpdb->last_error) {
+                        throw new Exception($wpdb->last_error);
+                    }
+
+                    if (!empty($tax_rates)) {
+                        $tax_rate_id2 = $tax_rates[0]['tax_rate_id'];
+                        eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr)', array('tr'=>$tax_rates[0]['tax_rate_name'],'t'=>$tax_rate_id));
+                    }
+                }
+            }
+
+
             $delivery_charge_vat = 0;
+            $ix = 0;
             foreach ($order_items as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
                 $item_payload = $cart_item['EAScompliance item payload'];
@@ -4348,8 +4383,8 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
 
                 $order_item->set_taxes(
                     array(
-                        'total' => array($tax_rate_id0 => $item_amount),
-                        'subtotal' => array($tax_rate_id0 => $item_amount),
+                        'total' => array($tax_rate_id2 => $item_amount),
+                        'subtotal' => array($tax_rate_id2 => $item_amount),
                     )
                 );
                 ++$ix;
@@ -4357,22 +4392,31 @@ function eascompliance_woocommerce_checkout_create_order_tax_item($order_item_ta
             $order_item_tax->save();
 
             // set shipping item tax for first shipping item
+            $tax_rate_id2 = $tax_rate_id0;
             foreach ($order->get_items('shipping') as $shipping_item) {
                 if (0 != $delivery_charge_vat) {
                     if ($deduct_vat_outside_eu > 0) {
                         $delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
                     }
+
+                    // if item_customs_duties and item_eas_fee equal zero and tax_rate equals payload vat_rate then use tax_rate_id of selected shipping country
+                    if ($duties_and_fees_zero) {
+                        foreach($tax_rates as $rate) {
+                            if ((float)$rate['tax_rate'] === (float)$item_payload['vat_rate']) {
+                                eascompliance_log('place_order', 'duties and fees are zero, using shipping tax_rate_id $t ($tr)', array('t'=>$rate['tax_rate_id'],'tr'=>$rate['tax_rate_name']));
+                                $tax_rate_id2 = $rate['tax_rate_id'];
+                                break;
+                            }
+                        }
+
+                    }
+
                     eascompliance_log('place_order', 'correct shipping item tax from $t0 to $tax', array('$t0'=>$shipping_item->get_total_tax(), '$tax' => $delivery_charge_vat));
-                    $shipping_item->set_taxes(array($tax_rate_id0 => $delivery_charge_vat));
+                    $shipping_item->set_taxes(array($tax_rate_id2 => $delivery_charge_vat));
                 }
                 break;
             }
 
-            $order->update_taxes();
-            // Calculate Order Total //.
-            $total = eascompliance_cart_total();
-            // Set Order Total //.
-            $order->set_total($total);
         }
         return $order_item_tax;
     } catch (Exception $ex) {
@@ -5354,7 +5398,6 @@ function eascompliance_woocommerce_shipping_packages($packages)
 function eascompliance_woocommerce_checkout_create_order($order)
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
-    eascompliance_log('place_order', 'entered ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
@@ -5515,6 +5558,12 @@ function eascompliance_woocommerce_checkout_create_order($order)
             $order->set_discount_total($order_discount);
             $order->set_discount_tax(0);
         }
+
+        $order->update_taxes();
+        // Calculate Order Total //.
+        $total = eascompliance_cart_total();
+        // Set Order Total //.
+        $order->set_total($total);
 
         // fix duplicated tax rate
         $ix = 0;
@@ -8632,7 +8681,7 @@ if (!function_exists('eascompliance_woocommerce_add_order_single_metabox')) {
 
 function eascompliance_woocommerce_get_company_info($post)
 {
-    $order = wc_get_order($post->ID);
+    $order = wc_get_order($post->get_id());
     if (!$order) {
         return [];
     }
