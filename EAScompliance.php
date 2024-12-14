@@ -5513,6 +5513,8 @@ function eascompliance_woocommerce_checkout_create_order($order)
         
         //fixing issue with cyber security plugin
         $calc_jreq_new['delivery_phone'] = $calc_jreq_saved['delivery_phone'];
+        // exclude delivery_state_province from new/saved json comparison
+        $calc_jreq_new['delivery_state_province'] = $calc_jreq_saved['delivery_state_province'];
 
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
