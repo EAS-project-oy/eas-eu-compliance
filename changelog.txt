@@ -1,4 +1,12 @@
 == Changelog ==
+15-12-24 - version 1.5.40
+* Processing checkout token enhacened. For some stores this will increase productivity.
+* New approach for storing taxes in the order implemented. In case when order contains only taxes, they will be stored in the order with relevant tax class.
+* Minor changes to the delivery address handling implemented. In some stores Delivery Sate/Province data not properly handled during checkout process.  
+
+05-10-24 - version 1.5.35
+* Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options.
+
 01-10-24 - version 1.5.30
 * Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options. 
 

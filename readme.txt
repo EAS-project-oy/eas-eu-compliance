@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 8.5.4
 Tested up to: 6.5.4
-Stable Tag: 1.5.35
+Stable Tag: 1.5.40
 Last updated time: 01.10.2024
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -125,6 +125,12 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.5.40 =
+
+* Processing checkout token enhacened. For some stores this will increase productivity.
+* New approach for storing taxes in the order implemented. In case when order contains only taxes, they will be stored in the order with relevant tax class.
+* Minor changes to the delivery address handling implemented. In some stores Delivery Sate/Province data not properly handled during checkout process.  
 
 = 1.5.35 =
 
