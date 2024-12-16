@@ -8683,7 +8683,7 @@ if (!function_exists('eascompliance_woocommerce_add_order_single_metabox')) {
 
 function eascompliance_woocommerce_get_company_info($post)
 {
-    $order = wc_get_order($post->get_id());
+    $order = wc_get_order(method_exists($post, 'get_id') ? $post->get_id() : $post->ID);
     if (!$order) {
         return [];
     }
