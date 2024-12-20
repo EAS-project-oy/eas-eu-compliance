@@ -5459,8 +5459,9 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 ++$ix;
             }
 
-            // if duties and fees are zero then try to use tax_rate_id of selected shipping country
+            // if duties and fees are zero and tax_rate equals payload vat_rate then try to use tax_rate_id of selected shipping country
             $tax_rate_id2 = $tax_rate_id0;
+            $tax_rates = array();
             if ($duties_and_fees_zero) {
                 $tax_rate_country = $order->get_shipping_country();
                 if (!empty($tax_rate_country)) {
@@ -5470,10 +5471,6 @@ function eascompliance_woocommerce_checkout_create_order($order)
                         throw new Exception($wpdb->last_error);
                     }
 
-                    if (!empty($tax_rates)) {
-                        $tax_rate_id2 = $tax_rates[0]['tax_rate_id'];
-                        eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp)', array('tr'=>$tax_rates[0]['tax_rate_name'],'tp'=>$tax_rates[0]['tax_rate'],'t'=>$tax_rate_id2));
-                    }
                 }
             }
 
@@ -5483,6 +5480,15 @@ function eascompliance_woocommerce_checkout_create_order($order)
             foreach ($order_items as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
                 $item_payload = $cart_item['EAScompliance item payload'];
+
+                if ($duties_and_fees_zero) {
+                    foreach($tax_rates as $rate) {
+                        if ((float)$rate['tax_rate'] === (float)$item_payload['vat_rate']) {
+                            $tax_rate_id2 = $rate['tax_rate_id'];
+                            eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp) for item $ix', array('ix'=>$ix,'tr'=>$rate['tax_rate_name'],'tp'=>$rate['tax_rate'],'t'=>$tax_rate_id2));
+                        }
+                    }
+                }
 
                 if (array_key_exists('EAScompliance DELIVERY CHARGE VAT', $cart_item)) {
                     $delivery_charge_vat = $cart_item['EAScompliance DELIVERY CHARGE VAT'];
@@ -5508,7 +5514,6 @@ function eascompliance_woocommerce_checkout_create_order($order)
             }
 
             // set shipping item tax for first shipping item
-            $tax_rate_id2 = $tax_rate_id0;
             foreach ($order->get_items('shipping') as $shipping_item) {
                 if (0 != $delivery_charge_vat) {
                     if ($deduct_vat_outside_eu > 0) {
@@ -5519,7 +5524,6 @@ function eascompliance_woocommerce_checkout_create_order($order)
                     if ($duties_and_fees_zero) {
                         foreach($tax_rates as $rate) {
                             if ((float)$rate['tax_rate'] === (float)$item_payload['vat_rate']) {
-                                eascompliance_log('place_order', 'duties and fees are zero, using shipping tax_rate_id $t ($tr, $tp)', array('t'=>$rate['tax_rate_id'],'tp'=>$rate['tax_rate'],'tr'=>$rate['tax_rate_name']));
                                 $tax_rate_id2 = $rate['tax_rate_id'];
                                 break;
                             }
@@ -5528,9 +5532,34 @@ function eascompliance_woocommerce_checkout_create_order($order)
                     }
 
                     eascompliance_log('place_order', 'correct shipping item tax from $t0 to $tax', array('$t0'=>$shipping_item->get_total_tax(), '$tax' => $delivery_charge_vat));
-                    $shipping_item->set_taxes(array('total'=>array($tax_rate_id2=>$delivery_charge_vat)));
+
+                    $shipping_taxes = array();
+                    if ($duties_and_fees_zero) {
+                        // distribute delivery_charge_vat among tax rates proportional to tax rate
+                        foreach($taxes as $tax_rate_id=>$tax_amount) {
+                            $rsum = 0.0;
+                            foreach($tax_rates as $rate) {
+                                $rsum += $rate['tax_rate'];
+                            }
+                            $r1 = 0.0;
+                            foreach($tax_rates as $rate) {
+                                if ($rate['tax_rate_id'] == $tax_rate_id) {
+                                    $r1 = $rate['tax_rate'];
+                                    $tax_rate_id2 = $rate['tax_rate_id'];
+                                    $shipping_tax = $delivery_charge_vat * $r1 / $rsum;
+                                    eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp) for shipping tax $st', array('t'=>$tax_rate_id2,'tp'=>$r1,'tr'=>$rate['tax_rate_name'],'st'=>$shipping_tax));
+                                    $shipping_taxes[$tax_rate_id2] = $shipping_tax;
+                                    $taxes[$tax_rate_id2] += $shipping_tax;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        $shipping_taxes = array($tax_rate_id0=>$delivery_charge_vat);
+                    }
+
+                    $shipping_item->set_taxes(array('total'=>$shipping_taxes));
                     $shipping_item->save();
-                    $taxes[$tax_rate_id2] += $delivery_charge_vat;
                 }
 
                 break;
