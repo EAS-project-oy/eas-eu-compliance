@@ -4812,6 +4812,11 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $html .= EAS_TR('Prices are VAT exclusive, you might be obligated to pay VAT on delivery');
         }
+
+        if (!eascompliance_is_set() && $price_inclusive===true) {
+            return $value;
+        }
+
         return $html;
 
     } catch (Exception $ex) {
