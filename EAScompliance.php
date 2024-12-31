@@ -3346,6 +3346,53 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 			$cart_item['EAScompliance item price'] = $cart_item_price;
             eascompliance_log('request','cart_item_price is $p, cart_item_price_log value was $pl',['p'=>$cart_item_price, 'pl'=>$cart_item_price_log]);
             $cart_item['EAScompliance item VAT'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_customs_duties'] - $item_payload['item_eas_fee'] - $item_payload['item_eas_fee_vat'] - $item_payload['item_delivery_charge_vat'];
+
+
+            // remove items tax if cost of items is greater than threshold
+            $tax_threshold = 150.00; // EUR
+            $currency = $payload_j['payment_currency'];
+            $exchange_rate = 1.0;
+
+            // convert tax threshold to payload currency
+            if ($currency !== 'EUR') {
+                // get currency exchange rate on first working day of October last year
+                $start = date_create_immutable('first day of October last year');
+                $weekday = (int)$start->format('N');
+                if ($weekday > 5) {
+                    $start = $start->modify(eascompliance_format('+$n days', ['n'=>8-$weekday]));
+                }
+
+                // documentation: https://data.ecb.europa.eu/help/api/data
+                // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
+                $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
+                    ['cur'=>$currency, 'start'=>$start->format('Y-m-d'), 'end'=>$start->modify('+1 day')->format('Y-m-d')]);
+
+                $options = array(
+                    'method' => 'GET',
+                    'timeout' => 5,
+                );
+                $res = (new WP_Http)->request($url, $options);
+                if (is_wp_error($res)) {
+                    throw new Exception($res->get_error_message());
+                }
+
+                $response_status = (string)$res['response']['code'];
+                if ('200' !== $response_status) {
+                    throw new Exception($response_status . ' ' . $res['response']['message']);
+                }
+                $data = json_decode($res['body'], true);
+
+                $exchange_rate = (float)$data['dataSets'][0]['series']['0:0:0:0:0']['observations'][0][0];
+
+                $tax_threshold = $tax_threshold * $exchange_rate;
+            }
+
+            if ($total_price > $tax_threshold) {
+                eascompliance_log('request', 'removing items tax due to items cost $ic exceeds theshold $t, exchange rate $r', ['ic'=>$total_price, 't'=>$tax_threshold, 'r'=>$exchange_rate]);
+                $cart_item['EAScompliance item tax'] = 0;
+                $cart_item['EAScompliance item VAT'] = 0;
+            }
+
             $cart_item['EAScompliance SET'] = true;
         }
         // throw new Exception('debug'); //.
