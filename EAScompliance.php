@@ -344,13 +344,11 @@ function eascompliance_woocommerce_init()
             eascompliance_log('error', 'Incompatible WooCommerce version ' . WC()->version . '. Plugin deactivated');
         }
 
-        if (eascompliance_is_active() && ! eascompliance_is_standard_mode()) {
+        if (eascompliance_is_active() && get_option('easproj_standard_mode') !== 'yes') {
             add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
             add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
             add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
             add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
-            add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
-            add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10);
             add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
             add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
             add_action('woocommerce_before_cart_totals', 'eascompliance_wcml_update_coupon_percent_discount');
@@ -369,6 +367,8 @@ function eascompliance_woocommerce_init()
 			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
 		    // adding custom javascript file
 		    add_action('wp_enqueue_scripts', 'eascompliance_javascript');
+            add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
+            add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10, 2);
 			add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
 			add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
 		    add_action('woocommerce_checkout_update_order_review', 'eascompliance_woocommerce_checkout_update_order_review', 10, 1);
@@ -1212,15 +1212,6 @@ function eascompliance_is_active()
 
     // deactivate if disabled in Plugin Settings //.
     return eascompliance_woocommerce_settings_get_option_sql('easproj_active') === 'yes';
-}
-
-/**
- * Return is plugin in standard mode
- */
-function eascompliance_is_standard_mode()
-{
-       // deactivate if disabled in Plugin Settings //.
-    return 'yes' === get_option('easproj_standard_mode');
 }
 
 
@@ -3346,56 +3337,8 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 			$cart_item['EAScompliance item price'] = $cart_item_price;
             eascompliance_log('request','cart_item_price is $p, cart_item_price_log value was $pl',['p'=>$cart_item_price, 'pl'=>$cart_item_price_log]);
             $cart_item['EAScompliance item VAT'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_customs_duties'] - $item_payload['item_eas_fee'] - $item_payload['item_eas_fee_vat'] - $item_payload['item_delivery_charge_vat'];
-
-
-            // remove items tax if cost of items is greater than threshold
-            $tax_threshold = 150.00; // EUR
-            $currency = $payload_j['payment_currency'];
-            $exchange_rate = 1.0;
-
-            // convert tax threshold to payload currency
-            if ($currency !== 'EUR') {
-                // get currency exchange rate on first working day of October last year
-                $start = date_create_immutable('first day of October last year');
-                $weekday = (int)$start->format('N');
-                if ($weekday > 5) {
-                    $start = $start->modify(eascompliance_format('+$n days', ['n'=>8-$weekday]));
-                }
-
-                // documentation: https://data.ecb.europa.eu/help/api/data
-                // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
-                $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
-                    ['cur'=>$currency, 'start'=>$start->format('Y-m-d'), 'end'=>$start->modify('+1 day')->format('Y-m-d')]);
-
-                $options = array(
-                    'method' => 'GET',
-                    'timeout' => 5,
-                );
-                $res = (new WP_Http)->request($url, $options);
-                if (is_wp_error($res)) {
-                    throw new Exception($res->get_error_message());
-                }
-
-                $response_status = (string)$res['response']['code'];
-                if ('200' !== $response_status) {
-                    throw new Exception($response_status . ' ' . $res['response']['message']);
-                }
-                $data = json_decode($res['body'], true);
-
-                $exchange_rate = (float)$data['dataSets'][0]['series']['0:0:0:0:0']['observations'][0][0];
-
-                $tax_threshold = $tax_threshold * $exchange_rate;
-            }
-
-            if ($total_price > $tax_threshold) {
-                eascompliance_log('request', 'removing items tax due to items cost $ic exceeds theshold $t, exchange rate $r', ['ic'=>$total_price, 't'=>$tax_threshold, 'r'=>$exchange_rate]);
-                $cart_item['EAScompliance item tax'] = 0;
-                $cart_item['EAScompliance item VAT'] = 0;
-            }
-
             $cart_item['EAScompliance SET'] = true;
         }
-        // throw new Exception('debug'); //.
 
 		$cart_item0 = &eascompliance_cart_item0();
         $cart_item0['EASPROJ API CONFIRMATION TOKEN'] = $eas_checkout_token;
@@ -4415,6 +4358,7 @@ function eascompliance_cart_total($current_total = null)
 {
     eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
 
+    $cart = WC()->cart;
 	$cart_total_log = '';
 	$cart_total = 0;
 
@@ -4423,12 +4367,19 @@ function eascompliance_cart_total($current_total = null)
         // prevents recursion in woocommerce_cart_get_total filter
         if (is_null($current_total)) {
             $cart_total = WC()->cart->get_total('edit');
-            $cart_total_log .= eascompliance_format('set to $t from get_total;', ['t'=> $cart_total]);
+            $cart_total_log .= eascompliance_format('set to $t from get_total; ', ['t'=> $cart_total]);
         } else {
             $cart_total = $current_total;
-            $cart_total_log .= eascompliance_format('set to $ct from current_total;', ['ct'=>$cart_total]);
+            $cart_total_log .= eascompliance_format('set to $ct from current_total; ', ['ct'=>$cart_total]);
         }
 
+        // exclude tax at standard_mode with IOSS threshold setting enabled:
+        if ( 'yes' === get_option('easproj_standard_mode') && 'yes' === get_option('easproj_standard_mode_ioss_threshold')) {
+            $cart_total_tax = array_sum($cart->get_taxes());
+            $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
+            $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
+            return $cart_total;
+        }
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
@@ -4535,7 +4486,7 @@ function eascompliance_cart_total($current_total = null)
 	} finally {
         static $cart_total_saved;
         if ($cart_total_saved != $cart_total) {
-			eascompliance_log('debug', 'cart_total is $total, cart_total_log value was $tl', array('$total' => $cart_total, 'tl'=>$cart_total_log));
+			eascompliance_log('cart_total', 'cart_total is $total, cart_total_log value was $tl', array('$total' => $cart_total, 'tl'=>$cart_total_log));
             $cart_total_saved = $cart_total;
         }
 	}
@@ -4573,19 +4524,98 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
  * @param array $total_taxes total_taxes.
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_cart_get_taxes($total_taxes)
+function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
 
+        $cart_tax_log = '';
+
         if ( 'yes' === get_option('easproj_standard_mode') ) {
+
+            // Only at standard_mode with IOSS threshold setting enabled:
+            // remove items tax if cost of items is greater than threshold
+            if ('yes' === get_option('easproj_standard_mode_ioss_threshold') ) {
+                $tax_threshold = 150.00; // EUR
+                $exchange_rate = 1.0;
+
+                $items_cost = $cart->get_cart_contents_total(); //$cart->get_total( 'items_total', false ) + $cart->get_total( 'fees_total', false ) + $cart->get_total( 'shipping_total', false );
+                $cart_total_tax = array_sum($total_taxes);
+
+                $currency = get_woocommerce_currency();
+                $wcml_enabled = eascompliance_is_wcml_enabled();
+                if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
+                    $multi_currency = WC_Payments_Multi_Currency();
+                    $currency = $multi_currency->get_selected_currency()->get_code();
+                }
+
+                // convert tax threshold to payload currency
+                if ($currency !== 'EUR') {
+                    // get currency exchange rate on first working day of October last year
+                    $start = date_create_immutable('first day of October last year');
+                    $weekday = (int)$start->format('N');
+                    if ($weekday > 5) {
+                        $start = $start->modify(eascompliance_format('+$n days', ['n' => 8 - $weekday]));
+                    }
+
+                    // try using cached exchange rates
+                    $data = null;
+                    if ( get_option('easproj_standard_mode_ioss_threshold_exchange_rates_date') === $start->format('Y-m-d') ) {
+                        $data = json_decode(get_option('easproj_standard_mode_ioss_threshold_exchange_rates'), true);
+                    }
+                    else {
+                        // documentation: https://data.ecb.europa.eu/help/api/data
+                        // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
+                        $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
+                            ['cur' => '', 'start' => $start->format('Y-m-d'), 'end' => $start->modify('+1 day')->format('Y-m-d')]);
+
+                        $options = array(
+                            'method' => 'GET',
+                            'timeout' => 5,
+                        );
+                        $res = (new WP_Http)->request($url, $options);
+                        if (is_wp_error($res)) {
+                            throw new Exception($res->get_error_message());
+                        }
+
+                        $response_status = (string)$res['response']['code'];
+                        if ('200' !== $response_status) {
+                            throw new Exception($response_status . ' ' . $res['response']['message']);
+                        }
+                        $data = json_decode($res['body'], true);
+                        update_option('easproj_standard_mode_ioss_threshold_exchange_rates', $res['body']);
+                        update_option('easproj_standard_mode_ioss_threshold_exchange_rates_date', $start->format('Y-m-d'));
+                    }
+
+                    $currency_ix = -1;
+                    foreach($data['structure']['dimensions']['series'][1]['values'] as $ix=>$v) {
+                        if ($v['id'] === $currency) {
+                            $currency_ix = $ix;
+                        }
+                    }
+                    if ($currency_ix === -1) {
+                        throw new Exception('Currency not found in exchange rates: ' . $currency);
+                    }
+
+                    $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
+
+                    $tax_threshold = $tax_threshold * $exchange_rate;
+                }
+
+                if ($items_cost > $tax_threshold) {
+                    $cart_tax_log .= eascompliance_format('removing items taxes due to items cost $ic exceeds threshold $t, exchange rate $r; ', ['ic' => $items_cost, 't' => $tax_threshold, 'r' => $exchange_rate]);
+                    $total_taxes = array();
+                    return $total_taxes;
+                }
+            }
+
             return $total_taxes;
         }
 
         if (eascompliance_is_deduct_vat_outside_eu()) {
-            eascompliance_log('cart_total', 'no tax changes for deduct vat outside EU, total cart tax is $t', array('$t' => $total_taxes));
+            $cart_tax_log .= eascompliance_format('no tax changes for deduct vat outside EU, total cart tax is $t; ', array('$t' => $total_taxes));
             return $total_taxes;
         }
 
@@ -4600,7 +4630,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
         foreach ($cart_items as $cart_item) {
             $delivery_charge_vat = eascompliance_array_get($cart_item, 'EAScompliance DELIVERY CHARGE VAT', 0);
             if (0 != $delivery_charge_vat) {
-                eascompliance_log('cart_total', 'add delivery_charge_vat $dcv to cart total ', array('$dcv' => $delivery_charge_vat));
+                $cart_tax_log .= eascompliance_format( 'add delivery_charge_vat $dcv to cart total; ', array('$dcv' => $delivery_charge_vat));
                 $total_tax += $delivery_charge_vat;
             }
             $total_tax += $cart_item['EAScompliance item tax'];
@@ -4614,7 +4644,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
         // clean taxes from all other rates
         $total_taxes = array();
         $total_taxes[$tax_rate_id0] = $total_tax;
-        eascompliance_log('cart_total', 'cart total tax is $tax', array('$tax' => $total_tax));
+        $cart_tax_log .= eascompliance_format( 'cart total tax is $tax; ', array('$tax' => $total_tax));
 
         return $total_taxes;
     } catch (Exception $ex) {
@@ -4622,6 +4652,13 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes)
         throw $ex;
     } finally {
         restore_error_handler();
+
+        static $cart_tax_log_saved;
+        if ($cart_tax_log_saved != $cart_tax_log) {
+            eascompliance_log('cart_total', 'cart total_taxes is $total, cart_tax_log was $tl', array('$total' => array_sum($total_taxes), 'tl'=>$cart_tax_log));
+            $cart_tax_log_saved = $cart_tax_log;
+        }
+
     }
 }
 
@@ -4852,7 +4889,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
 
         if (eascompliance_is_set() && $price_inclusive===true) {
             $tax_rate_id0 = eascompliance_tax_rate_id();
-            $total_taxes = eascompliance_woocommerce_cart_get_taxes(array("$tax_rate_id0" => 0));
+            $total_taxes = eascompliance_woocommerce_cart_get_taxes(array("$tax_rate_id0" => 0), WC()->cart);
             $html .= '(' . EAS_TR('Incl.') . ' '. eascompliance_cart_tax_caption_html() . ': ' . wc_price(wc_format_decimal($total_taxes[$tax_rate_id0], wc_get_price_decimals())) . ')';
         }
 
@@ -7213,6 +7250,13 @@ function eascompliance_settings()
 
         ),
         
+        'standard_mode' => array(
+            'name' => EAS_TR('Standard mode'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.'),
+            'id' => 'easproj_standard_mode',
+            'default' => 'no',
+        ),
         'process_imported_orders' => array(
             'name' => EAS_TR('Process imported orders'),
             'type' => 'checkbox',
@@ -7221,12 +7265,13 @@ function eascompliance_settings()
             'default' => 'yes',
             'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
         ),
-        'standard_mode' => array(
-            'name' => EAS_TR('Standard mode'),
+        'standard_mode_ioss_threshold' => array(
+            'name' => EAS_TR('IOSS threshold in Standard mode'),
             'type' => 'checkbox',
-            'desc' => EAS_TR('This integration type is to be used predominantly by Non-EU electronic merchants that use only IOSS special VAT scheme. Do not use this option if you supply goods from within EU territory. VAT will be calculated by WooCommerce or any third party plugins.'),
-            'id' => 'easproj_standard_mode',
+            'desc' => EAS_TR('In Standard mode, remove items tax when cost of items is greater than threshold'),
+            'id' => 'easproj_standard_mode_ioss_threshold',
             'default' => 'no',
+            'custom_attributes' => get_option('easproj_standard_mode') !== 'yes' ? array('disabled'=>'') : array(),
         ),
         'limit_ioss_sales' => array(
             'name' => EAS_TR('Prohibit non IOSS sales to EU countries'),

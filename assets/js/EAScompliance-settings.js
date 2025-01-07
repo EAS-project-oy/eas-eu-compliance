@@ -186,18 +186,21 @@ jQuery(document).ready(function($) {
     })
 
 
-    //disable easproj_process_imported_orders if easproj_standard_mode is enabled
+    //disable/enable settings if easproj_standard_mode is enabled
     if ($('#easproj_standard_mode').prop('checked')) {
         $('#easproj_process_imported_orders').prop('checked', false)
         $('#easproj_process_imported_orders').prop('disabled', true)
+        $('#easproj_standard_mode_ioss_threshold').prop('disabled', false)
     }
 
     $('#easproj_standard_mode').on( 'change', function() {
         if ($('#easproj_standard_mode').prop('checked') ) {
             $('#easproj_process_imported_orders').prop('checked', false)
             $('#easproj_process_imported_orders').prop('disabled', true)
+            $('#easproj_standard_mode_ioss_threshold').prop('disabled', false)
         } else {
             $('#easproj_process_imported_orders').prop('disabled', false)
+            $('#easproj_standard_mode_ioss_threshold').prop('disabled', true)
         }
     })
 
