@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.5.43
+ * Version: 1.5.44
  * Tested up to 6.5.4
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
