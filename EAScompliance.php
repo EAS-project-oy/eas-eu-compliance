@@ -5332,6 +5332,16 @@ function eascompliance_woocommerce_checkout_create_order($order)
         };
 
         if ( 'yes' === get_option('easproj_standard_mode') ) {
+            if ('yes' === get_option('easproj_standard_mode_ioss_threshold') ) {
+                // in Standard mode with easproj_standard_mode_ioss_threshold, order above threshold may not have taxes
+                $cart = WC()->cart;
+                $cart_total_tax = array_sum($cart->get_taxes());
+                if ($cart_total_tax == 0) {
+                    $order->remove_order_items('tax');
+                    $order->save();
+                }
+            }
+
             return;
         }
 
