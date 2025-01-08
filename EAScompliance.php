@@ -7278,7 +7278,7 @@ function eascompliance_settings()
         'standard_mode_ioss_threshold' => array(
             'name' => EAS_TR('IOSS threshold in Standard mode'),
             'type' => 'checkbox',
-            'desc' => EAS_TR('In Standard mode, remove items tax when cost of items is greater than threshold'),
+            'desc' => EAS_TR('Apply 150 EUR IOSS threshold in EAS standard mode. Option is available only when EAS plugin is in standard mode.'),
             'id' => 'easproj_standard_mode_ioss_threshold',
             'default' => 'no',
             'custom_attributes' => get_option('easproj_standard_mode') !== 'yes' ? array('disabled'=>'') : array(),
