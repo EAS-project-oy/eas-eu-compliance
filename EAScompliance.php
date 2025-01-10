@@ -4239,6 +4239,7 @@ function eascompliance_logorderdata_ajax()
                 '_easproj_create_post_sale_without_lc_orders_json' => $order->get_meta('_easproj_create_post_sale_without_lc_orders_json'),
                 '_easproj_order_created_with_create_post_sale_without_lc_orders' => $order->get_meta('_easproj_order_created_with_create_post_sale_without_lc_orders'),
                 '_easproj_company_vat_validated' => $order->get_meta('_easproj_company_vat_validated'),
+                '_easproj_scheme' => $order->get_meta('_easproj_scheme'),
             )]);
 
 
@@ -5487,6 +5488,19 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // save payload in order metadata //.
         $payload = $cart_item0['EASPROJ API PAYLOAD'];
         $order->add_meta_data('easproj_payload', $payload, true);
+
+        $store_country = explode(':', get_option('woocommerce_default_country'))[0];
+
+        // OSS - store country in EU, payload FID present
+        // IOSS - store country not in EU, payload FID present
+        $eas_scheme = '';
+        if (in_array($store_country, EUROPEAN_COUNTRIES) && !empty($order_payload['FID'])) {
+            $eas_scheme = 'OSS';
+        }
+        if (!in_array($store_country, EUROPEAN_COUNTRIES) && !empty($order_payload['FID'])) {
+            $eas_scheme = 'IOSS';
+        }
+        $order->add_meta_data('_easproj_scheme', $eas_scheme, true);
 
         //fix coupon amount total to include tax
         $price_inclusive = eascompliance_price_inclusive();
@@ -8422,7 +8436,7 @@ function eascompliance_is_hpos_enabled()
 }
 
 /**
- * Add "EAS processed" column to Woocommerce order list
+ * Add "EAS processed", "Scheme" columns to Woocommerce order list
  *
  */
 add_filter('manage_edit-shop_order_columns', 'eascompliance_order_column');
@@ -8434,6 +8448,7 @@ function eascompliance_order_column($columns)
         $reordered_columns[$key] = $column;
         if ($key == 'order_status') {
             $reordered_columns['eas-processed'] = EAS_TR('EAS processed');
+            $reordered_columns['eas-scheme'] = EAS_TR('Scheme');
         }
     }
     return $reordered_columns;
@@ -8443,45 +8458,58 @@ add_action('manage_shop_order_posts_custom_column', 'eascompliance_order_column_
 add_action('manage_woocommerce_page_wc-orders_custom_column', 'eascompliance_order_column_value', 20, 2); // HPOS
 function eascompliance_order_column_value($column, $post_id)
 {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     $order_id = $post_id;
     if (eascompliance_is_hpos_enabled()) {
         $order_id = $post_id->get_id();
     }
 
-    switch ($column) {
-        case 'eas-processed' :
-            $order_payload = get_post_meta($order_id, 'easproj_payload', true);
-            $order_eas_token = get_post_meta($order_id, '_easproj_token', true);
+    $order = wc_get_order($order_id);
 
-            if (
-                    (isset($order_payload) && !empty($order_payload))
-                    ||
-                    ((get_post_meta($order_id,'_easproj_order_created_with_createpostsaleorder',true) == 1)&&isset($order_eas_token) && !empty($order_eas_token))
-            ) {
-                echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
-            }
-            break;
+    $order_payload = $order->get_meta('easproj_payload');
+    $order_eas_token = $order->get_meta('_easproj_token');
+
+    if ($column === 'eas-processed') {
+        if (
+            (!empty($order_payload))
+            ||
+            (($order->get_meta('_easproj_order_created_with_createpostsaleorder') == 1) && !empty($order_eas_token))
+        ) {
+            echo '<img src="' . plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) . '" style="width: 40px;vertical-align: top;">';
+        }
+    }
+    elseif ($column === 'eas-scheme' && !empty($order_payload)) {
+        $eas_scheme = $order->get_meta('_easproj_scheme');
+
+        if ($eas_scheme === 'OSS') {
+            echo '<mark class="order-status" style="background: #fbdbbe;color: #b75903;"><span>OSS</span></mark>';
+        }
+        elseif ($eas_scheme === 'IOSS') {
+            echo '<mark class="order-status" style="background: #bedafb;color: #020295;"><span>IOSS</span></mark>';
+        }
     }
 }
 
 /**
- * Make "EAS processed column" sortable
+ * Make "EAS processed", "Scheme" columns sortable
  *
  */
 add_filter('manage_edit-shop_order_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1);
 add_action('woocommerce_shop_order_list_table_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1); // HPOS
 function eascompliance_manage_edit_shop_order_sortable_columns($columns)
 {
-    return wp_parse_args(array('eas-processed' => 'easproj_payload'), $columns);
+    return wp_parse_args(array('eas-processed' => 'eas_processed', 'eas-scheme' => 'eas_scheme'), $columns);
 }
 
 /**
- * Sort by "EAS processed" column, does not work for HPOS
+ * Sort by "EAS processed", "Scheme" columns, does not work for HPOS
  *
  */
 add_action('pre_get_posts', 'eascompliance_sort_by_order_column', 10, 1);
 function eascompliance_sort_by_order_column($query)
 {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     if (!is_admin()) return;
 
@@ -8492,7 +8520,7 @@ function eascompliance_sort_by_order_column($query)
         $orderby = $query->get('orderby');
 
         // Set query
-        if ('easproj_payload' == $orderby) {
+        if ('eas_processed' == $orderby) {
 
             $query->set('meta_query', array(
                 'relation' => 'OR',
@@ -8504,10 +8532,55 @@ function eascompliance_sort_by_order_column($query)
                     'key' => 'easproj_payload',
                     'compare' => '!=',
                     'value' => ''
-                )
-            ));
+            )));
+        }
+        elseif ('eas_scheme' == $orderby) {
+
+            $query->set('meta_query', array(
+                'relation' => 'OR',
+                array(
+                    'key' => '_easproj_scheme',
+                    'compare' => 'NOT EXISTS',
+                ),
+                array(
+                    'key' => '_easproj_scheme',
+                    'compare' => '!=',
+                    'value' => ''
+                )));
         }
     }
+}
+
+
+/**
+ * Sort by "EAS processed", "Scheme" columns in HPOS
+ *
+ */
+add_action('woocommerce_order_query_args', 'eascompliance_woocommerce_order_query_args', 10, 1);
+function eascompliance_woocommerce_order_query_args($query_args)
+{
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+    if ( isset($_GET['orderby']) && $_GET['orderby'] === 'eas_processed' ) {
+        $query_args['meta_query'] = array(
+            'relation' => 'OR',
+            array(
+                'key' => 'easproj_payload',
+                'compare' => 'NOT EXISTS',
+            ),
+            array(
+                'key' => 'easproj_payload',
+                'compare' => '!=',
+                'value' => ''
+            ));
+        $query_args['orderby'] = array('meta_value' => $query_args['order']);
+    }
+    if ( isset($_GET['orderby']) && $_GET['orderby'] === 'eas_scheme' ) {
+        $query_args['meta_key'] = '_easproj_scheme';
+        $query_args['orderby'] = array('meta_value' => $query_args['order']);
+    }
+
+    return $query_args;
 }
 
 /**
