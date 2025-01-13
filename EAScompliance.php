@@ -5500,10 +5500,10 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // OSS - store country in EU, payload FID present
         // IOSS - store country not in EU, payload FID present
         $eas_scheme = '';
-        if (in_array($store_country, EUROPEAN_COUNTRIES) && !empty($order_payload['FID'])) {
+        if (in_array($store_country, EUROPEAN_COUNTRIES) && !empty($payload['FID'])) {
             $eas_scheme = 'OSS';
         }
-        if (!in_array($store_country, EUROPEAN_COUNTRIES) && !empty($order_payload['FID'])) {
+        if (!in_array($store_country, EUROPEAN_COUNTRIES) && !empty($payload['FID'])) {
             $eas_scheme = 'IOSS';
         }
         $order->add_meta_data('_easproj_scheme', $eas_scheme, true);
@@ -7287,14 +7287,6 @@ function eascompliance_settings()
             'id' => 'easproj_standard_mode',
             'default' => 'no',
         ),
-        'process_imported_orders' => array(
-            'name' => EAS_TR('Process imported orders'),
-            'type' => 'checkbox',
-            'desc' => 'Automatic processing of orders imported via API',
-            'id' => 'easproj_process_imported_orders',
-            'default' => 'yes',
-            'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
-        ),
         'standard_mode_ioss_threshold' => array(
             'name' => EAS_TR('IOSS threshold in Standard mode'),
             'type' => 'checkbox',
@@ -7302,6 +7294,14 @@ function eascompliance_settings()
             'id' => 'easproj_standard_mode_ioss_threshold',
             'default' => 'no',
             'custom_attributes' => get_option('easproj_standard_mode') !== 'yes' ? array('disabled'=>'') : array(),
+        ),
+        'process_imported_orders' => array(
+            'name' => EAS_TR('Process imported orders'),
+            'type' => 'checkbox',
+            'desc' => 'Automatic processing of orders imported via API',
+            'id' => 'easproj_process_imported_orders',
+            'default' => 'yes',
+            'custom_attributes' => get_option('easproj_standard_mode') === 'yes' ? array('disabled'=>'') : array(),
         ),
         'limit_ioss_sales' => array(
             'name' => EAS_TR('Prohibit non IOSS sales to EU countries'),
@@ -8454,7 +8454,7 @@ function eascompliance_order_column($columns)
         $reordered_columns[$key] = $column;
         if ($key == 'order_status') {
             $reordered_columns['eas-processed'] = EAS_TR('EAS processed');
-            $reordered_columns['eas-scheme'] = EAS_TR('Scheme');
+            $reordered_columns['eas-scheme'] = EAS_TR('VAT Scheme');
         }
     }
     return $reordered_columns;
@@ -8559,7 +8559,7 @@ function eascompliance_sort_by_order_column($query)
 
 
 /**
- * Sort by "EAS processed", "Scheme" columns in HPOS
+ * Sort and filter by "EAS processed", "VAT Scheme" columns in HPOS
  *
  */
 add_action('woocommerce_order_query_args', 'eascompliance_woocommerce_order_query_args', 10, 1);
@@ -8567,6 +8567,7 @@ function eascompliance_woocommerce_order_query_args($query_args)
 {
     eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
+    // order by easproj_payload
     if ( isset($_GET['orderby']) && $_GET['orderby'] === 'eas_processed' ) {
         $query_args['meta_query'] = array(
             'relation' => 'OR',
@@ -8581,12 +8582,86 @@ function eascompliance_woocommerce_order_query_args($query_args)
             ));
         $query_args['orderby'] = array('meta_value' => $query_args['order']);
     }
+
+    // order by _easproj_scheme
     if ( isset($_GET['orderby']) && $_GET['orderby'] === 'eas_scheme' ) {
         $query_args['meta_key'] = '_easproj_scheme';
         $query_args['orderby'] = array('meta_value' => $query_args['order']);
     }
 
+    // filter by _easproj_scheme
+    if ( isset($_GET['status']) && $_GET['status'] === 'wc-vat_scheme' ) {
+        $query_args['meta_query'] = array(
+            array(
+                'key' => '_easproj_scheme',
+                'compare' => '>',
+                'value' => '',
+            ));
+        $query_args['status'] = array();
+    }
+
     return $query_args;
+}
+
+
+/**
+ * "VAT Scheme" filter requires custom order status
+ *
+ */
+add_filter('wc_order_statuses', 'eascompliance_wc_order_statuses', 10, 1);
+function eascompliance_wc_order_statuses($order_statuses)
+{
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+    $order_statuses['wc-vat_scheme'] = EAS_TR('VAT Scheme');
+
+    return $order_statuses;
+}
+
+
+/**
+ * Count total "VAT Scheme" orders
+ *
+ */
+add_filter('woocommerce_shop_order_list_table_order_count', 'eascompliance_woocommerce_shop_order_list_table_order_count', 10, 2);
+function eascompliance_woocommerce_shop_order_list_table_order_count($count, $status)
+{
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+    if ($status[0] === 'wc-vat_scheme')
+    {
+        $query = new WP_Query( array('meta_query'=>array(
+            'key' => '_easproj_scheme',
+            'compare' => 'EXISTS',
+        )) );
+
+        return $query->found_posts;
+    }
+
+    return $count;
+}
+
+
+/**
+ * Register "VAT Scheme" order status for filter to work
+ *
+ */
+add_filter('woocommerce_register_shop_order_post_statuses', 'eascompliance_woocommerce_register_shop_order_post_statuses', 10, 1);
+function eascompliance_woocommerce_register_shop_order_post_statuses($order_statuses)
+{
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
+    $order_statuses['wc-vat_scheme']  = array(
+        'label'                     => EAS_TR('VAT Scheme'),
+        'public'                    => false,
+        'exclude_from_search'       => false,
+        'show_in_admin_all_list'    => false,
+        'show_in_admin_status_list' => true,
+        /* translators: %s: number of orders */
+        'label_count'               => _n_noop( 'VAT Scheme <span class="count">(%s)</span>', 'VAT Scheme <span class="count">(%s)</span>', 'woocommerce' ),
+    );
+
+    return $order_statuses;
 }
 
 /**
