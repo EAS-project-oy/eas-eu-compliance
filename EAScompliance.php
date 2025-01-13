@@ -2615,11 +2615,6 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         throw new Exception(eascompliance_format(EAS_TR('Fields [$fields] are required, please enter [$fields], and try again.'), array('$fields' => join(', ', $empty_fields))));
     }
 
-	$tax_rate = 0;
-    foreach ($order->get_taxes() as $tax) {
-		$tax_rate += $tax->get_rate_percent();
-    }
-
 	$ix = 0;
 	$delivery_cost_ix = -1;
     foreach ($order->get_items() as $k => $order_item) {
@@ -2652,6 +2647,17 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             $id_provided_by_em = $id_provided_by_em . "#{$suffix}";
         }
 
+        // take vat_rate from first order item tax with positive tax amount
+        $vat_rate = 0;
+        foreach ($order_item->get_data()['taxes']['total'] as $tax_rate_id => $tax_amount) {
+            if ($tax_amount > 0) {
+                $tax_rate = WC_Tax::_get_tax_rate($tax_rate_id)['tax_rate'];
+                if (!empty($tax_rate)) {
+                    $vat_rate = $tax_rate;
+                }
+                break;
+            }
+        }
 
         $item = array(
             'short_description' => $product->get_name(),
@@ -2661,7 +2667,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
 			'type_of_goods' => $type_of_goods,
 			'location_warehouse_country' => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
-            'vat_rate' => $tax_rate,
+            'vat_rate' => $vat_rate,
 			'unit_cost' => round((float)($order_item['line_total']) / $order_item['quantity'], 2),
             'item_vat' => round((float)($order_item['line_tax']), 2),
             'item_delivery_charge' => 0,
