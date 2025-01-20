@@ -2617,6 +2617,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
 
 	$ix = 0;
 	$delivery_cost_ix = -1;
+    $delivery_vat_rate_ix = -1;
     foreach ($order->get_items() as $k => $order_item) {
         $product_id = $order_item['variation_id'] ?: $order_item['product_id'];
         $product = wc_get_product($product_id);
@@ -2653,7 +2654,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             if ($tax_amount > 0) {
                 $tax_rate = WC_Tax::_get_tax_rate($tax_rate_id)['tax_rate'];
                 if (!empty($tax_rate)) {
-                    $vat_rate = $tax_rate;
+                    $vat_rate = (float)$tax_rate;
                 }
                 break;
             }
@@ -2667,7 +2668,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
 			'type_of_goods' => $type_of_goods,
 			'location_warehouse_country' => '' === $location_warehouse_country ? wc_get_base_location()['country'] : $location_warehouse_country, // Country of the store. Should be filled by EM in the store for each Item //.
-            'vat_rate' => $vat_rate,
+            'vat_rate' =>  round((float)$vat_rate, 2),
 			'unit_cost' => round((float)($order_item['line_total']) / $order_item['quantity'], 2),
             'item_vat' => round((float)($order_item['line_tax']), 2),
             'item_delivery_charge' => 0,
@@ -2679,18 +2680,27 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             'originating_country' => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
 
-        // put delivery cost to first GOODS type or first item
+        // first GOODS item
         if ( $delivery_cost_ix == -1 && $type_of_goods == 'GOODS' ){
 			$delivery_cost_ix = $ix;
+        }
+        // first GOODS item with positive vat_rate
+        if ( $delivery_vat_rate_ix == -1 && $type_of_goods == 'GOODS' && $vat_rate > 0) {
+            $delivery_vat_rate_ix = $ix;
         }
 
         $items[] = $item;
         $ix++;
     }
 
-    if ($delivery_cost_ix == -1) {
-        $delivery_cost_ix = 0;
+    // put delivery cost to first GOODS item with positive vat_rate or fallback to first GOODS item or first item
+    foreach(array($delivery_vat_rate_ix, $delivery_cost_ix, 0) as $ix) {
+        if ($ix != -1) {
+            $delivery_cost_ix = $ix;
+            break;
+        }
     }
+
     $items[$delivery_cost_ix]['item_delivery_charge'] = $delivery_cost;
     $items[$delivery_cost_ix]['item_delivery_charge_vat'] = $delivery_vat;
 
