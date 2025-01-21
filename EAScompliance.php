@@ -2684,8 +2684,20 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         if ( $delivery_cost_ix == -1 && $type_of_goods == 'GOODS' ){
 			$delivery_cost_ix = $ix;
         }
-        // first GOODS item with positive vat_rate
-        if ( $delivery_vat_rate_ix == -1 && $type_of_goods == 'GOODS' && $vat_rate > 0) {
+
+        // get first shipping tax rate with positive shipping tax amount
+        $shipping_tax_rate = -1;
+        foreach($order->get_data()['shipping_lines'] as $shipping_item) {
+            foreach ($shipping_item->get_data()['taxes']['total'] as $shipping_tax_rate_id=>$shipping_tax_amount) {
+                if ($shipping_tax_amount > 0) {
+                    $shipping_tax_rate = (float)WC_Tax::_get_tax_rate($shipping_tax_rate_id)['tax_rate'];
+                    break;
+                }
+            }
+        }
+
+        // first GOODS item with vat_rate equal to shipping vat rate
+        if ( $delivery_vat_rate_ix == -1 && $type_of_goods == 'GOODS' && $vat_rate == $shipping_tax_rate) {
             $delivery_vat_rate_ix = $ix;
         }
 
