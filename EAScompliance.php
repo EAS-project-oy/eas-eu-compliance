@@ -7364,7 +7364,7 @@ function eascompliance_settings()
             'type' => 'checkbox',
             'desc' => EAS_TR('Load payment methods from server before taxes are calculated'),
             'id' => 'easproj_show_payment_methods',
-            'default' => 'no',
+            'default' => 'yes',
         ),
 		'debug' => array(
 			'name' => EAS_TR('Log levels'),
