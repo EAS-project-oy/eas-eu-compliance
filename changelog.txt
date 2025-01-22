@@ -1,8 +1,11 @@
 == Changelog ==
-15-12-24 - version 1.5.40
-* Processing checkout token enhacened. For some stores this will increase productivity.
-* New approach for storing taxes in the order implemented. In case when order contains only taxes, they will be stored in the order with relevant tax class.
+21-01-25 - version 1.6.0
+* Processing of the checkout token enhacened. For some stores this will increase productivity.
+* Handling of the taxes refactored. In case when order contains only taxes, they will be stored in the order with relevant tax class. Accuonting software will be able get proper VAT rates per items. Affected new orders only.
+* Totaly refactored Standard mode. Plugin fully supports IOSS threshold computation following EU regulations without calling EAS solution backend. 
+* Order VAT scheme column added to the order list. Helps to separate IOSS orders from others. Affected new orders only.
 * Minor changes to the delivery address handling implemented. In some stores Delivery Sate/Province data not properly handled during checkout process.  
+* Minor changes to the Admin section implemented.
 
 05-10-24 - version 1.5.35
 * Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options.
