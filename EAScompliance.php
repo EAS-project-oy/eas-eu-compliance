@@ -347,7 +347,7 @@ function eascompliance_woocommerce_init()
         if (eascompliance_is_active() && get_option('easproj_standard_mode') !== 'yes') {
             add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
             add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
-            add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_unset', 10, 0);
+            add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_woocommerce_after_cart_item_quantity_update', 10, 0);
             add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
             add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
             add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
@@ -1510,11 +1510,11 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 		if ( $is_user_checkout && !empty($new_shipping_country) && !eascompliance_supported_country($new_shipping_country, $new_shipping_postcode) && eascompliance_is_set()) {
 			eascompliance_log('calculate', 'reset calculate due to shipping country changed to ' . $new_shipping_country);
 
-			eascompliance_unset();
+			eascompliance_unset('country changes to non-supported');
 		}
 
         if ($is_user_checkout && eascompliance_is_set()) {
-            eascompliance_unset();
+            eascompliance_unset('user updated checkout');
         }
 
         // display vat validation notice on 3rd failed attempt when configured
@@ -1582,7 +1582,7 @@ function eascompliance_wcml_switch_currency($post_data)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        eascompliance_unset();
+        eascompliance_unset('WCML currency changes');
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -1597,7 +1597,7 @@ function eascompliance_woocommerce_applied_coupon($post_data)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        eascompliance_unset();
+        eascompliance_unset('applied coupon');
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -1612,7 +1612,7 @@ function eascompliance_woocommerce_removed_coupon($coupon_code)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        eascompliance_unset();
+        eascompliance_unset('removed coupon');
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -1637,7 +1637,7 @@ function eascompliance_woocommerce_review_order_before_payment()
             // reset calculation when Cart Abandonment Link is opened
             
             if ($_SERVER['REQUEST_METHOD'] == 'GET' && preg_match('/[\?&]wcf_ac_token=/', $_SERVER['REQUEST_URI'])) {
-                eascompliance_unset();
+                eascompliance_unset('Cart Abandonment Link opened');
             }
 
             //reset calculation when WC Payments currency changes
@@ -1650,7 +1650,7 @@ function eascompliance_woocommerce_review_order_before_payment()
 
                 if ($currency_new !== $currency_old) {
 					eascompliance_log('calculate', 'WC_Payments_Multi_Currency currency changed from $old to $new', array('old'=>$currency_old, 'new'=>$currency_new));
-                    eascompliance_unset();
+                    eascompliance_unset('WC_Payments_Multi_Currency currency changed');
                 }
             }
 
@@ -3499,7 +3499,7 @@ function eascompliance_is_set()
 /**
  *  Reset calculated taxes in cart and checkout
  */
-function eascompliance_unset()
+function eascompliance_unset($reason)
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
@@ -3515,7 +3515,7 @@ function eascompliance_unset()
 			eascompliance_session_set('company_vat_validated', null);
 			eascompliance_session_set('company_vat_check_attempt', null);
             WC()->cart->set_session();
-            eascompliance_log('calculate', 'calculation unset');
+            eascompliance_log('calculate', 'calculation unset due to $r', ['r'=>$reason]);
         }
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -4823,6 +4823,9 @@ function eascompliance_cart_tax_caption_html() {
 	return  $tax_name . $customs_duties;
 }
 
+function eascompliance_woocommerce_after_cart_item_quantity_update() {
+    eascompliance_unset('quantity update');
+}
 
 /**
  * Checkout Order review Cart Subtotal
@@ -5285,7 +5288,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
         $chosen_shipping_methods = WC()->session->get('chosen_shipping_methods');
         if (!is_array($chosen_shipping_methods)) {
             eascompliance_log('info', 'Chosen shipping method must not be empty! Resetting EASCompliance');
-            eascompliance_unset();
+            eascompliance_unset('chosen_shipping_methods are empty');
             return $packages;
         }
 
@@ -5293,7 +5296,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
 		$chosen_shipping_methods_saved = WC()->session->get('EAS chosen_shipping_methods');
 		if ( is_array($chosen_shipping_methods_saved) && array_diff($chosen_shipping_methods_saved, $chosen_shipping_methods)) {
 			eascompliance_log('info', 'Chosen shipping methods changed, unset calculation');
-			eascompliance_unset();
+			eascompliance_unset('chosen shipping methods changed');
 			return $packages;
 		}
 
@@ -5305,7 +5308,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
             // Sometimes we get here when first item was removed. If this happens, we reset calculation //.
             if (eascompliance_array_get($cart_item0, 'EAScompliance DELIVERY CHARGE', null) === null) {
                 eascompliance_log('info', 'EAScompliance DELIVERY CHARGE cannot be null! Resetting EASCompliance');
-                eascompliance_unset();
+                eascompliance_unset('first cart item was removed');
                 return $packages;
             }
             foreach ($chosen_shipping_methods as $sx => $shm) {
@@ -5410,7 +5413,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         }
         if (!(array_key_exists('order_breakdown', $calc_jreq_saved))) {
             eascompliance_log('place_order', 'order_breakdown key is not present in $calc_jreq_saved ' . print_r($calc_jreq_saved, true));
-            eascompliance_unset();
+            eascompliance_unset('order_breakdown not present in $calc_jreq_saved');
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
         }
 
@@ -5446,7 +5449,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // paranoid check that order_breakdown key is present
         if (!array_key_exists('order_breakdown', $calc_jreq_new)) {
             eascompliance_log('place_order', 'order_breakdown key is not present in $calc_jreq_new ' . print_r($calc_jreq_new, true));
-            eascompliance_unset();
+            eascompliance_unset('order_breakdown key is not present in $calc_jreq_new');
             throw new Exception(EAS_TR('PLEASE RE-CALCULATE CUSTOMS DUTIES'));
         }
 
@@ -5475,7 +5478,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $cart_item0 = &eascompliance_cart_item0();
 
         if ( eascompliance_array_get($cart_item0, 'EAScompliance limit_ioss_sales') === true) {
-			eascompliance_unset();
+			eascompliance_unset('EAScompliance limit_ioss_sales enabled');
 			throw new Exception( get_option('easproj_limit_ioss_sales_message') );
         }
 
@@ -5516,7 +5519,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 }
             }
 
-            eascompliance_unset();
+            eascompliance_unset('saved checkout does not match new checkout');
             throw new Exception($unset_reason);
         }
         // save payload in order metadata //.
