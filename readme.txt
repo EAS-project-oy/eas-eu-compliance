@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 8.5.4
-Tested up to: 6.5.4
+WC tested up to: 9.6.0
+Tested up to: 6.7.1
 Stable Tag: 1.6.0
-Last updated time: 01.10.2024
+Last updated time: 22.01.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,11 +129,12 @@ EAS project providing service for assistance installation.
 = 1.6.0 =
 
 * Processing of the checkout token enhacened. For some stores this will increase productivity.
-* Handling of the taxes refactored. In case when order contains only taxes, they will be stored in the order with relevant tax class. Accuonting software will be able to get proper VAT rates per items. Affected new orders only.
+* Handling of the taxes refactored. In case when order contains only taxes, they will be stored in the order with relevant tax class. Accounting software will be able to get proper VAT rates per items. Affected new orders only.
 * Totaly refactored Standard mode. Plugin fully supports IOSS threshold computation following EU regulations without calling EAS solution backend. 
 * Order VAT scheme column added to the order list. Helps to separate IOSS orders from others. Affected new orders only.
 * Minor changes to the delivery address handling implemented. In some stores Delivery Sate/Province data not properly handled during checkout process.  
 * Minor changes to the Admin section implemented.
+
 = 1.5.35 =
 
 * Implemented support of ambiguous currency conversion behaviour in some combinations of configuration options.
