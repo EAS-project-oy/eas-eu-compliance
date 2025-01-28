@@ -3176,10 +3176,16 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         if (is_null($eas_checkout_token)) {
             $redirect = true;
 
-            $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
-            if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
-                eascompliance_log('warning', 'Security check');
-            };
+            // $eas_checkout_token is null when eascompliance_redirect_confirm is called by browser request after user returns from EAS confirmation page.
+            // In such case confirm_hash must present in URL and this function must redirect to checkout
+            try {
+                $confirm_hash = json_decode(base64_decode(sanitize_mime_type(eascompliance_array_get($_GET, 'confirm_hash', ''))), true, 512, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
+                if (!wp_verify_nonce($confirm_hash['eascompliance_nonce_api'], 'eascompliance_nonce_api')) {
+                    eascompliance_log('warning', 'Security check');
+                };
+            } catch (Exception $ex) {
+                eascompliance_log('error', 'confirm_hash not found in URL $u', ['u'=>$_SERVER['QUERY_STRING']]);
+            }
 
             if (!array_key_exists('eas_checkout_token', $_GET)) {
                 // confirmation was declined
