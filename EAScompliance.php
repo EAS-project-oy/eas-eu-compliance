@@ -8409,7 +8409,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
  * @param string $string string.
  * @param array $vars vars.
  */
-function eascompliance_format($string, $vars)
+function eascompliance_format($string, $vars=array())
 {
     $patterns = array_keys($vars);
     $replacements = array();
