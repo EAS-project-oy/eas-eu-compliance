@@ -1493,6 +1493,18 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
 			$new_shipping_postcode = $new_billing_postcode;
 		}
 
+        // reload checkout when switching between non-supported and supported countries to help display Company VAT field
+        if ($is_user_checkout && !empty($new_shipping_country) && !is_null(WC()->customer)) {
+            $old_shipping_country = $ship_to_different_address ? WC()->customer->get_shipping_country() : WC()->customer->get_billing_country();
+            $old_shipping_postcode = $ship_to_different_address ? WC()->customer->get_shipping_postcode() : WC()->customer->get_billing_postcode();
+
+            if (eascompliance_supported_country($new_shipping_country, $new_shipping_postcode)
+                xor
+                eascompliance_supported_country($old_shipping_country, $old_shipping_postcode)) {
+                WC()->session->reload_checkout = true;
+            }
+        }
+
         // During calculate_shipping() get_zone_matching_package() checks for $package['destination']['country'] which is taken from $_POST['s_country']
         // when billing (non-EU) and shipping zones (EU) differ, this sometimes makes WC temporary 'forget' about correct shipping zone.
         // We fix it by setting $_POST['s_country'] to one that was used when calculating tax
