@@ -185,6 +185,15 @@ jQuery(document).ready(function($) {
         }
     })
 
+    // switch dashboard url for test_mode
+    $('#easproj_test_mode').on('change', function() {
+        if ( $('#easproj_test_mode').prop('checked') ) {
+            $('.easproj_dashboard_url').replaceWith('<a class="easproj_dashboard_url" href="https://2024.easproject.com">https://2024.easproject.com</a>')
+        } else {
+            $('.easproj_dashboard_url').replaceWith('<a class="easproj_dashboard_url" href="https://dashboard.easproject.com">https://dashboard.easproject.com</a>')
+        }
+    })
+    $('#easproj_test_mode').trigger('change')
 
     //disable/enable settings if easproj_standard_mode is enabled
     if ($('#easproj_standard_mode').prop('checked')) {
