@@ -1,4 +1,10 @@
 == Changelog ==
+
+21-02-06 - version 1.6.2
+* Fixed issue with EU VAT validation component on the checkout.
+* Fixed a bug that prevented refund/return confirmation.
+* Added additional details to the logs for better traceability.
+
 21-01-25 - version 1.6.0
 * Processing of the checkout token enhacened. For some stores this will increase productivity.
 * Handling of the taxes refactored. In case when order contains only taxes, they will be stored in the order with relevant tax class. Accuonting software will be able get proper VAT rates per items. Affected new orders only.
