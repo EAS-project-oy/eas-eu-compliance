@@ -1746,6 +1746,16 @@ function eascompliance_debug() {
 **/
 
 /**
+ * EAS API URL
+ *
+ * @returns string
+ */
+function eascompliance_api_url() {
+    return get_option('easproj_test_mode') === 'yes' ? 'https://internal1.easproject.com/api' : 'https://manager.easproject.com/api';
+}
+
+
+/**
  * Get OAUTH token
  *
  * @throws Exception May throw exception.
@@ -1764,7 +1774,7 @@ function eascompliance_get_oauth_token()
         $jdebug['step'] = 'OAUTH2 Authorise at EAS API server';
 
         // woocommerce_settings_get_option is undefined when called via Credit Card payment type //.
-        $auth_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/auth/open-id/connect';
+        $auth_url = eascompliance_api_url() . '/auth/open-id/connect';
 
         $options = array(
             'method' => 'POST',
@@ -2868,7 +2878,7 @@ function eascompliance_ajaxhandler()
             'sslverify' => false,
         );
 
-        $calc_url = woocommerce_settings_get_option('easproj_eas_api_url') . '/calculate';
+        $calc_url = eascompliance_api_url() . '/calculate';
         $response = (new WP_Http)->request($calc_url, $options);
         if (is_wp_error($response)) {
             throw new Exception($response->get_error_message());
@@ -2941,7 +2951,7 @@ function eascompliance_ajaxhandler()
 
         // if /calculate response is a link to confirmation page and company VAT is present
         // then automate user confirmation popup dialog and return eascompliance_redirect_confirm link
-        $confirm_url = rtrim(get_option('easproj_company_vat_confirm_url', 'https://apieas.easproject.com/'), '/');
+        $confirm_url = get_option('easproj_test_mode') === 'yes' ? 'https://confirmation1.easproject.com' : 'https://apieas.easproject.com';
         if ( !empty($company_vat) && substr($calc_response, 0, strlen($confirm_url))==$confirm_url ) {
             eascompliance_log('calculate', 'automate VAT confirmation process');
 
@@ -3130,7 +3140,7 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 		set_error_handler('eascompliance_error_handler');
 
 		// request validation key
-		$jwt_key_url = get_option('easproj_eas_api_url') . '/auth/keys';
+		$jwt_key_url = eascompliance_api_url() . '/auth/keys';
 		$options = array(
 			'method' => 'GET',
 			'sslverify' => false,
@@ -3811,7 +3821,7 @@ function eascompliance_order_shipping_country_supported($order, $auth_token=null
         'sslverify' => false,
     );
 
-    $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/fetch_supported_country_list_for_em';
+    $url = eascompliance_api_url() . '/visualization/fetch_supported_country_list_for_em';
     $res = (new WP_Http)->request($url, $options);
     if (is_wp_error($res)) {
         throw new Exception($res->get_error_message());
@@ -3906,7 +3916,7 @@ function eascompliance_order_createpostsaleorder($order)
     );
 
 
-    $sales_order_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/createpostsaleorder';
+    $sales_order_url = eascompliance_api_url() . '/createpostsaleorder';
     $sales_order_response = (new WP_Http)->request($sales_order_url, $options);
     if (is_wp_error($sales_order_response)) {
         throw new Exception($sales_order_response->get_error_message());
@@ -4111,7 +4121,7 @@ function eascompliance_woocommerce_after_order_object_save2($order)
 
 		$auth_token = eascompliance_get_oauth_token();
 
-		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/shipment/create_shipment';
+		$url = eascompliance_api_url() . '/shipment/create_shipment';
 
 		$json = array(
 			's10_code' => $tracking_no,
@@ -5826,7 +5836,7 @@ function eascompliance_woocommerce_checkout_order_created($order)
             'sslverify' => false,
         );
 
-        $notify_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/updateExternalOrderId';
+        $notify_url = eascompliance_api_url() . '/updateExternalOrderId';
         $notify_response = (new WP_Http)->request($notify_url, $options);
         if (is_wp_error($notify_response)) {
             throw new Exception($notify_response->get_error_message());
@@ -5954,7 +5964,7 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
             'sslverify' => false,
         );
 
-        $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/payment/verify';
+        $payment_url = eascompliance_api_url() . '/payment/verify';
         $payment_response = (new WP_Http)->request($payment_url, $options);
         if (is_wp_error($payment_response)) {
             throw new Exception($payment_response->get_error_message());
@@ -6045,7 +6055,7 @@ function eascompliance_woocommerce_order_status_changed2($order_id, $status_from
             'sslverify' => false,
         );
 
-        $payment_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/confirmpostsaleorder';
+        $payment_url = eascompliance_api_url() . '/confirmpostsaleorder';
         $payment_response = (new WP_Http)->request($payment_url, $options);
         if (is_wp_error($payment_response)) {
             throw new Exception($payment_response->get_error_message());
@@ -6137,7 +6147,7 @@ function eascompliance_woocommerce_order_status_changed3($order_id, $status_from
             'sslverify' => false,
         );
 
-        $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/create_return_with_lc';
+        $url = eascompliance_api_url() . '/create_return_with_lc';
         $response = (new WP_Http)->request($url, $options);
         if (is_wp_error($response)) {
             throw new Exception($response->get_error_message());
@@ -6210,7 +6220,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 				'timeout' => 15,
 				'sslverify' => false,
 			);
-			$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url')
+			$url = eascompliance_api_url()
                 . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
 			$request = (new WP_Http)->request($url, $options);
 			if (is_wp_error($request)) {
@@ -6267,7 +6277,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			'sslverify' => false,
 		);
 
-		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/mass-sale/create_post_sale_without_lc_orders';
+		$url = eascompliance_api_url() . '/mass-sale/create_post_sale_without_lc_orders';
 		$request = (new WP_Http)->request($url, $options);
 		if (is_wp_error($request)) {
 
@@ -6359,7 +6369,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
 			'sslverify' => false,
 		);
 
-		$url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url')
+		$url = eascompliance_api_url()
             . '/mass-sale/get_post_sale_without_lc_job_status/'. $job_id;
 		$request = (new WP_Http)->request($url, $options);
 		if (is_wp_error($request)) {
@@ -6379,7 +6389,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
         // on completed job status obtain order information, otherwise retry or fail
         if ( 'completed' === $job_status) {
             //request order information
-            $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url')
+            $url = eascompliance_api_url()
                 . '/mass-sale/get_post_sale_without_lc_order_status/'
                 . $job_id;
             $request = (new WP_Http)->request($url, $options);
@@ -6590,7 +6600,7 @@ function eascompliance_woocommerce_create_refund($refund, $args)
             'sslverify' => false,
         );
 
-        $refund_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/create_return_with_lc';
+        $refund_url = eascompliance_api_url() . '/create_return_with_lc';
 
         // retry API refund return request several times for anything except statuses 200 or 400
         $MAX_ATTEMPTS = 3;
@@ -6869,7 +6879,7 @@ function eascompliance_woocommerce_order_refunded($order_id, $refund_id)
             'sslverify' => false,
         );
 
-        $confirm_refund_url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/confirm_refund';
+        $confirm_refund_url = eascompliance_api_url() . '/confirm_refund';
 
         $refund_response = (new WP_Http)->request($confirm_refund_url, $options);
         if (is_wp_error($refund_response)) {
@@ -7298,18 +7308,18 @@ function eascompliance_settings()
 
 			),
 		),
-        'EAS_API_URL' => array(
-            'name' => EAS_TR('EAS API Base URL'),
-            'type' => 'text',
-            'desc' => EAS_TR('API URL'),
-            'id' => 'easproj_eas_api_url',
-            'default' => 'https://manager.easproject.com/api',
+        'test_mode' => array(
+            'name' => EAS_TR('Enable test mode'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('Check this option, if you are using test credentials'),
+            'id' => 'easproj_test_mode',
+            'default' => 'no',
 
         ),
         'AUTH_client_id' => array(
             'name' => EAS_TR('EAS client ID'),
             'type' => 'text',
-            'desc' => EAS_TR('Use the client ID you received from EAS Project'),
+            'desc' => EAS_TR('Use the client ID you received from EAS Project Dashboard <a class="easproj_dashboard_url"></a>'),
             'id' => 'easproj_auth_client_id',
             'custom_attributes' => array('autocomplete' => 'off'),
 
@@ -7317,7 +7327,7 @@ function eascompliance_settings()
         'AUTH_client_secret' => array(
             'name' => EAS_TR('EAS client secret'),
             'type' => 'password',
-            'desc' => EAS_TR('Use the secret you received from EAS Project'),
+            'desc' => EAS_TR('Use the client secret you received from EAS Project Dashboard <a class="easproj_dashboard_url"></a>'),
             'id' => 'easproj_auth_client_secret',
             'custom_attributes' => array('autocomplete' => 'off'),
 
@@ -7359,13 +7369,6 @@ function eascompliance_settings()
             'desc' => EAS_TR('Add company VAT number validation on the checkout page'),
             'id' => 'easproj_company_vat_validate',
             'default' => 'yes',
-        ),
-        'company_vat_confirm_url' => array(
-            'name' => EAS_TR('B2B VAT confirmation url'),
-            'type' => 'text',
-            'desc' => EAS_TR('B2B VAT confirmation url'),
-            'id' => 'easproj_company_vat_confirm_url',
-            'default' => 'https://apieas.easproject.com/',
         ),
         'skip_vat_validation_with_warning' => array(
             'name' => EAS_TR('B2B skip VAT number validation with warning'),
@@ -7991,7 +7994,7 @@ function eascompliance_woocommerce_settings_tab_settings_tab_connection_status()
             ),
             'sslverify' => false,
         );
-        $status_request = woocommerce_settings_get_option('easproj_eas_api_url') . '/user/self/';
+        $status_request = eascompliance_api_url() . '/user/self/';
         $res = (new WP_Http)->request($status_request, $options);
         if (is_wp_error($res)) {
             throw new Exception($res->get_error_message());
@@ -8922,7 +8925,7 @@ if (!function_exists('eascompliance_woocommerce_get_B2B_info')) {
                 'timeout' => 15,
                 'sslverify' => false,
             );
-            $url = eascompliance_woocommerce_settings_get_option_sql('easproj_eas_api_url') . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
+            $url = eascompliance_api_url() . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
             $em_order_list_response = (new WP_Http)->request($url, $options);
 
             if (is_wp_error($em_order_list_response)) {
