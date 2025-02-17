@@ -3165,6 +3165,7 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 		// Validate JWT token signed with key //.
 		$verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
 		if (!(1 === $verified)) {
+            eascompliance_log('error', 'JWT args are $arr Signature $sig Key $key', ['arr'=>$arr, 'sig'=>$jwt_signature, 'key'=>$jwt_key]);
 			throw new Exception('JWT verification failed: ' . $verified);
 		}
 
@@ -3206,7 +3207,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                     eascompliance_log('warning', 'Security check');
                 };
             } catch (Exception $ex) {
-                eascompliance_log('error', 'confirm_hash not found in URL $u', ['u'=>$_SERVER['QUERY_STRING']]);
+                eascompliance_log('error', 'confirm_hash not found in URI $u', ['u'=>$_SERVER['REQUEST_URI']], true);
             }
 
             if (!array_key_exists('eas_checkout_token', $_GET)) {
