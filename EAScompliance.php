@@ -4654,7 +4654,9 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
                         }
                     }
                     if ($currency_ix === -1) {
-                        throw new Exception('Currency not found in exchange rates: ' . $currency);
+                        eascompliance_log('error', 'Currency not found in exchange rates: $c. Disabling IOSS threshold setting.', ['c'=>$currency]);
+                        update_option('easproj_standard_mode_ioss_threshold', 'no');
+                        return $total_taxes;
                     }
 
                     $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
