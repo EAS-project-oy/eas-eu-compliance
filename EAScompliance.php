@@ -4645,55 +4645,13 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
 
                 // convert tax threshold to payload currency
                 if ($currency !== 'EUR') {
-                    // get currency exchange rate on first working day of October last year
-                    $start = date_create_immutable('first day of October last year');
-                    $weekday = (int)$start->format('N');
-                    if ($weekday > 5) {
-                        $start = $start->modify(eascompliance_format('+$n days', ['n' => 8 - $weekday]));
-                    }
+                    $exchange_rate = eascompliance_eucb_exchange_rate($currency);
 
-                    // try using cached exchange rates
-                    $data = null;
-                    if ( get_option('easproj_standard_mode_ioss_threshold_exchange_rates_date') === $start->format('Y-m-d') ) {
-                        $data = json_decode(get_option('easproj_standard_mode_ioss_threshold_exchange_rates'), true);
-                    }
-                    else {
-                        // documentation: https://data.ecb.europa.eu/help/api/data
-                        // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
-                        $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
-                            ['cur' => '', 'start' => $start->format('Y-m-d'), 'end' => $start->modify('+1 day')->format('Y-m-d')]);
-
-                        $options = array(
-                            'method' => 'GET',
-                            'timeout' => 5,
-                        );
-                        $res = (new WP_Http)->request($url, $options);
-                        if (is_wp_error($res)) {
-                            throw new Exception($res->get_error_message());
-                        }
-
-                        $response_status = (string)$res['response']['code'];
-                        if ('200' !== $response_status) {
-                            throw new Exception($response_status . ' ' . $res['response']['message']);
-                        }
-                        $data = json_decode($res['body'], true);
-                        update_option('easproj_standard_mode_ioss_threshold_exchange_rates', $res['body']);
-                        update_option('easproj_standard_mode_ioss_threshold_exchange_rates_date', $start->format('Y-m-d'));
-                    }
-
-                    $currency_ix = -1;
-                    foreach($data['structure']['dimensions']['series'][1]['values'] as $ix=>$v) {
-                        if ($v['id'] === $currency) {
-                            $currency_ix = $ix;
-                        }
-                    }
-                    if ($currency_ix === -1) {
+                    if (is_null($exchange_rate)) {
                         eascompliance_log('error', 'Currency not found in exchange rates: $c. Disabling IOSS threshold setting.', ['c'=>$currency]);
                         update_option('easproj_standard_mode_ioss_threshold', 'no');
                         return $total_taxes;
                     }
-
-                    $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
 
                     $tax_threshold = $tax_threshold * $exchange_rate;
                 }
@@ -4754,6 +4712,64 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
         }
 
     }
+}
+
+/**
+ * Get currency exchange rate to EUR from EU CB
+ *
+ * @returns float exchange rate
+ * @throws Exception May throw exception.
+ */
+function eascompliance_eucb_exchange_rate($currency) {
+
+    // first working day of October last year
+    $start = date_create_immutable('first day of October last year');
+    $weekday = (int)$start->format('N');
+    if ($weekday > 5) {
+        $start = $start->modify(eascompliance_format('+$n days', ['n' => 8 - $weekday]));
+    }
+
+    $data = null;
+    if ( get_option('easproj_standard_mode_ioss_threshold_exchange_rates_date') === $start->format('Y-m-d') ) {
+        $data = json_decode(get_option('easproj_standard_mode_ioss_threshold_exchange_rates'), true);
+    }
+    else {
+        // documentation: https://data.ecb.europa.eu/help/api/data
+        // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
+        $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
+            ['cur' => '', 'start' => $start->format('Y-m-d'), 'end' => $start->modify('+1 day')->format('Y-m-d')]);
+
+        $options = array(
+            'method' => 'GET',
+            'timeout' => 5,
+        );
+        $res = (new WP_Http)->request($url, $options);
+        if (is_wp_error($res)) {
+            throw new Exception($res->get_error_message());
+        }
+
+        $response_status = (string)$res['response']['code'];
+        if ('200' !== $response_status) {
+            throw new Exception($response_status . ' ' . $res['response']['message']);
+        }
+        $data = json_decode($res['body'], true);
+        update_option('easproj_standard_mode_ioss_threshold_exchange_rates', $res['body']);
+        update_option('easproj_standard_mode_ioss_threshold_exchange_rates_date', $start->format('Y-m-d'));
+    }
+
+    $currency_ix = -1;
+    foreach($data['structure']['dimensions']['series'][1]['values'] as $ix=>$v) {
+        if ($v['id'] === $currency) {
+            $currency_ix = $ix;
+        }
+    }
+    if ($currency_ix === -1) {
+        return null;
+    }
+
+    $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
+
+    return $exchange_rate;
 }
 
 
@@ -8446,6 +8462,40 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
             eascompliance_log('error', 'Plugin deactivated. Not supported WC version detected. Current WC version '.WC_VERSION.' is less then supported 4.8.0');
         
         }
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        WC_Admin_Settings::add_error($ex->getMessage());
+    } finally {
+        restore_error_handler();
+    }
+}
+
+add_action('woocommerce_sections_settings_tab_compliance', 'eascompliance_woocommerce_sections_settings_tab_compliance');
+/**
+ * Check tab compliance settings and display html messages if necessary
+ *
+ */
+function eascompliance_woocommerce_sections_settings_tab_compliance() {
+    // this action is called right before show_messages() in html-admin-settings.php which allows rendering html admin messages
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        // If store currency not present in EU CB exchange rates then disable IOSS threshold setting and warn admin
+        if ('yes' === get_option('easproj_standard_mode') && 'yes' === get_option('easproj_standard_mode_ioss_threshold')) {
+            $currency = get_woocommerce_currency();
+            if ($currency !== 'EUR') {
+                $exchange_rate = eascompliance_eucb_exchange_rate($currency);
+
+                if (is_null($exchange_rate)) {
+                    update_option('easproj_standard_mode_ioss_threshold', 'no');
+                    $notice_html = EAS_TR('Option "IOSS threshold in Standard mode" disabled. Default store currency is not supported by EU Central Bank and it is not possible to calculate IOSS threshold. Please change store currency before enabling the option. How to change currency <a href="https://woocommerce.com/document/shop-currency/">https://woocommerce.com/document/shop-currency/</a>');
+                    echo '<div id="message" class="updated inline error"><p><strong>' . $notice_html . '</strong></p></div>';
+                }
+            }
+        }
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         WC_Admin_Settings::add_error($ex->getMessage());
