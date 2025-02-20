@@ -1170,11 +1170,45 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
     if ($callstack) {
         $ex = new Exception();
-        ob_start();
-        var_dump($ex->getTraceAsString());
-        $trace = ob_get_contents();
-        ob_end_clean();
-        $txt .= "\n Callstack: " . $trace;
+        $STRLEN_MAX = 100;
+        $trace = '';
+        $rn = 0;
+        foreach (debug_backtrace(1, 100) as $frame) {
+            $args = '';
+            if (isset($frame['args'])) {
+                $args = array();
+                foreach ($frame['args'] as $arg) {
+                    if (is_string($arg)) {
+                        $args[] = "'" . ( strlen($arg) > $STRLEN_MAX ? substr($arg, 0 ,$STRLEN_MAX/2) . "'...'" .substr($arg, -$STRLEN_MAX/2) : $arg ). "'";
+                    } elseif (is_array($arg)) {
+                        $j = json_encode($arg);
+                        $args[] = strlen($j) > $STRLEN_MAX ? substr($j, 0 ,$STRLEN_MAX/2) . "'...'" .substr($j, -$STRLEN_MAX/2): $j;
+                    } elseif (is_null($arg)) {
+                        $args[] = 'null';
+                    } elseif (is_bool($arg)) {
+                        $args[] = ($arg) ? 'Y' : 'N';
+                    } elseif (is_object($arg)) {
+                        $args[] = get_class($arg);
+                    } elseif (is_resource($arg)) {
+                        $args[] = get_resource_type($arg);
+                    } else {
+                        $args[] = $arg;
+                    }
+                }
+                $args = join(', ', $args);
+            }
+            $trace .= eascompliance_format('$rn $file:$line $class$type$function($args)',[
+                'rn'=>"\n#" . str_pad($rn, 2, '0', STR_PAD_LEFT),
+                'file'=>isset($frame['file']) ? (str_starts_with($frame['file'], ABSPATH) ? substr($frame['file'], strlen(ABSPATH)): $frame['file']) : '[internal function]',
+                'line'=>isset($frame['line']) ? $frame['line'] : '',
+                'class'=>isset($frame['class']) ? $frame['class'] : '',
+                'type'=>isset($frame['type']) ? $frame['type'] : '',
+                'function'=>$frame['function'],
+                'args'=>isset($frame['args']) ? $args : '',
+            ]);
+            $rn++;
+        }
+        $txt .= "\nCallstack: ". ABSPATH . $trace;
     }
 
     // log plugin version once a day
