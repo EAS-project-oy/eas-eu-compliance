@@ -5797,7 +5797,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
             $order_item_tax = new WC_Order_Item_Tax();
             $order_item_tax->set_rate( $tax_rate_id );
             $order_item_tax->set_tax_total( $tax_total );
-            $order_item_tax->set_shipping_tax_total( 0 );
+            $order_item_tax->set_shipping_tax_total( $delivery_charge_vat );
             $order->add_item( $order_item_tax );
         }
 
