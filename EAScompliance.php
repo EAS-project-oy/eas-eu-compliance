@@ -4648,8 +4648,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
                     $exchange_rate = eascompliance_eucb_exchange_rate($currency);
 
                     if (is_null($exchange_rate)) {
-                        eascompliance_log('error', 'Currency not found in exchange rates: $c. Disabling IOSS threshold setting.', ['c'=>$currency]);
-                        update_option('easproj_standard_mode_ioss_threshold', 'no');
+                        eascompliance_log('error', 'Currency not found in exchange rates: $c. Should IOSS threshold setting be disabled?', ['c'=>$currency]);
                         return $total_taxes;
                     }
 
