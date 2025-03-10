@@ -2026,28 +2026,28 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['is_delivery_to_person'] = in_array( eascompliance_array_get($checkout, 'shipping_company', ''), array('', 'false') );
 
     $calc_jreq['recipient_title'] = 'Mr.';
-    $calc_jreq['recipient_first_name'] = $checkout['shipping_first_name'];
-    $calc_jreq['recipient_last_name'] = $checkout['shipping_last_name'];
-    $calc_jreq['recipient_company_name'] = eascompliance_array_get($checkout, 'shipping_company', '') === '' ? 'No company' : $checkout['shipping_company'];
-    $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?: '';
-    $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'];
-    $calc_jreq['delivery_address_line_2'] = eascompliance_array_get($checkout, 'billing_address_2', '');//$checkout['shipping_address_2'];
+    $calc_jreq['recipient_first_name'] = $checkout['shipping_first_name'] ?? '';
+    $calc_jreq['recipient_last_name'] = $checkout['shipping_last_name'] ?? '';
+    $calc_jreq['recipient_company_name'] = eascompliance_array_get($checkout, 'shipping_company', '') === '' ? 'No company' : ($checkout['shipping_company'] ?? '');
+    $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?? '';
+    $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'] ?? '';
+    $calc_jreq['delivery_address_line_2'] =  eascompliance_array_get($checkout, 'billing_address_2', '') ?? '';//$checkout['shipping_address_2'];
     if (did_action('woocommerce_blocks_loaded')) {
-        $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'];
+        $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'] ?? '';
     }
 
-    $calc_jreq['delivery_city'] = eascompliance_array_get($checkout, 'shipping_city', '');
-    $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : $delivery_state_province;
-    $calc_jreq['delivery_postal_code'] = $checkout['shipping_postcode'];
-    $calc_jreq['delivery_country'] = $checkout['shipping_country'];
+    $calc_jreq['delivery_city'] = eascompliance_array_get($checkout, 'shipping_city', '') ?? '';
+    $calc_jreq['delivery_state_province'] = '' === $delivery_state_province ? '' : ($delivery_state_province ?? '');
+    $calc_jreq['delivery_postal_code'] = $checkout['shipping_postcode'] ?? '';
+    $calc_jreq['delivery_country'] = $checkout['shipping_country'] ?? '';
 	// When Northern Ireland support is enabled, shipping is to GB and postal code starts from BT then delivery country is XI
 	if ( get_option('easproj_handle_norther_ireland_as_ioss') === 'yes' ) {
 		if ($calc_jreq['delivery_country'] === 'GB' && substr($calc_jreq['delivery_postal_code'],0, 2) == 'BT') {
 			$calc_jreq['delivery_country'] = 'XI';
 		}
 	}
-    $calc_jreq['delivery_phone'] = eascompliance_array_get($checkout, 'billing_phone', '');
-    $calc_jreq['delivery_email'] = eascompliance_array_get($checkout, 'billing_email', '');
+    $calc_jreq['delivery_phone'] = eascompliance_array_get($checkout, 'billing_phone', '') ?? '';
+    $calc_jreq['delivery_email'] = eascompliance_array_get($checkout, 'billing_email', '') ?? '';
 
     $jdebug['step'] = 'fill json request with cart data';
     $countries = array_flip(WORLD_COUNTRIES);
