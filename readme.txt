@@ -126,6 +126,14 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
+= 1.6.6 =
+
+* Tax lines representation changed in the order cnfirmation page for better understanting
+* Fixed a bug that prevented to upload images in the admin dashaboard in some  cases
+* Added valiation of the store currency exchnage rates support by EU Central Bank. For non supported currencies IOSS threshold calculation will be skipped.  
+
+
+
 = 1.6.2 =
 
 * Fixed issue with EU VAT validation component on the checkout.
