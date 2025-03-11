@@ -4,8 +4,8 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 9.6.0
-Tested up to: 6.7.1
+WC tested up to: 9.7.1
+Tested up to: 6.7.2
 Stable Tag: 1.6.2
 Last updated time: 22.01.2025
 License: GPLv2 or later
