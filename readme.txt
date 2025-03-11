@@ -99,6 +99,8 @@ The following currency switcher plugins are supported:
 * WC Currency Switcher by realmag777
 * Multi Currency for WooCommerce by VillaTheme
 
+Known incompatible plugins:
+* WooCommerce Subscription by Automattic. 
 
 == Installation ==
 
