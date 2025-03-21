@@ -2114,7 +2114,7 @@ function eascompliance_make_eas_api_request_json()
 
         $order_breakdown_items[] = array(
             'short_description' => $product->get_name(),
-            'long_description' => $product->get_name(),
+            'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
             'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
@@ -2469,7 +2469,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 
         $items[] = array(
             'short_description' => $product->get_name(),
-            'long_description' => $product->get_name(),
+            'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
             'quantity' => $order_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
@@ -2718,7 +2718,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
 
         $item = array(
             'short_description' => $product->get_name(),
-            'long_description' => $product->get_name(),
+            'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
             'quantity' => $order_item['quantity'],
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
