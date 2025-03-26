@@ -2830,8 +2830,14 @@ function eascompliance_ajaxhandler()
             $company_vat = $calc_jreq['recipient_company_vat'];
 			$delivery_country = $calc_jreq['delivery_country'];
 
-			// skip when company vat validate option is disabled
-			if (get_option('easproj_company_vat_validate') !== 'yes') throw new EAScomplianceBreakException();
+            // skip when company vat validate option is disabled
+			if (get_option('easproj_company_vat_validate') !== 'yes') {
+                // when company name is present, set company VAT to not_provided
+                if ($company_vat === '' && $company_name !== 'No company') {
+                    $company_vat = 'not_provided';
+                }
+                throw new EAScomplianceBreakException();
+            }
 
 			// skip when no company
 			if ($company_name == 'No company') throw new EAScomplianceBreakException();
@@ -2981,7 +2987,10 @@ function eascompliance_ajaxhandler()
 
         $calc_response = str_replace('?eas_checkout_token=', '&eas_checkout_token=', $calc_response);
 
-        eascompliance_log('calculate', '/calculate request successful, $calc_response ' . $calc_response);
+        eascompliance_log('calculate', '/calculate request successful, response is $c eas_checkout_token is $t', [
+                'c'=>$calc_response,
+                't'=>empty($eas_checkout_token) ? 'not present' : 'present',
+        ] );
 
         // if /calculate response is a link to confirmation page and company VAT is present
         // then automate user confirmation popup dialog and return eascompliance_redirect_confirm link
@@ -3066,6 +3075,7 @@ function eascompliance_ajaxhandler()
         // call redirect_confirm immediately if hostname of redirect_uri matches store hostname
         $hostname = strval(eascompliance_array_get($_POST, 'hostname', ''));
         if (parse_url($redirect_uri, PHP_URL_HOST) === $hostname) {
+            eascompliance_log('calculate','redirect confirm immediately, eas_checkout_token is $t', ['t'=>empty($eas_checkout_token) ? 'not present' : 'present']);
             eascompliance_redirect_confirm($eas_checkout_token);
             $calc_response = 'REDIRECT_CONFIRMED';
         }
