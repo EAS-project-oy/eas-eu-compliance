@@ -1678,7 +1678,7 @@ function eascompliance_woocommerce_review_order_before_payment()
 
         if (eascompliance_is_set()) {
             $cart_item0 = &eascompliance_cart_item0();
-            $checkout_form_data = eascompliance_array_get($cart_item0, 'CHECKOUT FORM DATA', '');
+            $checkout_form_data = eascompliance_array_get($cart_item0, 'EAScompliance CHECKOUT FORM DATA', '');
 
             // reset calculation when Cart Abandonment Link is opened
             
@@ -1959,7 +1959,7 @@ function eascompliance_make_eas_api_request_json()
             $checkout[$k] = $v;
         }
 
-		$cart_item0['CHECKOUT FORM DATA'] = base64_encode($query);
+		$cart_item0['EAScompliance CHECKOUT FORM DATA'] = base64_encode($query);
         WC()->cart->set_session();
     }
 
@@ -2841,6 +2841,8 @@ function eascompliance_ajaxhandler()
     try {
         set_error_handler('eascompliance_error_handler');
 
+        eascompliance_unset('calculate call');
+
         $auth_token = eascompliance_get_oauth_token();
 
         $calc_jreq = eascompliance_make_eas_api_request_json();
@@ -3465,8 +3467,8 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         }
 
 		$cart_item0 = &eascompliance_cart_item0();
-        $cart_item0['EASPROJ API CONFIRMATION TOKEN'] = $eas_checkout_token;
-        $cart_item0['EASPROJ API PAYLOAD'] = $payload_j;
+        $cart_item0['EAScompliance API CONFIRMATION TOKEN'] = $eas_checkout_token;
+        $cart_item0['EAScompliance API PAYLOAD'] = $payload_j;
         $cart_item0['EAScompliance HEAD'] = $payload_j['eas_fee'] + $payload_j['taxes_and_duties'];
         $cart_item0['EAScompliance TAXES AND DUTIES'] = $payload_j['taxes_and_duties'];
         $cart_item0['EAScompliance DELIVERY CHARGE'] = $payload_j['delivery_charge_vat_excl'];
@@ -3490,7 +3492,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 		}
 
         // WP-42 save request json backup copy into cart first item
-        $cart_item0['EAS API REQUEST JSON COPY'] = $calc_req;
+        $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_req;
 
         // save chosen_shipping_methods
 		WC()->session->set('EAS chosen_shipping_methods', WC()->session->get('chosen_shipping_methods'));
@@ -3597,9 +3599,14 @@ function eascompliance_unset($reason)
         if (eascompliance_is_set()) {
 
             $cart_item0 = &eascompliance_cart_item0();
-            $cart_item0['EAScompliance limit_ioss_sales'] = false;
-            $cart_item0['EAScompliance SET'] = false;
-			$cart_item0['EAScompliance declined'] = 0;
+
+            // unset EAScompliance keys of cart first item
+            foreach($cart_item0 as $k=>$v) {
+                if (preg_match('/^EAScompliance .*/', $k)) {
+                    unset($cart_item0[$k]);
+                }
+            }
+
 			eascompliance_session_set('EAS CART DISCOUNT', null);
 			eascompliance_session_set('company_vat', null);
 			eascompliance_session_set('company_vat_validated', null);
@@ -4539,7 +4546,7 @@ function eascompliance_cart_total($current_total = null)
                     $cart_total_log = eascompliance_format('set from DELIVERY CHARGE $dc, add DELIVERY CHARGE VAT $dcv;', ['dc'=>$cart_item['EAScompliance DELIVERY CHARGE'], 'dcv'=>$cart_item['EAScompliance DELIVERY CHARGE VAT']]);
                     $first = false;
                     $payload_total_order_amount = $cart_item['EAScompliance total_order_amount'];
-                    $payload = $cart_item['EASPROJ API PAYLOAD'];
+                    $payload = $cart_item['EAScompliance API PAYLOAD'];
                 }
 
                 $cart_total += $cart_item['EAScompliance item price'] ;
@@ -4920,7 +4927,7 @@ function eascompliance_cart_tax_caption_html() {
 		$tax_name = EASCOMPLIANCE_COUNTRIES_TAX_NAMES[$delivery_country];
 
 		$cart_item0 = &eascompliance_cart_item0();
-		$payload_j = $cart_item0['EASPROJ API PAYLOAD'];
+		$payload_j = $cart_item0['EAScompliance API PAYLOAD'];
 		$total_customs_duties = $payload_j['total_customs_duties'];
 		if ( $total_customs_duties > 0) {
 			$customs_duties = EAS_TR(' & duties');
@@ -5432,7 +5439,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
 //                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
                 if (empty($calc_jreq_saved)) {
                     eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
-                    $calc_jreq_saved = $cart_item0['EAS API REQUEST JSON COPY'];
+                    $calc_jreq_saved = $cart_item0['EAScompliance API REQUEST JSON COPY'];
                 }
 
                 if (round((float)$cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'],2)>round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2)) {
@@ -5643,7 +5650,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
             throw new Exception($unset_reason);
         }
         // save payload in order metadata //.
-        $payload = $cart_item0['EASPROJ API PAYLOAD'];
+        $payload = $cart_item0['EAScompliance API PAYLOAD'];
         $order->add_meta_data('easproj_payload', $payload, true);
 
         $store_country = explode(':', get_option('woocommerce_default_country'))[0];
@@ -5886,7 +5893,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
 
         // saving token to notify EAS during order status change //.
-        $order->add_meta_data('_easproj_token', $cart_item0['EASPROJ API CONFIRMATION TOKEN']);
+        $order->add_meta_data('_easproj_token', $cart_item0['EAScompliance API CONFIRMATION TOKEN']);
         eascompliance_log('place_order', 'order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax()));
 
     } catch (Exception $ex) {
