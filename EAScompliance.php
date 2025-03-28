@@ -2157,18 +2157,30 @@ function eascompliance_company_vat_check($company_vat, $country)
 	try {
 		set_error_handler('eascompliance_error_handler');
 
+        $res = -1;
+        $vat = $company_vat;
+
         if (strlen($company_vat) < 2) {
-            return -1;
+            $res = -2;
+            throw new EAScomplianceBreakException();
         }
 
         // only allow two capital letters for country
         if ( !preg_match('/^[A-Z][A-Z]$/', $country)) {
-            return -2;
+            $res = -3;
+            throw new EAScomplianceBreakException();
         }
 
-        // only take digits for vat number
-        $vat = preg_replace('/[^0-9]/', '', $company_vat);
+        // try to follow EU VAT number format without country code, remove country from string start
+        // https://www.avalara.com/vatlive/en/eu-vat-rules/eu-vat-number-registration/eu-vat-number-formats.html
 
+        //remove non alpha-numerics
+        $vat = preg_replace('/[^0-9A-Z]/i', '', $company_vat);
+
+        //remove first two letters of country code
+        $vat = preg_replace("/^{$country}(.*)$/i", '${1}', $vat);
+
+        // SOAP web service docs at https://ec.europa.eu/taxation_customs/vies/#/technical-information
 		$url = 'http://ec.europa.eu/taxation_customs/vies/services/checkVatService';
 		$options = array(
 			'method' => 'POST',
@@ -2192,12 +2204,14 @@ function eascompliance_company_vat_check($company_vat, $country)
 		$req = (new WP_Http)->request($url, $options);
 		if (is_wp_error($req)) {
             eascompliance_log('error', 'Company VAT check request failed. $r', ['r'=>$req] );
-            return -3;
+            $res = -4;
+            throw new EAScomplianceBreakException();
 		}
 		$status = (string)$req['response']['code'];
 		if ( $status != '200' ) {
 			eascompliance_log('error', 'Company VAT check request failed with status ' . $status);
-			return -4;
+            $res = -5;
+            throw new EAScomplianceBreakException();
 		}
 
         $body_sample = '<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
@@ -2225,19 +2239,28 @@ function eascompliance_company_vat_check($company_vat, $country)
 
 		foreach($xml->xpath('/Envelope/Body/checkVatResponse/valid') as $node) {
             if ($node == 'true') {
-                return 1;
+                $res = 1;
+                throw new EAScomplianceBreakException();
             }
             if ($node == 'false') {
-                return 0;
+                $res = 0;
+                throw new EAScomplianceBreakException();
             }
         };
 
-        return -5;
+        $res = -6;
+        throw new EAScomplianceBreakException();
 
-	} catch (Exception $ex) {
+	}
+    catch (EAScomplianceBreakException $ex) {
+        eascompliance_log('calculate', 'vat validation of $v in $c returns code $r', ['r'=>$res, 'v'=>$vat, 'c'=>$country]);
+        return $res;
+    }
+    catch (Exception $ex) {
 		eascompliance_log('error', $ex);
-		return -6;
-	} finally {
+		$res = -6;
+	}
+    finally {
 		restore_error_handler();
 	}
 }
