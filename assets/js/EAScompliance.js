@@ -104,6 +104,10 @@ jQuery(document).ready(function ($) {
         unblock($('.button_calc'))
     })
 
+    $('#ship-to-different-address-checkbox').on('change', () => {
+        checkout_form.append('<input type=hidden id=ship_to_different_address_clicked name=ship_to_different_address_clicked value="true">')
+    })
+
     //// send order information to EAS API and redirect to confirmation page
     $('.button_calc').on('click', async function (ev) {
         //validate fields before sending Calculate request
@@ -333,6 +337,8 @@ jQuery(document).ready(function ($) {
     })
 
     $(document.body).on("updated_checkout checkout_error", async function () {
+        checkout_form.find('#ship_to_different_address_clicked').remove()
+
         // only work in supported countries
         let shipping_country = $('#shipping_country').val()
         let shipping_postcode = $('#shipping_postcode').val()

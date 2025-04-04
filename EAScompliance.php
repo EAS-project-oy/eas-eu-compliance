@@ -82,6 +82,23 @@ function EAS_TR($text, $textdomain = 'eas-eu-compliance')
 }
 
 /**
+ * return string first match
+ */
+function EAS_MATCH($pattern, $string, $group=0)
+{
+    $matches = array();
+    $res = preg_match($pattern, $string, $matches);
+
+    if ($res === 0) {
+        return null;
+    } elseif ($res === 1) {
+        return $matches[$group];
+    } else {
+        throw new Exception('match failed');
+    }
+}
+
+/**
  * Add settings page on Plugin list
  */
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'eascompliance_settings_link');
@@ -1535,7 +1552,10 @@ function eascompliance_woocommerce_checkout_update_order_review($post_data)
             if (eascompliance_supported_country($new_shipping_country, $new_shipping_postcode)
                 xor
                 eascompliance_supported_country($old_shipping_country, $old_shipping_postcode)) {
-                WC()->session->reload_checkout = true;
+                // avoid reload when country changes because 'Ship to different address' was clicked
+                if (is_null(EAS_MATCH('/&ship_to_different_address_clicked=true/', $post_data))) {
+                    WC()->session->reload_checkout = true;
+                }
             }
         }
 
