@@ -4525,8 +4525,10 @@ function eascompliance_cart_total($current_total = null)
             $cart_total_log .= eascompliance_format('set to $ct from current_total; ', ['ct'=>$cart_total]);
         }
 
-        // exclude tax at standard_mode with IOSS threshold setting enabled:
-        if ( 'yes' === get_option('easproj_standard_mode') && 'yes' === get_option('easproj_standard_mode_ioss_threshold')) {
+        // exclude tax at standard_mode with IOSS threshold setting enabled and shipping country in EU:
+        if ( 'yes' === get_option('easproj_standard_mode')
+            && 'yes' === get_option('easproj_standard_mode_ioss_threshold')
+            && in_array(WC()->customer->get_shipping_country(), EUROPEAN_COUNTRIES)) {
             $cart_total_tax = array_sum($cart->get_taxes());
             $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
             $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
@@ -4688,8 +4690,9 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
         if ( 'yes' === get_option('easproj_standard_mode') ) {
 
             // Only at standard_mode with IOSS threshold setting enabled:
-            // remove items tax if cost of items is greater than threshold
-            if ('yes' === get_option('easproj_standard_mode_ioss_threshold') ) {
+            // remove items tax if cost of items is greater than threshold and shipping country is in EU
+            if ('yes' === get_option('easproj_standard_mode_ioss_threshold')
+                && in_array(WC()->customer->get_shipping_country(), EUROPEAN_COUNTRIES)) {
                 $tax_threshold = 150.00; // EUR
                 $exchange_rate = 1.0;
 
@@ -5506,8 +5509,9 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $cart = WC()->cart;
 
         if ( 'yes' === get_option('easproj_standard_mode') ) {
-            if ('yes' === get_option('easproj_standard_mode_ioss_threshold') ) {
-                // Standard mode with IOSS Threshold, order above threshold must not have any taxes
+            // Standard mode with IOSS Threshold, order above threshold must not have any taxes in EU
+            if ('yes' === get_option('easproj_standard_mode_ioss_threshold')
+                && in_array($shipping_country, EUROPEAN_COUNTRIES) ) {
                 $cart_total_tax = array_sum($cart->get_taxes());
                 if ($cart_total_tax == 0) {
                     foreach($order->get_items() as $order_item) {
