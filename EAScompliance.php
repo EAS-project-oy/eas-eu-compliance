@@ -5508,6 +5508,14 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
         $cart = WC()->cart;
 
+        $shipping_country = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_country', sanitize_text_field(eascompliance_array_get($_POST, 'billing_country', 'XX'))));
+        $shipping_postcode = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_postcode', sanitize_text_field(eascompliance_array_get($_POST, 'billing_postcode', '00'))));
+        $ship_to_different_address = sanitize_text_field(eascompliance_array_get($_POST, 'ship_to_different_address', ''));
+        if (!('true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
+            $shipping_country = eascompliance_array_get($_POST, 'billing_country', 'XX');
+            $shipping_postcode = eascompliance_array_get($_POST, 'billing_postcode', '00');
+        }
+
         if ( 'yes' === get_option('easproj_standard_mode') ) {
             // Standard mode with IOSS Threshold, order above threshold must not have any taxes in EU
             if ('yes' === get_option('easproj_standard_mode_ioss_threshold')
@@ -5531,17 +5539,11 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 }
             }
 
+            eascompliance_log('place_order', 'Standard mode order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax()));
             return;
         }
 
         // only work for supported countries //.
-        $shipping_country = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_country', sanitize_text_field(eascompliance_array_get($_POST, 'billing_country', 'XX'))));
-        $shipping_postcode = sanitize_text_field(eascompliance_array_get($_POST, 'shipping_postcode', sanitize_text_field(eascompliance_array_get($_POST, 'billing_postcode', '00'))));
-        $ship_to_different_address = sanitize_text_field(eascompliance_array_get($_POST, 'ship_to_different_address', ''));
-        if (!('true' === $ship_to_different_address || '1' === $ship_to_different_address)) {
-            $shipping_country = eascompliance_array_get($_POST, 'billing_country', 'XX');
-            $shipping_postcode = eascompliance_array_get($_POST, 'billing_postcode', '00');
-        }
         if (!eascompliance_supported_country($shipping_country, $shipping_postcode)) {
             return;
         }
