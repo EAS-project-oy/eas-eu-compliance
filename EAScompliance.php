@@ -380,6 +380,7 @@ function eascompliance_woocommerce_init()
 		if (eascompliance_is_active()) {
 			eascompliance_vat_rates_update();
 
+            add_filter('woocommerce_cart_display_prices_including_tax', 'eascompliance_woocommerce_cart_display_prices_including_tax', 10, 1);
 			add_filter('woocommerce_no_available_payment_methods_message', 'eascompliance_woocommerce_no_available_payment_methods_message', 10, 2);
 			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
 		    // adding custom javascript file
@@ -3806,7 +3807,8 @@ function eascompliance_price_inclusive()
 
 		$price_inclusive = false;
 		if ( version_compare(WC_VERSION, '4.4', '>=' ) ){
-			if (WC()->cart->get_tax_price_display_mode() === 'incl') {
+            // WC setting 'Display prices during cart and checkout' and applied filter woocommerce_cart_display_prices_including_tax
+			if (WC()->cart->display_prices_including_tax()) {
 				$price_inclusive = true;
 			}
 		}
@@ -4671,6 +4673,48 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
     }
 }
 
+function eascompliance_is_standard_mode_above_ioss_threshod() {
+
+    $cart = WC()->cart;
+    $shipping_country = WC()->customer->get_shipping_country();
+
+    // Only at standard_mode with IOSS threshold setting enabled:
+    // remove items tax if cost of items is greater than threshold and shipping country is in EU
+    if ('yes' === get_option('easproj_standard_mode')
+        && 'yes' === get_option('easproj_standard_mode_ioss_threshold')
+        && in_array($shipping_country, EUROPEAN_COUNTRIES)) {
+        $tax_threshold = 150.00; // EUR
+        $exchange_rate = 1.0;
+
+        $items_cost = $cart->get_cart_contents_total(); //$cart->get_total( 'items_total', false ) + $cart->get_total( 'fees_total', false ) + $cart->get_total( 'shipping_total', false );
+
+        $currency = get_woocommerce_currency();
+        $wcml_enabled = eascompliance_is_wcml_enabled();
+        if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
+            $multi_currency = WC_Payments_Multi_Currency();
+            $currency = $multi_currency->get_selected_currency()->get_code();
+        }
+
+        // convert tax threshold to payload currency
+        if ($currency !== 'EUR') {
+            $exchange_rate = eascompliance_eucb_exchange_rate($currency);
+
+            if (is_null($exchange_rate)) {
+                eascompliance_log('error', 'Currency not found in exchange rates: $c. Should IOSS threshold setting be disabled?', ['c' => $currency]);
+                return false;
+            }
+
+            $tax_threshold = $tax_threshold * $exchange_rate;
+        }
+
+        if ($items_cost > $tax_threshold) {
+            eascompliance_log('cart_total','removing cart taxes due to items cost $ic exceeds threshold $t, exchange rate $r; ', ['ic' => $items_cost, 't' => $tax_threshold, 'r' => $exchange_rate]);
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /**
  * Order review Tax field
@@ -4689,40 +4733,10 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
 
         if ( 'yes' === get_option('easproj_standard_mode') ) {
 
-            // Only at standard_mode with IOSS threshold setting enabled:
-            // remove items tax if cost of items is greater than threshold and shipping country is in EU
-            if ('yes' === get_option('easproj_standard_mode_ioss_threshold')
-                && in_array(WC()->customer->get_shipping_country(), EUROPEAN_COUNTRIES)) {
-                $tax_threshold = 150.00; // EUR
-                $exchange_rate = 1.0;
-
-                $items_cost = $cart->get_cart_contents_total(); //$cart->get_total( 'items_total', false ) + $cart->get_total( 'fees_total', false ) + $cart->get_total( 'shipping_total', false );
-                $cart_total_tax = array_sum($total_taxes);
-
-                $currency = get_woocommerce_currency();
-                $wcml_enabled = eascompliance_is_wcml_enabled();
-                if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
-                    $multi_currency = WC_Payments_Multi_Currency();
-                    $currency = $multi_currency->get_selected_currency()->get_code();
-                }
-
-                // convert tax threshold to payload currency
-                if ($currency !== 'EUR') {
-                    $exchange_rate = eascompliance_eucb_exchange_rate($currency);
-
-                    if (is_null($exchange_rate)) {
-                        eascompliance_log('error', 'Currency not found in exchange rates: $c. Should IOSS threshold setting be disabled?', ['c'=>$currency]);
-                        return $total_taxes;
-                    }
-
-                    $tax_threshold = $tax_threshold * $exchange_rate;
-                }
-
-                if ($items_cost > $tax_threshold) {
-                    $cart_tax_log .= eascompliance_format('removing cart taxes due to items cost $ic exceeds threshold $t, exchange rate $r; ', ['ic' => $items_cost, 't' => $tax_threshold, 'r' => $exchange_rate]);
-                    $total_taxes = array();
-                    return $total_taxes;
-                }
+            if (eascompliance_is_standard_mode_above_ioss_threshod()) {
+                $cart_tax_log .= eascompliance_format('removing cart taxes due to items cost exceeds threshold; ');
+                $total_taxes = array();
+                return $total_taxes;
             }
 
             return $total_taxes;
@@ -4832,6 +4846,37 @@ function eascompliance_eucb_exchange_rate($currency) {
     $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
 
     return $exchange_rate;
+}
+
+
+/**
+ * Firter woocommerce_cart_display_prices_including_tax
+ *
+ * @param bool $display_prices_including_tax display_prices_including_tax.
+ * @returns bool
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_cart_display_prices_including_tax($display_prices_including_tax)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+
+        set_error_handler('eascompliance_error_handler');
+
+        // in Standard Mode with IOSS threshold, cart and checkout taxes should not present when threshold exceeded
+        if ($display_prices_including_tax && eascompliance_is_standard_mode_above_ioss_threshod()) {
+            $display_prices_including_tax = false;
+        }
+
+        return $display_prices_including_tax;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
 }
 
 
