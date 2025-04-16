@@ -428,6 +428,7 @@ jQuery(document).ready(function ($) {
             .fadeIn()
             .on('click', async function (event) {
                 event.preventDefault()
+                block($('.woocommerce-checkout'))
 
                 $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
 
@@ -450,6 +451,8 @@ jQuery(document).ready(function ($) {
                     $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
                     $company_vat_validate.after($err)
                 }
+
+                unblock($('.woocommerce-checkout'))
             })
     })
 

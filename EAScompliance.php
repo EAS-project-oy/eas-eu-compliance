@@ -486,6 +486,7 @@ function eascompliance_plugin_upgrade()
                 'init',
                 'wp135_location_delivery_countries',
                 'wp196_session_data',
+                'wp267_show_payment_methods',
         );
 
         $applied_upgrades = (array)get_option('eascompliance_applied_upgrades');

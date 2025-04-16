@@ -67,3 +67,11 @@ function eascompliance_upgrade_wp196_session_data()
 	}
 
 }
+
+
+function eascompliance_upgrade_wp267_show_payment_methods()
+{
+
+    update_option('easproj_show_payment_methods', 'yes');
+
+}
