@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 9.7.1
-Tested up to: 6.7.2
-Stable Tag: 1.6.2
-Last updated time: 22.01.2025
+WC tested up to: 9.8.1
+Tested up to: 6.8
+Stable Tag: 1.6.11
+Last updated time: 15.04.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,11 +128,16 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
-= 1.6.6 =
+= 1.6.11 =
 
-* Tax lines representation changed in the order cnfirmation page for better understanting
-* Fixed a bug that prevented to upload images in the admin dashaboard in some  cases
-* Added valiation of the store currency exchnage rates support by EU Central Bank. For non supported currencies IOSS threshold calculation will be skipped.  
+* Tax lines representation changed in the order cnfirmation page for better understanding
+* Fixed a bug that prevented to upload images in the admin dashaboard in some cases
+* Added valiation of the store currency exchnage rates support by EU Central Bank. For non supported currencies IOSS threshold calculation will be skipped
+* Additional validations added for the Company EU VAT numbers, including user interface improvements
+* Fixed issue with EU IOSS threshold calculation. In some cases this was applied for non EU countries
+* Fixed issue with calcualting final Shipping price
+* Minor bugs fixed
+
 
 
 

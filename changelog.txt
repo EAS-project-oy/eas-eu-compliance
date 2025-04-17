@@ -1,9 +1,14 @@
 == Changelog ==
-11-03-25 - version 1.6.6
+15-04-25 - version 1.6.11
 
-* Tax lines representation changed in the order cnfirmation page for better understanting
-* Fixed a bug that prevented to upload images in the admin dashaboard in some  cases
-* Added valiation of the store currency exchnage rates support by EU Central Bank. For non supported currencies IOSS threshold calculation will be skipped.  
+* Tax lines representation changed in the order cnfirmation page for better understanding
+* Fixed a bug that prevented to upload images in the admin dashaboard in some cases
+* Added valiation of the store currency exchnage rates support by EU Central Bank. For non supported currencies IOSS threshold calculation will be skipped
+* Additional validations added for the Company EU VAT numbers, including user interface improvements
+* Fixed issue with EU IOSS threshold calculation. in some cases this was applied for non EU countries
+* Fixed issue with displaying of the taxes in the order even they were not collected from the end customer
+* Fixed issue with calcualting final Shipping price
+* Minor bugs fixed
 
 21-02-25 - version 1.6.2
 * Fixed issue with EU VAT validation component on the checkout.
