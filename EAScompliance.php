@@ -5688,6 +5688,13 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // exclude delivery_state_province from new/saved json comparison
         $calc_jreq_new['delivery_state_province'] = $calc_jreq_saved['delivery_state_province'];
 
+        // paranoid replace nulls with empty string in $calc_jreq_new
+        array_walk_recursive($calc_jreq_new, function (&$v, $k) {
+           if (is_null($v)) {
+               eascompliance_log('error', 'must not have nulls in calc_jreq_new, key $k', ['k'=>$k], true);
+               $v = '';
+           }
+        });
 
         if (json_encode($calc_jreq_saved, EASCOMPLIANCE_JSON_THROW_ON_ERROR) !== json_encode($calc_jreq_new, EASCOMPLIANCE_JSON_THROW_ON_ERROR)) {
             eascompliance_log('place_order', '$calc_jreq_saved: ' . json_encode($calc_jreq_saved));
