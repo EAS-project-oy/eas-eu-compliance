@@ -816,12 +816,13 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
     try {
         set_error_handler('eascompliance_error_handler');
 
+        $show_payment_methods = false;
+
         if (\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default()) {
             //TODO WIP for checkout blocks
-            return $available_gateways;
+            $show_payment_methods = true;
+            throw new EAScomplianceBreakException();
         }
-
-        $show_payment_methods = false;
 
         // woocommerce-payments needs available gateways for scripts loading
         if ( 'yes' === get_option('easproj_show_payment_methods') ) {
@@ -864,13 +865,36 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
         }
 
 
-        if ($show_payment_methods) {
-            return $available_gateways;
-        } else {
-            return array();
+        throw new EAScomplianceBreakException();
+
+    } catch (EAScomplianceBreakException) {
+        // Plugin Fix: wallee has settings 'Enforce Consistency' to enforce matching cart total with items total which breaks on EAS calculations and $gateway->is_available() returns false
+        if (eascompliance_log_level('WP-268')) {
+            $available = 0;
+            $total = 0;
+            foreach ( WC()->payment_gateways->payment_gateways() as $gateway ) {
+                if ( $gateway->is_available() ) {
+                    $available += 1;
+                }
+
+                $rf = ReflectionMethod::createFromMethodName(get_class($gateway).'::is_available');
+                $ref = eascompliance_format('$f:$rn', ['f'=>$rf->getFileName(), 'rn'=>$rf->getStartLine()]);
+                $src = file_get_contents($rf->getFileName());
+                $lines = preg_split('/\n/',$src);
+                $fnsrc = join("\n", array_slice($lines, $rf->getStartLine()-1, $rf->getEndLine()-$rf->getStartLine()+1));
+                eascompliance_log('WP-268', 'gateway $g $rn is_available definition at $ref $rn $src', ['g'=>get_class($gateway), 'ref'=>$ref, 'src'=>$fnsrc, 'rn'=>"\n"]);
+                $total += 1;
+            }
+
+            eascompliance_log('WP-268', 'returning $c out of available $a total $t payment gateways: $s', ['c'=>count($available_gateways), 's'=>$show_payment_methods?'Y':'N', 'a'=>$available, 't'=>$total]);
         }
 
-    } catch (Exception $ex) {
+        if ($show_payment_methods) {
+            return $available_gateways;
+        }
+        return array();
+    }
+    catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
     } finally {
