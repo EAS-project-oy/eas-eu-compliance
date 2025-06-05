@@ -181,64 +181,6 @@ function eascompliance_logger()
 
 
 /**
- * Plugin activation notification
- *
- * @throws Exception May throw exception.
- */
-register_activation_hook(__FILE__, 'eascompliance_plugin_activation');
-function eascompliance_plugin_activation()
-{
-
-    try {
-        set_error_handler('eascompliance_error_handler');
-
-        $activate_url = 'https://woo-info.easproject.com/api/data/woo';
-
-        $store_data = array(
-            'address1' => get_option('woocommerce_store_address', ''),
-            'address2' => get_option('woocommerce_store_address_2', ''),
-            'city' => wc_get_base_location(),
-            'postcode' => get_option('woocommerce_store_address_2', 'woocommerce_store_postcode'),
-            'store_url' => get_option('siteurl'),
-            'store_email' => get_site_option('admin_email'),
-        );
-
-        $body = json_encode(array('data' => json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR)), EASCOMPLIANCE_JSON_THROW_ON_ERROR);
-
-        $options = array(
-            'method' => 'POST',
-            'headers' => array(
-                'Content-type' => 'application/json',
-                'X-Auth-Id' => 'EB27386D-7F26-4549-B57D-4EEFBAE6B1B5'
-            ),
-            'body' => $body,
-            'sslverify' => true,
-        );
-
-        $activate_response = (new WP_Http)->request($activate_url, $options);
-        if (is_wp_error($activate_response)) {
-            eascompliance_log('error', 'Auth request failed: ' . $activate_response->get_error_message());
-            throw new Exception(EAS_TR('Plugin activation request failed'));
-        }
-
-        $activate_response_status = (string)$activate_response['response']['code'];
-        if ('200' === $activate_response_status) {
-            eascompliance_log('info', 'plugin activation notification successful');
-        } else {
-            eascompliance_log('error', 'plugin activation notification failed: $r', array('$r' => $activate_response));
-        }
-
-
-    } catch (Exception $ex) {
-        eascompliance_log('error', $ex);
-        throw $ex;
-    } finally {
-        restore_error_handler();
-    }
-}
-
-
-/**
  * Plugin status change notification
  *
  * @throws Exception May throw exception.
@@ -249,17 +191,25 @@ function eascompliance_plugin_status_change_notification($status)
     try {
         set_error_handler('eascompliance_error_handler');
 
-        if (!in_array($status, ['enabled', 'disabled', 'removed'])) {
+        if (!in_array($status, ['enabled', 'disabled', 'deleted', 'installed'])) {
             throw new Exception('Invalid status $s'. ['s'=>$status]);
         }
 
-        $url = 'https://woo-info.easproject.com/api/data/woo/plugin';
+        $url = 'https://woo-info.easproject.com/api/woo';
 
         $store_data = array(
-            'ClientId' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_id'),
-            'Status' => $status,
-            'StoreName' => get_bloginfo('name'),
-            'Domain' => get_option('siteurl'),
+            'application_status' => $status,
+            'strore_url' => get_option('siteurl'),
+            'action_date' => date_create('now')->format('Y-m-d\TH:i:s\Z'),
+            'store_data' => array(
+                'address1' => get_option('woocommerce_store_address', ''),
+                'address2' => get_option('woocommerce_store_address_2', ''),
+                'city' => wc_get_base_location(),
+                'postcode' => get_option('woocommerce_store_address_2', 'woocommerce_store_postcode'),
+                'store_email' => get_site_option('admin_email'),
+                'client_id' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_id'),
+                'store_name' => get_bloginfo('name'),
+            ),
         );
 
         $body = json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
@@ -285,7 +235,7 @@ function eascompliance_plugin_status_change_notification($status)
         if ('200' === $response_status) {
             eascompliance_log('info', 'plugin status notification successful: $s', ['s'=>$status]);
         } else {
-            eascompliance_log('error', 'plugin status notification failed: $r', array('$r' => $req));
+            eascompliance_log('error', 'plugin status notification failed: $s $sd $r', array('s'=>$status, '$r' => $req, 'sd'=>$store_data));
         }
 
 
@@ -302,9 +252,7 @@ function eascompliance_plugin_activation_hook() {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        if (get_option('easproj_active') === 'yes') {
-            eascompliance_plugin_status_change_notification('enabled');
-        }
+        eascompliance_plugin_status_change_notification('installed');
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -319,7 +267,7 @@ function eascompliance_plugin_uninstall_hook() {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        eascompliance_plugin_status_change_notification('removed');
+        eascompliance_plugin_status_change_notification('deleted');
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -3548,6 +3496,8 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 
         eascompliance_log('info', 'redirect_confirm successful');
 
+        do_action('eascompliance_is_set', $payload_j);
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         wc_add_notice($ex->getMessage(), 'error');
@@ -3659,6 +3609,8 @@ function eascompliance_unset($reason)
 			eascompliance_session_set('company_vat_check_attempt', null);
             WC()->cart->set_session();
             eascompliance_log('calculate', 'calculation unset due to $r', ['r'=>$reason]);
+
+            do_action('eascompliance_is_unset', $reason);
         }
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
