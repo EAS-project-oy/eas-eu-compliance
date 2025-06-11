@@ -1607,9 +1607,47 @@ function eascompliance_woocommerce_checkout_update_order_review2($post_data)
 
 
 /**
+ *  Remove filter by name and callback name or closure
+ */
+function eascompliance_remove_filter($filter_name, $callback_name='', $filter_priority=10)
+{
+    global $wp_filter;
+
+    $f = &$wp_filter[ $filter_name ];
+    if (empty($f)) {
+        return 'no filter: ' . $filter_name;
+    }
+
+    $callbacks = &$f->callbacks[ $filter_priority ];
+    if (empty($callbacks)) {
+        return 'no callbacks with priority: ' . $filter_priority;
+    }
+
+    foreach ($callbacks as $key => $hook) {
+        if ($key==$callback_name) {
+            unset($callbacks[$key]);
+            return 'filter callback removed: '.$callback_name;
+        }
+        // KUDOS https://wp-kama.com/note/removing-hooks-in-wordpress-actions-or-filters
+        if ($callback_name=='' && $hook['function'] instanceof Closure) {
+            unset($callbacks[$key]);
+            return 'filter closure removed: '. $filter_name;
+        }
+    }
+}
+
+
+/**
  *  WCML fix to enable multi_currency conversion in ajax requests so that cart_item['line_subtotal'] is in correct currency
  */
 function eascompliance_wcml_load_multi_currency_in_ajax($load) {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    // EID-665 try to prevent interfering with WCML in admin pages
+    if (is_admin()) {
+        return $load;
+    }
+
     return true;
 }
 
@@ -4638,6 +4676,11 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
 
     try {
         set_error_handler('eascompliance_error_handler');
+
+        // EID-665 try to prevent interfering with WCML in admin pages
+        if (is_admin()) {
+            return $cart_total;
+        }
 
         $cart_total = eascompliance_cart_total($cart_total);
 
