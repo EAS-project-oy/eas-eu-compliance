@@ -3414,13 +3414,13 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         $total_qnty = 0;
         $most_expensive_item = &$payload_items[0];
         $total_item_duties_and_taxes = 0;
-        foreach ($payload_items as $k => &$item_payload) {
-            $total_price += $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'];
-            $total_qnty += $item_payload['quantity'];
-            $total_item_duties_and_taxes += $item_payload['item_duties_and_taxes'];
+        foreach ($payload_items as $k => &$payload_item) {
+            $total_price += $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+            $total_qnty += $payload_item['quantity'];
+            $total_item_duties_and_taxes += $payload_item['item_duties_and_taxes'];
 
-            if ($item_payload['quantity'] * $item_payload['unit_cost_excl_vat'] > $most_expensive_item['quantity'] * $most_expensive_item['unit_cost_excl_vat']) {
-                $most_expensive_item = &$item_payload;
+            if ($payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] > $most_expensive_item['quantity'] * $most_expensive_item['unit_cost_excl_vat']) {
+                $most_expensive_item = &$payload_item;
             }
         }
 
@@ -3437,22 +3437,39 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         }
         $has_goods_in_cart = false;
 
+        $sku_prev = '';
+        $suffix = 1;
         foreach (WC()->cart->cart_contents as $k => &$cart_item) {
             $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
             $sku = wc_get_product($product_id)->get_sku();
-            $found = false;
-            foreach ($payload_items as &$item_payload) {
-                if ($item_payload['item_id'] === $k) {
-                    $found = true;
+            $item_payload = null;
+
+            $suffix = 1;
+            foreach ($payload_items as &$pi) {
+                $payload_item_id = $pi['item_id'];
+                if ($pi['item_id'] === $k) {
+                    $item_payload = &$pi;
                     break;
                 }
                 // $payload_item['item_id'] is sku when it is available in product
-                if ($item_payload['item_id'] === $sku) {
-                    $found = true;
+                if ($pi['item_id'] === $sku) {
+                    $item_payload = &$pi;
                     break;
                 }
+
+                // account for product suffix in item_id
+                if ($sku_prev === $sku) {
+                    $suffix += 1;
+                    if ($pi['item_id'] === $sku . "#{suffix}") {
+                        $item_payload = &$pi;
+                    }
+                } else {
+                    $suffix = 1;
+                }
+                $sku_prev = $sku;
+
             }
-            if (!$found) {
+            if (is_null($item_payload)) {
                 throw new Exception('Cart item not found from payload');
             }
             $product= wc_get_product($product_id);
