@@ -3462,6 +3462,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                     $suffix += 1;
                     if ($pi['item_id'] === $sku . "#{suffix}") {
                         $item_payload = &$pi;
+                        break;
                     }
                 } else {
                     $suffix = 1;
