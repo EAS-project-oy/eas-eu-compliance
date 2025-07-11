@@ -3437,14 +3437,13 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         }
         $has_goods_in_cart = false;
 
-        $sku_prev = '';
-        $suffix = 1;
+        $sku_suffix = array(); // sku => suffix
         foreach (WC()->cart->cart_contents as $k => &$cart_item) {
             $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
             $sku = wc_get_product($product_id)->get_sku();
             $item_payload = null;
 
-            $suffix = 1;
+            $sku_suffix[$sku] += 1;
             foreach ($payload_items as &$pi) {
                 $payload_item_id = $pi['item_id'];
                 if ($pi['item_id'] === $k) {
@@ -3457,18 +3456,11 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                     break;
                 }
 
-                // account for product suffix in item_id
-                if ($sku_prev === $sku) {
-                    $suffix += 1;
-                    if ($pi['item_id'] === $sku . "#{suffix}") {
-                        $item_payload = &$pi;
-                        break;
-                    }
-                } else {
-                    $suffix = 1;
+                // account for product suffix in payload item_id
+                if ($sku_suffix[$sku] > 1 && $pi['item_id'] === $sku . "#{$sku_suffix[$sku]}") {
+                    $item_payload = &$pi;
+                    break;
                 }
-                $sku_prev = $sku;
-
             }
             if (is_null($item_payload)) {
                 throw new Exception('Cart item not found from payload');
