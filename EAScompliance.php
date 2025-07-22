@@ -499,7 +499,7 @@ add_action(
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
     if (eascompliance_is_active()) {
-        //require_once 'EAScompliance-blocks.php';
+        require_once 'EAScompliance-blocks.php';
     }
 }
 
@@ -2019,10 +2019,6 @@ function eascompliance_make_eas_api_request_json()
         $checkout['shipping_postcode'] = eascompliance_array_get($checkout, 'billing_postcode', '');
     }
 
-    // take checkout from blocks when present
-    if (array_key_exists('blocks_checkout', $_POST) && did_action('woocommerce_blocks_loaded') ) {
-        $checkout = $_POST['blocks_checkout'];
-    }
 
     $delivery_state_province = eascompliance_array_get($checkout, 'shipping_state', '') === '' ? '' : '' . eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $checkout['shipping_country'], array()), $checkout['shipping_state'], $checkout['shipping_state']);
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
@@ -3266,7 +3262,7 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 		// Validate JWT token signed with key //.
 		$verified = openssl_verify($arr[0] . '.' . $arr[1], $jwt_signature, $jwt_key, OPENSSL_ALGO_SHA256);
 		if (!(1 === $verified)) {
-            eascompliance_log('error', 'JWT args are $arr Signature $sig Key $key', ['arr'=>$arr, 'sig'=>$jwt_signature, 'key'=>$jwt_key]);
+            eascompliance_log('error', 'JWT args are $arr Signature $sig Key $key', ['arr'=>$arr, 'sig'=>$jwt_signature, 'key'=>$jwt_key], true);
 			throw new Exception('JWT verification failed: ' . $verified);
 		}
 
@@ -3297,7 +3293,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         set_error_handler('eascompliance_error_handler');
 
         $redirect = false;
-        if (is_null($eas_checkout_token)) {
+        if (empty($eas_checkout_token)) {
             $redirect = true;
 
             // $eas_checkout_token is null when eascompliance_redirect_confirm is called by browser request after user returns from EAS confirmation page.
@@ -5610,6 +5606,9 @@ function eascompliance_woocommerce_checkout_create_order($order)
                     $order->set_cart_tax(0);
                     $order->set_shipping_tax(0);
                     $order->remove_order_items('tax');
+                    if (did_action('woocommerce_blocks_loaded')) {
+                        $order->set_total(eascompliance_cart_total());
+                    }
                     $order->save();
                 }
             }
@@ -6121,10 +6120,10 @@ function eascompliance_woocommerce_order_status_changed($order_id, $status_from,
         set_error_handler('eascompliance_error_handler');
 
         // log order status change
-        eascompliance_log('info', eascompliance_format('Order $order changes status from $from to $to',
-            array('order' => $order->get_order_number(),
+        eascompliance_log('info', 'Order $order changes status from $from to $to',
+            ['order' => $order->get_order_number(),
                 'from' => $status_from,
-                'to' => $status_to)));
+                'to' => $status_to]);
 
         if ( 'yes' === $order->get_meta('_easproj_payment_processing') ) {
             eascompliance_log('payment', 'verification cancelled due to payment processing');

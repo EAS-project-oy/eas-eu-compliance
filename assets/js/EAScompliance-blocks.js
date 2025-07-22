@@ -1,8 +1,5 @@
 // Woocommerce blocks utility functions
 
-jQuery(document).ready(function ($) {
-    window.$ = $
-
     const { useRef, useEffect } = wp.element
 
     const usePrevious = (value, initialValue) => {
@@ -12,6 +9,8 @@ jQuery(document).ready(function ($) {
         })
         return ref.current
     }
+
+    window.eascompliance ??= {}
 
     // check which dependency triggered useEffect
     window.eascompliance.useEffectDebugger = (effectHook, dependencies, dependencyNames = []) => {
@@ -47,4 +46,3 @@ jQuery(document).ready(function ($) {
         element.dispatchEvent(event)
         return event
     }
-})

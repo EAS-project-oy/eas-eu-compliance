@@ -19,12 +19,15 @@ window.metadata = {
 }
 
 window.Frontend = (props) => {
+	const $ = window.jQuery
+
 	const E = wp.element.createElement
 	const { useEffect, useState, useCallback, createPortal, useRef } = wp.element
 	const { ValidatedTextInput } = wc.blocksCheckout
 	const { Button } = wc.blocksCheckout
 
-	const { useBlockProps } = wp.blockEditor.useBlockProps
+	const { useBlockProps } = wp.blockEditor
+
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 	const { setExtensionData } = props.checkoutExtensionData
 
@@ -35,7 +38,7 @@ window.Frontend = (props) => {
 
 	const [ isVisible, isVisibleSet] = useState(false)
 
-	// show VAT validate component if Edit button was clicked or when address card is editing
+	// show VAT validate component if Edit button was clicked or when the address card is editing
 	useEffect(() => {
 		// TODO what is 'react' way to access CustomerAddress->editing state?
 

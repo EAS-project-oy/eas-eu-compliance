@@ -21,6 +21,8 @@ window.metadata = {
 
 // React component that displays calculate button, hides/shows Place Order button
 window.Frontend = (props) => {
+	const $ = window.jQuery
+
 	const E = wp.element.createElement
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 	const { useEffect, useState, useCallback } = wp.element
@@ -297,6 +299,24 @@ wc.blocksCheckout.registerCheckoutBlock({
 	metadata: metadata,
 	component: Frontend
 })
+
+
+// we cannot change the returned items price, but we can write text near <price/> tag
+const modifyCartItemPrice = ( defaultValue, extensions, args, validation ) => {
+	const isCartContext = args?.context === 'checkout';
+
+	if ( ! isCartContext ) {
+		return defaultValue;
+	}
+
+	return '<price/>';
+}
+
+// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-block/available-filters.md#cart-line-items-filters
+wc.blocksCheckout.registerCheckoutFilters('eascompliance-checkout-calculate-taxes-block', {
+		cartItemPrice: modifyCartItemPrice
+})
+
 
 // avoid polluting window object
 delete window.metadata
