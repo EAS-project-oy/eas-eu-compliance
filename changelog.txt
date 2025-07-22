@@ -1,4 +1,11 @@
 == Changelog ==
+20-07-25 - version 1.6.18
+
+* Implemented partial support of the Blcoks checkout page. Starting from 1.6.18 EAS EU compliance supports Checkout Blocks for the Standard operational mode with IOSS threshold calculation
+* Fixed issue with duplicated items in the cart (some plugins create duplicated items that to be hanlde by EAS plugin as a separate item with unique ID)
+* Fixed compatibility issue with WooCommerce Multilingual & Multicurrency in the Admin 
+* Minor bugs fixed in the installation and removal process
+
 15-04-25 - version 1.6.11
 
 * Tax lines representation changed in the order cnfirmation page for better understanding

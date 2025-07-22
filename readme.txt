@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 9.8.1
-Tested up to: 6.8
-Stable Tag: 1.6.11
-Last updated time: 15.04.2025
+WC tested up to: 10.0.2
+Tested up to: 6.8.2
+Stable Tag: 1.6.18
+Last updated time: 20.07.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,13 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.6.18 =
+
+* Implemented partial support of the Blcoks checkout page. Starting from 1.6.18 EAS EU compliance supports Checkout Blocks for the Standard operatoinal mode with IOSS threshold calculation
+* Fixed issue with duplicated items in the cart (some plugins create duplicated items that to be hanlde by EAS plugin as a separate item with unique ID)
+* Fixed compatibility issue with WooCommerce Multilingual & Multicurrency in the Admin 
+* Minor bugs fixed in the installation and removal process
 
 = 1.6.11 =
 
