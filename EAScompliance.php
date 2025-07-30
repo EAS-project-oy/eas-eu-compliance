@@ -4552,6 +4552,11 @@ function eascompliance_cart_total($current_total = null)
         if ( 'yes' === get_option('easproj_standard_mode')
             && 'yes' === get_option('easproj_standard_mode_ioss_threshold')
             && in_array(WC()->customer->get_shipping_country(), EUROPEAN_COUNTRIES)) {
+            if ( WC()->is_store_api_request() ) {
+                $cart_total_log .= 'skip due to store api request; ';
+                return $cart_total;
+            }
+
             $cart_total_tax = array_sum($cart->get_taxes());
             $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
             $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
@@ -5594,6 +5599,13 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 $cart_total_tax = array_sum($cart->get_taxes());
                 if ($cart_total_tax == 0) {
                     foreach($order->get_items() as $order_item) {
+                        if ( WC()->is_store_api_request() ) {
+                            // blocks product price was mocked in cart_updated action, so we have to fix order_item totals here
+                            $product = $order_item->get_product();
+                            $order_item_price = wc_get_price_excluding_tax( $product, array( 'qty' => $order_item->get_quantity() )) ;
+                            $order_item->set_subtotal($order_item_price);
+                            $order_item->set_total($order_item_price);
+                        }
                         $taxes = $order_item->get_taxes();
                         $order_item->set_taxes(
                             array(

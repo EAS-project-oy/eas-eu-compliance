@@ -121,11 +121,16 @@ add_action('woocommerce_blocks_checkout_block_registration',
 
 // Main entry point where WC->cart meets Response is CartSchema->get_item_response()
 // force_schema_readonly() and 'readonly' attributes prevent changing values in response data
+// Cart Prices are formed in ProductSchema->prepare_product_price_response()
 // few callbacks that are called by blocks:
 // rest_request_after_callbacks
 // woocommerce_hydration_request_after_callbacks
 // woocommerce_after_calculate_totals
+// woocommerce_get_cart_contents
+// woocommerce_cart_contents_changed
 // woocommerce_cart_get_total
+// woocommerce_cart_get_total_tax
+// woocommerce_add_to_cart
 add_action('woocommerce_store_api_checkout_update_order_from_request', 'eascompliance_woocommerce_store_api_checkout_update_order_from_request', 10, 2);
 function eascompliance_woocommerce_store_api_checkout_update_order_from_request($order, $request)
 {
@@ -165,6 +170,86 @@ function eascompliance_woocommerce_store_api_checkout_update_order_from_request(
         eascompliance_woocommerce_checkout_create_order($order);
 
         eascompliance_woocommerce_checkout_order_created($order);
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+add_filter('woocommerce_cart_contents_changed', 'eascompliance_woocommerce_cart_contents_changed', 10, 1);
+function eascompliance_woocommerce_cart_contents_changed($cart_contents)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (empty($cart_contents)) {
+            return $cart_contents;
+        }
+
+        if (!WC()->is_store_api_request()) {
+            return $cart_contents;
+        }
+
+        foreach($cart_contents as $cart_item_key => $cart_item) {
+            $product = $cart_item['data'];
+            if (!in_array(get_class($product), array('WC_Product_Simple', 'WC_Product_Variation'))) {
+                continue;
+            }
+
+            $old_price = $product->get_price();
+            $price_incl = wc_get_price_including_tax($product);
+            $price_excl = wc_get_price_excluding_tax($product);
+            $item_tax = $price_incl - $price_excl;
+
+            $new_price = get_option( 'woocommerce_tax_display_shop' ) === 'incl' ? $price_incl : $price_excl;
+
+            if ( 'yes' === get_option('easproj_standard_mode') ) {
+                if (eascompliance_is_standard_mode_above_ioss_threshod()) {
+                    $new_price = $price_excl;
+                }
+            }
+
+            // mock product price to have it be correct in checkout
+            $product->set_price($new_price);
+            eascompliance_log('cart_total', 'blocks setting price $p0 to $p1, tax $t1', ['p0'=>$old_price, 'p1'=>$new_price, 't1'=>$item_tax]);
+        }
+
+        return $cart_contents;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
+
+add_filter('woocommerce_cart_get_total_tax', 'eascompliance_woocommerce_cart_get_total_tax', 10, 1);
+function eascompliance_woocommerce_cart_get_total_tax($total_tax)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (!WC()->is_store_api_request()) {
+            return $total_tax;
+        }
+
+        $cart = WC()->cart;
+        $cart_taxes = $cart->get_taxes();
+        $total_tax = array_sum($cart_taxes);
+
+        eascompliance_log('cart_total', 'blocks setting cart total tax to $t', ['t'=>$cart_taxes]);
+
+        return $total_tax;
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
