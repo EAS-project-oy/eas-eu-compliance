@@ -2729,6 +2729,10 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         $product_id = $order_item['variation_id'] ?: $order_item['product_id'];
         $product = wc_get_product($product_id);
 
+        if (!$product) {
+            continue;
+        }
+
         $location_warehouse_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_warehouse_country'), '');
         $originating_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_originating_country'), '');
         $seller_registration_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_seller_reg_country'), '');
@@ -6478,7 +6482,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
         $request_json = array('order_list'=>array(array(
                 'order'=>$order_json,
                 's10_code'=>(string)$order->get_order_number(),
-                'sale_date'=>date_format($order->get_date_paid(), 'Y-m-d\TH:i:sP'),
+                'sale_date'=>date_format($order->get_date_paid() ?: date_create('today'), 'Y-m-d\TH:i:sP'),
         )));
 
 		$auth_token = eascompliance_get_oauth_token();
