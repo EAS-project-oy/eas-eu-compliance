@@ -7619,15 +7619,6 @@ function eascompliance_settings()
             'desc' => EAS_TR('You can change the text. Notice, text will be saved for default store language only.'),
             'id' => 'easproj_limit_ioss_sales_message',
         ),
-        'ignore_comparing_address_fields' => array(
-                'name' => EAS_TR('Ignore comparing fields'),
-                'type' => 'multiselect',
-                'class' => 'wc-enhanced-select',
-                'desc' => EAS_TR('Do not check equality for listed fields saved during calculation and when order is being created'),
-                'id' => 'easproj_ignore_comparing_address_fields',
-                'default' => array(),
-                'options' => EASCOMPLIANCE_COMPARABLE_FIELDS,
-        ),
         'show_payment_methods' => array(
             'name' => EAS_TR('Show payment methods'),
             'type' => 'checkbox',
@@ -7870,6 +7861,15 @@ function eascompliance_settings()
             'id' => 'easproj_reload_checkout_page',
             'default' => false,
             'desc' => EAS_TR('Please use this option only if payment step in the store’s theme can’t be reached, until checkout page is reloaded')
+        ),
+        'ignore_comparing_address_fields' => array(
+            'name' => EAS_TR('Exclude from change tracking'),
+            'type' => 'multiselect',
+            'class' => 'wc-enhanced-select',
+            'desc' => EAS_TR('Do not check equality for listed fields saved during calculation and when order is being created'),
+            'id' => 'easproj_ignore_comparing_address_fields',
+            'default' => array(),
+            'options' => EASCOMPLIANCE_COMPARABLE_FIELDS,
         ),
 
 		'section_design_end' => array(
