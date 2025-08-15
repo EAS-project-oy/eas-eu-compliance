@@ -3930,6 +3930,9 @@ function eascompliance_order_shipping_country_supported($order, $auth_token=null
     eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $shipping_country = $order->get_shipping_country();
+    if ($order->get_shipping_country() === '') {
+        $shipping_country = $order->get_billing_country();
+    }
 
     if (is_null($auth_token)) {
         $auth_token = eascompliance_get_oauth_token();
