@@ -35,13 +35,18 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const { useSelect, useDispatch, subscribe } = wp.data
 		const { CART_STORE_KEY, CHECKOUT_STORE_KEY, PAYMENT_STORE_KEY } = wc.wcBlocksData
 
+        const {core_state, payment_state, cart_state, checkout_state} = useSelect( (select) => {
+            return {
+                core_state: select( 'core/notices'),
+                payment_state: select( PAYMENT_STORE_KEY ),
+                cart_state: select(CART_STORE_KEY),
+                checkout_state: select(CHECKOUT_STORE_KEY),
+            }
+        }, [])
+
 		const core_actions = useDispatch( 'core/notices')
-		const core_state = useSelect( 'core/notices')
 		const payment_actions = useDispatch( PAYMENT_STORE_KEY )
-		const payment_state = useSelect( PAYMENT_STORE_KEY )
-		const cart_state = useSelect(CART_STORE_KEY)
 		const cart_actions = useDispatch(CART_STORE_KEY)
-		const checkout_state = useSelect(CHECKOUT_STORE_KEY)
 		const checkout_actions = useDispatch( CHECKOUT_STORE_KEY )
 		const [ message, setMessage ] = useState(plugin_dictionary.calculate_status_initial)
 		const [ buttonText, setButtonText ] = useState(plugin_dictionary.button_calc_name)
@@ -51,7 +56,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 
 		// save available payment methods in component state
 		const available_payment_methods = useSelect( (select) => {
-			apm = select(PAYMENT_STORE_KEY).getAvailablePaymentMethods()
+			let apm = select(PAYMENT_STORE_KEY).getAvailablePaymentMethods()
 			if (! $.isEmptyObject(apm) && $.isEmptyObject(saved_available_payment_methods)) {
 				saved_available_payment_methods_set(apm)
 			}
