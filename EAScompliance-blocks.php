@@ -50,7 +50,7 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
             wp_register_script(
                 $block . '-frontend',
                 plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks'),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks'),
                 filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
                 true
             )
@@ -70,7 +70,7 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
             wp_register_script(
                 $block . '-frontend',
                 plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks'),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks'),
                 filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
                 true
             )
