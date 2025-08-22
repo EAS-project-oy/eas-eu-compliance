@@ -26,8 +26,6 @@ window.Frontend = (props) => {
 	const { ValidatedTextInput } = wc.blocksCheckout
 	const { Button } = wc.blocksCheckout
 
-	const { useBlockProps } = wp.blockEditor
-
 	const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 	const { setExtensionData } = props.checkoutExtensionData
 

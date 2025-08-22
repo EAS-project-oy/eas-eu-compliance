@@ -27,8 +27,6 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const { useEffect, useState, useCallback } = wp.element
 		const { useEffectDebugger } = window.eascompliance
 
-		const { useBlockProps } = wp.blockEditor.useBlockProps
-
 		const [ loading, setLoading ] = useState(false)
 		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(window.wcSettings.checkoutData.extensions.eascompliance.status === 'present')
 		const { setExtensionData } = props.checkoutExtensionData
