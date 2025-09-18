@@ -4686,7 +4686,7 @@ function eascompliance_cart_total($current_total = null)
 /**
  * Filter for cart total
  *
- * @param float $cart_total cart_total.
+ * @param string $cart_total cart_total.
  * @throws Exception May throw exception.
  */
 function eascompliance_woocommerce_cart_get_total($cart_total)
@@ -4701,7 +4701,7 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
             return $cart_total;
         }
 
-        $cart_total = eascompliance_cart_total($cart_total);
+        $cart_total = strval(eascompliance_cart_total($cart_total));
 
         return $cart_total;
     } catch (Exception $ex) {
@@ -5996,7 +5996,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
 
         // Calculate Order Total //.
-        $total = eascompliance_cart_total();
+        $total = strval(eascompliance_cart_total());
         // Set Order Total //.
         $order->set_total($total);
 
@@ -6055,6 +6055,17 @@ function eascompliance_woocommerce_checkout_order_created($order)
     // notify EAS API on Order number //.
     $order_id = $order->get_order_number();
     eascompliance_log('place_order', 'order $order_id created ', array('$order_id' => $order_id));
+
+
+    // https://docs.linnworks.com/articles/#!documentation/woocommerce-rules
+    // https://help.linnworks.com/support/solutions/articles/7000066329-ioss-numbers-on-orders
+    $ioss_number = get_option('easproj_ioss_number');
+    if (!empty($ioss_number)) {
+        $order->add_meta_data('SenderIOSSNumber', $ioss_number, true);
+        $order->save_meta_data();
+        eascompliance_log('info', 'SenderIOSSNumber registered for order ' . $order_id);
+    }
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -7870,19 +7881,37 @@ function eascompliance_settings()
             'default' => false,
             'desc' => EAS_TR('Please use this option only if payment step in the store’s theme can’t be reached, until checkout page is reloaded')
         ),
-        'ignore_comparing_address_fields' => array(
-            'name' => EAS_TR('Exclude from change tracking'),
-            'type' => 'multiselect',
-            'class' => 'wc-enhanced-select',
-            'desc' => EAS_TR('Do not check equality for listed fields saved during calculation and when order is being created'),
-            'id' => 'easproj_ignore_comparing_address_fields',
-            'default' => array(),
-            'options' => EASCOMPLIANCE_COMPARABLE_FIELDS,
-        ),
 
 		'section_design_end' => array(
 			'type' => 'sectionend',
 		),
+
+        'section_advanced' => array(
+                'type' => 'title',
+                'title' => EAS_TR('Advanced'),
+        ),
+
+        'ignore_comparing_address_fields' => array(
+                'name' => EAS_TR('Exclude from change tracking'),
+                'type' => 'multiselect',
+                'class' => 'wc-enhanced-select',
+                'desc' => EAS_TR('Do not check equality for listed fields saved during calculation and when order is being created'),
+                'id' => 'easproj_ignore_comparing_address_fields',
+                'default' => array(),
+                'options' => EASCOMPLIANCE_COMPARABLE_FIELDS,
+        ),
+
+        'ioss_number' => array(
+                'name' => EAS_TR('Linnworks IOSS Number'),
+                'type' => 'text',
+                'desc' => EAS_TR('Save IOSS number in the order meta'),
+                'id' => 'easproj_ioss_number',
+        ),
+
+		'section_advanced_end' => array(
+			'type' => 'sectionend',
+		),
+
     );
 }
 
