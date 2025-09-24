@@ -499,7 +499,7 @@ add_action(
  */
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
-    if (eascompliance_is_active()) {
+    if (eascompliance_is_active() && get_option('easproj_blocks') === 'yes') {
         require_once 'EAScompliance-blocks.php';
     }
 }
@@ -7906,6 +7906,15 @@ function eascompliance_settings()
                 'type' => 'text',
                 'desc' => EAS_TR('Save IOSS number in the order meta'),
                 'id' => 'easproj_ioss_number',
+        ),
+
+
+        'blocks' => array(
+                'name' => EAS_TR('Checkout blocks'),
+                'type' => 'checkbox',
+                'id' => 'easproj_blocks',
+                'default' => false,
+                'desc' => EAS_TR('Enable plugin for checkout blocks. Warning: This feature is experimental and not recommended for production use. Stability and full functionality are not guaranteed.')
         ),
 
 		'section_advanced_end' => array(

@@ -275,4 +275,7 @@ jQuery(document).ready(function($) {
         return true;
     })
 
+    // Settings->Advanced accordion, fix distance between rows
+    $('#easproj_ioss_number').parents('.ui-accordion-content').css('height', 'auto')
+
 })
