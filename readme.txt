@@ -4,10 +4,10 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 10.0.2
+WC tested up to: 10.1.1
 Tested up to: 6.8.2
-Stable Tag: 1.6.18
-Last updated time: 20.07.2025
+Stable Tag: 1.6.24
+Last updated time: 28.09.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * WooCommerce High-Performance Order Storage (HPOS) supported.
 * Prohibition of ordering over the amount of threshold establisehd in EU for IOSS orders.
 * EU Company VAT number online validation 
+* Linnworks integration allows to transfer IOSS number directly to the Linnworks
 
 
 **How to get started?**
@@ -128,12 +129,13 @@ EAS project providing service for assistance installation.
 
 == Changelog ==
 
-= 1.6.18 =
+= 1.6.24 =
 
-* Implemented partial support of the Blcoks checkout page. Starting from 1.6.18 EAS EU compliance supports Checkout Blocks for the Standard operatoinal mode with IOSS threshold calculation
-* Fixed issue with duplicated items in the cart (some plugins create duplicated items that to be hanlde by EAS plugin as a separate item with unique ID)
-* Fixed compatibility issue with WooCommerce Multilingual & Multicurrency in the Admin 
-* Minor bugs fixed in the installation and removal process
+* Resolved the issue of duplicate items in the cart caused by certain plugins, ensuring that the EAS plugin handles each item as a unique entry with an individual ID.
+* Addressed a compatibility issue between WooCommerce Multilingual & Multicurrency in the Admin panel.
+* Fixed minor bugs related to the installation and removal processes.
+* Introduced a new feature: Integration with Linnworks for seamless transfer of the IOSS number directly to Linnworks.
+* Added a configuration option to track and control changes to the delivery address.
 
 = 1.6.11 =
 

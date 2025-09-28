@@ -1,10 +1,11 @@
 == Changelog ==
-20-07-25 - version 1.6.18
+18-09-25 - version 1.6.24
 
-* Implemented partial support of the Blcoks checkout page. Starting from 1.6.18 EAS EU compliance supports Checkout Blocks for the Standard operational mode with IOSS threshold calculation
-* Fixed issue with duplicated items in the cart (some plugins create duplicated items that to be hanlde by EAS plugin as a separate item with unique ID)
-* Fixed compatibility issue with WooCommerce Multilingual & Multicurrency in the Admin 
-* Minor bugs fixed in the installation and removal process
+* Resolved the issue of duplicate items in the cart caused by certain plugins, ensuring that the EAS plugin handles each item as a unique entry with an individual ID.
+* Addressed a compatibility issue between WooCommerce Multilingual & Multicurrency in the Admin panel.
+* Fixed minor bugs related to the installation and removal processes.
+* Introduced a new feature: Integration with Linnworks for seamless transfer of the IOSS number directly to Linnworks.
+* Added a configuration option to track and control changes to the delivery address.
 
 15-04-25 - version 1.6.11
 
