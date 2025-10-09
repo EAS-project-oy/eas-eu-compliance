@@ -816,7 +816,7 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 
         throw new EAScomplianceBreakException();
 
-    } catch (EAScomplianceBreakException) {
+    } catch (EAScomplianceBreakException $ex) {
         // Plugin Fix: wallee has settings 'Enforce Consistency' to enforce matching cart total with items total which breaks on EAS calculations and $gateway->is_available() returns false
         if (eascompliance_log_level('WP-268')) {
             $available = 0;
@@ -1052,6 +1052,7 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
         eascompliance_log('error', $ex);
         throw $ex;
     } finally {
+        eascompliance_log('place_order', 'order $o tax totals is $t', ['t'=>$tax_totals, 'o'=>$order->get_order_number()]);
         restore_error_handler();
     }
 }
