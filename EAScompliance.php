@@ -816,7 +816,6 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 
         throw new EAScomplianceBreakException();
 
-    } catch (EAScomplianceBreakException $ex) {
     } catch (EAScomplianceBreakException $ex)  {
         // Plugin Fix: wallee has settings 'Enforce Consistency' to enforce matching cart total with items total which breaks on EAS calculations and $gateway->is_available() returns false
         if (eascompliance_log_level('WP-268')) {
