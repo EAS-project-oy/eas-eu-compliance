@@ -2491,7 +2491,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $product = wc_get_product($product_id);
         if (empty($product)) {
             continue;
-        }
+        }
 
 
         $location_warehouse_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_warehouse_country'), '');
