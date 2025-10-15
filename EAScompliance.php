@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.6.24
+ * Version: 1.6.25
  * Tested up to 6.8
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -817,6 +817,7 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
         throw new EAScomplianceBreakException();
 
     } catch (EAScomplianceBreakException $ex) {
+    } catch (EAScomplianceBreakException $ex)  {
         // Plugin Fix: wallee has settings 'Enforce Consistency' to enforce matching cart total with items total which breaks on EAS calculations and $gateway->is_available() returns false
         if (eascompliance_log_level('WP-268')) {
             $available = 0;
@@ -2489,6 +2490,10 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
     foreach ($order->get_items() as $k => $order_item) {
         $product_id = $order_item['product_id'];
         $product = wc_get_product($product_id);
+        if (empty($product)) {
+            continue;
+        }
+
 
         $location_warehouse_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_warehouse_country'), '');
         $originating_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_originating_country'), '');
