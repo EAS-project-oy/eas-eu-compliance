@@ -2032,14 +2032,14 @@ function eascompliance_make_eas_api_request_json()
     $wcml_enabled = eascompliance_is_wcml_enabled();
     $wcml_convert_to_client_currency = false;
     if ($wcml_enabled) {
-        // try to convert to EUR when client currency is EUR
+        // convert to client currency when it differs from store currency
         global $woocommerce_wpml;
         $wcml_currency_from = $currency;
         $wcml_currency_to = $woocommerce_wpml->multi_currency->get_client_currency();
-        if ($wcml_currency_to == 'EUR' && $wcml_currency_from != 'EUR') {
+        if ($wcml_currency_to != $wcml_currency_from) {
             $wcml_convert_to_client_currency = true;
             $currency = $wcml_currency_to;
-            eascompliance_log('request','WCML convertin currency from $from to $to', ['from'=>$wcml_currency_from, 'to'=>$wcml_currency_to]);
+            eascompliance_log('request','WCML converting currency from $from to $to', ['from'=>$wcml_currency_from, 'to'=>$wcml_currency_to]);
         }
     }
 
