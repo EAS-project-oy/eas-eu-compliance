@@ -2030,6 +2030,19 @@ function eascompliance_make_eas_api_request_json()
     $currency = get_woocommerce_currency();
 
     $wcml_enabled = eascompliance_is_wcml_enabled();
+    $wcml_convert_to_client_currency = false;
+    if ($wcml_enabled) {
+        // try to convert to EUR when client currency is EUR
+        global $woocommerce_wpml;
+        $wcml_currency_from = $currency;
+        $wcml_currency_to = $woocommerce_wpml->multi_currency->get_client_currency();
+        if ($wcml_currency_to == 'EUR' && $wcml_currency_from != 'EUR') {
+            $wcml_convert_to_client_currency = true;
+            $currency = $wcml_currency_to;
+            eascompliance_log('request','WCML convertin currency from $from to $to', ['from'=>$wcml_currency_from, 'to'=>$wcml_currency_to]);
+        }
+    }
+
     if (!$wcml_enabled && function_exists('WC_Payments_Multi_Currency')) {
         $multi_currency = WC_Payments_Multi_Currency();
         $currency = $multi_currency->get_selected_currency()->get_code();
@@ -2037,6 +2050,9 @@ function eascompliance_make_eas_api_request_json()
         $delivery_cost_new = eascompliance_convert_price_to_selected_currency((float)($cart->get_shipping_total() + $cart->get_shipping_tax()));
         $delivery_cost = $delivery_cost_new;
         eascompliance_log('request', 'WC_Payments_Multi_Currency currency is $c, converting delivery_cost from $old to $new', array('$c' => $currency, 'old'=>$delivery_cost, 'new'=>$delivery_cost_new));
+    }
+    if ($wcml_convert_to_client_currency) {
+        $delivery_cost = $woocommerce_wpml->multi_currency->prices->convert_price_amount_by_currencies($delivery_cost, $wcml_currency_from, $wcml_currency_to);
     }
     $calc_jreq['payment_currency'] = $currency;
     $calc_jreq['delivery_cost'] = $delivery_cost;
@@ -2086,6 +2102,9 @@ function eascompliance_make_eas_api_request_json()
     foreach (WC()->cart->cart_contents as $k => $cart_item) {
         $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
         $product = wc_get_product($product_id);
+        if (empty($product)) {
+            continue;
+        }
 
         $location_warehouse_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_warehouse_country'), '');
         $originating_country = eascompliance_array_get($countries, eascompliance_product_attribute_or_meta($product, 'easproj_originating_country'), '');
@@ -2128,6 +2147,10 @@ function eascompliance_make_eas_api_request_json()
             eascompliance_log('request','converting cost_provided_by_em from $old to $new',
                 ['old'=>$cost_provided_by_em,'new'=>$cost_provided_by_em_new]);
             $cost_provided_by_em = $cost_provided_by_em_new;
+        }
+
+        if ($wcml_convert_to_client_currency) {
+            $cost_provided_by_em = $woocommerce_wpml->multi_currency->prices->convert_price_amount_by_currencies($cost_provided_by_em, $wcml_currency_from, $wcml_currency_to);
         }
 
         $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
