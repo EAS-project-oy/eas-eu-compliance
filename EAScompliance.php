@@ -2754,7 +2754,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
 	$ix = 0;
 	$delivery_cost_ix = -1;
     $delivery_vat_rate_ix = -1;
-    foreach ($order->get_items() as $k => $order_item) {
+    foreach (array_values($order->get_items()) as $k => $order_item) {
         $product_id = $order_item['variation_id'] ?: $order_item['product_id'];
         $product = wc_get_product($product_id);
 
@@ -5634,7 +5634,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
                 && in_array($shipping_country, EUROPEAN_COUNTRIES) ) {
                 $cart_total_tax = array_sum($cart->get_taxes());
                 if ($cart_total_tax == 0) {
-                    foreach($order->get_items() as $order_item) {
+                    foreach(array_values($order->get_items()) as $order_item) {
                         if ( WC()->is_store_api_request() ) {
                             // blocks product price was mocked in cart_updated action, so we have to fix order_item totals here
                             $product = $order_item->get_product();
@@ -5844,7 +5844,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
             $deduct_vat_outside_eu = (float)get_option('easproj_deduct_vat_outside_eu');
             $ix = 0;
             $cart_items = array_values($cart->cart_contents);
-            foreach ($order->get_items() as $k => $order_item) {
+            foreach (array_values($order->get_items()) as $order_item) {
                 $cart_item = $cart_items[$ix];
 
                 $item_tax = 0;
@@ -5872,7 +5872,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
             //WP-66 fix: sometimes there are multiple order_items, but only right ones have property legacy_values
             $order_items = [];
-            foreach ($order->get_items() as $oi) {
+            foreach (array_values($order->get_items()) as $oi) {
                 if (property_exists($oi, 'legacy_values')) {
                     $order_items[] = $oi;
                 }
