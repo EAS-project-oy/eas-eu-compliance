@@ -334,7 +334,8 @@ function eascompliance_woocommerce_init()
 			add_filter('woocommerce_order_get_tax_totals', 'eascompliance_woocommerce_order_get_tax_totals', 10, 2);
 		    // adding custom javascript file
 		    add_action('wp_enqueue_scripts', 'eascompliance_javascript');
-            add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 3);
+            add_filter('woocommerce_cart_get_total', 'eascompliance_woocommerce_cart_get_total', 10, 1);
+            add_filter('woocommerce_is_subscription', 'eascompliance_woocommerce_is_subscription', 10, 3);
             add_filter('woocommerce_cart_get_taxes', 'eascompliance_woocommerce_cart_get_taxes', 10, 2);
 			add_filter('woocommerce_billing_fields', 'eascompliance_woocommerce_billing_fields', 11, 2);
 			add_filter('woocommerce_shipping_fields', 'eascompliance_woocommerce_shipping_fields', 10, 2);
@@ -4588,6 +4589,24 @@ function eascompliance_cart_total($current_total = null)
         if ( 'yes' === get_option('easproj_standard_mode')
             && 'yes' === get_option('easproj_standard_mode_ioss_threshold')
             && in_array(WC()->customer->get_shipping_country(), EUROPEAN_COUNTRIES)) {
+
+            // EID-901 WC Subscriptions clone cart and call get_total multiple times to construct recurring subscription, see calculate_subscription_totals().
+            // Because of that recurring total is incorrect when IOSS threshold in Standard mode is enabled.
+            // We try to fix this by marking correct call to get_total and returning it's saved value once in later call
+            $cart_item0 = &eascompliance_cart_item0();
+            if ($cart_item0['EAScompliance subscription recurring cart total']===true) {
+                $cart_total = $current_total;
+                $cart_item0['EAScompliance subscription recurring cart total'] = $cart_total;
+                $cart_total_log = eascompliance_format('set to current_total $t for subscription cart total; ', ['t'=>$cart_total]);
+                return $cart_total;
+            }
+
+            if (is_numeric($cart_item0['EAScompliance subscription recurring cart total']) ) {
+                $cart_total = $cart_item0['EAScompliance subscription recurring cart total'];
+                unset($cart_item0['EAScompliance subscription recurring cart total']);
+                $cart_total_log = eascompliance_format('set once to $t from subscription cart total; ', ['t'=>$cart_total]);
+            }
+
             if ( WC()->is_store_api_request() ) {
                 $cart_total_log .= 'skip due to store api request; ';
                 return $cart_total;
@@ -4708,6 +4727,35 @@ function eascompliance_cart_total($current_total = null)
             $cart_total_saved = $cart_total;
         }
 	}
+}
+
+
+function eascompliance_woocommerce_is_subscription($is_subscription, $product_id, $product)
+{
+    eascompliance_log('entry', 'entering action ' . __FUNCTION__ . '()');
+
+    // EID-901 WC Subscriptions mark recurring cart total when it is being calculated.
+    try {
+        $log = '';
+
+        if ($is_subscription) {
+            $cart_item0 = &eascompliance_cart_item0();
+            $cart_item0['EAScompliance subscription recurring cart total'] = true;
+            $log = 'mark recurring cart total';
+        }
+
+        return $is_subscription;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        static $log_latest;
+        if (!empty($log) && $log != $log_latest) {
+            eascompliance_log('cart_total', $log);
+            $log_latest = $log;
+        }
+    }
 }
 
 
