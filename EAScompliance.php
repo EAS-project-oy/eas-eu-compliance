@@ -3497,7 +3497,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
             }
             $product= wc_get_product($product_id);
             $product_is_virtual = $product->is_virtual();
-        // Plugin 'WooCommerce Product Bundles'
+            // Plugin 'WooCommerce Product Bundles'
             if ( $product->get_type() === 'bundle' ) {
             if ( method_exists($product, 'get_virtual_bundle') ) {
                 $product_is_virtual = $product->get_virtual_bundle();
@@ -3506,8 +3506,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                 $product_is_virtual = get_option('easproj_default_product_type') === 'virtual';
             }
             }
-            if ( !$product_is_virtual )
-			{
+            if ( !$product_is_virtual ) {
                 $has_goods_in_cart = true;
             }
 
@@ -4626,10 +4625,11 @@ function eascompliance_cart_total($current_total = null)
 
             $cart_items = array_values(WC()->cart->cart_contents);
             foreach ($cart_items as $cart_item) {
-                if (array_key_exists('line_total', $cart_item))
+                if (array_key_exists('line_total', $cart_item)) {
                     $item_total = round($cart_item['line_total'] / (1 + $deduct_vat_outside_eu / 100.0), 2);
                     $cart_total += $item_total;
-                    $cart_total_log .= eascompliance_format('added $it from item_total;', ['it'=>$item_total]);
+                    $cart_total_log .= eascompliance_format('added $it from item_total;', ['it' => $item_total]);
+                }
             }
 
             $shipping_total = WC()->cart->get_shipping_total();
@@ -7335,8 +7335,7 @@ function eascompliance_woocommerce_tax_rate_deleted($tax_rate_id)
 		set_error_handler('eascompliance_error_handler');
 
         // same conditions apply for inserting tax rate when saving settings
-		if (get_option('easproj_standard_mode') === 'yes')
-		{
+		if (get_option('easproj_standard_mode') === 'yes') {
 			if (get_option('easproj_process_imported_orders') === 'yes') {
 				update_option('easproj_process_imported_orders', 'no');
 			}
@@ -8443,8 +8442,7 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
 		global $wpdb;
 
         // in standard_mode, disable option process_imported_orders and delete tax_rate
-        if (get_option('easproj_standard_mode') === 'yes')
-		{
+        if (get_option('easproj_standard_mode') === 'yes') {
             if (get_option('easproj_process_imported_orders') === 'yes') {
 				update_option('easproj_process_imported_orders', 'no');
             }
@@ -9075,8 +9073,7 @@ function eascompliance_woocommerce_shop_order_list_table_order_count($count, $st
 {
     eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
-    if ($status[0] === 'wc-vat_scheme')
-    {
+    if ($status[0] === 'wc-vat_scheme') {
         $query = new WP_Query( array('meta_query'=>array(
             'key' => '_easproj_scheme',
             'compare' => 'EXISTS',
@@ -9148,8 +9145,7 @@ function eascompliance_bulk_update($request)
 
         $auth_token = $auth['Authorization'];
         $auth_token_eas = $auth['Authorizationeas'];
-        if (empty($auth_token_eas) )
-        {
+        if (empty($auth_token_eas) ) {
             $auth_token_eas = $auth['authorizationeas'];
         }
 
