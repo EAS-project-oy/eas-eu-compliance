@@ -6026,21 +6026,24 @@ function eascompliance_woocommerce_checkout_create_order($order)
 
                     $shipping_taxes = array($tax_rate_id2=>$delivery_charge_vat);
                     if ($duties_and_fees_zero) {
-                        // distribute delivery_charge_vat among tax rates proportional to tax rate
-                        foreach($taxes as $tax_rate_id=>$tax_amount) {
-                            $rsum = 0.0;
-                            foreach($tax_rates as $rate) {
+                        // distribute delivery_charge_vat among order taxes proportional to tax rate
+                        $rsum = 0.0;
+                        foreach($tax_rates as $rate) {
+                            // only sum rates that present in $taxes
+                            if (in_array($rate['tax_rate_id'], array_keys($taxes))) {
                                 $rsum += $rate['tax_rate'];
                             }
-                            $r1 = 0.0;
+                        }
+                        foreach($taxes as $tax_rate_id=>$tax_amount) {
                             if ($rsum == 0) {
                                 break;
                             }
+                            $r1 = 0.0;
                             foreach($tax_rates as $rate) {
                                 if ($rate['tax_rate_id'] == $tax_rate_id) {
                                     $r1 = $rate['tax_rate'];
                                     $shipping_tax = $delivery_charge_vat * $r1 / $rsum;
-                                    eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp) for shipping tax $st', array('t'=>$tax_rate_id,'tp'=>$r1,'tr'=>$rate['tax_rate_name'],'st'=>$shipping_tax));
+                                    eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp) for shipping tax $st, rsum is $rsum', array('t'=>$tax_rate_id,'tp'=>$r1,'tr'=>$rate['tax_rate_name'],'st'=>$shipping_tax, 'rsum'=>$rsum));
                                     $shipping_taxes[$tax_rate_id] = $shipping_tax;
                                     break;
                                 }
