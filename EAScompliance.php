@@ -6,11 +6,11 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.6.25
- * Tested up to 6.8
+ * Version: 1.7.0
+ * Tested up to 6.9
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
- * WC tested up to: 9.8.1
+ * WC tested up to: 10.4.3
  * Requires PHP: 5.6
  * License: GPL2
  *

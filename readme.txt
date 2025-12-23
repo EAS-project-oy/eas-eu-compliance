@@ -5,8 +5,8 @@ Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 10.1.1
-Tested up to: 6.8.2
-Stable Tag: 1.6.24
+Tested up to: 6.9
+Stable Tag: 1.7.0
 Last updated time: 28.09.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -100,8 +100,6 @@ The following currency switcher plugins are supported:
 * WC Currency Switcher by realmag777
 * Multi Currency for WooCommerce by VillaTheme
 
-Known incompatible plugins:
-* WooCommerce Subscription by Automattic. 
 
 == Installation ==
 
@@ -128,6 +126,11 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+
+= 1.7.0 =
+
+* Compatibility with latest version of WPML WooCommerce Multi-currency by OnTheGoSystems plugin inhanced
+* Compatibility with WooCommerce Subscriptions by Automatic implemented 
 
 = 1.6.24 =
 

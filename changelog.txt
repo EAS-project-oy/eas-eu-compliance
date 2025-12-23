@@ -1,4 +1,9 @@
 == Changelog ==
+22-12-2025 - version 1.7.0 
+
+* Compatibility with latest version of WPML WooCommerce Multi-currency by OnTheGoSystems plugin inhanced
+* Compatibility with WooCommerce Subscriptions by Automatic implemented 
+
 18-09-25 - version 1.6.24
 
 * Resolved the issue of duplicate items in the cart caused by certain plugins, ensuring that the EAS plugin handles each item as a unique entry with an individual ID.
