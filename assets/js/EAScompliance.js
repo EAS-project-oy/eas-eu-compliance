@@ -419,8 +419,9 @@ jQuery(document).ready(function ($) {
 
         $company_vat
             .after($company_vat_validate)
-            .on('focusin', async function () {
+            .on('input', async function () {
                 $('.eascompliance_vat_message').remove()
+                $company_vat_validate.fadeIn()
             })
         button_copy_style('#place_order', '.eascompliance_company_vat_button')
 
@@ -445,7 +446,7 @@ jQuery(document).ready(function ($) {
                 if (j.company_vat_validated) {
                     let $ok = $('<div>', {"text": plugin_dictionary.vat_validation_successful, "class": "eascompliance_vat_message eascompliance_company_vat_message_success"})
                     $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
-                    $company_vat_validate.after($ok)
+                    $company_vat_validate.fadeOut().after($ok)
                 } else {
                     let $err = $('<div>', {"text": plugin_dictionary.vat_validation_failed, "class": "eascompliance_vat_message eascompliance_company_vat_message_fail"})
                     $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
