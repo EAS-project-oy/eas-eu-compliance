@@ -7066,15 +7066,22 @@ function eascompliance_woocommerce_create_refund($refund, $args)
             }
             $refund->set_shipping_total(-$return_delivery_cost);
 
+            $order_total = $order->get_total();
+
+            // round down refund total to order total if it appears a cent larger
+            if (abs($refund_total) > $order_total && (abs($refund_total) - 0.014 <= $order_total) ) {
+                $refund_total = -$order_total;
+            }
+
             // refund total is negative value //.
             $refund->set_total($refund_total);
 
             // refund amount is positive value, rendered at admin order view //.
             $refund->set_amount(-$refund_total);
 
-            eascompliance_log('refund', 'refund total is $rt, order total is $ot', array('$rt' => $refund_total, '$ot' => $order->get_total()));
+            eascompliance_log('refund', 'refund total is $rt, order total is $ot', array('$rt' => $refund_total, '$ot' => $order_total));
 
-            if ( abs($refund_total) - 0.014 > $order->get_total() ) {
+            if ( abs($refund_total) - 0.014 > $order_total ) {
                 $refund->add_meta_data('_easproj_refund_invalid', '5', true);
                 $refund->save();
                 return;
