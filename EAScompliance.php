@@ -1053,7 +1053,8 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
         eascompliance_log('error', $ex);
         throw $ex;
     } finally {
-        eascompliance_log('place_order', 'order $o tax totals is $t', ['t'=>$tax_totals, 'o'=>$order->get_order_number()]);
+        // filter sometimes gets refund object which does not have get_order_number
+        eascompliance_log('place_order', 'order $o tax totals is $t', ['t'=>$tax_totals, 'o'=>method_exists($order, 'get_order_number') ? $order->get_order_number() : $order->get_id()]);
         restore_error_handler();
     }
 }
