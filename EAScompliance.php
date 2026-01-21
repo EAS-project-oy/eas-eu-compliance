@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.7.0
+ * Version: 1.7.1
  * Tested up to 6.9
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -8132,7 +8132,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
                 <p class="easproject-error-banner-heading">We noticed that you are using "Wordpress Blocks" for the "Checkout" page</p>
                 <p>EAS EU compliance team is currently working on integrating the plugin with "Woocommerce Blocks"</p>
                 <p>To continue working with "EAS EU compliance Plugin" you need to disable "Woocommerce Blocks" and go back to using "Woocommerce Shortсode".</p>
-                <p>Please follow instructions at <a href="https://help.easproject.com/how-to-enable-woocommerce-checkout-page-supported-by-eas-solution" target="_blank">"EAS knowledge base article"</a> to change checkout settings.
+                <p>Please follow instructions at <a href="https://help.easproject.com/hc/en-gb/articles/5026178731167-How-to-enable-WooCommerce-checkout-page-supported-by-EAS-solution" target="_blank">"EAS knowledge base article"</a> to change checkout settings.
                 <p>If you have any questions, you can contact our technical support: <a href="mailto:support@easproject.com">support@easproject.com</a>.</p>
             </div>
         <?php endif; ?>
