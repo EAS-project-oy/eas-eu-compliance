@@ -6540,6 +6540,12 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 			return 4;
 		}
 
+        // EID-1001 Plugin fix: 'Clone Orders for WooCommerce' changes order status while order data is incomplete, ignore while cloning in progress
+        if ($order->get_created_via() == 'Order clone' && !( (int)$order->get_meta('_vibe_clone_orders_cloned_from') > 0) ) {
+            eascompliance_log('payment','skip while order $o being created via Clone Order (No edits) ', ['o'=>$order->get_id()]);
+            return 7;
+        }
+
 		// we can get here if order was tried for  to be sent before but failed
 		if ( $order->get_meta('_easproj_order_sent_to_eas') === '1' ) {
 
