@@ -7,7 +7,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 		"version": "1.0.0",
 		"title": "EAS Company Calculate Taxes",
 		"category": "woocommerce",
-		"parent": [ "woocommerce/checkout-order-summary-block" ],
+		"parent": [ "woocommerce/checkout-payment-block" ],
 		"attributes": {
 			"lock": {
 				"type": "object",
