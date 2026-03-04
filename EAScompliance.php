@@ -1132,7 +1132,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
     // convert $message into loggable text
     $txt = '';
-    if ($message instanceof Exception) {
+    if ($message instanceof Throwable) {
         $ex = $message;
         while (true) {
             $txt .= $level . ' ' . get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
@@ -4549,7 +4549,7 @@ function eascompliance_woocommerce_cart_remove_taxes_zero_rate_id($zero_rated)
  */
 function eascompliance_convert_price_to_selected_currency($price)
 {
-    eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $price_old = $price;
 
@@ -4568,7 +4568,7 @@ function eascompliance_convert_price_to_selected_currency($price)
  */
 function eascompliance_cart_total($current_total = null)
 {
-    eascompliance_log('entry', 'entering ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $cart = WC()->cart;
 	$cart_total_log = '';
@@ -4608,8 +4608,13 @@ function eascompliance_cart_total($current_total = null)
             }
 
             if ( WC()->is_store_api_request() ) {
-                $cart_total_log .= 'skip due to store api request; ';
-                return $cart_total;
+                if (get_option('easproj_blocks') === 'yes') {
+                    $cart_total_log .= 'allow store api request; ';
+                }
+                else {
+                    $cart_total_log .= 'skip due to store api request; ';
+                    return $cart_total;
+                }
             }
 
             $cart_total_tax = array_sum($cart->get_taxes());
@@ -4733,7 +4738,7 @@ function eascompliance_cart_total($current_total = null)
 
 function eascompliance_woocommerce_is_subscription($is_subscription, $product_id, $product)
 {
-    eascompliance_log('entry', 'entering action ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     // EID-901 WC Subscriptions mark recurring cart total when it is being calculated.
     try {

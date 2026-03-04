@@ -290,7 +290,9 @@ wc.blocksCheckout.registerCheckoutBlock({
 				},
 				buttonText
 			),
-			E('div', {}, message),
+			E('div', {
+				'style': {'display': placeOrderVisible ? 'none' : 'block'}
+			}, message),
 		)
 
 	}
