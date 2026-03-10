@@ -7,7 +7,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 		"version": "1.0.0",
 		"title": "EAS Company Calculate Taxes",
 		"category": "woocommerce",
-		"parent": [ "woocommerce/checkout-payment-block" ],
+		"parent": [ "woocommerce/checkout-fields-block" ],
 		"attributes": {
 			"lock": {
 				"type": "object",
@@ -68,7 +68,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 				payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
 			} else {
-
+				$('.wc-block-checkout__no-payment-methods-notice').removeClass('is-error').text(message)
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
 				payment_actions.__internalSetAvailablePaymentMethods([])
@@ -76,7 +76,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 		}, [available_payment_methods, placeOrderVisible])
 
 
-		$('.wc-block-components-checkout-place-order-button').toggle(placeOrderVisible)
+		$('.wc-block-components-checkout-place-order-button:not(.button_calc)').toggle(placeOrderVisible)
 
 		// Effect that fires when customer data changes
 		useEffect( () => {
@@ -133,7 +133,19 @@ wc.blocksCheckout.registerCheckoutBlock({
 			return () => {
 				clearTimeout(timeoutId)
 			}
-		}, [...Object.values(props.cart.shippingAddress), ...Object.values(props.cart.billingAddress)], [...Object.keys(props.cart.shippingAddress), ...Object.keys(props.cart.billingAddress)])
+		},
+			// values to monitor
+			[
+				...Object.values(props.cart.shippingAddress),
+				...Object.values(props.cart.billingAddress),
+				props.cart.shippingRates[0]?.shipping_rates?.findIndex((r) => r.selected)
+			]
+			// monitored values names
+			, [
+				...Object.keys(props.cart.shippingAddress),
+				...Object.keys(props.cart.billingAddress),
+				'selected_shipping'
+			])
 
 
 		//Calculate button click handler
@@ -285,6 +297,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 		return E(wp.element.Fragment, {},
 			E( wc.blocksCheckout.Button, {
 					'id': "eascompliance_button_calculate_taxes",
+					'className': 'wc-block-components-checkout-place-order-button button_calc',
 					'onClick': onCalculateClick,
 					'style': {'display': placeOrderVisible ? 'none' : 'block'}
 				},

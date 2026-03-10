@@ -26,9 +26,6 @@ jQuery(document).ready(function ($) {
         return res
     }
 
-    window.eascompliance = { find_key_paths }
-
-
     // some themes clone checkout forms, use offsetWidth to detect visible form
     let checkout_form = $('form.checkout').filter((ix, elem) => elem.offsetWidth > 0)
 
@@ -93,6 +90,30 @@ jQuery(document).ready(function ($) {
         for (let i = 0; i < button_styles.length; i++) {
             $(to).css(button_styles[i], $(from).css(button_styles[i]))
         }
+    }
+
+    let button_calc_style = function () {
+        if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color)
+        if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color)
+        if (plugin_css_settings.button_font_size) $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px')
+        if (plugin_css_settings.button_font_color || plugin_css_settings.button_font_size || plugin_css_settings.button_background_color )
+        {
+            $(".button_calc").mouseenter(function () {
+                $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"))
+            }).mouseleave(function () {
+                $(this).css("background", (plugin_css_settings.button_background_color) ? plugin_css_settings.button_background_color: $('#place_order').css("background") ).css('color', (plugin_css_settings.button_font_color) ? plugin_css_settings.button_font_color: $('#place_order').css("color")  )
+            })
+        }
+    }
+
+    button_calc_style()
+
+    window.eascompliance ??= {}
+    Object.assign(window.eascompliance, { find_key_paths })
+
+    // ignore scripts for block checkout
+    if ($('.wc-block-checkout__main').length) {
+        return
     }
 
     // block calculate button during checkout update
@@ -465,16 +486,4 @@ jQuery(document).ready(function ($) {
         $('.eascompliance').css(div_styles[i], $("#payment > div").css(div_styles[i]))
     }
     
-
-if (plugin_css_settings.button_font_color) $('.button_calc').css('color', plugin_css_settings.button_font_color)
-    if (plugin_css_settings.button_background_color) $('.button_calc').css('background-color', plugin_css_settings.button_background_color)
-    if (plugin_css_settings.button_font_size) $('.button_calc').css('font-size', plugin_css_settings.button_font_size + 'px')
-    if (plugin_css_settings.button_font_color || plugin_css_settings.button_font_size || plugin_css_settings.button_background_color )   
-    {     
-    $(".button_calc").mouseenter(function () {
-            $(this).css("background", (plugin_css_settings.button_background_color_hover) ? plugin_css_settings.button_background_color_hover: $(this).css("background")).css("color" , (plugin_css_settings.button_font_color_hover) ? plugin_css_settings.button_font_color_hover: $(this).css("color"))
-        }).mouseleave(function () {
-           $(this).css("background", (plugin_css_settings.button_background_color) ? plugin_css_settings.button_background_color: $('#place_order').css("background") ).css('color', (plugin_css_settings.button_font_color) ? plugin_css_settings.button_font_color: $('#place_order').css("color")  )
-        })
-    }
 });
