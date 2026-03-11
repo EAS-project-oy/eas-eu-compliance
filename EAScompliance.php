@@ -7769,7 +7769,7 @@ function eascompliance_settings()
         'handle_norther_ireland_as_ioss' => array(
             'name' => EAS_TR('Handle Northern Ireland as IOSS'),
             'type' => 'checkbox',
-            'desc' => 'This option enables handling of orders to the Northern Ireland as IOSS. Before enabling please carefully read  <a href="https://help.easproject.com/how-to-handle-sales-to-northern-ireland">EAS KB article</a> to ensure that your store is ready for this.',
+            'desc' => 'This option enables handling of orders to the Northern Ireland as IOSS. Before enabling please carefully read  <a href="https://help.easproject.com/hc/en-gb/articles/502384373993">EAS KB article</a> to ensure that your store is ready for this.',
             'id' => 'easproj_handle_norther_ireland_as_ioss',
             'default' => 'no',
         ),
@@ -8126,7 +8126,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
             <img src="<?php echo plugins_url('assets/images/pluginlogo_woocommerce.png', __FILE__) ?>" ">
             <div>
                 EAS EU and UK compliance plugin set-up page<br>
-                Please refer to <a href="https://help.easproject.com/eas-for-woocommerce">Installation and configuration manuals</a> for detailed instructions
+                Please refer to <a href="https://help.easproject.com/hc/en-gb/categories/5012427639199-EAS-for-WooCommerce">Installation and configuration manuals</a> for detailed instructions
                 <div style="font-size:1em;"><b>Current version</b>:  <?php echo $version ?></div>
             </div>
         </div>
@@ -8322,7 +8322,7 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_merchant()
     <h2><?php echo EAS_TR('EAS Merchandise module'); ?></h2>
     <div class="eascompliance_mpm_auto">
         <div>
-            Make Woocommerce REST API keys and send them to <a href="https://mpm.easproject.com/">EAS Merchandise module</a> (MPM) following <a href="https://help.easproject.com/how-to-connect-and-configure-eas-merchandise-module" target="_blank"> manual guide</a>
+            Make Woocommerce REST API keys and send them to <a href="https://mpm.easproject.com/">EAS Merchandise module</a> (MPM) following <a href="https://help.easproject.com/hc/en-gb/articles/5021861255583-How-to-operate-and-handle-merchandise-data-in-EAS-Merchandise-module-with-WooCommerce" target="_blank"> manual guide</a>
         </div>
         <?php echo empty($conn_id) ?
             '<button type="submit" name="eascompliance_connect_mpm" class="button-primary woocommerce-save-button">connect MPM</button>'
