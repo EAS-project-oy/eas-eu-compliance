@@ -109,7 +109,7 @@ jQuery(document).ready(function ($) {
     button_calc_style()
 
     window.eascompliance ??= {}
-    Object.assign(window.eascompliance, { find_key_paths })
+    Object.assign(window.eascompliance, { find_key_paths, button_copy_style })
 
     // ignore scripts for block checkout
     if ($('.wc-block-checkout__main').length) {

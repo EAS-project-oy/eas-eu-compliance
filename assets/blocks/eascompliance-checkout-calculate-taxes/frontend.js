@@ -68,6 +68,9 @@ wc.blocksCheckout.registerCheckoutBlock({
 				payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
 			} else {
+				// copy styles from place order button
+				window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
+
 				$('.wc-block-checkout__no-payment-methods-notice').removeClass('is-error').text(message)
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
 				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
