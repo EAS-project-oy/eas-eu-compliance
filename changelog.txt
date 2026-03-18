@@ -1,4 +1,12 @@
 == Changelog ==
+15-03-2026 - version 1.8.0 
+
+* WooCommercecheckout blocks support implemented. EAS compliance plugin now fully supports checkout blocks in Standard and Full landed cost modes
+* Minor bugs with WooCommerce subscription plugin compatibility fixed 
+* Refunds handling process enhanced and rounding issues fixed
+* Some UI bugs fixed
+
+
 22-12-2025 - version 1.7.0 
 
 * Compatibility with latest version of WPML WooCommerce Multi-currency by OnTheGoSystems plugin inhanced
