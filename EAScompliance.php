@@ -8011,7 +8011,7 @@ function eascompliance_settings()
                 'type' => 'checkbox',
                 'id' => 'easproj_blocks',
                 'default' => false,
-                'desc' => EAS_TR('Enable plugin for checkout blocks. Warning: This feature is experimental and not recommended for production use. Stability and full functionality are not guaranteed.')
+                'desc' => EAS_TR('Enable plugin for checkout blocks. Warning: this feature is being developed and may have limited functionality.')
         ),
 
 		'section_advanced_end' => array(
@@ -8130,23 +8130,6 @@ function eascompliance_woocommerce_settings_tabs_settings_tab_compliance()
                 <div style="font-size:1em;"><b>Current version</b>:  <?php echo $version ?></div>
             </div>
         </div>
-
-        <?php
-            $post = get_post(get_option( 'woocommerce_checkout_page_id' ));
-            //$isShortCode = str_contains($post->post_content, 'woocommerce_checkout'); PHP 7+
-            $position = strpos($post->post_content, 'woocommerce_checkout');
-            $position_new = strpos($post->post_content, '{"shortcode":"checkout"}');
-            
-        ?>
-        <?php if (($position === false)&& ($position_new=== false)) : ?>
-            <div class="easproject-error-banner">
-                <p class="easproject-error-banner-heading">We noticed that you are using "Wordpress Blocks" for the "Checkout" page</p>
-                <p>EAS EU compliance team is currently working on integrating the plugin with "Woocommerce Blocks"</p>
-                <p>To continue working with "EAS EU compliance Plugin" you need to disable "Woocommerce Blocks" and go back to using "Woocommerce Shortсode".</p>
-                <p>Please follow instructions at <a href="https://help.easproject.com/hc/en-gb/articles/5026178731167-How-to-enable-WooCommerce-checkout-page-supported-by-EAS-solution" target="_blank">"EAS knowledge base article"</a> to change checkout settings.
-                <p>If you have any questions, you can contact our technical support: <a href="mailto:support@easproject.com">support@easproject.com</a>.</p>
-            </div>
-        <?php endif; ?>
 
         <?php
         woocommerce_admin_fields(eascompliance_settings());
