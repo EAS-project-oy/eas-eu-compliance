@@ -100,6 +100,13 @@ function EAS_MATCH($pattern, $string, $group=0)
 }
 
 /**
+ * return first non-empty list value or value for which predicate is true
+ */
+function eascompliance_coalesce($array, $predicate=null) {
+    return current(array_filter($array, $predicate));
+}
+
+/**
  * Add settings page on Plugin list
  */
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'eascompliance_settings_link');
@@ -196,30 +203,35 @@ function eascompliance_plugin_status_change_notification($status)
             throw new Exception('Invalid status $s'. ['s'=>$status]);
         }
 
-        $url = 'https://woo-info.easproject.com/api/woo';
+        $url = 'https://plugin-installations.easproject.com/api/plugin-installations/woocommerce';
 
         $store_data = array(
             'application_status' => $status,
-            'strore_url' => get_option('siteurl'),
+            'store_url' => get_option('siteurl'),
             'action_date' => date_create('now')->format('Y-m-d\TH:i:s\Z'),
             'store_data' => array(
                 'address1' => get_option('woocommerce_store_address', ''),
                 'address2' => get_option('woocommerce_store_address_2', ''),
-                'city' => wc_get_base_location(),
-                'postcode' => get_option('woocommerce_store_address_2', 'woocommerce_store_postcode'),
+                'country' => get_option('woocommerce_default_country', ''),
+                'city' => get_option('woocommerce_store_city', ''),
+                'postcode' => get_option('woocommerce_store_postcode', ''),
                 'store_email' => get_site_option('admin_email'),
                 'client_id' => eascompliance_woocommerce_settings_get_option_sql('easproj_auth_client_id'),
-                'store_name' => get_bloginfo('name'),
+                'store_name' => eascompliance_coalesce([get_option('woocommerce_pos_store_name'), get_bloginfo('name'), 'no found']),
+                'store_phone' => eascompliance_coalesce([get_option('woocommerce_pos_store_phone'), 'no found']),
             ),
+            'disabling_reason'=> '',
         );
+
+        eascompliance_log('debug', 'notify store data: $d', ['d'=>$store_data]);
 
         $body = json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
 
         $options = array(
             'method' => 'POST',
             'headers' => array(
-                'Content-type' => 'application/json',
-                'X-Auth-Id' => 'EB27386D-7F26-4549-B57D-4EEFBAE6B1B5'
+                'Content-Type' => 'application/json',
+                'x-eas-plugin-installations-token' => 'EB27386D-7F26-4549-B57D-4EEFBAE6B1B5'
             ),
             'body' => $body,
             'sslverify' => true,
