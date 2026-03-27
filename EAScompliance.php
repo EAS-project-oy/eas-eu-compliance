@@ -223,8 +223,6 @@ function eascompliance_plugin_status_change_notification($status)
             'disabling_reason'=> '',
         );
 
-        eascompliance_log('debug', 'notify store data: $d', ['d'=>$store_data]);
-
         $body = json_encode($store_data, EASCOMPLIANCE_JSON_THROW_ON_ERROR);
 
         $options = array(

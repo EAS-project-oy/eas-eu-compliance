@@ -216,6 +216,36 @@ function eascompliance_checkout_data_callback() {
     );
 }
 
+add_action('woocommerce_after_calculate_totals', 'eascompliance_blocks_woocommerce_after_calculate_totals', 10, 1);
+function eascompliance_blocks_woocommerce_after_calculate_totals( $cart ) {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+    try {
+
+        if (!eascompliance_is_set()) {
+            return;
+        }
+
+        foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+            // eascompliance_log('debug', 'cart item is $d ', ['d'=>$cart_item]);
+
+            $product = $cart_item['data']; // WC_Product_Simple
+
+            $price_html = wc_price( $product->get_price() );
+            $price = eascompliance_woocommerce_cart_item_subtotal($price_html , $cart_item, $cart_item_key, false) / $cart_item['quantity'];
+            $price_formatted = wc_format_decimal($price);
+
+            $product->set_price( $price_formatted );
+            $product->set_regular_price( $price_formatted);
+            $product->set_sale_price( $price_formatted );
+
+        }
+
+    } catch (Throwable $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    }
+}
+
 
 woocommerce_store_api_register_update_callback(
     [
