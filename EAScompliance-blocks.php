@@ -246,6 +246,43 @@ function eascompliance_blocks_woocommerce_after_calculate_totals( $cart ) {
     }
 }
 
+add_filter('woocommerce_cart_tax_totals', 'eascompliance_blocks_woocommerce_cart_tax_totals', 12, 2);
+function eascompliance_blocks_woocommerce_cart_tax_totals($tax_totals, $cart) {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (!eascompliance_is_set()) {
+            return $tax_totals;
+        }
+
+        $tax_rate_id0 = eascompliance_tax_rate_id();
+        // $total_taxes is array( tax_rate_id => tax_amount )
+        $total_taxes = eascompliance_woocommerce_cart_get_taxes(array($tax_rate_id0 => 1), $cart);
+
+        // $tax_totals is array( tax_code => stdClass() )
+        $tax_totals = array();
+        foreach ($total_taxes as $tax_rate_id=>$tax_amount) {
+            $tax_code = WC_Tax::get_rate_code($tax_rate_id);
+            $tax = new stdClass();
+            $tax->tax_rate_id = $tax_rate_id;
+            $tax->amount = $tax_amount;
+            $tax->label = eascompliance_cart_tax_caption_html();
+            $tax->formatted_amount = wc_price($tax_amount);
+            $tax_totals[$tax_code] = $tax;
+        }
+
+        return $tax_totals;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
 
 woocommerce_store_api_register_update_callback(
     [

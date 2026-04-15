@@ -5828,6 +5828,14 @@ function eascompliance_woocommerce_checkout_create_order($order)
         // exclude delivery_state_province from new/saved json comparison
         $calc_jreq_new['delivery_state_province'] = $calc_jreq_saved['delivery_state_province'];
 
+        // in blocks checkout, we ignore cost_provided_by_em because product price is updated
+        if (get_option('easproj_blocks') === 'yes' && did_action('woocommerce_blocks_loaded')) {
+            $ix = 0;
+            foreach ($calc_jreq_saved['order_breakdown'] as $item_saved) {
+                $calc_jreq_new['order_breakdown'][$ix]['cost_provided_by_em'] = $item_saved['cost_provided_by_em'];
+            }
+        }
+
         // ignore fields that are listed in settings
         $ignore_fields = get_option('easproj_ignore_comparing_address_fields');
         foreach ($ignore_fields as $k=>$field) {
