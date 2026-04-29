@@ -82,61 +82,62 @@ wc.blocksCheckout.registerCheckoutBlock({
 		$('.wc-block-components-checkout-place-order-button:not(.button_calc)').toggle(placeOrderVisible)
 
 		// Effect that fires when customer data changes
-		useEffect( () => {
-			// run effect after user stopped editing shipping/billing details
-			const timeoutId = setTimeout(async ()=> {
+		useEffect(
+			() => {
+				// run effect after user stopped editing shipping/billing details
+				const timeoutId = setTimeout(async ()=> {
 
-				// reset calculations when checkout data is updated
-				await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'eascompliance_unset'}})
-				setPlaceOrderVisible(false)
-				setMessage(plugin_dictionary.calculate_status_initial)
+					// reset calculations when checkout data is updated
+					await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'eascompliance_unset'}})
+					setPlaceOrderVisible(false)
+					setMessage(plugin_dictionary.calculate_status_initial)
 
-				let j = await $.post({
-					url: plugin_ajax_object.ajax_url,
-					data: {
-						'action': 'eascompliance_status_ajax',
-						'shipping_country': props.cart.shippingAddress.country,
-						'shipping_postcode': props.cart.shippingAddress.postcode,
-					},
-					dataType: 'json'
-				})
+					let j = await $.post({
+						url: plugin_ajax_object.ajax_url,
+						data: {
+							'action': 'eascompliance_status_ajax',
+							'shipping_country': props.cart.shippingAddress.country,
+							'shipping_postcode': props.cart.shippingAddress.postcode,
+						},
+						dataType: 'json'
+					})
 
-				if
-				(
-					!j.eascompliance_supported_country
-					||
+					if
 					(
-						j.eascompliance_status === 'present'
-					)
-					||
-					(
-						j.eascompliance_status === 'standard_checkout'
-					)
-					||
-					(
-						j.eascompliance_status === 'standard_mode'
-					)
-					||
-					(
-						j.eascompliance_status === 'limit_ioss_sales'
-					)
-				) {
-					if (j.eascompliance_status === 'limit_ioss_sales') {
-						setMessage(plugin_dictionary.limit_ioss_sales_message)
+						!j.eascompliance_supported_country
+						||
+						(
+							j.eascompliance_status === 'present'
+						)
+						||
+						(
+							j.eascompliance_status === 'standard_checkout'
+						)
+						||
+						(
+							j.eascompliance_status === 'standard_mode'
+						)
+						||
+						(
+							j.eascompliance_status === 'limit_ioss_sales'
+						)
+					) {
+						if (j.eascompliance_status === 'limit_ioss_sales') {
+							setMessage(plugin_dictionary.limit_ioss_sales_message)
+							setPlaceOrderVisible(false)
+						}
+						else {
+							setPlaceOrderVisible(true)
+						}
+					} else {
 						setPlaceOrderVisible(false)
 					}
-					else {
-						setPlaceOrderVisible(true)
-					}
-				} else {
-					setPlaceOrderVisible(false)
-				}
 
-			}, 1000)
-			return () => {
-				clearTimeout(timeoutId)
-			}
-		},
+				}, 1000)
+				return () => {
+					clearTimeout(timeoutId)
+				}
+			},
 			// values to monitor
 			[
 				...Object.values(props.cart.shippingAddress),
@@ -148,7 +149,8 @@ wc.blocksCheckout.registerCheckoutBlock({
 				...Object.keys(props.cart.shippingAddress),
 				...Object.keys(props.cart.billingAddress),
 				'selected_shipping'
-			])
+			]
+		)
 
 
 		//Calculate button click handler

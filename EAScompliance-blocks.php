@@ -119,7 +119,7 @@ add_action('woocommerce_blocks_checkout_block_registration',
     }
 );
 
-// Main entry point where WC->cart meets Response is CartSchema->get_item_response()
+// Main entry point where WC->cart meets Response is CartSchema->get_item_response( $cart )
 // force_schema_readonly() and 'readonly' attributes prevent changing values in response data
 // Cart Prices are formed in ProductSchema->prepare_product_price_response()
 // few callbacks that are called by blocks:
@@ -216,29 +216,68 @@ function eascompliance_checkout_data_callback() {
     );
 }
 
-add_action('woocommerce_after_calculate_totals', 'eascompliance_blocks_woocommerce_after_calculate_totals', 10, 1);
-function eascompliance_blocks_woocommerce_after_calculate_totals( $cart ) {
-    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+/**
+ * Save to session if we are in blocks checkout
+ *
+ * @throws Exception May throw exception.
+ */
+add_action('woocommerce_blocks_checkout_enqueue_data', 'eascompliance_blocks_woocommerce_blocks_checkout_enqueue_data');
+function eascompliance_blocks_woocommerce_blocks_checkout_enqueue_data() {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
     try {
 
-        if (!eascompliance_is_set()) {
+
+        // session does not present when editing page in editor
+        if (is_null(WC()->session)) {
             return;
         }
 
-        foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-            // eascompliance_log('debug', 'cart item is $d ', ['d'=>$cart_item]);
-
-            $product = $cart_item['data']; // WC_Product_Simple
-
-            $price_html = wc_price( $product->get_price() );
-            $price = eascompliance_woocommerce_cart_item_subtotal($price_html , $cart_item, $cart_item_key, false) / $cart_item['quantity'];
-            $price_formatted = wc_format_decimal($price);
-
-            $product->set_price( $price_formatted );
-            $product->set_regular_price( $price_formatted);
-            $product->set_sale_price( $price_formatted );
-
+        if (eascompliance_session_get('EAS blocks checkout') === false) {
+            eascompliance_unset('switch to blocks');
         }
+
+        eascompliance_session_set('EAS blocks checkout', true);
+        eascompliance_session_set('EAS blocks checkout url', get_page_link());
+
+
+    } catch (Throwable $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    }
+}
+
+
+
+add_action('woocommerce_after_calculate_totals', 'eascompliance_blocks_woocommerce_after_calculate_totals', 10, 1);
+function eascompliance_blocks_woocommerce_after_calculate_totals( $cart ) {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+    try {
+
+        if (!eascompliance_is_blocks_checkout()) {
+            return;
+        }
+
+        $cart_total = $cart->get_total('edit');
+        $cart_tax = $cart->get_total_tax();
+        $shipping_tax = $cart->get_shipping_tax();
+        $shipping_total = $cart->get_shipping_total();
+
+        $cart_contents_cost = 0;
+        foreach($cart->cart_contents as $cart_item_key => $cart_item) {
+            $cart_contents_cost += $cart_item['line_subtotal'];
+        }
+
+        if (eascompliance_is_standard_mode_above_ioss_threshold($cart_contents_cost)) {
+            eascompliance_log('cart_total', 'threshold cart total $t cart tax is $tax, shipping total is $st shipping tax is $stax', ['t'=>$cart_total, 'tax'=>$cart_tax, 'st'=>$shipping_total, 'stax'=>$shipping_tax]);
+
+            $cart->set_shipping_tax(0);
+            if (eascompliance_price_inclusive()) {
+                $cart->set_total($cart_total - $shipping_tax);
+            } else {
+                $cart->set_total($cart_total - $cart_tax);
+            }
+        }
+
 
     } catch (Throwable $ex) {
         eascompliance_log('error', $ex);
@@ -253,17 +292,24 @@ function eascompliance_blocks_woocommerce_cart_tax_totals($tax_totals, $cart) {
     try {
         set_error_handler('eascompliance_error_handler');
 
-        if (!eascompliance_is_set()) {
-            return $tax_totals;
+        if (!eascompliance_is_blocks_checkout()) {
+            return;
         }
 
-        $tax_rate_id0 = eascompliance_tax_rate_id();
-        // $total_taxes is array( tax_rate_id => tax_amount )
-        $total_taxes = eascompliance_woocommerce_cart_get_taxes(array($tax_rate_id0 => 1), $cart);
+        $cart_taxes = $cart->get_taxes();
+        $cart_tax = array_sum($cart_taxes);
 
-        // $tax_totals is array( tax_code => stdClass() )
+        $tax_rate_id0 = eascompliance_tax_rate_id();
+        // $cart_taxes is array( tax_rate_id => tax_amount )
+        $cart_taxes = eascompliance_woocommerce_cart_get_taxes(array($tax_rate_id0 => $cart_tax), $cart);
+        if (empty($cart_taxes)) {
+            $cart_taxes = array($tax_rate_id0 => 0);
+        }
+
+        // tax_totals is array( tax_code => stdClass() )
+        // show tax label and amount in woocommerce-checkout-order-summary block
         $tax_totals = array();
-        foreach ($total_taxes as $tax_rate_id=>$tax_amount) {
+        foreach ($cart_taxes as $tax_rate_id=>$tax_amount) {
             $tax_code = WC_Tax::get_rate_code($tax_rate_id);
             $tax = new stdClass();
             $tax->tax_rate_id = $tax_rate_id;
@@ -282,6 +328,94 @@ function eascompliance_blocks_woocommerce_cart_tax_totals($tax_totals, $cart) {
         restore_error_handler();
     }
 }
+
+
+add_filter('woocommerce_cart_contents_changed', 'eascompliance_woocommerce_cart_contents_changed', 10, 1);
+function eascompliance_woocommerce_cart_contents_changed($cart_contents)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (empty($cart_contents)) {
+            return $cart_contents;
+        }
+
+        if (!eascompliance_is_blocks_checkout()) {
+            return $cart_contents;
+        }
+
+
+        if ('yes' === get_option('easproj_standard_mode')
+            && eascompliance_is_standard_mode_above_ioss_threshold())
+        {
+            eascompliance_session_set('EAS blocks standard mode above ioss threshold', true);
+
+            foreach($cart_contents as $cart_item_key => $cart_item) {
+
+                $product = $cart_item['data'];
+                if (!in_array(get_class($product), array('WC_Product_Simple', 'WC_Product_Variation'))) {
+                    continue;
+                }
+
+                $original_product = wc_get_product($product->get_id());
+
+                $old_price = $original_product->get_price();
+                $price_incl = round(wc_get_price_including_tax($original_product), 2);
+                $price_excl = round(wc_get_price_excluding_tax($original_product), 2);
+                $item_tax = $price_incl - $price_excl;
+
+                $new_price = $price_excl;
+
+                // mock product price to have it be correct in checkout
+                $product->set_price( $new_price );
+                $product->set_regular_price( $new_price);
+                $product->set_sale_price( $new_price );
+                eascompliance_log('cart_total', 'blocks setting price from $p0 to $p1, tax $t1', ['p0'=>$old_price, 'p1'=>$new_price, 't1'=>$item_tax]);
+            }
+
+
+        } else {
+            eascompliance_session_set('EAS blocks standard mode above ioss threshold', false);
+        }
+
+        if (eascompliance_is_set()) {
+            foreach($cart_contents as $cart_item_key => $cart_item) {
+
+                $product = $cart_item['data'];
+                if (!in_array(get_class($product), array('WC_Product_Simple', 'WC_Product_Variation'))) {
+                    continue;
+                }
+
+                $original_product = wc_get_product($product->get_id());
+
+                $old_price = $original_product->get_price();
+                $price_incl = round(wc_get_price_including_tax($original_product), 2);
+                $price_excl = round(wc_get_price_excluding_tax($original_product), 2);
+                $item_tax = $price_incl - $price_excl;
+
+                // mock product price to have it be correct in checkout
+                $new_price = eascompliance_woocommerce_cart_item_subtotal($price_incl, $cart_item, $cart_item_key, false);
+                $new_price = $new_price / $cart_item['quantity'];
+
+                $product->set_price( $new_price );
+                $product->set_regular_price( $new_price);
+                $product->set_sale_price( $new_price );
+                eascompliance_log('cart_total', 'blocks setting price from $p0 to $p1, tax $t1', ['p0'=>$old_price, 'p1'=>$new_price, 't1'=>$item_tax]);
+            }
+        }
+
+        return $cart_contents;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
 
 
 woocommerce_store_api_register_update_callback(

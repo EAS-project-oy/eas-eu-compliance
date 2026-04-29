@@ -374,7 +374,7 @@ function eascompliance_woocommerce_init()
 			add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
 			add_filter('woocommerce_shipping_packages', 'eascompliance_woocommerce_shipping_packages', 10, 1);
 			add_filter('woocommerce_shipping_method_chosen', 'eascompliance_woocommerce_shipping_method_chosen', 10, 3);
-			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order');
+			add_action('woocommerce_checkout_create_order', 'eascompliance_woocommerce_checkout_create_order', 10, 2);
 			add_action('woocommerce_checkout_order_created', 'eascompliance_woocommerce_checkout_order_created');
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed', 10, 4);
 			add_action('woocommerce_order_status_changed', 'eascompliance_woocommerce_order_status_changed2', 10, 4);
@@ -398,6 +398,7 @@ function eascompliance_woocommerce_init()
 
             add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_action', 10, 4);
             add_action( 'add_meta_boxes', 'eascompliance_woocommerce_add_order_meta_boxes', 10, 2);
+            add_action('woocommerce_before_checkout_form', 'eascompliance_woocommerce_before_checkout_form');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -778,8 +779,12 @@ function eascompliance_woocommerce_available_payment_gateways($available_gateway
 
         $show_payment_methods = false;
 
-        if (\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default()) {
-            //TODO WIP for checkout blocks
+        if (is_null(WC()->session)) {
+            $show_payment_methods = true;
+            throw new EAScomplianceBreakException();
+        }
+
+        if (eascompliance_is_blocks_checkout()) {
             $show_payment_methods = true;
             throw new EAScomplianceBreakException();
         }
@@ -2090,7 +2095,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?? '';
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'] ?? '';
     $calc_jreq['delivery_address_line_2'] =  eascompliance_array_get($checkout, 'billing_address_2', '') ?? '';//$checkout['shipping_address_2'];
-    if (did_action('woocommerce_blocks_loaded')) {
+    if (eascompliance_is_blocks_checkout()) {
         $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'] ?? '';
     }
 
@@ -3325,6 +3330,14 @@ function eascompliance_checkout_token_payload($eas_checkout_token) {
 }
 
 
+function eascompliance_checkout_url() {
+    $redirect_url = wc_get_checkout_url();
+    if (eascompliance_is_blocks_checkout() && !\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default()) {
+        $redirect_url = eascompliance_session_get('EAS blocks checkout url');
+    }
+    return $redirect_url;
+}
+
 /**
  * Handle redirect URI confirmation
  *
@@ -3361,7 +3374,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                 WC()->cart->set_session();
 
                 // redirect back to checkout //.
-                wp_safe_redirect(wc_get_checkout_url());
+                wp_safe_redirect(eascompliance_checkout_url());
                 exit();
             }
 
@@ -3469,7 +3482,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         // when $cart_total mismatches $payload_j['total_order_amount'] by small margin, fix most expensive item unit_cost_excl_vat //.
         $cart_total = $total_price + $total_item_duties_and_taxes + $payload_j['delivery_charge_vat_excl'];
         $margin = $cart_total - $payload_j['total_order_amount'];
-        eascompliance_log('request', '$cart_total is ' . $cart_total . '  payload total_order_amount is ' . $payload_j['total_order_amount']);
+        eascompliance_log('request', 'cart_total is ' . $cart_total . '  payload total_order_amount is ' . $payload_j['total_order_amount']);
         if (0 < abs($margin) && abs($margin) < 0.10) { // only process when there is margin and is small //.
             eascompliance_log('request', "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin");
             $most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
@@ -3595,7 +3608,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 
     if ($redirect) {
         // redirect back to checkout //.
-        wp_safe_redirect(wc_get_checkout_url());
+        wp_safe_redirect(eascompliance_checkout_url());
         exit();
     }
 }
@@ -3669,6 +3682,66 @@ function eascompliance_is_set()
     } finally {
         restore_error_handler();
     }
+}
+
+/**
+ * Save to session if we are not in blocks checkout, reset calculation if we came from blocks to classic checkout
+ *
+ * @throws Exception May throw exception.
+ */
+function eascompliance_woocommerce_before_checkout_form()
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+    try {
+
+        if (eascompliance_session_get('EAS blocks checkout') === true) {
+             eascompliance_session_set('EAS blocks standard mode above ioss threshold', null);
+             eascompliance_unset('switch from blocks');
+        }
+        eascompliance_session_set('EAS blocks checkout', false);
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    }
+}
+
+/**
+ *  Check if current requests or current page are blocks related.
+ */
+function eascompliance_is_blocks_checkout()
+{
+    $blocks_enabled = get_option('easproj_blocks') === 'yes';
+
+    if (!$blocks_enabled) {
+        return false;
+    }
+
+    // best option for knowing that request are related to blocks is from saved value in session
+    $cart_in_blocks = eascompliance_session_get('EAS blocks checkout') === true;
+
+    $res = $cart_in_blocks;
+
+    return $res;
+
+////   other conditions that may help knowing if we are in blocks checkout
+////   plugins may use store api with classical checkout too and eascompliance_ajaxhandler does not identify blocks
+//    $is_store_api =WC()->is_store_api_request();
+//    $page_id = get_the_ID();
+//    $has_checkout_block = $page_id &&  WC_Blocks_Utils::has_block_in_page( $page_id , 'woocommerce/checkout' );
+//    eascompliance_log('debug', 'is_block: page has block $b is_checkout_block_default $d is_checkout_page $c loaded $l store api $s page_id $p session blocks $i return $r', [
+//        'b'=>$has_checkout_block?'Y':'N',
+//        'd'=>\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default()?'Y':'N',
+//        'c'=>\Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_page()?'Y':'N',
+//        'l'=>did_action('woocommerce_blocks_loaded')? 'Y':'N',
+//        's'=>WC()->is_store_api_request()?'Y':'N',
+//        'g'=>get_the_ID(),
+//        'p'=>$page_id,
+//        'i'=>$cart_in_blocks?'Y':'N',
+//        'r'=>$res?'Y':'N',
+//    ]);
+
+
 }
 
 
@@ -4617,19 +4690,18 @@ function eascompliance_cart_total($current_total = null)
                 $cart_total_log = eascompliance_format('set once to $t from subscription cart total; ', ['t'=>$cart_total]);
             }
 
-            if ( WC()->is_store_api_request() ) {
-                if (get_option('easproj_blocks') === 'yes') {
-                    $cart_total_log .= 'allow store api request; ';
-                }
-                else {
-                    $cart_total_log .= 'skip due to store api request; ';
-                    return $cart_total;
-                }
+
+            if ( eascompliance_is_blocks_checkout() ) {
+                $cart_total_log .= 'skip for blocks checkout request; ';
+            }
+            else {
+                $cart_total_log .= 'allow for classic checkout request; ';
+
+                $cart_total_tax = array_sum($cart->get_taxes());
+                $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
+                $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
             }
 
-            $cart_total_tax = array_sum($cart->get_taxes());
-            $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
-            $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
             return $cart_total;
         }
 
@@ -4804,7 +4876,7 @@ function eascompliance_woocommerce_cart_get_total($cart_total)
     }
 }
 
-function eascompliance_is_standard_mode_above_ioss_threshod() {
+function eascompliance_is_standard_mode_above_ioss_threshold($cart_contents_cost = null) {
 
     $cart = WC()->cart;
     $shipping_country = WC()->customer->get_shipping_country();
@@ -4817,7 +4889,13 @@ function eascompliance_is_standard_mode_above_ioss_threshod() {
         $tax_threshold = 150.00; // EUR
         $exchange_rate = 1.0;
 
-        $items_cost = $cart->get_cart_contents_total(); //$cart->get_total( 'items_total', false ) + $cart->get_total( 'fees_total', false ) + $cart->get_total( 'shipping_total', false );
+        if (is_null($cart_contents_cost)) {
+            $cart_contents_cost = $cart->get_cart_contents_total(); //$cart->get_total( 'items_total', false ) + $cart->get_total( 'fees_total', false ) + $cart->get_total( 'shipping_total', false );
+        }
+
+        if (eascompliance_session_get('EAS blocks standard mode above ioss threshold') === true) {
+            return true;
+        }
 
         $currency = get_woocommerce_currency();
         $wcml_enabled = eascompliance_is_wcml_enabled();
@@ -4838,8 +4916,8 @@ function eascompliance_is_standard_mode_above_ioss_threshod() {
             $tax_threshold = $tax_threshold * $exchange_rate;
         }
 
-        if ($items_cost > $tax_threshold) {
-            eascompliance_log('cart_total','removing cart taxes due to items cost $ic exceeds threshold $t, exchange rate $r; ', ['ic' => $items_cost, 't' => $tax_threshold, 'r' => $exchange_rate]);
+        if ($cart_contents_cost > $tax_threshold) {
+            eascompliance_log('cart_total','standard mode items cost $ic exceeds threshold $t, exchange rate $r; ', ['ic' => $cart_contents_cost, 't' => $tax_threshold, 'r' => $exchange_rate]);
             return true;
         }
     }
@@ -4864,7 +4942,7 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
 
         if ( 'yes' === get_option('easproj_standard_mode') ) {
 
-            if (eascompliance_is_standard_mode_above_ioss_threshod()) {
+            if (eascompliance_is_standard_mode_above_ioss_threshold()) {
                 $cart_tax_log .= eascompliance_format('removing cart taxes due to items cost exceeds threshold; ');
                 $total_taxes = array();
                 return $total_taxes;
@@ -4995,8 +5073,12 @@ function eascompliance_woocommerce_cart_display_prices_including_tax($display_pr
 
         set_error_handler('eascompliance_error_handler');
 
+        if (eascompliance_is_blocks_checkout()) {
+            return $display_prices_including_tax;
+        }
+
         // in Standard Mode with IOSS threshold, cart and checkout taxes should not present when threshold exceeded
-        if ($display_prices_including_tax && eascompliance_is_standard_mode_above_ioss_threshod()) {
+        if ($display_prices_including_tax && eascompliance_is_standard_mode_above_ioss_threshold()) {
             $display_prices_including_tax = false;
         }
 
@@ -5067,7 +5149,7 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
     } finally {
 		static $cart_item_total_saved;
 		if ($cart_item_total_saved != $cart_item_total) {
-			eascompliance_log('cart_total', 'cart_item_total is $cit, cart_item_total_log value was $tl', ['cit'=>$cart_item_total, 'tl'=>$cart_item_total_log]);
+			eascompliance_log('cart_total', 'cart_item_total is $cit, cart_item_total_log value was $tl', ['cit'=>$cart_item_total, 'tl'=>$cart_item_total_log], true);
 			$cart_item_total_saved = $cart_item_total;
 		}
         restore_error_handler();
@@ -5273,7 +5355,7 @@ function eascompliance_woocommerce_cart_totals_order_total_html2($value)
  */
 function eascompliance_woocommerce_checkout_create_order_line_item($order_item_product, $cart_item_key, $values, $order)
 {
-    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     try {
         set_error_handler('eascompliance_error_handler');
@@ -5285,18 +5367,19 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
             $order_item_product->set_subtotal($item_total);
             $order_item_product->set_total($item_total);
 
-            return;
+            return $order_item_product;
         }
 
 
         if (!eascompliance_is_set()) {
-            return;
+            return $order_item_product;
         }
 
         $cart_item = WC()->cart->cart_contents[$cart_item_key];
         $order_item_product->set_subtotal($cart_item['EAScompliance item price'] + $cart_item['EAScompliance item discount']);
         $order_item_product->set_total($cart_item['EAScompliance item price']);
 
+        return $order_item_product;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -5671,7 +5754,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
  * @param object $order order.
  * @throws Exception May throw exception.
  */
-function eascompliance_woocommerce_checkout_create_order($order)
+function eascompliance_woocommerce_checkout_create_order($order, $args = array())
 {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
@@ -5718,7 +5801,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
                     $order->set_cart_tax(0);
                     $order->set_shipping_tax(0);
                     $order->remove_order_items('tax');
-                    if (did_action('woocommerce_blocks_loaded')) {
+                    if (eascompliance_is_blocks_checkout()) {
                         $order->set_total(eascompliance_cart_total());
                     }
                     $order->save();
@@ -5829,7 +5912,7 @@ function eascompliance_woocommerce_checkout_create_order($order)
         $calc_jreq_new['delivery_state_province'] = $calc_jreq_saved['delivery_state_province'];
 
         // in blocks checkout, we ignore cost_provided_by_em because product price is updated
-        if (get_option('easproj_blocks') === 'yes' && did_action('woocommerce_blocks_loaded')) {
+        if (eascompliance_is_blocks_checkout()) {
             $ix = 0;
             foreach ($calc_jreq_saved['order_breakdown'] as $item_saved) {
                 $calc_jreq_new['order_breakdown'][$ix]['cost_provided_by_em'] = $item_saved['cost_provided_by_em'];
