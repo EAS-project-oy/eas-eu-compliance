@@ -1,4 +1,11 @@
 == Changelog ==
+15-03-2026 - version 1.8.7 
+
+* WooCommercecheckout blocks support enhanced. EAS compliance plugin now fully supports checkout blocks in Standard and Full landed cost modes
+* Translations database updated
+* Some minor issues fixed
+
+
 15-03-2026 - version 1.8.0 
 
 * WooCommercecheckout blocks support implemented. EAS compliance plugin now fully supports checkout blocks in Standard and Full landed cost modes
