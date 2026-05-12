@@ -31,50 +31,48 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
             wp_register_script(
                 'eascompliance-blocks',
                 plugins_url('/assets/js/EAScompliance-blocks.js', __FILE__),
-                array('EAScompliance', 'wc-blocks', 'jquery'),
+                array('EAScompliance', 'wc-blocks', 'jquery', 'wc-blocks-checkout', 'wc-settings'),
                 filemtime(__DIR__ . '/assets/js/EAScompliance-blocks.js'),
                 true
             )
             or throw new Exception("register script eascompliance-blocks failed");
 
-            $block = 'eascompliance-checkout-calculate-taxes';
             wp_register_script(
-                $block . '-editor',
-                plugins_url("/assets/blocks/$block/editor.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks'),
-                filemtime(__DIR__ . "/assets/blocks/$block/editor.js"),
+                'eascompliance-calculate-taxes-editor',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/editor.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/editor.js"),
                 true
             )
-            or throw new Exception("register script $block-editor failed");
+            or throw new Exception("register script eascompliance-calculate-taxes-editor failed");
 
             wp_register_script(
-                $block . '-frontend',
-                plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks'),
-                filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
+                'eascompliance-calculate-taxes-checkout',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/checkout.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-blocks-checkout', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/checkout.js"),
                 true
             )
-            or throw new Exception("register script $block-frontend failed");
+            or throw new Exception("register script eascompliance-calculate-taxes-checkout failed");
 
-
-            $block = 'eascompliance-checkout-company-vat';
-            wp_register_script(
-                $block . '-editor',
-                plugins_url("/assets/blocks/$block/editor.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks'),
-                filemtime(__DIR__ . "/assets/blocks/$block/editor.js"),
-                true
-            )
-            or throw new Exception("register script $block-editor failed");
 
             wp_register_script(
-                $block . '-frontend',
-                plugins_url("/assets/blocks/$block/frontend.js", __FILE__),
-                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks'),
-                filemtime(__DIR__ . "/assets/blocks/$block/frontend.js"),
+                'eascompliance-checkout-company-vat-editor',
+                plugins_url("/assets/blocks/eascompliance-checkout-company-vat/editor.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks', 'wc-blocks-checkout', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-checkout-company-vat/editor.js"),
                 true
             )
-            or throw new Exception("register script $block-frontend failed");
+            or throw new Exception("register script eascompliance-checkout-company-vat-editor failed");
+
+            wp_register_script(
+                'eascompliance-checkout-company-vat-frontend',
+                plugins_url("/assets/blocks/eascompliance-checkout-company-vat/frontend.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-checkout', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-checkout-company-vat/frontend.js"),
+                true
+            )
+            or throw new Exception("register script eascompliance-checkout-company-vat-frontend failed");
 
         } catch (Exception $ex) {
             eascompliance_log('error', $ex);
@@ -87,12 +85,130 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
 
     public function get_script_handles() {
         // array of script handles to enqueue in the frontend context
-        return array( 'eascompliance-checkout-company-vat-frontend', 'eascompliance-checkout-calculate-taxes-frontend' );
+        return array( 'eascompliance-checkout-company-vat-frontend', 'eascompliance-calculate-taxes-checkout' );
     }
 
     public function get_editor_script_handles() {
         // array of script handles to enqueue in the editor context
-        return array( 'eascompliance-checkout-company-vat-editor',  'eascompliance-checkout-calculate-taxes-editor' );
+        return array( 'eascompliance-checkout-company-vat-editor',  'eascompliance-calculate-taxes-editor' );
+    }
+
+    public function get_script_data() {
+        // array of key, value pairs of data made available to block props
+        return array(
+            'plugin_dictionary'=>eascompliance_frontend_dictionary(),
+            'plugin_ajax_object'=>array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'supported_countries' =>  eascompliance_supported_countries(),
+                'easproj_handle_norther_ireland_as_ioss' =>  get_option('easproj_handle_norther_ireland_as_ioss'),
+            )
+        );
+    }
+
+    protected function get_file_version( $file )
+    {
+        return '1.0.0';
+    }
+}
+
+class EascomplianceCartIntegration implements IntegrationInterface
+{
+
+    public function get_name()
+    {
+        return 'eascompliance-cart-integration';
+    }
+
+    public function initialize()
+    {
+        try {
+            set_error_handler('eascompliance_error_handler');
+
+            wp_register_script(
+                'eascompliance-calculate-taxes-cart',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/cart.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/cart.js"),
+                true
+            )
+            or throw new Exception("register script eascompliance-calculate-taxes-cart failed");
+
+        } catch (Exception $ex) {
+            eascompliance_log('error', $ex);
+            throw $ex;
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+
+    public function get_script_handles() {
+        // array of script handles to enqueue in the frontend context
+        return array( 'eascompliance-calculate-taxes-cart' );
+    }
+
+    public function get_editor_script_handles() {
+        // array of script handles to enqueue in the editor context
+        return array(  );
+    }
+
+    public function get_script_data() {
+        // array of key, value pairs of data made available to block props
+        return array(
+            'plugin_dictionary'=>eascompliance_frontend_dictionary(),
+            'plugin_ajax_object'=>array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'supported_countries' =>  eascompliance_supported_countries(),
+                'easproj_handle_norther_ireland_as_ioss' =>  get_option('easproj_handle_norther_ireland_as_ioss'),
+            )
+        );
+    }
+
+    protected function get_file_version( $file )
+    {
+        return '1.0.0';
+    }
+}
+
+class EascomplianceMiniCartIntegration implements IntegrationInterface
+{
+
+    public function get_name()
+    {
+        return 'eascompliance-minicart-integration';
+    }
+
+    public function initialize()
+    {
+        try {
+            set_error_handler('eascompliance_error_handler');
+
+            wp_register_script(
+                'eascompliance-calculate-taxes-minicart',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/minicart.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/minicart.js"),
+                true
+            )
+            or throw new Exception("register script eascompliance-calculate-taxes-minicart failed");
+
+        } catch (Exception $ex) {
+            eascompliance_log('error', $ex);
+            throw $ex;
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+
+    public function get_script_handles() {
+        // array of script handles to enqueue in the frontend context
+        return array( 'eascompliance-calculate-taxes-minicart' );
+    }
+
+    public function get_editor_script_handles() {
+        // array of script handles to enqueue in the editor context
+        return array(  );
     }
 
     public function get_script_data() {
@@ -116,6 +232,27 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
 add_action('woocommerce_blocks_checkout_block_registration',
     function ($integration_registry) {
         $integration_registry->register(new EascomplianceCheckoutIntegration());
+    }
+);
+
+
+add_action('woocommerce_blocks_cart_block_registration',
+    function ($integration_registry) {
+        try {
+            $integration_registry->register(new EascomplianceCartIntegration());
+        } catch (Throwable $ex) {
+            eascompliance_log('error', $ex);
+        }
+    }
+);
+
+add_action('woocommerce_blocks_mini-cart_block_registration',
+    function ($integration_registry) {
+        try {
+            $integration_registry->register(new EascomplianceMiniCartIntegration());
+        } catch (Throwable $ex) {
+            eascompliance_log('error', $ex);
+        }
     }
 );
 
@@ -346,6 +483,7 @@ function eascompliance_woocommerce_cart_contents_changed($cart_contents)
             return $cart_contents;
         }
 
+        eascompliance_session_set('EAS blocks standard mode above ioss threshold', null);
 
         if ('yes' === get_option('easproj_standard_mode')
             && eascompliance_is_standard_mode_above_ioss_threshold())
