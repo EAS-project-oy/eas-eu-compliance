@@ -200,7 +200,7 @@ function eascompliance_plugin_status_change_notification($status)
         set_error_handler('eascompliance_error_handler');
 
         if (!in_array($status, ['enabled', 'disabled', 'deleted', 'installed'])) {
-            throw new Exception('Invalid status $s'. ['s'=>$status]);
+            throw new Exception('Invalid status: ' . $status);
         }
 
         $url = 'https://plugin-installations.easproject.com/api/plugin-installations/woocommerce';
@@ -1785,7 +1785,7 @@ function eascompliance_woocommerce_review_order_before_payment()
                 <h3>EAScompliance Debug</h3>
                 <p class="eascompliance_debug">
                     <textarea type="text" class="eascompliance_debug_input" style="font-family:monospace"
-                              placeholder="input"><?php echo esc_html('return WC()->cart->get_cart();'); ?></textarea>
+                              placeholder="input"><?php echo esc_textarea('return WC()->cart->get_cart();'); ?></textarea>
                     <button type="button" class="button eascompliance_debug_button">eval</button>
                     <input type="hidden" id="eascompliance_nonce_debug" name="eascompliance_nonce_debug"
                            value="<?php echo esc_attr($nonce_debug); ?>"/>
@@ -2465,27 +2465,6 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
     }
 
-    //take shipping from billing address when shipping address is empty
-    $shipping_first_name = $order->get_shipping_first_name();
-    $shipping_last_name = $order->get_shipping_last_name();
-    $shipping_company = $order->get_shipping_company();
-    $shipping_address_1 = $order->get_shipping_address_1();
-    $shipping_address_2 = $order->get_shipping_address_2();
-    $shipping_city = $order->get_shipping_city();
-    $shipping_postal_code = $order->get_shipping_postcode();
-    $shipping_country = $order->get_shipping_country();
-    
-    if ($shipping_address_1 . $shipping_address_2 . $shipping_city . $shipping_postal_code === '') {
-		$shipping_first_name = $order->get_billing_first_name();
-		$shipping_last_name = $order->get_billing_last_name();
-		$shipping_company = $order->get_billing_company();
-		$shipping_address_1 = $order->get_billing_address_1();
-		$shipping_address_2 = $order->get_billing_address_2();
-		$shipping_city = $order->get_billing_city();
-		$shipping_postal_code = $order->get_billing_postcode();
-		$shipping_country = $order->get_billing_country();
-		$delivery_state_province = eascompliance_array_get(eascompliance_array_get(WC()->countries->states, $order->get_billing_country(), array()), $order->get_billing_state(), '') ?: $order->get_billing_state();
-    }
     $calc_jreq['recipient_title'] = 'Mr.';
     $calc_jreq['recipient_first_name'] = $shipping_first_name;
     $calc_jreq['recipient_last_name'] = $shipping_last_name;
