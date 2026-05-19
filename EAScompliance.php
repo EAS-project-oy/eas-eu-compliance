@@ -7235,7 +7235,7 @@ function eascompliance_woocommerce_create_refund($refund, $args)
 
         $order->save();
 
-    } catch (Exception $ex) {
+    } catch (Throwable $ex) {
         eascompliance_log('error', $ex);
         $order->add_order_note(EAS_TR('Refund create failed: ') . $ex->getMessage());
     } finally {

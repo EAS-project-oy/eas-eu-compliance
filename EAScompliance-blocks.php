@@ -430,7 +430,7 @@ function eascompliance_blocks_woocommerce_cart_tax_totals($tax_totals, $cart) {
         set_error_handler('eascompliance_error_handler');
 
         if (!eascompliance_is_blocks_checkout()) {
-            return;
+            return $tax_totals;
         }
 
         $cart_taxes = $cart->get_taxes();

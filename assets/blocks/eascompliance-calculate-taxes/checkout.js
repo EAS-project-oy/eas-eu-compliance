@@ -27,8 +27,9 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const { useEffect, useState, useCallback } = wp.element
 		const { useEffectDebugger } = window.eascompliance
 
-		const [ loading, setLoading ] = useState(false)
-		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(window.wcSettings.checkoutData.extensions.eascompliance.status === 'present')
+		const eascompliance_status = window.wcSettings.checkoutData.extensions.eascompliance.status
+		const [ loading, setLoading ] = useState(true)
+		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(['standard_mode', 'present'].includes(eascompliance_status))
 		const { setExtensionData } = props.checkoutExtensionData
 		const { useSelect, useDispatch, subscribe } = wp.data
 		const { CART_STORE_KEY, CHECKOUT_STORE_KEY, PAYMENT_STORE_KEY } = wc.wcBlocksData
@@ -63,19 +64,26 @@ wc.blocksCheckout.registerCheckoutBlock({
 
 		// empty payment methods notices and display custom message in payment section before tax calculation happened
 		useEffect(()=> {
-			$('.wc-block-checkout__payment-method .eascompliance-message').remove()
-			if (placeOrderVisible) {
-				payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
-				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
-			} else {
-				// copy styles from place order button
-				window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
+			(async () => {
+				$('.wc-block-checkout__payment-method .eascompliance-message').remove()
 
-				$('.wc-block-checkout__no-payment-methods-notice').removeClass('is-error').text(message)
-				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
-				$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
-				payment_actions.__internalSetAvailablePaymentMethods([])
-			}
+				if (eascompliance_status === 'standard_mode') {
+					return
+				}
+
+				if (placeOrderVisible) {
+					await payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
+					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
+				} else {
+					// copy styles from place order button
+					window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
+
+					$('.wc-block-checkout__no-payment-methods-notice').removeClass('is-error').text(message)
+					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
+					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
+					await payment_actions.__internalSetAvailablePaymentMethods([])
+				}
+			})()
 		}, [available_payment_methods, placeOrderVisible])
 
 
@@ -86,6 +94,12 @@ wc.blocksCheckout.registerCheckoutBlock({
 			() => {
 				// run effect after user stopped editing shipping/billing details
 				const timeoutId = setTimeout(async ()=> {
+					// prevent flickering of Calculate button on first page load
+					if (loading) {
+						setLoading(false)
+						return
+					}
+
 
 					// reset calculations when checkout data is updated
 					await cart_actions.applyExtensionCartUpdate({'namespace': 'eascompliance', 'data': {'action': 'eascompliance_unset'}})
