@@ -28,8 +28,14 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const { useEffectDebugger } = window.eascompliance
 
 		const eascompliance_status = window.wcSettings.checkoutData.extensions.eascompliance.status
+		const supported_countries = window.wcSettings.checkoutData.extensions.eascompliance.supported_countries
 		const [ loading, setLoading ] = useState(true)
-		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(['standard_mode', 'present'].includes(eascompliance_status))
+		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(
+			// standard mode or calculation already present
+			['standard_mode', 'present'].includes(eascompliance_status)
+			// shipping country not supported
+			|| !supported_countries.includes(props.cart.shippingAddress.country)
+		)
 		const { setExtensionData } = props.checkoutExtensionData
 		const { useSelect, useDispatch, subscribe } = wp.data
 		const { CART_STORE_KEY, CHECKOUT_STORE_KEY, PAYMENT_STORE_KEY } = wc.wcBlocksData
@@ -78,9 +84,12 @@ wc.blocksCheckout.registerCheckoutBlock({
 					// copy styles from place order button
 					window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
 
-					$('.wc-block-checkout__no-payment-methods-notice').removeClass('is-error').text(message)
-					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').parent().append($('<div class="eascompliance-message">').text(message))
-					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').hide()
+					$('.wc-block-checkout__no-payment-methods-notice, .wc-block-checkout__only-express-payments-notice')
+						.removeClass('is-error').text(message)
+					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container')
+						.parent().append($('<div class="eascompliance-message">').text(message))
+					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container')
+						.hide()
 					await payment_actions.__internalSetAvailablePaymentMethods([])
 				}
 			})()

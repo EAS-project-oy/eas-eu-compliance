@@ -340,6 +340,19 @@ function eascompliance_checkout_schema_callback() {
             'type'        => array( 'string', 'null' ),
             'readonly'    => true,
         ),
+        'status'  => array(
+            'description' =>  'eascompliance_status',
+            'type'        => array( 'string', 'null' ),
+            'readonly'    => true,
+        ),
+        'supported_countries'  => array(
+            'description' =>  'supported_countries',
+            'type'        => 'array',
+            'items'       => array(
+                'type' => 'string',
+            ),
+            'readonly'    => true,
+        ),
 
     );
 }
@@ -350,6 +363,7 @@ function eascompliance_checkout_data_callback() {
         'company_vat' => eascompliance_session_get('session_company_vat'),
         'nonce' => wp_create_nonce('eascompliance_nonce_calc'),
         'status' => eascompliance_status(),
+        'supported_countries' => eascompliance_supported_countries(),
     );
 }
 
