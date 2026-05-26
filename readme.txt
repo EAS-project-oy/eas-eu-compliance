@@ -130,7 +130,7 @@ EAS project providing service for assistance installation.
 == Changelog ==
 = 1.8.8 =
 * Fixed a bug where payment options would flicker in the WooCommerce blocks-used checkout page on some installations
-* Fixed a bug with tax mismatches in the blocks-used checkout adn cart pages for WooCommerce.
+* Fixed a bug with tax mismatches in the blocks-used checkout and cart pages for WooCommerce.
 
 
 = 1.8.7 =
