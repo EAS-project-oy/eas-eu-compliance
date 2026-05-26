@@ -4,9 +4,9 @@ Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
 Requires PHP: 5.6
-WC tested up to: 10.1.1
-Tested up to: 6.9
-Stable Tag: 1.8.7
+WC tested up to: 10.7.0
+Tested up to: 7.0
+Stable Tag: 1.8.8
 Last updated time: 28.09.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -30,6 +30,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * VAT filing and payment management and support
 * UK VAT compliance with intermediary services when needed
 * Compliance with all schemes, Domestic, B2B, Import, Union and Non-Union schemes. EAS Solution supports all business models, including multi-warehouse. 
+* EAS EU compliance fully supports WooCommerce blocks-based cart and checkout pages
 * Access to EAS Merchant dashboard that contains all invoices and reports
 * Ready-for-filing reports, including preparation of fiscal reports for all VAT special schemes, available free of charge in your Merchant dashboard.
 * All the data available in accountant friendly format, further reducing the need for manual work. 
@@ -37,7 +38,7 @@ EAS removes all the tax and customs compliance barriers preventing your sales th
 * Prohibition of ordering over the amount of threshold establisehd in EU for IOSS orders.
 * EU Company VAT number online validation 
 * Linnworks integration allows to transfer IOSS number directly to the Linnworks
-* WooCommerce checkout blocks supported
+
 
 
 **How to get started?**
@@ -127,6 +128,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.8.8 =
+* Fixed a bug where payment options would flicker in the WooCommerce blocks-used checkout page on some installations
+* Fixed a bug with tax mismatches in the blocks-used checkout adn cart pages for WooCommerce.
+
 
 = 1.8.7 =
 * WooCommercecheckout blocks support enhanced. EAS compliance plugin now fully supports checkout blocks in Standard and Full landed cost modes
