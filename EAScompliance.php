@@ -6608,6 +6608,17 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 	try {
 		set_error_handler('eascompliance_error_handler');
 
+        // block function execution for same order in this or parallel processes via advisory lock on temporary file
+        $lock_fn = get_temp_dir() . 'eascompliance_woocommerce_order_status_changed4_' . $order_id . '.lock';
+        $lock_fp = fopen($lock_fn, 'c');
+        if ($lock_fp === false) {
+            throw new Exception('failed to create lock file');
+        }
+        if (!flock($lock_fp, LOCK_EX)) {
+            throw new Exception('failed to lock file');
+        }
+
+
 		if (!eascompliance_order_status_paid($status_to)) {
 			return 1;
 		}
@@ -6673,6 +6684,7 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 		}
 
 		$order->add_meta_data('_easproj_order_sent_to_eas', '1', true);
+        $order->save_meta_data();
 
         $order_json = eascompliance_make_eas_api_request_json_from_order2($order_id);
 
@@ -6753,13 +6765,19 @@ function eascompliance_woocommerce_order_status_changed4($order_id, $status_from
 
         return 0;
 
-	} catch (Exception $ex) {
+	} catch (Throwable $ex) {
 		eascompliance_log('error', $ex);
         $order_num = $order->get_order_number();
 		$order->add_order_note(EAS_TR("Order $order_num payment notification failed: ") . $ex->getMessage());
 
         return -1;
 	} finally {
+
+        // releasing lock and removing lock file
+        if (! (flock($lock_fp, LOCK_UN) && fclose($lock_fp) && unlink($lock_fn)) ) {
+            eascompliance_log('error', 'failed to remove lock file $l' , ['l'=>$lock_fn] );
+        }
+
 		restore_error_handler();
 	}
 
