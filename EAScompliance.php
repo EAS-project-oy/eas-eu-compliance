@@ -2189,7 +2189,7 @@ function eascompliance_make_eas_api_request_json()
             'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
-            'hs6p_received' => eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'),
+            'hs6p_received' => eascompliance_coalesce(array(get_option('easproj_default_hscode'), eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'))),
             // DEBUG check product country:
             // $cart = WC()->cart->get_cart();
             // $cart[eascompliance_array_key_first2($cart)]['product_id'];
@@ -5128,7 +5128,7 @@ function eascompliance_woocommerce_cart_item_subtotal($price_html, $cart_item, $
     } finally {
 		static $cart_item_total_saved;
 		if ($cart_item_total_saved != $cart_item_total) {
-			eascompliance_log('cart_total', 'cart_item_total is $cit, cart_item_total_log value was $tl', ['cit'=>$cart_item_total, 'tl'=>$cart_item_total_log], true);
+			eascompliance_log('cart_total', 'cart_item_total is $cit, cart_item_total_log value was $tl', ['cit'=>$cart_item_total, 'tl'=>$cart_item_total_log]);
 			$cart_item_total_saved = $cart_item_total;
 		}
         restore_error_handler();
@@ -5895,6 +5895,7 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
             $ix = 0;
             foreach ($calc_jreq_saved['order_breakdown'] as $item_saved) {
                 $calc_jreq_new['order_breakdown'][$ix]['cost_provided_by_em'] = $item_saved['cost_provided_by_em'];
+                $ix++;
             }
         }
 
@@ -8101,6 +8102,13 @@ function eascompliance_settings()
                 'type' => 'text',
                 'desc' => EAS_TR('Save IOSS number in the order meta'),
                 'id' => 'easproj_ioss_number',
+        ),
+
+        'default_hscode' => array(
+                'name' => EAS_TR('Default HS Code'),
+                'type' => 'text',
+                'desc' => EAS_TR('The default HS code will be applied to products without a configured HS code.'),
+                'id' => 'easproj_default_hscode',
         ),
 
 
