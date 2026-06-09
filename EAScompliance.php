@@ -2189,7 +2189,7 @@ function eascompliance_make_eas_api_request_json()
             'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
-            'hs6p_received' => eascompliance_coalesce(array(get_option('easproj_default_hscode'), eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'))),
+            'hs6p_received' => eascompliance_coalesce(array(eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'), get_option('easproj_default_hscode'))),
             // DEBUG check product country:
             // $cart = WC()->cart->get_cart();
             // $cart[eascompliance_array_key_first2($cart)]['product_id'];
