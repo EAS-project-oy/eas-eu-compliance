@@ -103,6 +103,8 @@ function EAS_MATCH($pattern, $string, $group=0)
  * return first non-empty list value or value for which predicate is true
  */
 function eascompliance_coalesce($array, $predicate=null) {
+    // current: If the internal pointer points beyond the end of the elements list or the array is empty, current() returns false
+    // array_filter: If no predicate is supplied, all empty() entries of array will be removed.
     return current(array_filter($array, $predicate));
 }
 
@@ -2182,6 +2184,8 @@ function eascompliance_make_eas_api_request_json()
             $id_provided_by_em = $id_provided_by_em . "#{$suffix}";
         }
 
+        $hs6p_received = (string)eascompliance_coalesce(array(eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'), get_option('easproj_default_hscode')));
+
         $order_breakdown_items[] = array(
             'short_description' => $product->get_name(),
             'long_description' => '',
@@ -2189,7 +2193,7 @@ function eascompliance_make_eas_api_request_json()
             'quantity' => (int)$cart_item['quantity'],
             'cost_provided_by_em' => $cost_provided_by_em,
             'weight' => $product->get_weight() === '' ? 0 : floatval($product->get_weight()),
-            'hs6p_received' => eascompliance_coalesce(array(eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'), get_option('easproj_default_hscode'))),
+            'hs6p_received' => $hs6p_received,
             // DEBUG check product country:
             // $cart = WC()->cart->get_cart();
             // $cart[eascompliance_array_key_first2($cart)]['product_id'];
