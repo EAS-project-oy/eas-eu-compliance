@@ -2362,10 +2362,19 @@ function eascompliance_product_attribute_or_meta($product, $settings_key)
 		}
 
 		if ( strpos( $key_name, 'meta_' ) === 0 ) {
-            return $parent_product->get_meta(substr($key_name, 5));
+            $key_value = $parent_product->get_meta(substr($key_name, 5));
         } else {
-            return $parent_product->get_attribute($key_name);
+            $key_value = $parent_product->get_attribute($key_name);
+
+            // Try getting key_value via attribute name instead of slug
+            $labels = wc_get_attribute_taxonomy_labels();
+            if ($key_value === '' and in_array($key_name, $labels)) {
+                $key_name = wc_get_attribute_taxonomy_labels()[$key_name];
+                $key_value = $parent_product->get_attribute($key_name);
+            }
         }
+
+        return $key_value;
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
