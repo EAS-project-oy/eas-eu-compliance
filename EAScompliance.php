@@ -6,7 +6,7 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.8.8
+ * Version: 1.8.9
  * Tested up to 7.0
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
@@ -25,7 +25,7 @@ define('EASCOMPLIANCE_TAX_RATE_NAME', 'Taxes & Duties');
 // The constant "JSON_THROW_ON_ERROR" is not present in PHP version 7.2 or earlier //.
 define('EASCOMPLIANCE_JSON_THROW_ON_ERROR', 4194304);
 
-define('EASCOMPLIANCE_PRODUCT_ATTRIBUTES', array('easproj_hs6p_received', 'easproj_warehouse_country', 'easproj_reduced_vat_group', 'easproj_disclosed_agent', 'easproj_seller_reg_country', 'easproj_originating_country', ));
+define('EASCOMPLIANCE_PRODUCT_ATTRIBUTES', array('', 'easproj_warehouse_country', 'easproj_reduced_vat_group', 'easproj_disclosed_agent', 'easproj_seller_reg_country', 'easproj_originating_country', ));
 define('EASCOMPLIANCE_COUNTRIES_TAX_NAMES', array('AT' => 'MwSt', 'BE' => 'BTW', 'BG' => 'DDS', 'CY' => 'FPA', 'CZ' => 'DPH', 'DE' => 'MwSt', 'DK' => 'Moms', 'EE' => 'Km', 'ES' => 'IVA', 'FI' => 'ALV', 'FR' => 'TVA', 'GB' => 'VAT', 'GR' => 'FPA', 'HR' => 'PDV', 'HU' => 'AFA', 'IE' => 'VAT', 'IT' => 'IVA', 'LT' => 'PVM', 'LU' => 'TVA', 'LV' => 'PVN', 'MT' => 'VAT', 'NL' => 'BTW', 'PL' => 'PTU', 'PT' => 'IVA', 'RO' => 'TVA', 'SE' => 'Moms', 'SI' => 'DDV', 'SK' => 'DPH'));
 define('EASCOMPLIANCE_COMPARABLE_FIELDS', array('delivery_method'=>'delivery_method',  'recipient_first_name'=>'recipient_first_name',  'recipient_last_name'=>'recipient_last_name',  'recipient_company_name'=>'recipient_company_name',  'recipient_company_vat'=>'recipient_company_vat',  'delivery_address_line_1'=>'delivery_address_line_1',  'delivery_address_line_2'=>'delivery_address_line_2',  'delivery_city'=>'delivery_city',  'delivery_state_province'=>'delivery_state_province',  'delivery_postal_code'=>'delivery_postal_code',  'delivery_country'=>'delivery_country',  'delivery_phone'=>'delivery_phone',  'delivery_email'=>'delivery_email'));
 

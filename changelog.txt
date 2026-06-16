@@ -1,4 +1,8 @@
 == Changelog ==
+10-06-2026 - version 1.8.9
+
+* Added default Harmonized System (HS) code configuration for products. This allows merchants with a single product type to set up the plugin faster and more efficiently.
+
 26-05-2026 - version 1.8.8
 
 * Fixed a bug where payment options would flicker in the WooCommerce blocks-used checkout page on some installations
