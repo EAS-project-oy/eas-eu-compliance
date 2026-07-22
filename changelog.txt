@@ -1,4 +1,8 @@
 == Changelog ==
+17-06-2026 - version 1.8.10
+
+* Fix of Harmonized System (HS) code handling
+
 10-06-2026 - version 1.8.9
 
 * Added default Harmonized System (HS) code configuration for products. This allows merchants with a single product type to set up the plugin faster and more efficiently.

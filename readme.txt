@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 5.6
 WC tested up to: 10.7.0
 Tested up to: 7.0
-Stable Tag: 1.8.9
+Stable Tag: 1.8.10
 Last updated time: 28.09.2025
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,9 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.8.10 =
+* Fix of Harmonized System (HS) code handling
+
 = 1.8.9 =
 * Added default Harmonized System (HS) code configuration for products. This allows merchants with a single product type to set up the plugin faster and more efficiently.
 
