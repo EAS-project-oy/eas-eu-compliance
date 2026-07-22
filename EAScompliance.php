@@ -5449,7 +5449,9 @@ function eascompliance_woocommerce_cart_totals_get_item_tax_rates($item_tax_rate
         $tax_rate_id0 = eascompliance_tax_rate_id();
         $cart_items = WC()->cart->cart_contents;
         $cart_item = $cart_items[$item->key];
-        $item_total = $cart_item['line_total'];
+
+        // when coupon discount is 100%, item_total might be near-zero amount which breaks $item_tax_rates, so we round it here
+        $item_total = round($cart_item['line_total'], 2);
 
         // 0-priced items should have 0 rate
         if ((float)0 === (float)$item_total) {
