@@ -11,7 +11,7 @@
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
  * WC tested up to: 10.7.0
- * Requires PHP: 5.6
+ * Requires PHP: 8.3
  * License: GPL2
  *
  * @package eascompliance
@@ -1134,13 +1134,7 @@ function eascompliance_get_meta_keys_sql()
  */
 function eascompliance_log_level($level)
 {
-    $debug_levels = get_option('easproj_debug');
-
-    // update legacy easproj_debug option value
-    if ($debug_levels === 'yes' || $debug_levels === 'no') {
-        $debug_levels = array('info', 'error');
-        update_option('easproj_debug', $debug_levels);
-    }
+    static $debug_levels = get_option('easproj_debug');
 
     $do_log = false;
 
@@ -1151,20 +1145,68 @@ function eascompliance_log_level($level)
 }
 
 /**
- * Log message or exception if log level is enabled
+ * Log message or exception when log level is enabled and log blackbox when exception happens and blackbox-level is enabled
  */
 function eascompliance_log($level, $message, $vars = null, $callstack = false)
 {
-    if (!eascompliance_log_level($level)) {
-        return;
+    $logger = eascompliance_logger();
+    $logger_func = 'debug';
+    if ($level === 'info') {
+        $logger_func = 'info';
+    } elseif ($level === 'error') {
+        $logger_func = 'error';
+    } elseif ($level === 'warning') {
+        $logger_func = 'warning';
     }
+
+    $session = '';
+    if (!is_null(WC()->session)) {
+        $user_id = WC()->session->get_customer_id();
+        if ( 't_' === substr($user_id, 0, 2) ) {
+            $user_id = 'session_' . substr($user_id, -6);
+        }
+        else {
+            $user_id = 'user_' . $user_id;
+        }
+        $session = $user_id;
+    } else {
+        $session =  'no_session';
+    }
+
+    // blackbox stores log messages and other data from all requests
+    // blackbox keeps messages for one hour or until logged
+    // blackbox is logged when blackbox-level is enabled and exception is being logged
+    // sample shell command to view blackbox jsons:
+    // # cat ./eascompliance-2026-08-03.log | grep -o -P '(?<=Blackbox:).*' | base64 -d | gunzip | jq '.'
+    static $blackbox = [];
+
+    // restore blackbox from session once
+    static $once = true;
+    if ($once && $session !== 'no_session') {
+        $b0 = eascompliance_session_get('blackbox');
+        if (!empty($b0)) {
+            $once = false;
+
+            $session_blackbox = unserialize(gzdecode(base64_decode($b0)), ['allowed_classes' => false]);
+
+            array_splice($blackbox, 0, 0,  $session_blackbox);
+        }
+    }
+
+    // clear records older than 1 hour
+    $blackbox = array_filter($blackbox,
+            function ($r) {
+                return date_create(substr($r['time'], 0, strlen('2026-08-03T15:54:37+00:00')))
+                        > date_create('now')->add(DateInterval::createFromDateString('-1 hour'));
+            }
+    );
 
     // convert $message into loggable text
     $txt = '';
     if ($message instanceof Throwable) {
         $ex = $message;
         while (true) {
-            $txt .= $level . ' ' . get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
+            $txt = get_class($ex) . ' ' . $ex->getMessage() . ' @' . $ex->getFile() . ':' . $ex->getLine();
 
             $ex = $ex->getPrevious();
             if (null === $ex) {
@@ -1174,26 +1216,75 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         $txt = ltrim($txt, "\n");
     } else {
         if (is_array($vars) && is_string($message)) {
-            $message = eascompliance_format($message, $vars);
+            $txt = eascompliance_format($message, $vars);
+        } else {
+            $txt = print_r($message, true);
         }
-        $txt = $level . ' ' . print_r($message, true);
     }
 
-    if (!is_null(WC()->session)) {
-        $user_id = WC()->session->get_customer_id();
-        if ( 't_' === substr($user_id, 0, 2) ) {
-            $user_id = 'session_' . substr($user_id, -6);
+
+    // collect log data when blackbox-level enabled
+    if (eascompliance_log_level('blackbox')) {
+        $bb = ['time'=>date_create('now')->format('c .u'), 'level'=>$level, 'session'=>$session];
+
+        $stack = [];
+        $frix = 0;
+        foreach(debug_backtrace(3, 100) as $frame) {
+            if ($frix === 0) {
+                $bb['file'] = basename($frame['file']) . ':' . $frame['line'];
+            }
+            $stack[] = $frame['function'];
+            $frix++;
         }
-        else {
-            $user_id = 'user_' . $user_id;
+        $bb['stack'] = join('->', array_reverse($stack));
+
+        $bb['message'] = $txt;
+        if (!empty($vars)) {
+            $bb['vars'] = $vars;
         }
-        $txt = $user_id . ' ' . $txt;
-    } else {
-        $txt =  'no_session ' . $txt;
+
+        $blackbox[] = $bb;
+        // save session_blackbox
+        if ($session !== 'no_session') {
+            eascompliance_session_set('blackbox', base64_encode(gzencode(serialize($blackbox))));
+        }
     }
+
+    // log only enabled log levels
+    if (!eascompliance_log_level($level)) {
+        return;
+    }
+
+    // group log messages
+    static $last_message = '';
+    static $last_level = '';
+    static $repeat_count = 0;
+
+    if ($last_message === $message && $last_level === $level) {
+        $repeat_count++;
+        return;
+    } else {
+        if ($repeat_count > 0) {
+            call_user_func([$logger, $logger_func], $session . ' ' . $last_level . ' ' . $last_message . ' * ' . (string)($repeat_count+1));
+        }
+        $last_message = $message;
+        $last_level = $level;
+        $repeat_count = 0;
+    }
+
+    // dump blackbox and force callstack when logging exceptions with blackbox-level enabled
+    if ($message instanceof Throwable && eascompliance_log_level('blackbox')) {
+        $txt = $txt . "\nBlackbox:" . base64_encode(gzencode(json_encode(unserialize(serialize($blackbox), ['allowed_classes' => false]), JSON_THROW_ON_ERROR)));
+
+        // clear blackbox after it was logged
+        eascompliance_session_set('blackbox', null);
+        $blackbox = [];
+
+        $callstack = true;
+    }
+
 
     if ($callstack) {
-        $ex = new Exception();
         $STRLEN_MAX = 100;
         $trace = '';
         $rn = 0;
@@ -1246,16 +1337,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         eascompliance_logger()->info('Plugin version is '. get_plugin_data(__FILE__)['Version']);
     }
 
-    // log $txt
-    if ($level === 'info') {
-        eascompliance_logger()->info($txt);
-    } elseif ($level === 'error') {
-        eascompliance_logger()->error($txt);
-    } elseif ($level === 'warning') {
-        eascompliance_logger()->warning($txt);
-    } else {
-        eascompliance_logger()->debug($txt);
-    }
+    call_user_func([$logger, $logger_func], $session . ' ' . $level . ' ' . $txt);
 }
 
 /**
@@ -1932,6 +2014,36 @@ function eascompliance_get_oauth_token()
     }
 }
 
+add_action('woocommerce_before_calculate_totals', 'eascompliance_woocommerce_before_calculate_totals', 10);
+function eascompliance_woocommerce_before_calculate_totals()
+{
+    eascompliance_log('blackbox', 'discounts before calculate $d'
+            , ['d'=>WC()->cart->get_coupon_discount_totals()
+            ]);
+}
+
+add_action('woocommerce_after_calculate_totals', 'eascompliance_woocommerce_after_calculate_totals', 10);
+function eascompliance_woocommerce_after_calculate_totals()
+{
+    eascompliance_log('blackbox', 'discounts after calculate $d'
+            , ['d'=>WC()->cart->get_coupon_discount_totals()
+            ]);
+}
+
+add_filter('woocommerce_coupon_custom_discounts_array', 'eascompliance_woocommerce_coupon_custom_discounts_array', 10, 2);
+function eascompliance_woocommerce_coupon_custom_discounts_array($discount, $coupon){
+    eascompliance_log('blackbox', 'discount is $d coupon code is $c', ['d'=>$discount, 'c'=>$coupon->get_code()]);
+    return $discount;
+}
+
+add_filter('woocommerce_coupon_get_discount_amount', 'eascompliance_woocommerce_coupon_get_discount_amount', 10, 5);
+function eascompliance_woocommerce_coupon_get_discount_amount($amount, $discounting_amount, $cart_item, $single, $coupon){
+    eascompliance_log('blackbox', 'amount is $a discounting amount is $da coupon code is $c type is $t cart qnty $q cart_item_price $p', ['a'=>$amount, 'da'=>$discounting_amount, 'c'=>$coupon->get_code(), 't'=>$coupon->get_discount_type(), 'q'=>$cart_item['quantity'], 'p'=>wc_get_price_excluding_tax( $cart_item['data'] ) ], true);
+    return $amount;
+}
+
+
+
 /**
  * Make JSON for API /calculate request
  *
@@ -2057,6 +2169,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total() + $cart->get_shipping_tax()), 2);
+    eascompliance_log('blackbox', 'delivery cost $dc', ['dc'=>$delivery_cost]);
 
     $currency = get_woocommerce_currency();
 
@@ -3355,6 +3468,8 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
     try {
         set_error_handler('eascompliance_error_handler');
 
+        $cart = WC()->cart;
+
         $redirect = false;
         if (empty($eas_checkout_token)) {
             $redirect = true;
@@ -3497,7 +3612,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         $has_goods_in_cart = false;
 
         $sku_suffix = array(); // sku => suffix
-        foreach (WC()->cart->cart_contents as $k => &$cart_item) {
+        foreach ($cart->cart_contents as $k => &$cart_item) {
             $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
             $sku = wc_get_product($product_id)->get_sku();
             $item_payload = null;
@@ -3564,6 +3679,8 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
             eascompliance_log('request','cart_item_price is $p, cart_item_price_log value was $pl',['p'=>$cart_item_price, 'pl'=>$cart_item_price_log]);
             $cart_item['EAScompliance item VAT'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_customs_duties'] - $item_payload['item_eas_fee'] - $item_payload['item_eas_fee_vat'] - $item_payload['item_delivery_charge_vat'];
             $cart_item['EAScompliance SET'] = true;
+
+            eascompliance_log('blackbox', 'cart after EAScompliance SET', ['cart'=>$cart]);
         }
 
 		$cart_item0 = &eascompliance_cart_item0();
@@ -5835,6 +5952,8 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
 
         // disable order if customs duties are missing //.
         if (!eascompliance_is_set()) {
+            eascompliance_log('blackbox', 'cart during Customs Duties Missing error',
+                    ['cart'=>$cart, 'user_agent'=>$_SERVER['HTTP_USER_AGENT']]);
             throw new Exception(EAS_TR('Customs Duties Missing. We found error in your cart. Please reload page. <a href="./">reload</a>'));
         }
 
