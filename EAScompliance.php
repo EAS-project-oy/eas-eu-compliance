@@ -262,6 +262,8 @@ function eascompliance_plugin_status_change_notification($status)
 
 register_activation_hook(__FILE__, 'eascompliance_plugin_activation_hook');
 function eascompliance_plugin_activation_hook() {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -277,6 +279,8 @@ function eascompliance_plugin_activation_hook() {
 
 register_uninstall_hook(__FILE__, 'eascompliance_plugin_uninstall_hook');
 function eascompliance_plugin_uninstall_hook() {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -292,6 +296,8 @@ function eascompliance_plugin_uninstall_hook() {
 
 register_deactivation_hook(__FILE__, 'eascompliance_plugin_deactivation_hook');
 function eascompliance_plugin_deactivation_hook() {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -314,6 +320,8 @@ function eascompliance_plugin_deactivation_hook() {
 add_action( 'woocommerce_init', 'eascompliance_woocommerce_init'  );
 function eascompliance_woocommerce_init()
 {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -441,6 +449,8 @@ register_activation_hook(__FILE__, 'eascompliance_plugin_upgrade');
 add_action('plugins_loaded', 'eascompliance_plugin_upgrade');
 function eascompliance_plugin_upgrade()
 {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
 
         set_error_handler('eascompliance_error_handler');
@@ -513,6 +523,8 @@ add_action(
  */
 add_action('woocommerce_blocks_loaded', 'eascompliance_woocommerce_blocks_loaded');
 function eascompliance_woocommerce_blocks_loaded() {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
     if (eascompliance_is_active() && get_option('easproj_blocks') === 'yes') {
         require_once 'EAScompliance-blocks.php';
     }
@@ -3633,6 +3645,8 @@ function &eascompliance_cart_item0() {
  */
 function eascompliance_is_set()
 {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+
     try {
         set_error_handler('eascompliance_error_handler');
 
@@ -5212,6 +5226,8 @@ function eascompliance_cart_tax_caption_html() {
 }
 
 function eascompliance_woocommerce_after_cart_item_quantity_update() {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
     eascompliance_unset('quantity update');
 }
 
@@ -7468,7 +7484,9 @@ function eascompliance_wc_order_is_editable($is_editable, $order)
  */
 function eascompliance_woocommerce_tax_rate_deleted($tax_rate_id)
 {
-	try {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
 		set_error_handler('eascompliance_error_handler');
 
         // same conditions apply for inserting tax rate when saving settings
@@ -7497,7 +7515,9 @@ function eascompliance_woocommerce_tax_rate_deleted($tax_rate_id)
  */
 function eascompliance_tax_rate_insert()
 {
-	try {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    try {
 		set_error_handler('eascompliance_error_handler');
 
         global $wpdb;
@@ -7539,6 +7559,7 @@ function eascompliance_tax_rate_insert()
  * @returns int
  */
 function eascompliance_woocommerce_before_attribute_delete($attribute_id, $name, $taxonomy) {
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     foreach(EASCOMPLIANCE_PRODUCT_ATTRIBUTES as $att_name) {
         $slug = eascompliance_woocommerce_settings_get_option_sql($att_name);
@@ -9021,6 +9042,8 @@ add_filter('manage_edit-shop_order_columns', 'eascompliance_order_column');
 add_filter('manage_woocommerce_page_wc-orders_columns', 'eascompliance_order_column', 20); // HPOS
 function eascompliance_order_column($columns)
 {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
     $reordered_columns = array();
     foreach ($columns as $key => $column) {
         $reordered_columns[$key] = $column;
@@ -9036,7 +9059,7 @@ add_action('manage_shop_order_posts_custom_column', 'eascompliance_order_column_
 add_action('manage_woocommerce_page_wc-orders_custom_column', 'eascompliance_order_column_value', 20, 2); // HPOS
 function eascompliance_order_column_value($column, $post_id)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     $order_id = $post_id;
     if (eascompliance_is_hpos_enabled()) {
@@ -9077,6 +9100,8 @@ add_filter('manage_edit-shop_order_sortable_columns', 'eascompliance_manage_edit
 add_action('woocommerce_shop_order_list_table_sortable_columns', 'eascompliance_manage_edit_shop_order_sortable_columns', 10, 1); // HPOS
 function eascompliance_manage_edit_shop_order_sortable_columns($columns)
 {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
     return wp_parse_args(array('eas-processed' => 'eas_processed', 'eas-scheme' => 'eas_scheme'), $columns);
 }
 
@@ -9087,7 +9112,7 @@ function eascompliance_manage_edit_shop_order_sortable_columns($columns)
 add_action('pre_get_posts', 'eascompliance_sort_by_order_column', 10, 1);
 function eascompliance_sort_by_order_column($query)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     if (!is_admin()) return;
 
@@ -9137,7 +9162,7 @@ function eascompliance_sort_by_order_column($query)
 add_action('woocommerce_order_query_args', 'eascompliance_woocommerce_order_query_args', 10, 1);
 function eascompliance_woocommerce_order_query_args($query_args)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     // order by easproj_payload
     if ( isset($_GET['orderby']) && $_GET['orderby'] === 'eas_processed' ) {
@@ -9183,7 +9208,7 @@ function eascompliance_woocommerce_order_query_args($query_args)
 add_filter('wc_order_statuses', 'eascompliance_wc_order_statuses', 10, 1);
 function eascompliance_wc_order_statuses($order_statuses)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     $order_statuses['wc-vat_scheme'] = EAS_TR('VAT Scheme');
 
@@ -9198,7 +9223,7 @@ function eascompliance_wc_order_statuses($order_statuses)
 add_filter('woocommerce_shop_order_list_table_order_count', 'eascompliance_woocommerce_shop_order_list_table_order_count', 10, 2);
 function eascompliance_woocommerce_shop_order_list_table_order_count($count, $status)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     if ($status[0] === 'wc-vat_scheme') {
         $query = new WP_Query( array('meta_query'=>array(
@@ -9220,7 +9245,7 @@ function eascompliance_woocommerce_shop_order_list_table_order_count($count, $st
 add_filter('woocommerce_register_shop_order_post_statuses', 'eascompliance_woocommerce_register_shop_order_post_statuses', 10, 1);
 function eascompliance_woocommerce_register_shop_order_post_statuses($order_statuses)
 {
-    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 
     $order_statuses['wc-vat_scheme']  = array(
         'label'                     => EAS_TR('VAT Scheme'),
@@ -9240,6 +9265,7 @@ function eascompliance_woocommerce_register_shop_order_post_statuses($order_stat
  */
 function eascompliance_bulk_update_rest_route()
 {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     register_rest_route('wc/eascompliance/v1', '/bulk-update', array(
         'methods' => 'POST',
@@ -9414,120 +9440,116 @@ function eascompliance_bulk_update($request)
 
 
 
-if (!function_exists('eascompliance_woocommerce_order_action')) {
-    function eascompliance_woocommerce_order_action($order_id, $status_from, $status_to, $order)
-    {
-        eascompliance_woocommerce_get_B2B_info($order);
-    }
+function eascompliance_woocommerce_order_action($order_id, $status_from, $status_to, $order)
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+
+    eascompliance_woocommerce_get_B2B_info($order);
 }
 
-if (!function_exists('eascompliance_woocommerce_get_B2B_info')) {
-    function eascompliance_woocommerce_get_B2B_info($order)
-    {
-        eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+function eascompliance_woocommerce_get_B2B_info($order)
+{
+    if ($order->get_meta('_easproj_em_order_list')) {
+        return;
+    }
 
-        if ($order->get_meta('_easproj_em_order_list')) {
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        $auth_token = eascompliance_get_oauth_token();
+        $confirmation_token = $order->get_meta('_easproj_token');
+        // JWT token is not present during STANDARD_CHECKOUT //.
+        if ('' === $confirmation_token) {
+            eascompliance_log('payment', 'verification cancelled due to token not found');
             return;
         }
 
-        try {
-            set_error_handler('eascompliance_error_handler');
+        $options = array(
+            'method' => 'GET',
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $auth_token,
+            ),
+            'timeout' => 15,
+            'sslverify' => false,
+        );
+        $url = eascompliance_api_url() . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
+        $em_order_list_response = (new WP_Http)->request($url, $options);
 
-            $auth_token = eascompliance_get_oauth_token();
-            $confirmation_token = $order->get_meta('_easproj_token');
-            // JWT token is not present during STANDARD_CHECKOUT //.
-            if ('' === $confirmation_token) {
-                eascompliance_log('payment', 'verification cancelled due to token not found');
-                return;
-            }
+        if (is_wp_error($em_order_list_response)) {
+            throw new Exception($em_order_list_response->get_error_message());
+        }
 
-            $options = array(
-                'method' => 'GET',
-                'headers' => array(
-                    'Authorization' => 'Bearer ' . $auth_token,
-                ),
-                'timeout' => 15,
-                'sslverify' => false,
-            );
-            $url = eascompliance_api_url() . '/visualization/em_order_list?external_order_id='.$order->get_order_number();
-            $em_order_list_response = (new WP_Http)->request($url, $options);
+        $response_status = (string)$em_order_list_response['response']['code'];
 
-            if (is_wp_error($em_order_list_response)) {
-                throw new Exception($em_order_list_response->get_error_message());
-            }
+        if ('200' === $response_status) {
+            eascompliance_log('info', 'em_order_list successful');
+        } else {
+            eascompliance_log('error', 'Order get EM $r', array('$r' => $response_status));
+            throw new Exception($response_status . ' ' . $em_order_list_response['response']['message']);
+        }
 
-            $response_status = (string)$em_order_list_response['response']['code'];
-
-            if ('200' === $response_status) {
-                eascompliance_log('info', 'em_order_list successful');
-            } else {
-                eascompliance_log('error', 'Order get EM $r', array('$r' => $response_status));
-                throw new Exception($response_status . ' ' . $em_order_list_response['response']['message']);
-            }
-
-            $data = json_decode($em_order_list_response['body'], true);
-            $order_data = [];
-            if ($data['rows']) {
-                foreach ($data['rows'] as $order_data) {
-                    if ($order_data['external_order_id'] === $order->get_order_number()) {
-                        break;
-                    }
+        $data = json_decode($em_order_list_response['body'], true);
+        $order_data = [];
+        if ($data['rows']) {
+            foreach ($data['rows'] as $order_data) {
+                if ($order_data['external_order_id'] === $order->get_order_number()) {
+                    break;
                 }
             }
-
-            $order->add_meta_data('_easproj_em_order_list', $order_data, true);
-            $order->save();
-
-            eascompliance_log('info', "Notify Order ".$order->get_order_number()." status change successful");
-
-        } catch (Exception $ex) {
-            eascompliance_log('error', $ex);
-            $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
-        } finally {
-            restore_error_handler();
         }
+
+        $order->add_meta_data('_easproj_em_order_list', $order_data, true);
+        $order->save();
+
+        eascompliance_log('info', "Notify Order ".$order->get_order_number()." status change successful");
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        $order->add_order_note(EAS_TR('Order status change notification failed: ') . $ex->getMessage());
+    } finally {
+        restore_error_handler();
     }
 }
 
-if (!function_exists('eascompliance_woocommerce_add_order_meta_boxes')) {
-    function eascompliance_woocommerce_add_order_meta_boxes($postType, $post)
-    {
-        if (!eascompliance_woocommerce_get_company_info($post)) {
-            return;
-        }
+function eascompliance_woocommerce_add_order_meta_boxes($postType, $post)
+{
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
-        add_meta_box('eascompliance_woocommerce_custom_other_field', EAS_TR('B2B Sale'), 'eascompliance_woocommerce_add_order_single_metabox', ['shop_order', 'shop_order_placehold', 'woocommerce_page_wc-orders', $postType], 'side', 'core');
+    if (!eascompliance_woocommerce_get_company_info($post)) {
+        return;
     }
+
+    add_meta_box('eascompliance_woocommerce_custom_other_field', EAS_TR('B2B Sale'), 'eascompliance_woocommerce_add_order_single_metabox', ['shop_order', 'shop_order_placehold', 'woocommerce_page_wc-orders', $postType], 'side', 'core');
 }
 
-if (!function_exists('eascompliance_woocommerce_add_order_single_metabox')) {
-    function eascompliance_woocommerce_add_order_single_metabox($post)
-    {
-        $company = eascompliance_woocommerce_get_company_info($post);
-        if (!$company) {
-            return;
-        }
 
-        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
-                <span ><strong>'.EAS_TR('Company name').':</strong></span>
-                <span >'.$company['name'].'</span>
-            </div>';
-
-        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
-                <span ><strong>'.EAS_TR('Company VAT Number').':</strong></span>
-                <span >'.$company['vat_number'].'</span>
-            </div>';
-
-        echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
-                <span ><strong>'.EAS_TR('Valid VAT Number').':</strong></span>
-                <span >'.$company['vat_validated'].'</span>
-            </div>';
-
-        echo '<div style="margin-top: 10px; padding:5px 0;">'.EAS_TR('VAT number can be validated manually at').'
-                 <a href="https://ec.europa.eu/taxation_custom/vies/#/vat-validation" target="_blank">'.EAS_TR('European Commission VIES').'</a> 
-            </div>';
+function eascompliance_woocommerce_add_order_single_metabox($post)
+{
+    $company = eascompliance_woocommerce_get_company_info($post);
+    if (!$company) {
+        return;
     }
+
+    echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
+            <span ><strong>'.EAS_TR('Company name').':</strong></span>
+            <span >'.$company['name'].'</span>
+        </div>';
+
+    echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
+            <span ><strong>'.EAS_TR('Company VAT Number').':</strong></span>
+            <span >'.$company['vat_number'].'</span>
+        </div>';
+
+    echo '<div style="border-bottom:solid 1px #eee;padding:5px 0;">
+            <span ><strong>'.EAS_TR('Valid VAT Number').':</strong></span>
+            <span >'.$company['vat_validated'].'</span>
+        </div>';
+
+    echo '<div style="margin-top: 10px; padding:5px 0;">'.EAS_TR('VAT number can be validated manually at').'
+             <a href="https://ec.europa.eu/taxation_custom/vies/#/vat-validation" target="_blank">'.EAS_TR('European Commission VIES').'</a> 
+        </div>';
 }
+
 
 function eascompliance_woocommerce_get_company_info($post)
 {
