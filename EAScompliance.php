@@ -6,12 +6,12 @@
  * Author URI: https://easproject.com/about-us/
  * Text Domain: eas-eu-compliance
  * Domain Path: /languages
- * Version: 1.8.10
+ * Version: 1.8.11
  * Tested up to 7.0
  * WC requires at least: 4.8.0
  * Requires at least: 4.8.0
  * WC tested up to: 10.7.0
- * Requires PHP: 8.3
+ * Requires PHP: 7.4
  * License: GPL2
  *
  * @package eascompliance
@@ -1134,7 +1134,10 @@ function eascompliance_get_meta_keys_sql()
  */
 function eascompliance_log_level($level)
 {
-    static $debug_levels = get_option('easproj_debug');
+    static $debug_levels = null;
+    if (is_null($debug_levels)) {
+        $debug_levels = get_option('easproj_debug');
+    }
 
     $do_log = false;
 
@@ -1180,14 +1183,40 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     // # cat ./eascompliance-2026-08-03.log | grep -o -P '(?<=Blackbox:).*' | base64 -d | gunzip | jq '.'
     static $blackbox = [];
 
-    // restore blackbox from session once
+    // try to restore blackbox from session once or discard it with error record
     static $once = true;
     if ($once && $session !== 'no_session') {
         $b0 = eascompliance_session_get('blackbox');
         if (!empty($b0)) {
             $once = false;
 
-            $session_blackbox = unserialize(gzdecode(base64_decode($b0)), ['allowed_classes' => false]);
+            $session_blackbox = [];
+            try {
+                if (strlen($b0) > 10 * 2**20) {
+                    throw new Exception('max size 10Mb reached');
+                };
+
+                $base64_decoded = base64_decode($b0);
+                if ($base64_decoded === false) {
+                    throw new Exception('base64_decode failed');
+                }
+
+                $gz_decoded = gzdecode($base64_decoded);
+                if ($gz_decoded === false) {
+                    throw new Exception('gzdecode failed');
+                }
+
+                $unserialized = unserialize($gz_decoded, ['allowed_classes' => false]);
+                if ($unserialized === false) {
+                    throw new Exception('unserialize failed');
+                }
+
+                $session_blackbox = $unserialized;
+            } catch (Exception $ex) {
+                call_user_func([$logger, $logger_func], $session . ' ' . 'error' . ' ' . 'blackbox restore from session failed, discarding: '. $ex->getMessage());
+                $session_blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
+                    , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
+            }
 
             array_splice($blackbox, 0, 0,  $session_blackbox);
         }
@@ -1240,6 +1269,9 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
         $bb['message'] = $txt;
         if (!empty($vars)) {
+            if ($message !== $txt) {
+                $bb['message_format'] = $message;
+            }
             $bb['vars'] = $vars;
         }
 
@@ -1256,18 +1288,18 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     }
 
     // group log messages
-    static $last_message = '';
+    static $last_txt = '';
     static $last_level = '';
     static $repeat_count = 0;
 
-    if ($last_message === $message && $last_level === $level) {
+    if ($last_txt === $txt && $last_level === $level) {
         $repeat_count++;
         return;
     } else {
         if ($repeat_count > 0) {
-            call_user_func([$logger, $logger_func], $session . ' ' . $last_level . ' ' . $last_message . ' * ' . (string)($repeat_count+1));
+            call_user_func([$logger, $logger_func], $session . ' ' . $last_level . ' (previous message repeated x' . (string)($repeat_count) . ' time' . ($repeat_count>1?'s)':')'));
         }
-        $last_message = $message;
+        $last_txt = $txt;
         $last_level = $level;
         $repeat_count = 0;
     }
@@ -2017,7 +2049,7 @@ function eascompliance_get_oauth_token()
 add_action('woocommerce_before_calculate_totals', 'eascompliance_woocommerce_before_calculate_totals', 10);
 function eascompliance_woocommerce_before_calculate_totals()
 {
-    eascompliance_log('blackbox', 'discounts before calculate $d'
+    eascompliance_log('calculate', 'discounts before calculate $d'
             , ['d'=>WC()->cart->get_coupon_discount_totals()
             ]);
 }
@@ -2025,20 +2057,20 @@ function eascompliance_woocommerce_before_calculate_totals()
 add_action('woocommerce_after_calculate_totals', 'eascompliance_woocommerce_after_calculate_totals', 10);
 function eascompliance_woocommerce_after_calculate_totals()
 {
-    eascompliance_log('blackbox', 'discounts after calculate $d'
+    eascompliance_log('calculate', 'discounts after calculate $d'
             , ['d'=>WC()->cart->get_coupon_discount_totals()
             ]);
 }
 
 add_filter('woocommerce_coupon_custom_discounts_array', 'eascompliance_woocommerce_coupon_custom_discounts_array', 10, 2);
 function eascompliance_woocommerce_coupon_custom_discounts_array($discount, $coupon){
-    eascompliance_log('blackbox', 'discount is $d coupon code is $c', ['d'=>$discount, 'c'=>$coupon->get_code()]);
+    eascompliance_log('calculate', 'discount is $d coupon code is $c', ['d'=>$discount, 'c'=>$coupon->get_code()]);
     return $discount;
 }
 
 add_filter('woocommerce_coupon_get_discount_amount', 'eascompliance_woocommerce_coupon_get_discount_amount', 10, 5);
 function eascompliance_woocommerce_coupon_get_discount_amount($amount, $discounting_amount, $cart_item, $single, $coupon){
-    eascompliance_log('blackbox', 'amount is $a discounting amount is $da coupon code is $c type is $t cart qnty $q cart_item_price $p', ['a'=>$amount, 'da'=>$discounting_amount, 'c'=>$coupon->get_code(), 't'=>$coupon->get_discount_type(), 'q'=>$cart_item['quantity'], 'p'=>wc_get_price_excluding_tax( $cart_item['data'] ) ], true);
+    eascompliance_log('calculate', 'amount is $a discounting amount is $da coupon code is $c type is $t cart qnty $q cart_item_price $p', ['a'=>$amount, 'da'=>$discounting_amount, 'c'=>$coupon->get_code(), 't'=>$coupon->get_discount_type(), 'q'=>$cart_item['quantity'], 'p'=>wc_get_price_excluding_tax( $cart_item['data'] ) ], true);
     return $amount;
 }
 
