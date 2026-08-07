@@ -1192,32 +1192,12 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
             $session_blackbox = [];
             try {
-                if (strlen($b0) > 10 * 2**20) {
-                    throw new Exception('max size 10Mb reached');
-                };
-
-                $base64_decoded = base64_decode($b0);
-                if ($base64_decoded === false) {
-                    throw new Exception('base64_decode failed');
-                }
-
-                $gz_decoded = gzdecode($base64_decoded);
-                if ($gz_decoded === false) {
-                    throw new Exception('gzdecode failed');
-                }
-
-                $unserialized = unserialize($gz_decoded, ['allowed_classes' => false]);
-                if ($unserialized === false) {
-                    throw new Exception('unserialize failed');
-                }
-
-                $session_blackbox = $unserialized;
+                $session_blackbox = eascompliance_blackbox_from_base64($b0);
             } catch (Exception $ex) {
-                call_user_func([$logger, $logger_func], $session . ' ' . 'error' . ' ' . 'blackbox restore from session failed, discarding: '. $ex->getMessage());
+                $logger->error($session . ' error ' . 'blackbox restore from session failed, discarding: '. $ex->getMessage());
                 $session_blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
                     , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
             }
-
             array_splice($blackbox, 0, 0,  $session_blackbox);
         }
     }
@@ -1254,7 +1234,18 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
     // collect log data when blackbox-level enabled
     if (eascompliance_log_level('blackbox')) {
-        $bb = ['time'=>date_create('now')->format('c .u'), 'level'=>$level, 'session'=>$session];
+
+        // register function for saving blackbox in session on script exit
+        static $registered_once = true;
+        if ($registered_once && $session != 'no_session') {
+            $registered_once = false;
+            register_shutdown_function('eascompliance_shutdown_function_blackbox', $blackbox, $session);
+        }
+
+        $bb = ['time'=>date_create('now')->format('c .u'),
+                'level'=>$level,
+                'session'=>$session,
+        ];
 
         $stack = [];
         $frix = 0;
@@ -1276,10 +1267,6 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         }
 
         $blackbox[] = $bb;
-        // save session_blackbox
-        if ($session !== 'no_session') {
-            eascompliance_session_set('blackbox', base64_encode(gzencode(serialize($blackbox))));
-        }
     }
 
     // log only enabled log levels
@@ -1306,7 +1293,8 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
     // dump blackbox and force callstack when logging exceptions with blackbox-level enabled
     if ($message instanceof Throwable && eascompliance_log_level('blackbox')) {
-        $txt = $txt . "\nBlackbox:" . base64_encode(gzencode(json_encode(unserialize(serialize($blackbox), ['allowed_classes' => false]), JSON_THROW_ON_ERROR)));
+        $blackbox_encoded = eascompliance_blackbox_to_base64($blackbox);
+        $txt = $txt . "\nBlackbox:" . $blackbox_encoded;
 
         // clear blackbox after it was logged
         eascompliance_session_set('blackbox', null);
@@ -1359,18 +1347,104 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     }
 
     // log plugin version once a day
-    $latest_version_log_day = get_option('easproj_plugin_version_log_day');
+    static $latest_version_log_day = null;
+    if (is_null($latest_version_log_day)) {
+        $latest_version_log_day = get_option('easproj_plugin_version_log_day');
+    }
     $day = date_create('today')->format('d');
     if ($latest_version_log_day !== $day) {
         update_option('easproj_plugin_version_log_day', $day);
         if( !function_exists('get_plugin_data') ){
             require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
         }
-        eascompliance_logger()->info('Plugin version is '. get_plugin_data(__FILE__)['Version']);
+        $logger->info('Plugin version is '. get_plugin_data(__FILE__)['Version']);
     }
 
     call_user_func([$logger, $logger_func], $session . ' ' . $level . ' ' . $txt);
 }
+
+/**
+ * try to encode blackbox array or encode error
+ */
+function eascompliance_blackbox_to_base64($blackbox) {
+
+        $serialized = serialize($blackbox);
+
+        $unserialized = unserialize($serialized, ['allowed_classes' => false]);
+        if ($unserialized === false) {
+            throw new Exception('unserialize failed');
+        }
+
+        $json_encoded = json_encode($unserialized);
+        if ($json_encoded === false) {
+            throw new Exception('json_encode failed');
+        }
+
+        $gz_encoded = gzencode($json_encoded);
+        if ($gz_encoded === false) {
+            throw new Exception('gzdencode failed');
+        }
+
+        return base64_encode($gz_encoded);
+}
+
+/**
+ * try to decode blackbox from base64 to blackbox array
+ */
+function eascompliance_blackbox_from_base64($base64) {
+
+    $base64_decoded = base64_decode($base64);
+    if ($base64_decoded === false) {
+        throw new Exception('base64_decode failed');
+    }
+
+    $gz_decoded = gzdecode($base64_decoded);
+    if ($gz_decoded === false) {
+        throw new Exception('gzdecode failed');
+    }
+
+    $json_decoded = json_decode($gz_decoded, true);
+    if ($json_decoded===false) {
+        throw new Exception(('json_decode failed'));
+    }
+
+    return $json_decoded;
+}
+
+
+/**
+ * try to save session_blackbox or discard with log record
+ */
+function eascompliance_shutdown_function_blackbox(&$blackbox, $session)
+{
+    $blackbox_encoded = null;
+    $logger = eascompliance_logger();
+
+    if ($session !== 'no_session') {
+        try {
+            $MAX_BYTES = 50000;
+
+            $blackbox_encoded = eascompliance_blackbox_to_base64($blackbox);
+
+            if (strlen($blackbox_encoded) > $MAX_BYTES) {
+                throw new Exception('cannot fit in session storage');
+            }
+
+            eascompliance_session_set('blackbox', $blackbox_encoded);
+
+        } catch (Exception $ex) {
+            $logger->error($session . ' error ' . 'blackbox save to session failed, discarding: '. $ex->getMessage()
+                    // log discarded blackbox if present
+                    . (is_null($blackbox_encoded)?'':"\nBlackbox:".$blackbox_encoded));
+
+            $blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
+                , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
+
+            eascompliance_session_set('blackbox', null);
+        }
+    }
+}
+
 
 /**
  * Return active setting
@@ -2201,7 +2275,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['external_order_id'] = $cart->get_cart_hash();
     $calc_jreq['delivery_method'] = $delivery_method;
     $delivery_cost = round((float)($cart->get_shipping_total() + $cart->get_shipping_tax()), 2);
-    eascompliance_log('blackbox', 'delivery cost $dc', ['dc'=>$delivery_cost]);
+    eascompliance_log('request', 'delivery cost $dc', ['dc'=>$delivery_cost]);
 
     $currency = get_woocommerce_currency();
 
