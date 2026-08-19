@@ -1147,11 +1147,21 @@ function eascompliance_log_level($level)
     return $do_log;
 }
 
+
+// blackbox stores log messages and other data from all requests
+// blackbox keeps messages for one hour or until logged
+// blackbox is logged when blackbox-level is enabled and exception is being logged
+// sample shell command to view blackbox jsons:
+// # cat ./eascompliance-2026-08-03.log | grep -o -P '(?<=Blackbox:).*' | base64 -d | gunzip | jq '.'
+static $eascompliance_blackbox = [];
+
 /**
  * Log message or exception when log level is enabled and log blackbox when exception happens and blackbox-level is enabled
  */
 function eascompliance_log($level, $message, $vars = null, $callstack = false)
 {
+    global $eascompliance_blackbox;
+
     $logger = eascompliance_logger();
     $logger_func = 'debug';
     if ($level === 'info') {
@@ -1176,13 +1186,6 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         $session =  'no_session';
     }
 
-    // blackbox stores log messages and other data from all requests
-    // blackbox keeps messages for one hour or until logged
-    // blackbox is logged when blackbox-level is enabled and exception is being logged
-    // sample shell command to view blackbox jsons:
-    // # cat ./eascompliance-2026-08-03.log | grep -o -P '(?<=Blackbox:).*' | base64 -d | gunzip | jq '.'
-    static $blackbox = [];
-
     // try to restore blackbox from session once or discard it with error record
     static $once = true;
     if ($once && $session !== 'no_session') {
@@ -1198,12 +1201,12 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
                 $session_blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
                     , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
             }
-            array_splice($blackbox, 0, 0,  $session_blackbox);
+            array_splice($eascompliance_blackbox, 0, 0,  $session_blackbox);
         }
     }
 
     // clear records older than 1 hour
-    $blackbox = array_filter($blackbox,
+    $eascompliance_blackbox = array_filter($eascompliance_blackbox,
             function ($r) {
                 return date_create(substr($r['time'], 0, strlen('2026-08-03T15:54:37+00:00')))
                         > date_create('now')->add(DateInterval::createFromDateString('-1 hour'));
@@ -1239,7 +1242,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
         static $registered_once = true;
         if ($registered_once && $session != 'no_session') {
             $registered_once = false;
-            register_shutdown_function('eascompliance_shutdown_function_blackbox', $blackbox, $session);
+            register_shutdown_function('eascompliance_shutdown_function_blackbox', $session);
         }
 
         $bb = ['time'=>date_create('now')->format('c .u'),
@@ -1266,7 +1269,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
             $bb['vars'] = $vars;
         }
 
-        $blackbox[] = $bb;
+        $eascompliance_blackbox[] = $bb;
     }
 
     // log only enabled log levels
@@ -1293,12 +1296,12 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 
     // dump blackbox and force callstack when logging exceptions with blackbox-level enabled
     if ($message instanceof Throwable && eascompliance_log_level('blackbox')) {
-        $blackbox_encoded = eascompliance_blackbox_to_base64($blackbox);
+        $blackbox_encoded = eascompliance_blackbox_to_base64($eascompliance_blackbox);
         $txt = $txt . "\nBlackbox:" . $blackbox_encoded;
 
         // clear blackbox after it was logged
         eascompliance_session_set('blackbox', null);
-        $blackbox = [];
+        $eascompliance_blackbox = [];
 
         $callstack = true;
     }
@@ -1415,33 +1418,38 @@ function eascompliance_blackbox_from_base64($base64) {
 /**
  * try to save session_blackbox or discard with log record
  */
-function eascompliance_shutdown_function_blackbox(&$blackbox, $session)
+function eascompliance_shutdown_function_blackbox($session)
 {
+    if ($session === 'no_session') {
+        return;
+    }
+
+    global $eascompliance_blackbox;
+
     $blackbox_encoded = null;
     $logger = eascompliance_logger();
 
-    if ($session !== 'no_session') {
-        try {
-            $MAX_BYTES = 50000;
 
-            $blackbox_encoded = eascompliance_blackbox_to_base64($blackbox);
+    try {
+        $MAX_BYTES = 50000;
 
-            if (strlen($blackbox_encoded) > $MAX_BYTES) {
-                throw new Exception('cannot fit in session storage');
-            }
+        $blackbox_encoded = eascompliance_blackbox_to_base64($eascompliance_blackbox);
 
-            eascompliance_session_set('blackbox', $blackbox_encoded);
-
-        } catch (Exception $ex) {
-            $logger->error($session . ' error ' . 'blackbox save to session failed, discarding: '. $ex->getMessage()
-                    // log discarded blackbox if present
-                    . (is_null($blackbox_encoded)?'':"\nBlackbox:".$blackbox_encoded));
-
-            $blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
-                , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
-
-            eascompliance_session_set('blackbox', null);
+        if (strlen($blackbox_encoded) > $MAX_BYTES) {
+            throw new Exception('cannot fit in session storage');
         }
+
+        eascompliance_session_set('blackbox', $blackbox_encoded);
+
+    } catch (Exception $ex) {
+        $logger->error($session . ' error ' . 'blackbox save to session failed, discarding: '. $ex->getMessage()
+                // log discarded blackbox if present
+                . (is_null($blackbox_encoded)?'':"\nBlackbox:".$blackbox_encoded));
+
+        $eascompliance_blackbox = [['time'=>date_create('now')->format('c .u'), 'level'=>'error', 'session'=>$session
+            , 'message'=>'blackbox restore from session failed, discarding: '. $ex->getMessage()]];
+
+        eascompliance_session_set('blackbox', null);
     }
 }
 
@@ -3209,6 +3217,12 @@ function eascompliance_ajaxhandler()
         // save request json into session //.
 		eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq);
 
+        // WP-42 save request json backup copy into cart first item
+        $cart_item0 = &eascompliance_cart_item0();
+        $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_req;
+        eascompliance_log('WP-42', 'Saving backup calc_req copy to cart first item', ['calc_req'=>$calc_req]);
+
+
         $cart = WC()->cart;
         $cart_discount = (float)$cart->get_discount_total() + (float)$cart->get_discount_tax();
 		eascompliance_session_set('EAS CART DISCOUNT', $cart_discount);
@@ -3816,6 +3830,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
 
         // WP-42 save request json backup copy into cart first item
         $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_req;
+        eascompliance_log('WP-42', 'Saving backup calc_req copy to cart first item', ['calc_req'=>$calc_req]);
 
         // save chosen_shipping_methods
 		WC()->session->set('EAS chosen_shipping_methods', WC()->session->get('chosen_shipping_methods'));
@@ -5954,8 +5969,8 @@ function eascompliance_woocommerce_shipping_packages($packages)
 //
 //                // $calc_jreq_saved may be empty in some calls, probably when session data cleared by other code, in such case we take backup copy from cart first item
                 if (empty($calc_jreq_saved)) {
-                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup copy from cart first item');
                     $calc_jreq_saved = $cart_item0['EAScompliance API REQUEST JSON COPY'];
+                    eascompliance_log('WP-42', 'EAS API REQUEST JSON empty during woocommerce_shipping_packages. Taking backup calc_req copy from cart first item', ['calc_jreq_saved'=>$calc_jreq_saved]);
                 }
 
                 if (round((float)$cart_item0['EAScompliance DELIVERY CHARGE VAT INCLUSIVE'],2)>round((float)$cart_item0['EAScompliance DELIVERY CHARGE'], 2)) {
@@ -5969,6 +5984,7 @@ function eascompliance_woocommerce_shipping_packages($packages)
                 $calc_jreq_saved['delivery_cost'] = $delivery_cost;
 
 				eascompliance_session_set('EAS API REQUEST JSON', $calc_jreq_saved);
+                $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_jreq_saved;
             }
         }
 
