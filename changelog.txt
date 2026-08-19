@@ -1,4 +1,9 @@
 == Changelog ==
+18-08-2026 - version 1.8.12
+
+* Fixed minor bugs in the User interface components and in the coupons processing
+* Debugging methods enhanced
+
 17-06-2026 - version 1.8.10
 
 * Fix of Harmonized System (HS) code handling

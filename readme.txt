@@ -3,11 +3,11 @@
 Contributors: easyaccesssystem
 Tags: IOSS, OSS, EU VAT compliance, VAT calculator, IOSS registration
 Requires at least: 4.8.0
-Requires PHP: 5.6
-WC tested up to: 10.7.0
+Requires PHP: 7.4
+WC tested up to: 11.0.1
 Tested up to: 7.0
-Stable Tag: 1.8.10
-Last updated time: 28.09.2025
+Stable Tag: 1.8.12
+Last updated time: 17.08.2026
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,10 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.8.12 =
+* Fixed minor bugs in the User interface components and in the coupons processing
+* Debugging methods enhanced
+
 = 1.8.10 =
 * Fix of Harmonized System (HS) code handling
 
