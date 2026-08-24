@@ -1206,12 +1206,12 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     }
 
     // clear records older than 1 hour
-    $eascompliance_blackbox = array_filter($eascompliance_blackbox,
+    $eascompliance_blackbox = array_values(array_filter($eascompliance_blackbox,
             function ($r) {
                 return date_create(substr($r['time'], 0, strlen('2026-08-03T15:54:37+00:00')))
                         > date_create('now')->add(DateInterval::createFromDateString('-1 hour'));
             }
-    );
+    ));
 
     // convert $message into loggable text
     $txt = '';
