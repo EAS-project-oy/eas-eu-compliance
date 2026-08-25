@@ -1162,6 +1162,11 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
 {
     global $eascompliance_blackbox;
 
+    // $eascompliance_blackbox is null in wp-cli (shell command 'wp cron test' fails)
+    if (!is_array($eascompliance_blackbox)) {
+        $eascompliance_blackbox = [];
+    }
+
     $logger = eascompliance_logger();
     $logger_func = 'debug';
     if ($level === 'info') {
