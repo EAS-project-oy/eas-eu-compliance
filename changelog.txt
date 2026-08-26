@@ -1,4 +1,9 @@
 == Changelog ==
+26-08-2026 - version 1.8.13
+
+* Issue with activating plugin with WC-CLI fixed
+
+
 18-08-2026 - version 1.8.12
 
 * Fixed minor bugs in the User interface components and in the coupons processing
