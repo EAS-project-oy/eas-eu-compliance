@@ -75,3 +75,35 @@ function eascompliance_upgrade_wp267_show_payment_methods()
     update_option('easproj_show_payment_methods', 'yes');
 
 }
+
+
+function eascompliance_upgrade_eid1341_session_data_mediumtext()
+{
+
+    global $wpdb;
+
+    $wpdb->query("
+        ALTER TABLE {$wpdb->prefix}eascompliance_session_data MODIFY session_value MEDIUMTEXT
+    ");
+
+    if ($wpdb->last_error) {
+        throw new Exception($wpdb->last_error);
+    }
+
+    $wpdb->query("
+        CREATE INDEX IX_sesssion_id ON {$wpdb->prefix}eascompliance_session_data(session_id)
+    ");
+
+    if ($wpdb->last_error) {
+        throw new Exception($wpdb->last_error);
+    }
+
+    $wpdb->query("
+        CREATE INDEX IX_sesssion_key ON {$wpdb->prefix}eascompliance_session_data(session_key)
+    ");
+
+    if ($wpdb->last_error) {
+        throw new Exception($wpdb->last_error);
+    }
+
+}

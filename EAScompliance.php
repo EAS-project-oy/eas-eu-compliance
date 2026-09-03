@@ -460,6 +460,7 @@ function eascompliance_plugin_upgrade()
                 'wp135_location_delivery_countries',
                 'wp196_session_data',
                 'wp267_show_payment_methods',
+                'eid1341_session_data_mediumtext',
         );
 
         $applied_upgrades = (array)get_option('eascompliance_applied_upgrades');
@@ -1192,11 +1193,11 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     }
 
     // try to restore blackbox from session once or discard it with error record
-    static $once = true;
-    if ($once && $session !== 'no_session') {
+    static $restore_once = true;
+    if ($restore_once && $session !== 'no_session' && eascompliance_log_level('blackbox')) {
         $b0 = eascompliance_session_get('blackbox');
         if (!empty($b0)) {
-            $once = false;
+            $restore_once = false; // only stop checking when there is blackbox session data to restore
 
             $session_blackbox = [];
             try {
@@ -1300,7 +1301,7 @@ function eascompliance_log($level, $message, $vars = null, $callstack = false)
     }
 
     // dump blackbox and force callstack when logging exceptions with blackbox-level enabled
-    if ($message instanceof Throwable && eascompliance_log_level('blackbox')) {
+    if ($message instanceof Throwable && eascompliance_log_level('blackbox') && $session !== 'no_session') {
         $blackbox_encoded = eascompliance_blackbox_to_base64($eascompliance_blackbox);
         $txt = $txt . "\nBlackbox:" . $blackbox_encoded;
 
@@ -1436,7 +1437,7 @@ function eascompliance_shutdown_function_blackbox($session)
 
 
     try {
-        $MAX_BYTES = 50000;
+        $MAX_BYTES = 5_000_000;
 
         $blackbox_encoded = eascompliance_blackbox_to_base64($eascompliance_blackbox);
 
@@ -2457,7 +2458,7 @@ function eascompliance_make_eas_api_request_json()
 
     $calc_jreq['order_breakdown'] = $order_breakdown_items;
 
-	eascompliance_log('request', 'api request json is $j ', array('$j'=>$calc_jreq));
+	eascompliance_log('request', 'api request json from cart is $j ', array('$j'=>$calc_jreq));
 
     return $calc_jreq;
 }
@@ -2697,7 +2698,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
 
     $calc_jreq['external_order_id'] = '' . $order->get_order_number();
     $calc_jreq['delivery_method'] = $delivery_method;
-    $calc_jreq['delivery_cost'] = round((float)($order->get_shipping_total()), 2);
+    $calc_jreq['delivery_cost'] = round((float)($order->get_shipping_total() + (float)$order->get_shipping_tax()), 2);
     $calc_jreq['payment_currency'] = $order->get_currency();
 
     $calc_jreq['is_delivery_to_person'] = in_array( $order->get_shipping_company(), array('', 'false') );
@@ -2799,7 +2800,8 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         }
 
         // avoid -0
-        $cost_provided_by_em = (float)number_format((float)$order_item['line_total'] / $order_item['quantity'], 2, '.', '');
+        $order_item_tax = $order_item->get_meta('VAT Amount');
+        $cost_provided_by_em = (float)number_format(((float)$order_item['line_total'] + (float)$order_item_tax) / $order_item['quantity'], 2, '.', '');
 
         $items[] = array(
             'short_description' => $product->get_name(),
@@ -3224,8 +3226,8 @@ function eascompliance_ajaxhandler()
 
         // WP-42 save request json backup copy into cart first item
         $cart_item0 = &eascompliance_cart_item0();
-        $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_req;
-        eascompliance_log('WP-42', 'Saving backup calc_req copy to cart first item', ['calc_req'=>$calc_req]);
+        $cart_item0['EAScompliance API REQUEST JSON COPY'] = $calc_jreq;
+        eascompliance_log('WP-42', 'Saving backup calc_req copy to cart first item', ['calc_req'=>$calc_jreq]);
 
 
         $cart = WC()->cart;
@@ -4342,7 +4344,7 @@ function eascompliance_order_shipping_country_supported($order, $auth_token=null
  */
 function eascompliance_order_createpostsaleorder($order)
 {
-    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
+    eascompliance_log('entry', 'function ' . __FUNCTION__ . '()');
 
     $order_id = $order->get_id();
 
@@ -4517,28 +4519,33 @@ function eascompliance_woocommerce_after_order_object_save($order)
 
 
         if (eascompliance_woocommerce_settings_get_option_sql('easproj_process_imported_orders') !== 'yes') {
-            return;
+            throw new EAScomplianceBreakException('1');
         }
 
         if ($order->get_created_via() === 'admin') {
-            return;
+            throw new EAScomplianceBreakException('2');
         }
 
         if ($order->get_created_via() === 'checkout') {
-            return;
+            throw new EAScomplianceBreakException('3');
         }
 
         if ($order->get_status() === 'draft') {
-            return;
+            throw new EAScomplianceBreakException('4');
+        }
+
+        if ($order->get_status() === 'checkout-draft') {
+            throw new EAScomplianceBreakException('5');
         }
 
         if (count($order->get_items()) == 0) {
-            return;
+            throw new EAScomplianceBreakException('6');
         }
 
         if ($order->get_meta('_easproj_api_save_notification_started') === 'yes') {
-            return;
+            throw new EAScomplianceBreakException('7');
         }
+
         $order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
         $order->save_meta_data();
 
@@ -4547,10 +4554,13 @@ function eascompliance_woocommerce_after_order_object_save($order)
         $order_id = $order->get_id();
         $order_num = $order->get_order_number();
 
-        eascompliance_log('info', "EAS createpostsaleorder successful for order $order_num update successful");
+        eascompliance_log('info', "EAS createpostsaleorder successful for order $order_num update successful", ['order_status'=>$order->get_status(), 'order_created_via'=>$order->get_created_via()]);
 
 
-    } catch (Exception $ex) {
+    } catch (EAScomplianceBreakException $ex) {
+        // eascompliance_log('debug', 'createpostsaleorder skip reason code $r', ['r'=>$ex->getMessage()]);
+    }
+    catch (Exception $ex) {
         eascompliance_log('error', $ex);
         $order->add_order_note($ex->getMessage());
     } finally {
@@ -5631,6 +5641,9 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
         $order_item_product->set_subtotal($cart_item['EAScompliance item price'] + $cart_item['EAScompliance item discount']);
         $order_item_product->set_total($cart_item['EAScompliance item price']);
 
+        // set VAT Amount early so it can be used later in eascompliance_make_eas_api_request_json_from_order
+        $order_item_product->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT'], true);
+
         return $order_item_product;
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -6349,7 +6362,8 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
                 }
                 $item_amount = $cart_item['EAScompliance item tax'];
                 $order_item->add_meta_data('Customs duties', $item_payload['item_customs_duties'], true);
-                $order_item->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT'], true);
+                // VAT Amount set earlier in eascompliance_woocommerce_checkout_create_order_line_item
+                //$order_item->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT'], true);
                 $order_item->add_meta_data('VAT Rate', $item_payload['vat_rate'], true);
                 $order_item->add_meta_data('Other fees', $item_payload['item_eas_fee'], true);
                 $order_item->add_meta_data('VAT on Other fees', $item_payload['item_eas_fee_vat'], true);
@@ -6476,7 +6490,7 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
 
         // saving token to notify EAS during order status change //.
         $order->add_meta_data('_easproj_token', $cart_item0['EAScompliance API CONFIRMATION TOKEN']);
-        eascompliance_log('place_order', 'order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax()));
+        eascompliance_log('place_order', 'order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax(), 'order_json'=>$order_json));
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -8133,6 +8147,14 @@ function eascompliance_settings()
 			'default' => array('info', 'error'),
 			'options' => $easproj_debug_options,
 		),
+        // only show when blackbox log is enabled
+        'blackbox_dump' => in_array('blackbox', get_option('easproj_debug', array())) ?array(
+            'name' => EAS_TR('Dump blackbox'),
+            'type' => 'checkbox',
+            'desc' => EAS_TR('Dump blackbox from all sessions into logs. Single session blackboxes are dumped automatically on Exception.'),
+            'id' => 'easproj_blackbox_dump',
+            'default' => 'no',
+        ):[],
         'section_general_end' => array(
 			'type' => 'sectionend',
 		),
@@ -9168,6 +9190,48 @@ function eascompliance_woocommerce_update_options_settings_tab_compliance()
             eascompliance_log('error', 'Plugin deactivated. Not supported WC version detected. Current WC version '.WC_VERSION.' is less then supported 4.8.0');
         
         }
+
+        // dump all blackboxes to logs when triggered
+        if (get_option('easproj_blackbox_dump') === 'yes') {
+            update_option('easproj_blackbox_dump', 'no');
+            wp_cache_flush();
+
+            $blackboxes = $wpdb->get_results($wpdb->prepare("SELECT session_data_id FROM {$wpdb->prefix}eascompliance_session_data WHERE session_key = 'blackbox' "), ARRAY_A);
+            if ($wpdb->last_error) {
+                throw new Exception($wpdb->last_error);
+            }
+
+            eascompliance_log('info', 'dumping blackboxes for $s session(s)', ['s'=>count($blackboxes)]);
+
+            foreach ($blackboxes as $blackbox) {
+                $res = $wpdb->get_results($wpdb->prepare("SELECT session_value FROM {$wpdb->prefix}eascompliance_session_data WHERE session_data_id = %d ", $blackbox['session_data_id']), ARRAY_A);
+                if ($wpdb->last_error) {
+                    throw new Exception($wpdb->last_error);
+                }
+
+                if (empty($res)) {
+                    continue;
+                }
+
+                $blackbox_encoded =  $res[0]['session_value'];
+                eascompliance_log('info', "dumping blackbox for session ".$blackbox['session_data_id']
+                        . "\nBlackbox:". $blackbox_encoded);
+
+                $wpdb->get_results($wpdb->prepare("DELETE FROM {$wpdb->prefix}eascompliance_session_data WHERE session_data_id = %d ", $blackbox['session_data_id']), ARRAY_A);
+                if ($wpdb->last_error) {
+                    throw new Exception($wpdb->last_error);
+                }
+            }
+        }
+
+        // clear blackbox records when blackbox level is disabled
+        if (!eascompliance_log_level('blackbox')) {
+            $wpdb->get_results($wpdb->prepare("DELETE FROM {$wpdb->prefix}eascompliance_session_data WHERE session_key = 'blackbox' "), ARRAY_A);
+            if ($wpdb->last_error) {
+                throw new Exception($wpdb->last_error);
+            }
+        }
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         WC_Admin_Settings::add_error($ex->getMessage());
