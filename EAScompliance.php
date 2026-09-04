@@ -4546,6 +4546,10 @@ function eascompliance_woocommerce_after_order_object_save($order)
             throw new EAScomplianceBreakException('7');
         }
 
+        if (eascompliance_is_blocks_checkout() && $order->get_created_via() === 'store-api') {
+            throw new EAScomplianceBreakException('8');
+        }
+
         $order->add_meta_data('_easproj_api_save_notification_started', 'yes', true);
         $order->save_meta_data();
 
