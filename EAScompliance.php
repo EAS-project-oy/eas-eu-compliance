@@ -286,6 +286,14 @@ function eascompliance_plugin_uninstall_hook() {
 
         eascompliance_plugin_status_change_notification('deleted');
 
+        global $wpdb;
+
+        // cleanup session data
+        $wpdb->get_results($wpdb->prepare("DELETE FROM {$wpdb->prefix}eascompliance_session_data"), ARRAY_A);
+        if ($wpdb->last_error) {
+            throw new Exception($wpdb->last_error);
+        }
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
