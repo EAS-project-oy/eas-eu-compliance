@@ -1,4 +1,11 @@
 == Changelog ==
+07-09-2026 - version 1.8.14
+
+* Added Automatically purge plugin data upon removal.
+* Fixed compatibility issues with checkout blocks.
+* Improved debug data collection performance.
+
+
 26-08-2026 - version 1.8.13
 
 * Issue with activating plugin with WC-CLI fixed
