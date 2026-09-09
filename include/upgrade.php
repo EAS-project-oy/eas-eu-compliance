@@ -90,6 +90,19 @@ function eascompliance_upgrade_eid1341_session_data_mediumtext()
         throw new Exception($wpdb->last_error);
     }
 
+    // check if indexes exist
+    $res = $wpdb->get_results($wpdb->prepare("
+        SELECT COUNT(*) AS cnt FROM information_schema.statistics WHERE TABLE_NAME='{$wpdb->prefix}eascompliance_session_data' AND INDEX_NAME IN (%s, %s)
+      ", 'IX_sesssion_id', 'IX_sesssion_key'), ARRAY_A);
+    if ($wpdb->last_error) {
+        throw new Exception($wpdb->last_error);
+    }
+
+    $cnt = $res[0]['cnt'];
+    if ($cnt > 0) {
+        return;
+    }
+
     $wpdb->query("
         CREATE INDEX IX_sesssion_id ON {$wpdb->prefix}eascompliance_session_data(session_id)
     ");
