@@ -6135,7 +6135,7 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
 		$session_company_vat = eascompliance_session_get('company_vat');
 		$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
         if (get_option('easproj_company_vat_validate') === 'yes' && $session_company_vat == $company_vat) {
-			$order->add_meta_data('_easproj_company_vat_validated', $session_company_vat_validated);
+			$order->add_meta_data('_easproj_company_vat_validated', $session_company_vat_validated, true);
 			eascompliance_session_set('company_vat', null);
 			eascompliance_session_set('company_vat_validated', null);
 		}
@@ -6508,7 +6508,7 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
         $order->add_meta_data('_easproj_order_json', json_encode($order_json, EASCOMPLIANCE_JSON_THROW_ON_ERROR), true);
 
         // saving token to notify EAS during order status change //.
-        $order->add_meta_data('_easproj_token', $cart_item0['EAScompliance API CONFIRMATION TOKEN']);
+        $order->add_meta_data('_easproj_token', $cart_item0['EAScompliance API CONFIRMATION TOKEN'], true);
         eascompliance_log('place_order', 'order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax(), 'order_json'=>$order_json));
 
     } catch (Exception $ex) {
@@ -7171,7 +7171,7 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                 // add logs and order notes based on order json
                 if ( 'successful' === $order_status) {
                     $eas_checkout_token = $order_json['checkout_token'];
-                    $order->add_meta_data('_easproj_token', $eas_checkout_token);
+                    $order->add_meta_data('_easproj_token', $eas_checkout_token, true);
 					$token_payload = eascompliance_checkout_token_payload($eas_checkout_token);
 					$order->add_meta_data('easproj_payload', $token_payload, true);
                     $order->save_meta_data();
@@ -7197,9 +7197,8 @@ function eascompliance_get_post_sale_without_lc_job_status($order_id, $job_id, $
                     $eas_checkout_token = $order_json['checkout_token'];
 					$token_payload = eascompliance_checkout_token_payload($eas_checkout_token);
 
-                    $order->add_meta_data('_easproj_token', $eas_checkout_token);
+                    $order->add_meta_data('_easproj_token', $eas_checkout_token, true);
 					$order->add_meta_data('easproj_payload', $token_payload, true);
-                    $order->add_meta_data('', $eas_checkout_token);
                     $order->save_meta_data();
 
                     $eas_id = $token_payload['id'];
@@ -7290,9 +7289,9 @@ function eascompliance_woocommerce_create_refund($refund, $args)
 
             $shipping_item = new WC_Order_Item_Shipping();
             $shipping_item->set_name($order_shipping_item->get_name());
-            //$shipping_item->add_meta_data( 'VAT Amount', $order_shipping_item->get_meta('VAT Amount') );
-            $shipping_item->add_meta_data('Items', $order_shipping_item->get_meta('Items'));
-            $shipping_item->add_meta_data('_refunded_item_id', $order_shipping_item->get_id());
+            //$shipping_item->add_meta_data( 'VAT Amount', $order_shipping_item->get_meta('VAT Amount'), true);
+            $shipping_item->add_meta_data('Items', $order_shipping_item->get_meta('Items'), true);
+            $shipping_item->add_meta_data('_refunded_item_id', $order_shipping_item->get_id(), true);
             $refund->add_item($shipping_item);
         }
 
