@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 7.4
 WC tested up to: 11.0.1
 Tested up to: 7.0
-Stable Tag: 1.8.14
+Stable Tag: 1.8.15
 Last updated time: 17.08.2026
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,9 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.8.15 =
+* Fixed issue in activation flow, when activation fails in some cases.
+
 = 1.8.14 =
 * Added Automatically purge plugin data upon removal.
 * Fixed compatibility issues with checkout blocks.

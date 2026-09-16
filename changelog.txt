@@ -1,4 +1,8 @@
 == Changelog ==
+09-09-2026 - version 1.8.15
+
+* Fixed issue in activation flow, when activation fails in some cases.
+
 07-09-2026 - version 1.8.14
 
 * Added Automatically purge plugin data upon removal.
