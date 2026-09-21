@@ -3193,7 +3193,14 @@ function eascompliance_ajaxhandler()
 			if ($company_name == 'No company') throw new EAScomplianceBreakException();
 
 			// require company VAT number
-			if ( $company_vat == '') throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales. Note that VAT validation field may be visible in the "Shipping address" section.'));
+			if ( $company_vat == '') {
+                if ( get_option('easproj_skip_vat_validation_with_warning') == 'yes' ) {
+                    throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales. Note that VAT validation field may be visible in the "Shipping address" section.'));
+                }
+                else {
+                    throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please remove Company field above. Do not leave the VAT field empty for B2B sales. Note that VAT validation field may be visible in the "Shipping address" section.'));
+                }
+            }
 
 			$session_company_vat = eascompliance_session_get('company_vat');
 			$session_company_vat_validated = eascompliance_session_get('company_vat_validated');
@@ -3217,7 +3224,7 @@ function eascompliance_ajaxhandler()
 					eascompliance_session_set('company_vat_check_attempt', $vat_check_attempt);
 
 					if ($vat_check_attempt == 1 || $vat_check_attempt == 2) {
-						throw new Exception(EAS_TR('Entered VAT number is not valid. Please check VAT number and try again.'));
+						throw new Exception(EAS_TR('Entered VAT number is not valid in the destination country. It must be registered in the country the order is being delivered to. If this isn`t a business order, please clear the Company field above to continue.'));
 					}
 
 					if ($vat_check_attempt == 3) {
@@ -3225,7 +3232,7 @@ function eascompliance_ajaxhandler()
                         throw new EAScomplianceBreakException();
 					}
 				}
-				throw new Exception(EAS_TR('Provided VAT number invalid. Please check it and try again.'));
+				throw new Exception(EAS_TR('Provided VAT number  is not valid in the destination country. It must be registered in the country the order is being delivered to. If this isn`t a business order, please clear the Company field above to continue.'));
 			}
 		} catch (EAScomplianceBreakException $ex) {}
 
