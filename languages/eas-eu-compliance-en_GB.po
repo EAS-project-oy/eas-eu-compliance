@@ -49,7 +49,7 @@ msgstr "Taxes & Duties"
 
 #: EAScompliance.php:1267 EAScompliance.php:1763 EAScompliance.php:8072
 msgid "Calculate Taxes and Duties"
-msgstr "Click to continue"
+msgstr "Calculate Taxes and Duties"
 
 #: EAScompliance.php:1273
 msgid ""
