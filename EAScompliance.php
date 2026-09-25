@@ -417,6 +417,7 @@ function eascompliance_woocommerce_init()
             add_action( 'woocommerce_order_status_changed', 'eascompliance_woocommerce_order_action', 10, 4);
             add_action( 'add_meta_boxes', 'eascompliance_woocommerce_add_order_meta_boxes', 10, 2);
             add_action('woocommerce_before_checkout_form', 'eascompliance_woocommerce_before_checkout_form');
+            add_filter('gettext_woocommerce', 'eascompliance_gettext_woocommerce', 10, 3);
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -1077,12 +1078,11 @@ function eascompliance_woocommerce_order_get_tax_totals($tax_totals, $order)
 			return $tax_totals;
 		}
 
+        // set label for default tax rate
         $tax_rate_id0 = eascompliance_tax_rate_id();
         foreach ($tax_totals as $code => &$tax) {
             if ($tax->rate_id === $tax_rate_id0) {
-                //clear all other taxes except EAS
                 $tax->label = EAS_TR('Taxes & Duties');
-                return array( $code => $tax);
             }
         }
 
@@ -3728,15 +3728,15 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         // calculate $total_price and $most_expensive_item //.
         $total_price = 0;
         $total_qnty = 0;
-        $most_expensive_item = &$payload_items[0];
+        $most_expensive_item_ix = 0;
         $total_item_duties_and_taxes = 0;
-        foreach ($payload_items as $k => &$payload_item) {
-            $total_price += $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
-            $total_qnty += $payload_item['quantity'];
-            $total_item_duties_and_taxes += $payload_item['item_duties_and_taxes'];
+        foreach ($payload_items as $ix=>$pit) {
+            $total_price += $pit['quantity'] * $pit['unit_cost_excl_vat'];
+            $total_qnty += $pit['quantity'];
+            $total_item_duties_and_taxes += $pit['item_duties_and_taxes'];
 
-            if ($payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] > $most_expensive_item['quantity'] * $most_expensive_item['unit_cost_excl_vat']) {
-                $most_expensive_item = &$payload_item;
+            if ($pit['quantity'] * $pit['unit_cost_excl_vat'] > $payload_items[$most_expensive_item_ix]['quantity'] * $payload_items[$most_expensive_item_ix]['unit_cost_excl_vat']) {
+                $most_expensive_item_ix = $ix;
             }
         }
 
@@ -3747,7 +3747,7 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         eascompliance_log('request', 'cart_total is ' . $cart_total . '  payload total_order_amount is ' . $payload_j['total_order_amount']);
         if (0 < abs($margin) && abs($margin) < 0.10) { // only process when there is margin and is small //.
             eascompliance_log('request', "adjusting most expensive item price to fix rounding error between order total and payload, margin is $margin");
-            $most_expensive_item['unit_cost_excl_vat'] -= $margin / $most_expensive_item['quantity'];
+            $payload_items[$most_expensive_item_ix]['unit_cost_excl_vat'] -= $margin / $payload_items[$most_expensive_item_ix]['quantity'];
 
             $total_price -= $margin;
         }
@@ -3757,28 +3757,27 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
         foreach ($cart->cart_contents as $k => &$cart_item) {
             $product_id = $cart_item['variation_id'] ?: $cart_item['product_id'];
             $sku = wc_get_product($product_id)->get_sku();
-            $item_payload = null;
-
+            $payload_item = null;
             $sku_suffix[$sku] += 1;
-            foreach ($payload_items as &$pi) {
-                $payload_item_id = $pi['item_id'];
+            foreach ($payload_items as $pi) {
                 if ($pi['item_id'] === $k) {
-                    $item_payload = &$pi;
+                    $payload_item = $pi;
                     break;
                 }
                 // $payload_item['item_id'] is sku when it is available in product
                 if ($pi['item_id'] === $sku) {
-                    $item_payload = &$pi;
+                    $payload_item = $pi;
                     break;
                 }
 
                 // account for product suffix in payload item_id
                 if ($sku_suffix[$sku] > 1 && $pi['item_id'] === $sku . "#{$sku_suffix[$sku]}") {
-                    $item_payload = &$pi;
+                    $payload_item = $pi;
                     break;
                 }
             }
-            if (is_null($item_payload)) {
+
+            if (is_null($payload_item)) {
                 throw new Exception('Cart item not found from payload');
             }
             $product= wc_get_product($product_id);
@@ -3796,18 +3795,18 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                 $has_goods_in_cart = true;
             }
 
-			$cart_item['EAScompliance item payload'] = $item_payload;
-            $cart_item_price = $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'];
-			$cart_item_price_log = eascompliance_format('set to $p from quantity $q * unit_cost $c;', ['p'=>$cart_item_price, 'q'=>$item_payload['quantity'], 'c'=>$item_payload['unit_cost_excl_vat']]);
+			$cart_item['EAScompliance item payload'] = $payload_item;
+            $cart_item_price = $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'];
+			$cart_item_price_log = eascompliance_format('set to $p from quantity $q * unit_cost $c;', ['p'=>$cart_item_price, 'q'=>$payload_item['quantity'], 'c'=>$payload_item['unit_cost_excl_vat']]);
 			$cart_item['EAScompliance item price'] = $cart_item_price;
-			$cart_item['EAScompliance item price log'] = eascompliance_format('item price set to $p from quantity $q multiplied by unit_cost_excl_vat $c;', ['p'=>$cart_item['EAScompliance item price'], 'q'=>$item_payload['quantity'], 'c'=>$item_payload['unit_cost_excl_vat']]);
-            $cart_item['EAScompliance item tax'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_delivery_charge_vat'];
+			$cart_item['EAScompliance item price log'] = eascompliance_format('item price set to $p from quantity $q multiplied by unit_cost_excl_vat $c;', ['p'=>$cart_item['EAScompliance item price'], 'q'=>$payload_item['quantity'], 'c'=>$payload_item['unit_cost_excl_vat'], 'd'=>$payload_item['item_customs_duties']]);
+            $cart_item['EAScompliance item tax'] = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
 			$cart_item['EAScompliance item discount'] = 0;
 
             if ($discount > 0 && $total_price > 0) {
 				if (eascompliance_is_wcml_enabled()) {
 					{
-                        $wcml_discounted =  round($discount * $item_payload['quantity'] * $item_payload['unit_cost_excl_vat'] / $total_price, 2);
+                        $wcml_discounted =  round($discount * $payload_item['quantity'] * $payload_item['unit_cost_excl_vat'] / $total_price, 2);
 					}
 					$cart_item['EAScompliance item discount'] = $wcml_discounted;
 				}
@@ -3817,9 +3816,17 @@ function eascompliance_redirect_confirm($eas_checkout_token=null)
                 }
             }
 
-			$cart_item['EAScompliance item price'] = $cart_item_price;
-            eascompliance_log('request','cart_item_price is $p, cart_item_price_log value was $pl',['p'=>$cart_item_price, 'pl'=>$cart_item_price_log]);
-            $cart_item['EAScompliance item VAT'] = $item_payload['item_duties_and_taxes'] - $item_payload['item_customs_duties'] - $item_payload['item_eas_fee'] - $item_payload['item_eas_fee_vat'] - $item_payload['item_delivery_charge_vat'];
+            $vat_amount = $payload_item['item_duties_and_taxes']
+                    - $payload_item['item_customs_duties']
+                    - $payload_item['item_eas_fee']
+                    - $payload_item['item_eas_fee_vat']
+                    - $payload_item['item_delivery_charge_vat'];
+            eascompliance_log('request','cart_item_price is $p, cart_item_price_log value was $pl',[
+                    'p'=>$cart_item_price,
+                    'pl'=>$cart_item_price_log,
+                    'vat_amount'=>$vat_amount,
+            ]);
+            $cart_item['EAScompliance item VAT'] = $vat_amount;
             $cart_item['EAScompliance SET'] = true;
 
             eascompliance_log('blackbox', 'cart after EAScompliance SET', ['cart'=>$cart]);
@@ -3971,6 +3978,15 @@ function eascompliance_woocommerce_before_checkout_form()
         eascompliance_log('error', $ex);
         throw $ex;
     }
+}
+
+/**
+ * Rename Order Admin page Fees: to Customs Duties:
+ */
+function eascompliance_gettext_woocommerce($translation, $text, $domain)
+{
+    // eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()'); // performance
+    return ($text === 'Fees:' && $domain === 'woocommerce') ? 'Customs Duties:' : $translation;
 }
 
 /**
@@ -4460,18 +4476,14 @@ function eascompliance_order_createpostsaleorder($order)
                 throw new Exception('no $payload_item found for $order_item key ' . print_r($k, true) . ' $sku ' . $sku . ' $payload_items ' . print_r($payload_items, true));
             }
 
-            // enable translation
-            if (false) {
-                EAS_TR('Customs duties');
-                EAS_TR('VAT Amount');
-                EAS_TR('VAT Rate');
-                EAS_TR('Other fees');
-                EAS_TR('VAT on Other fees');
-            }
 
-            // temporary set 'Customs duties' with 'VAT Amount' since it is used below in calculate_taxes() via eascompliance_woocommerce_order_item_after_calculate_taxes()
-            $order_item->add_meta_data('Customs duties', $payload_item['item_customs_duties'], true);
-            $vat_amount = $payload_item['item_duties_and_taxes'] - $payload_item['item_customs_duties'] - $payload_item['item_eas_fee'] - $payload_item['item_eas_fee_vat'] - $payload_item['item_delivery_charge_vat'];
+            // save item_customs_duties to be used in eascompliance_woocommerce_order_item_after_calculate_taxes() for taxable orders
+            $order_item->add_meta_data('_item customs duties', $payload_item['item_customs_duties'], true);
+            $vat_amount = $payload_item['item_duties_and_taxes']
+                    - $payload_item['item_customs_duties']
+                    - $payload_item['item_eas_fee']
+                    - $payload_item['item_eas_fee_vat']
+                    - $payload_item['item_delivery_charge_vat'];
             $order_item->add_meta_data('VAT Amount', $vat_amount, true);
             $order_item->add_meta_data('VAT Rate', $payload_item['vat_rate'], true);
             $order_item->add_meta_data('Other fees', $payload_item['item_eas_fee'], true);
@@ -4479,12 +4491,10 @@ function eascompliance_order_createpostsaleorder($order)
 
             $order_item->set_subtotal($payload_item['unit_cost_excl_vat'] * $order_item->get_quantity());
             $order_item->set_total($payload_item['unit_cost_excl_vat'] * $order_item->get_quantity());
-
-            $amount = $payload_item['item_duties_and_taxes'] - $payload_item['item_delivery_charge_vat'];
             $order_item->set_taxes(
                 array(
-                    'total' => array($tax_rate_id0 => $amount),
-                    'subtotal' => array($tax_rate_id0 => $amount),
+                    'total' => array($tax_rate_id0 => $vat_amount),
+                    'subtotal' => array($tax_rate_id0 => $vat_amount),
                 )
             );
 
@@ -5869,18 +5879,17 @@ function eascompliance_woocommerce_order_item_after_calculate_taxes($order_item,
             return $order_item;
         }
 
-        // Recalculate process must set taxes from order_item meta-data 'Customs duties' //.
+        // set taxes from _item customs duties for 'taxable orders'
         $tax_rate_id0 = eascompliance_tax_rate_id();
-
-        $amount = $order_item->get_meta('Customs duties');
+        $order_item_tax = $order_item->get_meta('_item customs duties');
 
         eascompliance_log('place_order', 'setting taxes for order item name $name type $type amount $amount'
-            , array('$name' => $order_item->get_name(), '$type' => $order_item->get_type(), '$amount' => $amount));
+            , array('name' => $order_item->get_name(), 'type' => $order_item->get_type(), 'amount' => $order_item_tax));
 
         $order_item->set_taxes(
             array(
-                'total' => array($tax_rate_id0 => $amount),
-                'subtotal' => array($tax_rate_id0 => $amount),
+                'total' => array($tax_rate_id0 => $order_item_tax),
+                'subtotal' => array($tax_rate_id0 => $order_item_tax),
             )
         );
 
@@ -6342,62 +6351,97 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
                 ++$ix;
             }
 
-            // if duties and fees are zero and tax_rate equals payload vat_rate then try to use tax_rate_id of selected shipping country
-            $tax_rate_id2 = $tax_rate_id0;
             $tax_rates = array();
-            if ($duties_and_fees_zero) {
-                $tax_rate_country = $order->get_shipping_country();
-                if (!empty($tax_rate_country)) {
-                    global $wpdb;
-                    $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id, tax_rate_name, tax_rate  FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s", $tax_rate_country), ARRAY_A);
+            $tax_rate_country = $order->get_shipping_country();
+            if (!empty($tax_rate_country)) {
+                global $wpdb;
+                $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id, tax_rate_name, tax_rate  FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = %s", $tax_rate_country), ARRAY_A);
+                if ($wpdb->last_error) {
+                    throw new Exception($wpdb->last_error);
+                }
+                // take default rate if no tax_rate for country was found
+                if (empty($tax_rates)) {
+                    $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id, tax_rate_name, tax_rate  FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_id = %d", $tax_rate_id0), ARRAY_A);
                     if ($wpdb->last_error) {
                         throw new Exception($wpdb->last_error);
-                    }
-                    // take default rate if no tax_rate for country was found
-                    if (empty($tax_rates)) {
-                        $tax_rates = $wpdb->get_results($wpdb->prepare("SELECT tax_rate_id, tax_rate_name, tax_rate  FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_id = %d", $tax_rate_id2), ARRAY_A);
                     }
                 }
             }
 
-            $taxes = array();
+
+            $taxes = array(); // tax_rate_id => amount
             $delivery_charge_vat = 0;
             $ix = 0;
+            $order_customs_duties = array(); // sums of item_customs_duties grouped by vat_rate
+
             foreach ($order_items as $k => $order_item) {
                 $cart_item = $cart_items[$ix];
                 $item_payload = $cart_item['EAScompliance item payload'];
 
-                if ($duties_and_fees_zero) {
-                    foreach($tax_rates as $rate) {
-                        if ((float)$rate['tax_rate'] === (float)$item_payload['vat_rate']) {
-                            $tax_rate_id2 = $rate['tax_rate_id'];
-                            eascompliance_log('place_order', 'duties and fees are zero, using tax_rate_id $t ($tr, $tp) for item $ix', array('ix'=>$ix,'tr'=>$rate['tax_rate_name'],'tp'=>$rate['tax_rate'],'t'=>$tax_rate_id2));
-                        }
+                $tax_rate_id2 = $tax_rate_id0;
+                // try to use tax_rate_id of selected shipping country
+                foreach($tax_rates as $rate) {
+                    if ((float)round($rate['tax_rate'], 2) === (float)round($item_payload['vat_rate'], 2)) {
+                        $tax_rate_id2 = $rate['tax_rate_id'];
                     }
                 }
 
                 if (array_key_exists('EAScompliance DELIVERY CHARGE VAT', $cart_item)) {
                     $delivery_charge_vat = $cart_item['EAScompliance DELIVERY CHARGE VAT'];
                 }
-                $item_amount = $cart_item['EAScompliance item tax'];
-                $order_item->add_meta_data('Customs duties', $item_payload['item_customs_duties'], true);
-                // VAT Amount set earlier in eascompliance_woocommerce_checkout_create_order_line_item
-                //$order_item->add_meta_data('VAT Amount', $cart_item['EAScompliance item VAT'], true);
+
+                $vat_rate = 'vat_rate_' . (string)$item_payload['vat_rate'];
+                if (empty($order_customs_duties[$vat_rate])) {
+
+                    $order_customs_duties[$vat_rate] = array(
+                        'vat_rate'=>0,
+                        'fee_amount'=>0,
+                        'tax_amount'=>0,
+                        'tax_rate_id'=>$tax_rate_id2
+                    );
+                }
+                $order_customs_duties[$vat_rate]['vat_rate'] = $item_payload['vat_rate'];
+                $order_customs_duties[$vat_rate]['fee_amount'] += $item_payload['item_customs_duties'];
+                $order_customs_duties[$vat_rate]['tax_amount'] += round((float)$item_payload['item_customs_duties'] * $item_payload['vat_rate'] / 100.0, 2);
+
+
+                // 'VAT Amount' set earlier in eascompliance_woocommerce_checkout_create_order_line_item
                 $order_item->add_meta_data('VAT Rate', $item_payload['vat_rate'], true);
                 $order_item->add_meta_data('Other fees', $item_payload['item_eas_fee'], true);
                 $order_item->add_meta_data('VAT on Other fees', $item_payload['item_eas_fee_vat'], true);
 
+                $vat_amount = $cart_item['EAScompliance item VAT'];
                 $order_item->set_taxes(
                     array(
-                        'total' => array($tax_rate_id2 => $item_amount),
-                        'subtotal' => array($tax_rate_id2 => $item_amount),
+                        'total' => array($tax_rate_id2 => $vat_amount),
+                        'subtotal' => array($tax_rate_id2 => $vat_amount),
                     )
                 );
                 $order_item->save();
 
-                $taxes[$tax_rate_id2] += $item_amount;
+                $taxes[$tax_rate_id2] += $vat_amount;
 
                 ++$ix;
+            }
+
+            // add customs duties as order fees
+            foreach ($order_customs_duties as $vat_rate=>$duty) {
+                if ($duty['fee_amount'] == 0) {
+                    continue;
+                }
+                $customs_fee = new WC_Order_Item_Fee();
+                $customs_fee->set_props( array(
+                        'name'      => eascompliance_format('Customs Duty ($v% VAT rate)',['v'=>$duty['vat_rate']] ),
+                        'tax_class' => 0,
+                        'total'     => $duty['fee_amount'],
+                        'total_tax' => $duty['tax_amount'],
+                        'taxes'     => array(
+                                'total' => array($duty['tax_rate_id']=>$duty['tax_amount']),
+                            ),
+                        'order_id'  => $order->get_id(),
+                ));
+                $customs_fee->save();
+                $order->add_item( $customs_fee );
             }
 
             $shipping_taxes = array();
@@ -6409,20 +6453,19 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
                         $delivery_charge_vat = round($shipping_item['line_total'] * $deduct_vat_outside_eu, 2);
                     }
 
-                    // if item_customs_duties and item_eas_fee equal zero and tax_rate equals payload vat_rate then use tax_rate_id of selected shipping country
-                    if ($duties_and_fees_zero) {
-                        foreach($tax_rates as $rate) {
-                            if ((float)$rate['tax_rate'] === (float)$item_payload['vat_rate']) {
-                                $tax_rate_id2 = $rate['tax_rate_id'];
-                                break;
-                            }
+                    $tax_rate_id2 = $tax_rate_id0;
+                    // try to use first available items tax_rate
+                    foreach ($taxes as $tax_rate_id=>$amount) {
+                        if ($tax_rate_id2 != $tax_rate_id) {
+                            $tax_rate_id2 = $tax_rate_id;
+                            break;
                         }
-
                     }
 
                     eascompliance_log('place_order', 'correct shipping item tax from $t0 to $tax', array('$t0'=>$shipping_item->get_total_tax(), '$tax' => $delivery_charge_vat));
 
                     $shipping_taxes = array($tax_rate_id2=>$delivery_charge_vat);
+                    //check if item_customs_duties and item_eas_fee are zero for every item in payload
                     if ($duties_and_fees_zero) {
                         // distribute delivery_charge_vat among order taxes proportional to tax rate
                         $rsum = 0.0;
@@ -6464,12 +6507,17 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
             $order_item_tax = new WC_Order_Item_Tax();
             $order_item_tax->set_rate( $tax_rate_id );
             $order_item_tax->set_tax_total( $tax_total );
-            $order_item_tax->set_shipping_tax_total( array_sum($shipping_taxes) );
+            if ($tax_rate_id === array_key_first($shipping_taxes)) {
+                $order_item_tax->set_shipping_tax_total(array_sum($shipping_taxes));
+            };
             $order->add_item( $order_item_tax );
         }
-        eascompliance_log('place_order','taxes are $t, shipping_taxes are $st, duties_and_fees_zero is $d, tax_rates is $tr', ['t'=>$taxes, 'st'=>$shipping_taxes, 'd'=>$duties_and_fees_zero?'Y':'N', 'tr'=>$tax_rates]);
-        $order->set_shipping_tax( array_sum($shipping_taxes) );
-        $order->set_cart_tax( array_sum($taxes) );
+        $order_cart_tax = array_sum($taxes);
+        $order_shipping_tax = array_sum($shipping_taxes);
+        eascompliance_log('place_order','taxes are $t, shipping tax is $st, duties_and_fees_zero is $d, tax_rates is $tr, order_tax is $ot', [
+                't'=>$taxes, 'st'=>$order_shipping_tax, 'd'=>$duties_and_fees_zero?'Y':'N', 'tr'=>$tax_rates, 'ot'=>$order_cart_tax]);
+        $order->set_shipping_tax( $order_shipping_tax );
+        $order->set_cart_tax( $order_cart_tax );
 
 
         // Calculate Order Total //.
@@ -6509,7 +6557,7 @@ function eascompliance_woocommerce_checkout_create_order($order, $args = array()
 
         // saving token to notify EAS during order status change //.
         $order->add_meta_data('_easproj_token', $cart_item0['EAScompliance API CONFIRMATION TOKEN'], true);
-        eascompliance_log('place_order', 'order $order total is $o, tax is $t, shipping tax is $st', array('$order' => $order->get_order_number(), '$o' => $order->get_total(), '$t' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax(), 'order_json'=>$order_json));
+        eascompliance_log('place_order', 'create order $order total is $o, tax is $t, shipping tax is $st', array('order' => $order->get_order_number(), 'o' => $order->get_total(), 't' => $order->get_total_tax(), 'st'=>$order->get_shipping_tax(), 'order_json'=>$order_json));
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -7891,15 +7939,6 @@ function eascompliance_woocommerce_admin_order_totals_after_total($order_id)
     </tr>
     <tr>
         <td class="label ">
-            Total customs duties
-        </td>
-        <td width="1%"></td>
-        <td class="total">
-            <?php echo wc_price($payload_j['total_customs_duties'], array('currency' => $order->get_currency())); ?>
-        </td>
-    </tr>
-    <tr>
-        <td class="label ">
             Total VAT
         </td>
         <td width="1%"></td>
@@ -8040,6 +8079,22 @@ function eascompliance_settings()
         }
     }
 
+    global $wpdb;
+    $blackbox_stats = $wpdb->get_results($wpdb->prepare(
+            "SELECT COUNT(*) count, SUM(LENGTH(session_value)) AS size FROM  {$wpdb->prefix}eascompliance_session_data WHERE session_key='blackbox'"
+    ), ARRAY_A);
+    if ($wpdb->last_error) {
+        throw new Exception($wpdb->last_error);
+    }
+
+    // bytes length to human readable
+    $base = log($blackbox_stats[0]['size'], 1024);
+    $suffixes = ['b', 'Kb', 'Mb', 'Gb', 'Tb'];
+    $precision = 0;
+    $size_h = (int)round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[(int) floor($base)];
+
+
+
     $countries_outside_eu = array_diff_key(WORLD_COUNTRIES, EUROPEAN_COUNTRIES);
 
     return array(
@@ -8169,7 +8224,8 @@ function eascompliance_settings()
         'blackbox_dump' => in_array('blackbox', get_option('easproj_debug', array())) ?array(
             'name' => EAS_TR('Dump blackbox'),
             'type' => 'checkbox',
-            'desc' => EAS_TR('Dump blackbox from all sessions into logs. Single session blackboxes are dumped automatically on Exception.'),
+            'desc' => eascompliance_format('Dump blackbox from all sessions into logs ($count sessions, $size). Single session blackboxes are dumped automatically on Exception.',
+                    ['size'=>$size_h, 'count'=>$blackbox_stats[0]['count']]),
             'id' => 'easproj_blackbox_dump',
             'default' => 'no',
         ):[],
