@@ -1,4 +1,8 @@
 == Changelog ==
+25-09-2026 - version 1.8.16
+
+* Fixed issue with sending HS code for landed cost calculation.
+
 09-09-2026 - version 1.8.15
 
 * Fixed issue in activation flow, when activation fails in some cases.
