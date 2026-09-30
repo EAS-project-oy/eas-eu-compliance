@@ -2439,7 +2439,7 @@ function eascompliance_make_eas_api_request_json()
 
         $hs6p_received = (string)eascompliance_coalesce(array(eascompliance_product_attribute_or_meta($product, 'easproj_hs6p_received'), get_option('easproj_default_hscode')));
 
-        $order_breakdown_items[] = array(
+        $order_breakdown_item = array(
             'short_description' => $product->get_name(),
             'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
@@ -2462,6 +2462,17 @@ function eascompliance_make_eas_api_request_json()
             'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
             'originating_country' => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
+
+        // manufacture_code and sku if they are not empty
+        if (!empty($product->get_global_unique_id())) {
+            $order_breakdown_item['manufacture_code'] = $product->get_global_unique_id();
+        }
+
+        if (!empty($product->get_sku())) {
+            $order_breakdown_item['sku'] = $product->get_sku();
+        }
+
+        $order_breakdown_items[] = $order_breakdown_item;
     }
 
     $calc_jreq['order_breakdown'] = $order_breakdown_items;
@@ -2752,7 +2763,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
     $calc_jreq['delivery_phone'] = $order->get_billing_phone();
     $calc_jreq['delivery_email'] = $order->get_billing_email();
     $countries = array_flip(WORLD_COUNTRIES);
-    $items = array();
+    $order_breakdown_items = array();
 
     // check for required fields in taxes calculation
     $required_fields = preg_split('/\s/', 'delivery_country recipient_first_name recipient_last_name delivery_address_line_1 delivery_city delivery_postal_code delivery_email');
@@ -2798,7 +2809,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
         $suffix = 1;
-        foreach($items as $item) {
+        foreach($order_breakdown_items as $item) {
             if ( $item['id_provided_by_em'] == $id_provided_by_em . ($suffix == 1 ? '' : "#{$suffix}") ) {
                 $suffix += 1;
             }
@@ -2811,7 +2822,7 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
         $order_item_tax = $order_item->get_meta('VAT Amount');
         $cost_provided_by_em = (float)number_format(((float)$order_item['line_total'] + (float)$order_item_tax) / $order_item['quantity'], 2, '.', '');
 
-        $items[] = array(
+        $order_breakdown_item = array(
             'short_description' => $product->get_name(),
             'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
@@ -2828,9 +2839,20 @@ function eascompliance_make_eas_api_request_json_from_order($order_id)
             'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
             'originating_country' => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
+
+        // manufacture_code and sku if they are not empty
+        if (!empty($product->get_global_unique_id())) {
+            $order_breakdown_item['manufacture_code'] = $product->get_global_unique_id();
+        }
+
+        if (!empty($product->get_sku())) {
+            $order_breakdown_item['sku'] = $product->get_sku();
+        }
+
+        $order_breakdown_items[] = $order_breakdown_item;
     }
 
-    $calc_jreq['order_breakdown'] = $items;
+    $calc_jreq['order_breakdown'] = $order_breakdown_items;
 
 	eascompliance_log('request', 'api request json from order $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order->get_order_number()));
 
@@ -2996,7 +3018,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
     $calc_jreq['delivery_phone'] = $order->get_billing_phone();
     $calc_jreq['delivery_email'] = $order->get_billing_email();
     $countries = array_flip(WORLD_COUNTRIES);
-    $items = array();
+    $order_breakdown_items = array();
 
     // check for required fields in taxes calculation
     $required_fields = preg_split('/\s/', 'delivery_country recipient_first_name recipient_last_name delivery_address_line_1 delivery_city delivery_postal_code delivery_email');
@@ -3043,7 +3065,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         $id_provided_by_em = '' . $product->get_sku() === '' ? $k : $product->get_sku();
         // append suffix if items with same id_provided_by_em already present in order_breakdown_items
         $suffix = 1;
-        foreach($items as $item) {
+        foreach($order_breakdown_items as $item) {
             if ( $item['id_provided_by_em'] == $id_provided_by_em . ($suffix == 1 ? '' : "#{$suffix}") ) {
                 $suffix += 1;
             }
@@ -3064,7 +3086,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             }
         }
 
-        $item = array(
+        $order_breakdown_item = array(
             'short_description' => $product->get_name(),
             'long_description' => '',
             'id_provided_by_em' => strval($id_provided_by_em),
@@ -3083,6 +3105,15 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             'seller_registration_country' => '' === $seller_registration_country ? wc_get_base_location()['country'] : $seller_registration_country,
             'originating_country' => '' === $originating_country ? wc_get_base_location()['country'] : $originating_country, // Country of manufacturing of goods //.
         );
+
+        // manufacture_code and sku if they are not empty
+        if (!empty($product->get_global_unique_id())) {
+            $order_breakdown_item['manufacture_code'] = $product->get_global_unique_id();
+        }
+
+        if (!empty($product->get_sku())) {
+            $order_breakdown_item['sku'] = $product->get_sku();
+        }
 
         // first GOODS item
         if ( $delivery_cost_ix == -1 && $type_of_goods == 'GOODS' ){
@@ -3105,7 +3136,7 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
             $delivery_vat_rate_ix = $ix;
         }
 
-        $items[] = $item;
+        $order_breakdown_items[] = $order_breakdown_item;
         $ix++;
     }
 
@@ -3117,10 +3148,10 @@ function eascompliance_make_eas_api_request_json_from_order2($order_id)
         }
     }
 
-    $items[$delivery_cost_ix]['item_delivery_charge'] = $delivery_cost;
-    $items[$delivery_cost_ix]['item_delivery_charge_vat'] = $delivery_vat;
+    $order_breakdown_items[$delivery_cost_ix]['item_delivery_charge'] = $delivery_cost;
+    $order_breakdown_items[$delivery_cost_ix]['item_delivery_charge_vat'] = $delivery_vat;
 
-    $calc_jreq['order_breakdown'] = $items;
+    $calc_jreq['order_breakdown'] = $order_breakdown_items;
     $calc_jreq['total_order_amount'] = round( (float)$order->get_total(), 2);
 
 	eascompliance_log('request', 'api request json from order2 $order_id is $j ', array('$j'=>$calc_jreq, '$order_id'=>$order->get_order_number()));
