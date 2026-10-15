@@ -27,35 +27,39 @@ class EascomplianceCheckoutIntegration implements IntegrationInterface
     {
         try {
             set_error_handler('eascompliance_error_handler');
-            
-        if (!wp_register_script(
-            'eascompliance-blocks',
-            plugins_url('/assets/js/EAScompliance-blocks.js', __FILE__),
-            array('EAScompliance', 'wc-blocks', 'jquery', 'wc-blocks-checkout', 'wc-settings'),
-            filemtime(__DIR__ . '/assets/js/EAScompliance-blocks.js'),
-            true
-            )) {
-            throw new Exception("register script eascompliance-blocks failed");
-        }
-        if (!wp_register_script(
-            'eascompliance-calculate-taxes-cart',
-            plugins_url("/assets/blocks/eascompliance-calculate-taxes/cart.js", __FILE__),
-            array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
-            filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/cart.js"),
-            true
-        )) {
-            throw new Exception("register script eascompliance-calculate-taxes-cart failed");
-        }
-       if (!wp_register_script(
-           'eascompliance-calculate-taxes-minicart',
-            plugins_url("/assets/blocks/eascompliance-calculate-taxes/minicart.js", __FILE__),
-            array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
-            filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/minicart.js"),
-            true
-        )) {
-            throw new Exception("register script eascompliance-calculate-taxes-minicart failed");
-        }
+
             if (!wp_register_script(
+                'eascompliance-blocks',
+                plugins_url('/assets/js/EAScompliance-blocks.js', __FILE__),
+                array('EAScompliance', 'wc-blocks', 'jquery', 'wc-blocks-checkout', 'wc-settings'),
+                filemtime(__DIR__ . '/assets/js/EAScompliance-blocks.js'),
+                true
+            )){
+                throw new Exception("register script eascompliance-blocks failed");
+            }
+
+            if (!wp_register_script(
+                'eascompliance-calculate-taxes-editor',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/editor.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/editor.js"),
+                true
+            )){
+                throw new Exception("register script eascompliance-calculate-taxes-editor failed");
+            }
+
+            if (!wp_register_script(
+                'eascompliance-calculate-taxes-checkout',
+                plugins_url("/assets/blocks/eascompliance-calculate-taxes/checkout.js", __FILE__),
+                array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-blocks-checkout', 'wc-settings'),
+                filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/checkout.js"),
+                true
+            )){
+                throw new Exception("register script eascompliance-calculate-taxes-checkout failed");
+            }
+
+
+            if(!wp_register_script(
                 'eascompliance-checkout-company-vat-editor',
                 plugins_url("/assets/blocks/eascompliance-checkout-company-vat/editor.js", __FILE__),
                 array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-editor', 'eascompliance-blocks', 'wc-blocks-checkout', 'wc-blocks-data-store', 'wc-settings'),
@@ -125,14 +129,15 @@ class EascomplianceCartIntegration implements IntegrationInterface
         try {
             set_error_handler('eascompliance_error_handler');
 
-            wp_register_script(
+            if (!wp_register_script(
                 'eascompliance-calculate-taxes-cart',
                 plugins_url("/assets/blocks/eascompliance-calculate-taxes/cart.js", __FILE__),
                 array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
                 filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/cart.js"),
                 true
-            )
-            or throw new Exception("register script eascompliance-calculate-taxes-cart failed");
+            )){
+                throw new Exception("register script eascompliance-calculate-taxes-cart failed");
+            }
 
         } catch (Exception $ex) {
             eascompliance_log('error', $ex);
@@ -184,14 +189,15 @@ class EascomplianceMiniCartIntegration implements IntegrationInterface
         try {
             set_error_handler('eascompliance_error_handler');
 
-            wp_register_script(
+            if(!wp_register_script(
                 'eascompliance-calculate-taxes-minicart',
                 plugins_url("/assets/blocks/eascompliance-calculate-taxes/minicart.js", __FILE__),
                 array('jquery', 'react', 'wc-blocks-checkout', 'wp-element', 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'eascompliance-blocks', 'wc-blocks-data-store', 'wc-settings'),
                 filemtime(__DIR__ . "/assets/blocks/eascompliance-calculate-taxes/minicart.js"),
                 true
-            )
-            or throw new Exception("register script eascompliance-calculate-taxes-minicart failed");
+            )){
+            throw new Exception("register script eascompliance-calculate-taxes-minicart failed");
+            }
 
         } catch (Exception $ex) {
             eascompliance_log('error', $ex);
