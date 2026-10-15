@@ -1,4 +1,4 @@
-//plugin version 1.6.11
+//plugin version 1.8.18
 jQuery(document).ready(function ($) {
     window.$ = $
 
