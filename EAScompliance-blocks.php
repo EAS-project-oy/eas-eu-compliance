@@ -311,9 +311,12 @@ function eascompliance_woocommerce_store_api_checkout_update_order_from_request(
         $_POST['billing_phone'] = $request['billing_address']['phone'];
         $_POST['billing_email'] = $request['billing_address']['email'];
 
-        eascompliance_woocommerce_checkout_create_order($order);
+        if (!is_null($order)) {
+            eascompliance_woocommerce_checkout_create_order($order);
 
-        eascompliance_woocommerce_checkout_order_created($order);
+            eascompliance_woocommerce_checkout_order_created($order);
+        }
+
 
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
@@ -352,14 +355,6 @@ function eascompliance_checkout_schema_callback() {
             'type'        => array( 'string', 'null' ),
             'readonly'    => true,
         ),
-        'supported_countries'  => array(
-            'description' =>  'supported_countries',
-            'type'        => 'array',
-            'items'       => array(
-                'type' => 'string',
-            ),
-            'readonly'    => true,
-        ),
 
     );
 }
@@ -370,7 +365,6 @@ function eascompliance_checkout_data_callback() {
         'company_vat' => eascompliance_session_get('session_company_vat'),
         'nonce' => wp_create_nonce('eascompliance_nonce_calc'),
         'status' => eascompliance_status(),
-        'supported_countries' => eascompliance_supported_countries(),
     );
 }
 

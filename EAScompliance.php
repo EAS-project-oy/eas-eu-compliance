@@ -1490,7 +1490,7 @@ function eascompliance_frontend_dictionary()
 {
     $button_calc_name = EAS_TR('Calculate Taxes and Duties');
     if (!empty(eascompliance_woocommerce_settings_get_option_sql('eas_button_text'))) {
-        $button_name = eascompliance_woocommerce_settings_get_option_sql('eas_button_text');
+        $button_calc_name = eascompliance_woocommerce_settings_get_option_sql('eas_button_text');
     }
 
     return array(
@@ -1507,7 +1507,8 @@ function eascompliance_frontend_dictionary()
         'security_check' => EAS_TR('Security check, please reload page. '),
         'limit_ioss_sales_message' => get_option( 'easproj_limit_ioss_sales_message' ),
         'vat_validation_successful' => EAS_TR('VAT validation successful'),
-        'vat_validation_failed' => EAS_TR('VAT validation failed'),
+        'vat_validation_failed' => EAS_TR('VAT validation failed for $vat in $country'),
+        'vat_validating' => EAS_TR('Validating VAT...'),
         'company_vat' => EAS_TR('Company VAT number for EU customers only (optional)'),
         'company_vat_validate' => EAS_TR('Validate'),
         'button_calc_name' => $button_calc_name,
@@ -2234,6 +2235,12 @@ function eascompliance_make_eas_api_request_json()
     // $_POST is not suitable due to some variables must be processed with wp_unslash() //.
     $checkout = WC()->checkout->get_posted_data();
 
+
+    if (eascompliance_is_blocks_checkout()) {
+        // trigger $_POST update from request data
+        eascompliance_woocommerce_store_api_checkout_update_order_from_request(null, $request);
+    }
+
     $cart = WC()->cart;
 	$cart_item0 = &eascompliance_cart_item0();
 
@@ -2351,6 +2358,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'] ?? '';
     $calc_jreq['delivery_address_line_2'] =  eascompliance_array_get($checkout, 'billing_address_2', '') ?? '';//$checkout['shipping_address_2'];
     if (eascompliance_is_blocks_checkout()) {
+        $calc_jreq['recipient_company_vat'] = $checkout['shipping_address_2'] ?? '';
         $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'] ?? '';
     }
 
@@ -3225,7 +3233,7 @@ function eascompliance_ajaxhandler()
 
 			// require company VAT number
 			if ( $company_vat == '') {
-                if ( get_option('easproj_skip_vat_validation_with_warning') == 'yes' ) {
+                if ( get_option('easproj_skip_vat_validation_with_warning') === 'yes' ) {
                     throw new Exception(EAS_TR('Please provide company VAT number. If your company is not registered for VAT, please enter any number and press "...try again" 3 times.  Do not leave the VAT field empty for B2B sales. Note that VAT validation field may be visible in the "Shipping address" section.'));
                 }
                 else {
@@ -3249,7 +3257,7 @@ function eascompliance_ajaxhandler()
 				eascompliance_session_set('company_vat_validated', 'not_validated');
 
 				// allow order with non_validated VAT number on 3rd attempt
-				if ( get_option('easproj_skip_vat_validation_with_warning') == 'yes' ) {
+				if ( get_option('easproj_skip_vat_validation_with_warning') === 'yes' ) {
 					$vat_check_attempt = eascompliance_session_get('company_vat_check_attempt') ?? 0;
 					$vat_check_attempt += 1;
 					eascompliance_session_set('company_vat_check_attempt', $vat_check_attempt);
@@ -3258,7 +3266,7 @@ function eascompliance_ajaxhandler()
 						throw new Exception(EAS_TR('Entered VAT number is not valid in the destination country. It must be registered in the country the order is being delivered to. If this isn`t a business order, please clear the Company field above to continue.'));
 					}
 
-					if ($vat_check_attempt == 3) {
+					if ($vat_check_attempt >= 3) {
                         // notice is displayed and attempt reset in eascompliance_woocommerce_checkout_update_order_review()
                         throw new EAScomplianceBreakException();
 					}
@@ -4489,7 +4497,8 @@ function eascompliance_order_createpostsaleorder($order)
         $tax_rate_id0 = eascompliance_tax_rate_id();
 
         foreach ($order->get_items() as $k => &$order_item) {
-            $sku = wc_get_product($order_item['product_id'])->get_sku();
+            $product_id = $order_item['variation_id'] ?: $cart_item['product_id'];
+            $sku = wc_get_product($product_id)->get_sku();
             $payload_item_found = false;
             foreach ($payload_items as $payload_item) {
                 if ((string)$payload_item['item_id'] === (string)$k) {

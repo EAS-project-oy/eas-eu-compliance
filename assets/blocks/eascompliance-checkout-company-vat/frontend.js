@@ -7,7 +7,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 		"version": "1.0.0",
 		"title": "EAS Company VAT",
 		"category": "woocommerce",
-		"parent": [ "woocommerce/checkout-shipping-address-block", "woocommerce/checkout-billing-address-block" ],
+		"parent": [ "woocommerce/checkout-shipping-address-block"],
 		"attributes": {
 			"lock": {
 				"type": "object",
@@ -27,7 +27,8 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const { ValidatedTextInput } = wc.blocksCheckout
 		const { Button } = wc.blocksCheckout
 
-		const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
+		const { plugin_dictionary, plugin_ajax_object } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
+
 		const { setExtensionData } = props.checkoutExtensionData
 
 		const [ loading, loadingSet ] = useState(false)
@@ -39,21 +40,32 @@ wc.blocksCheckout.registerCheckoutBlock({
 
 		// show VAT validate component if Edit button was clicked or when the address card is editing
 		useEffect(() => {
-			// TODO what is 'react' way to access CustomerAddress->editing state?
+			const supported_countries = plugin_ajax_object.supported_countries
 
-			$('.wc-block-components-address-address-wrapper').one('click', (event) => {
-				isVisibleSet(true)
+			$('#shipping-fields .wc-block-components-address-address-wrapper').on('click', (event) => {
+				if (supported_countries.includes(props.cart.shippingAddress.country)) {
+					isVisibleSet(true)
+				}
+				else {
+					isVisibleSet(false)
+				}
 			})
 
-			if ($('.wc-block-components-address-address-wrapper.is-editing').length) {
-				isVisibleSet(true)
+			if ($('#shipping-fields .wc-block-components-address-address-wrapper.is-editing').length) {
+				if (supported_countries.includes(props.cart.shippingAddress.country)) {
+					isVisibleSet(true)
+				}
+				else {
+					isVisibleSet(false)
+				}
 			}
-		}, [])
+		}, [props.cart.shippingAddress.country], ['shipping_country'])
 
 
 		const onInputChange = ( value ) => {
 			companyVatSet( value )
 			setExtensionData( 'eascompliance', 'company_vat', value )
+			messageSet('')
 		}
 
 		const onCompanyValidateClick = async () => {
@@ -67,6 +79,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 
 			try {
 				loadingSet(true)
+				messageSet(plugin_dictionary.vat_validating)
 
 				let j = await $.post({
 					url: plugin_ajax_object.ajax_url,
@@ -83,7 +96,9 @@ wc.blocksCheckout.registerCheckoutBlock({
 					messageSet(plugin_dictionary.vat_validation_successful)
 				}
 				else {
-					messageSet(plugin_dictionary.vat_validation_failed)
+					messageSet(plugin_dictionary.vat_validation_failed
+						.replace(/\$vat/g, companyVat.replace(/[^0-9A-Z]/i, ''))
+						.replace(/\$country/g,props.cart.shippingAddress.country))
 				}
 
 			} catch (err) {
@@ -108,7 +123,6 @@ wc.blocksCheckout.registerCheckoutBlock({
 			E( Button, {
 					'id': "company_vat_validate",
 					'onClick': onCompanyValidateClick,
-					'showSpinner': loading,
 				},
 				plugin_dictionary.company_vat_validate
 			),

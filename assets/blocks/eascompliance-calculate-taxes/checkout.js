@@ -23,12 +23,12 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const $ = window.jQuery
 
 		const E = wp.element.createElement
-		const { plugin_dictionary } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
+		const { plugin_dictionary, plugin_ajax_object } = wc.wcSettings.getSetting('eascompliance-checkout-integration_data')
 		const { useEffect, useState, useCallback } = wp.element
 		const { useEffectDebugger } = window.eascompliance
 
 		const eascompliance_status = window.wcSettings.checkoutData.extensions.eascompliance.status
-		const supported_countries = window.wcSettings.checkoutData.extensions.eascompliance.supported_countries
+		const supported_countries = plugin_ajax_object.supported_countries
 		const [ loading, setLoading ] = useState(true)
 		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(
 			// standard mode or calculation already present
@@ -68,6 +68,11 @@ wc.blocksCheckout.registerCheckoutBlock({
 			return apm
 		})
 
+		const message2 = useSelect((select) => {
+			// message with empty initial status text
+			return message === plugin_dictionary.calculate_status_initial ? '' : message
+		})
+
 		// empty payment methods notices and display custom message in payment section before tax calculation happened
 		useEffect(()=> {
 			(async () => {
@@ -78,12 +83,17 @@ wc.blocksCheckout.registerCheckoutBlock({
 				}
 
 				if (placeOrderVisible) {
+					// restore saved payment methods and checkout step container
 					await payment_actions.__internalSetAvailablePaymentMethods(saved_available_payment_methods)
 					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
 				} else {
 					// copy styles from place order button
 					window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
+					if ($('.wc-block-components-checkout-place-order-button:not(.button_calc)').hasClass('wc-block-components-checkout-place-order-button--full-width')) {
+						$('.button_calc').css('width', '100%')
+					}
 
+					// empty available payment methods, change no payment methods message and hide checkout step container
 					$('.wc-block-checkout__no-payment-methods-notice, .wc-block-checkout__only-express-payments-notice')
 						.removeClass('is-error').text(message)
 					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container')
@@ -333,7 +343,7 @@ wc.blocksCheckout.registerCheckoutBlock({
 			),
 			E('div', {
 				'style': {'display': placeOrderVisible ? 'none' : 'block'}
-			}, message),
+			}, message2),
 		)
 
 	}
