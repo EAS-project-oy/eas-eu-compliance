@@ -100,12 +100,22 @@ function EAS_MATCH($pattern, $string, $group=0)
 }
 
 /**
- * return first non-empty list value or value for which predicate is true
+ * return first value for which predicate is true
  */
 function eascompliance_coalesce($array, $predicate=null) {
-    // current: If the internal pointer points beyond the end of the elements list or the array is empty, current() returns false
-    // array_filter: If no predicate is supplied, all empty() entries of array will be removed.
-    return current(array_filter($array, $predicate));
+
+    // default predicate returns true for non-empty value
+    if (is_null($predicate)) {
+        $predicate = function($v) { return !empty($v); };
+    }
+
+    foreach ($array as $v) {
+        if ($predicate($v)) {
+            return $v;
+        }
+    }
+
+    return null;
 }
 
 /**
