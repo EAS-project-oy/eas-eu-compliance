@@ -30,12 +30,9 @@ wc.blocksCheckout.registerCheckoutBlock({
 		const eascompliance_status = window.wcSettings.checkoutData.extensions.eascompliance.status
 		const supported_countries = plugin_ajax_object.supported_countries
 		const [ loading, setLoading ] = useState(true)
-		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(
-			// standard mode or calculation already present
-			['standard_mode', 'present'].includes(eascompliance_status)
-			// shipping country not supported
-			|| !supported_countries.includes(props.cart.shippingAddress.country)
-		)
+
+		const [ placeOrderVisible, setPlaceOrderVisible ] = useState(false)
+
 		const { setExtensionData } = props.checkoutExtensionData
 		const { useSelect, useDispatch, subscribe } = wp.data
 		const { CART_STORE_KEY, CHECKOUT_STORE_KEY, PAYMENT_STORE_KEY } = wc.wcBlocksData
@@ -73,6 +70,19 @@ wc.blocksCheckout.registerCheckoutBlock({
 			return message === plugin_dictionary.calculate_status_initial ? '' : message
 		})
 
+		// set PlaceOrder visibility
+		useEffect(() => {
+				setPlaceOrderVisible(
+					// standard mode or calculation already present
+					['standard_mode', 'present'].includes(eascompliance_status)
+					// shipping country not supported
+					|| !supported_countries.includes(props.cart.shippingAddress.country)
+				)
+			},
+			[props.cart.shippingAddress.country, window.wcSettings.checkoutData.extensions.eascompliance.status],
+			['shipping_country', 'eascompliance_status']
+		)
+
 		// empty payment methods notices and display custom message in payment section before tax calculation happened
 		useEffect(()=> {
 			(async () => {
@@ -94,13 +104,13 @@ wc.blocksCheckout.registerCheckoutBlock({
 					}
 
 					// empty available payment methods, change no payment methods message and hide checkout step container
+					await payment_actions.__internalSetAvailablePaymentMethods([])
 					$('.wc-block-checkout__no-payment-methods-notice, .wc-block-checkout__only-express-payments-notice')
 						.removeClass('is-error').text(message)
 					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container')
 						.parent().append($('<div class="eascompliance-message">').text(message))
 					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container')
 						.hide()
-					await payment_actions.__internalSetAvailablePaymentMethods([])
 				}
 			})()
 		}, [available_payment_methods, placeOrderVisible])

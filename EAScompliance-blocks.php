@@ -482,8 +482,8 @@ function eascompliance_blocks_woocommerce_cart_tax_totals($tax_totals, $cart) {
 }
 
 
-add_filter('woocommerce_cart_contents_changed', 'eascompliance_woocommerce_cart_contents_changed', 10, 1);
-function eascompliance_woocommerce_cart_contents_changed($cart_contents)
+add_filter('woocommerce_cart_contents_changed', 'eascompliance_blocks_woocommerce_cart_contents_changed', 10, 1);
+function eascompliance_blocks_woocommerce_cart_contents_changed($cart_contents)
 {
     eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
 

@@ -351,7 +351,7 @@ function eascompliance_woocommerce_init()
         if (eascompliance_is_active() && get_option('easproj_standard_mode') !== 'yes') {
             add_filter('woocommerce_available_payment_gateways', 'eascompliance_woocommerce_available_payment_gateways', 10, 1);
             add_filter('woocommerce_cart_tax_totals', 'eascompliance_woocommerce_cart_tax_totals', 10, 2);
-            add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_woocommerce_after_cart_item_quantity_update', 10, 0);
+            add_action('woocommerce_after_cart_item_quantity_update', 'eascompliance_woocommerce_after_cart_item_quantity_update', 10, 4);
             add_filter('woocommerce_cart_get_cart_contents_taxes', 'eascompliance_woocommerce_cart_get_cart_contents_taxes', 10, 1);
             add_filter('woocommerce_cart_item_subtotal', 'eascompliance_woocommerce_cart_item_subtotal', 999, 3);
             add_action('woocommerce_checkout_before_order_review', 'eascompliance_wcml_update_coupon_percent_discount');
@@ -360,6 +360,8 @@ function eascompliance_woocommerce_init()
             add_filter('woocommerce_cart_subtotal', 'eascompliance_woocommerce_cart_subtotal', 10, 3);
             add_filter('woocommerce_cart_totals_order_total_html', 'eascompliance_woocommerce_cart_totals_order_total_html2', 10, 1);
             add_filter('woocommerce_cart_totals_get_item_tax_rates', 'eascompliance_woocommerce_cart_totals_get_item_tax_rates', 10, 3);
+            add_filter('woocommerce_add_to_cart_quantity', 'eascompliance_woocommerce_add_to_cart_quantity', 10, 2);
+            add_action('woocommerce_cart_item_removed', 'eascompliance_woocommerce_cart_item_removed', 10, 2);
 
         }
 
@@ -2152,35 +2154,6 @@ function eascompliance_get_oauth_token()
         restore_error_handler();
     }
 }
-
-add_action('woocommerce_before_calculate_totals', 'eascompliance_woocommerce_before_calculate_totals', 10);
-function eascompliance_woocommerce_before_calculate_totals()
-{
-    eascompliance_log('calculate', 'discounts before calculate $d'
-            , ['d'=>WC()->cart->get_coupon_discount_totals()
-            ]);
-}
-
-add_action('woocommerce_after_calculate_totals', 'eascompliance_woocommerce_after_calculate_totals', 10);
-function eascompliance_woocommerce_after_calculate_totals()
-{
-    eascompliance_log('calculate', 'discounts after calculate $d'
-            , ['d'=>WC()->cart->get_coupon_discount_totals()
-            ]);
-}
-
-add_filter('woocommerce_coupon_custom_discounts_array', 'eascompliance_woocommerce_coupon_custom_discounts_array', 10, 2);
-function eascompliance_woocommerce_coupon_custom_discounts_array($discount, $coupon){
-    eascompliance_log('calculate', 'discount is $d coupon code is $c', ['d'=>$discount, 'c'=>$coupon->get_code()]);
-    return $discount;
-}
-
-add_filter('woocommerce_coupon_get_discount_amount', 'eascompliance_woocommerce_coupon_get_discount_amount', 10, 5);
-function eascompliance_woocommerce_coupon_get_discount_amount($amount, $discounting_amount, $cart_item, $single, $coupon){
-    eascompliance_log('calculate', 'amount is $a discounting amount is $da coupon code is $c type is $t cart qnty $q cart_item_price $p', ['a'=>$amount, 'da'=>$discounting_amount, 'c'=>$coupon->get_code(), 't'=>$coupon->get_discount_type(), 'q'=>$cart_item['quantity'], 'p'=>wc_get_price_excluding_tax( $cart_item['data'] ) ], true);
-    return $amount;
-}
-
 
 
 /**
@@ -4085,26 +4058,28 @@ function eascompliance_unset($reason)
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     try {
-        if (eascompliance_is_set()) {
-
-            $cart_item0 = &eascompliance_cart_item0();
-
-            // unset EAScompliance keys of cart first item
-            foreach($cart_item0 as $k=>$v) {
-                if (preg_match('/^EAScompliance .*/', $k)) {
-                    unset($cart_item0[$k]);
-                }
-            }
-
-			eascompliance_session_set('EAS CART DISCOUNT', null);
-			eascompliance_session_set('company_vat', null);
-			eascompliance_session_set('company_vat_validated', null);
-			eascompliance_session_set('company_vat_check_attempt', null);
-            WC()->cart->set_session();
-            eascompliance_log('calculate', 'calculation unset due to $r', ['r'=>$reason]);
-
-            do_action('eascompliance_is_unset', $reason);
+        if (!eascompliance_is_set()) {
+            return;
         }
+
+        $cart_item0 = &eascompliance_cart_item0();
+
+        // unset EAScompliance keys of cart first item
+        foreach($cart_item0 as $k=>$v) {
+            if (preg_match('/^EAScompliance .*/', $k)) {
+                unset($cart_item0[$k]);
+            }
+        }
+
+        eascompliance_session_set('EAS CART DISCOUNT', null);
+        eascompliance_session_set('company_vat', null);
+        eascompliance_session_set('company_vat_validated', null);
+        eascompliance_session_set('company_vat_check_attempt', null);
+        WC()->cart->set_session();
+        eascompliance_log('calculate', 'calculation unset due to $r', ['r'=>$reason]);
+
+        do_action('eascompliance_is_unset', $reason);
+
     } catch (Exception $ex) {
         eascompliance_log('error', $ex);
         throw $ex;
@@ -5557,10 +5532,25 @@ function eascompliance_cart_tax_caption_html() {
 	return  $tax_name . $customs_duties;
 }
 
-function eascompliance_woocommerce_after_cart_item_quantity_update() {
+function eascompliance_woocommerce_after_cart_item_quantity_update($cart_item_key, $quantity, $old_quantity, $cart) {
     eascompliance_log('entry', 'action ' . __FUNCTION__ . '()');
 
     eascompliance_unset('quantity update');
+}
+
+function eascompliance_woocommerce_add_to_cart_quantity($quantity, $product_id) {
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    eascompliance_unset('cart added quantity');
+
+    return $quantity;
+}
+
+
+function eascompliance_woocommerce_cart_item_removed($cart_item_key, $cart) {
+    eascompliance_log('entry', 'action ' . __FUNCTION__ . '()', [], true);
+
+    eascompliance_unset('cart item removed');
 }
 
 /**
