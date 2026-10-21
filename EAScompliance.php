@@ -430,6 +430,7 @@ function eascompliance_woocommerce_init()
             add_action( 'add_meta_boxes', 'eascompliance_woocommerce_add_order_meta_boxes', 10, 2);
             add_action('woocommerce_before_checkout_form', 'eascompliance_woocommerce_before_checkout_form');
             add_filter('gettext_woocommerce', 'eascompliance_gettext_woocommerce', 10, 3);
+            add_action('woocommerce_admin_order_data_after_shipping_address', 'eascompliance_woocommerce_admin_order_data_after_shipping_address');
 		}
 
         if ( empty(get_option('easproj_limit_ioss_sales_message')) ) {
@@ -1593,6 +1594,7 @@ function eascompliance_settings_scripts()
             'ajax_url' => admin_url('admin-ajax.php'),
             'easproj_standard_mode' => eascompliance_woocommerce_settings_get_option_sql('easproj_standard_mode'),
             'easproj_active' => eascompliance_woocommerce_settings_get_option_sql('easproj_active'),
+            'supported_countries' =>  eascompliance_supported_countries(),
             'EASCOMPLIANCE_PRODUCT_ATTRIBUTES' => $attributes,
 		    'prevent_attributes_delete_message' => EAS_TR('This attribute is required for EAScompliance plugin. Please don\'t delete'),
         ));
@@ -4009,6 +4011,16 @@ function eascompliance_gettext_woocommerce($translation, $text, $domain)
 {
     // eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()'); // performance
     return ($text === 'Fees:' && $domain === 'woocommerce') ? 'Customs Duties:' : $translation;
+}
+
+/**
+ * Admin Order page: output order shipping country code
+ */
+function eascompliance_woocommerce_admin_order_data_after_shipping_address($order)
+{
+    ?>
+    <input id="eascompliance_shipping_country" type="hidden" value="<?php echo esc_attr( $order->get_shipping_country() ); ?>" />
+    <?php
 }
 
 /**

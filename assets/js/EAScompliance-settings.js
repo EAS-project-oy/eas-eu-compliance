@@ -241,8 +241,10 @@ jQuery(document).ready(function($) {
         }
     })
 
-    // disable 'add fee' and 'add tax' in product items when plugin is active and not in standard mode
-    if (plugin_ajax_object.easproj_active === 'yes' && plugin_ajax_object.easproj_standard_mode === 'no') {
+    // disable 'add fee' and 'add tax' in product items when plugin is active and not in standard mode and order shipping country is supported
+    if (plugin_ajax_object.easproj_active === 'yes'
+        && plugin_ajax_object.easproj_standard_mode === 'no'
+        && plugin_ajax_object.supported_countries.includes($('#eascompliance_shipping_country').val())) {
         $('#tiptip_content').css('max-width', '200px')
 
         $el = $('.button.add-order-fee,.button.add-order-tax')
