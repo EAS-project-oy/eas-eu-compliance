@@ -399,6 +399,7 @@ function eascompliance_woocommerce_init()
 			add_action('wp_ajax_eascompliance_reexport_order', 'eascompliance_reexport_order');
 			add_action('wp_ajax_eascompliance_logorderdata_ajax', 'eascompliance_logorderdata_ajax');
 			add_action('woocommerce_checkout_create_order_line_item', 'eascompliance_woocommerce_checkout_create_order_line_item', 10, 4);
+            add_action('ppcp_create_order_request_body_data', 'eascompliance_ppcp_create_order_request_body_data', 10, 3);
 			add_filter('option_woocommerce_klarna_payments_settings', 'eascompliance_klarna_settings_fix');
 			add_filter('kp_wc_api_order_lines', 'eascompliance_kp_wc_api_order_lines', 10, 3);
 			add_filter('woocommerce_order_item_after_calculate_taxes', 'eascompliance_woocommerce_order_item_after_calculate_taxes', 10, 2);
@@ -2343,7 +2344,7 @@ function eascompliance_make_eas_api_request_json()
     $calc_jreq['delivery_address_line_1'] = $checkout['shipping_address_1'] ?? '';
     $calc_jreq['delivery_address_line_2'] =  eascompliance_array_get($checkout, 'billing_address_2', '') ?? '';//$checkout['shipping_address_2'];
     if (eascompliance_is_blocks_checkout()) {
-        $calc_jreq['recipient_company_vat'] = $checkout['shipping_address_2'] ?? '';
+        $calc_jreq['recipient_company_vat'] = $checkout['shipping_company_vat'] ?? '';
         $calc_jreq['delivery_address_line_2'] = $checkout['shipping_address_2'] ?? '';
     }
 
@@ -5734,7 +5735,91 @@ function eascompliance_woocommerce_checkout_create_order_line_item($order_item_p
     }
 }
 
-;
+/**
+ *  WooCommerce PayPal Payments plugin fix: send correct totals when eascompliance is set
+ */
+function eascompliance_ppcp_create_order_request_body_data($data, $payment_method, $request_data)
+{
+    eascompliance_log('entry', 'filter ' . __FUNCTION__ . '()');
+
+    try {
+        set_error_handler('eascompliance_error_handler');
+
+        if (eascompliance_is_set()) {
+
+            // in blocks checkout paypal does array_merge($items, $fees), undo this by truncating items array to length of cart_contents
+            if (eascompliance_is_blocks_checkout()) {
+                $data['purchase_units'][0]['items'] = array_slice($data['purchase_units'][0]['items'], 0, count(WC()->cart->cart_contents));
+            }
+
+            $cart_total = eascompliance_cart_total();
+            $cart_tax = 0;
+            $first = true;
+            $item_total = 0;
+            $shipping_total = 0;
+            $tax_total = 0;
+            $ix = -1;
+            // set purchase item tax and calculate item_total, shipping_total, tax_total
+            foreach (WC()->cart->cart_contents as $cart_item_key => $cart_item) {
+                $ix++;
+
+                if ($first) {
+                    $shipping_total = $cart_item['EAScompliance DELIVERY CHARGE'] + $cart_item['EAScompliance DELIVERY CHARGE VAT'];
+                    $first = false;
+                }
+
+                $pix = -1;
+                foreach ($data['purchase_units'][0]['items'] as &$purchase_item) {
+                    $pix++;
+
+
+                    // in blocks checkout there is no cart_item_key, compare indexes instead
+                    if ($purchase_item['cart_item_key'] === $cart_item_key || (eascompliance_is_blocks_checkout() && $ix === $pix)) {
+                        $qnty = (int)$purchase_item['quantity'];
+
+                        $cart_item_tax = round($cart_item['EAScompliance item tax'] / $qnty, 2);
+                        $tax_total += $cart_item_tax * $qnty;
+
+                        $purchase_item['tax'] = array(
+                                'currency_code' => $purchase_item['unit_amount']['currency_code'],
+                                'value' => number_format($cart_item_tax, 2, '.', '')
+                        );
+
+                        $item_total +=  round((float)$purchase_item['unit_amount']['value'] * $qnty, 2);
+                        continue;
+                    }
+                }
+
+            }
+
+            // cart total must match $cart_total_actual or we get these errors:
+            // TAX_TOTAL_MISMATCH Should equal sum of (tax * quantity) across all items for a given purchase_unit
+            // AMOUNT_MISMATCH Should equal item_total + tax_total + shipping + handling + insurance + gratuity + additional_charges - shipping_discount - discount.
+            $cart_total_actual =  $item_total + $tax_total + $shipping_total;
+            if ($cart_total != $cart_total_actual) {
+                $diff = round($cart_total_actual - $cart_total, 2);
+                eascompliance_log('place_order', 'paypal cart_total must be $ca but it is $ct, adjusting difference $d', ['ca'=>$cart_total_actual, 'ct'=>$cart_total, 'd'=> $diff]);
+
+                $cart_total = $cart_total_actual;
+            }
+
+            $data['purchase_units'][0]['amount']['value'] = number_format($cart_total, 2, '.', '');
+            $data['purchase_units'][0]['amount']['breakdown']['item_total']['value'] = number_format($item_total, 2, '.', '');
+            $data['purchase_units'][0]['amount']['breakdown']['shipping']['value'] = number_format($shipping_total, 2, '.', '');
+            $data['purchase_units'][0]['amount']['breakdown']['tax_total']['value'] = number_format($tax_total, 2, '.', '');
+            eascompliance_log('place_order', 'paypal data is $d', ['d'=>$data], true);
+        }
+
+        return $data;
+
+    } catch (Exception $ex) {
+        eascompliance_log('error', $ex);
+        throw $ex;
+    } finally {
+        restore_error_handler();
+    }
+}
+
 
 
 /**
