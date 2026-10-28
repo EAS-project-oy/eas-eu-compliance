@@ -4036,7 +4036,10 @@ function eascompliance_is_blocks_checkout()
     }
 
     // best option for knowing that request are related to blocks is from saved value in session
-    $cart_in_blocks = eascompliance_session_get('EAS blocks checkout') === true;
+    $cart_in_blocks = false;
+    if (!is_null(WC()->session)) {
+        $cart_in_blocks = eascompliance_session_get('EAS blocks checkout') === true;
+    }
 
     $res = $cart_in_blocks;
 
@@ -4496,7 +4499,11 @@ function eascompliance_order_createpostsaleorder($order)
 
         foreach ($order->get_items() as $k => &$order_item) {
             $product_id = $order_item['variation_id'] ?: $cart_item['product_id'];
-            $sku = wc_get_product($product_id)->get_sku();
+            $product = wc_get_product($product_id);
+            if ($product === false) {
+               continue;
+            }
+            $sku = $product->get_sku();
             $payload_item_found = false;
             foreach ($payload_items as $payload_item) {
                 if ((string)$payload_item['item_id'] === (string)$k) {
@@ -5807,7 +5814,7 @@ function eascompliance_ppcp_create_order_request_body_data($data, $payment_metho
             $data['purchase_units'][0]['amount']['breakdown']['item_total']['value'] = number_format($item_total, 2, '.', '');
             $data['purchase_units'][0]['amount']['breakdown']['shipping']['value'] = number_format($shipping_total, 2, '.', '');
             $data['purchase_units'][0]['amount']['breakdown']['tax_total']['value'] = number_format($tax_total, 2, '.', '');
-            eascompliance_log('place_order', 'paypal data is $d', ['d'=>$data], true);
+            eascompliance_log('place_order', 'paypal data is $d blocks checkout is $b', ['d'=>$data, 'b'=>eascompliance_is_blocks_checkout()?'Y':'N']);
         }
 
         return $data;
