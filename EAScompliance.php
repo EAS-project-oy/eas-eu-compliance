@@ -5240,7 +5240,7 @@ function eascompliance_is_standard_mode_above_ioss_threshold($cart_contents_cost
 
         // convert tax threshold to payload currency
         if ($currency !== 'EUR') {
-            $exchange_rate = eascompliance_eucb_exchange_rate($currency);
+            $exchange_rate = eascompliance_exchange_rate($currency);
 
             if (is_null($exchange_rate)) {
                 eascompliance_log('error', 'Currency not found in exchange rates: $c. Should IOSS threshold setting be disabled?', ['c' => $currency]);
@@ -5334,59 +5334,56 @@ function eascompliance_woocommerce_cart_get_taxes($total_taxes, $cart)
 }
 
 /**
- * Get currency exchange rate to EUR from EU CB
+ * Get currency exchange rate
  *
  * @returns float exchange rate
  * @throws Exception May throw exception.
  */
-function eascompliance_eucb_exchange_rate($currency) {
+function eascompliance_exchange_rate($currency) {
 
-    // first working day of October last year
-    $start = date_create_immutable('first day of October last year');
-    $weekday = (int)$start->format('N');
-    if ($weekday > 5) {
-        $start = $start->modify(eascompliance_format('+$n days', ['n' => 8 - $weekday]));
-    }
+    // Exchange rates are valid for one month
+    $start = date_create_immutable('first day of this month');
 
     $data = null;
     if ( get_option('easproj_standard_mode_ioss_threshold_exchange_rates_date') === $start->format('Y-m-d') ) {
         $data = json_decode(get_option('easproj_standard_mode_ioss_threshold_exchange_rates'), true);
     }
     else {
-        // documentation: https://data.ecb.europa.eu/help/api/data
-        // sample url: https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=jsondata&startPeriod=2023-01-01&endPeriod=2023-01-02
-        $url = eascompliance_format('https://data-api.ecb.europa.eu/service/data/EXR/D.$cur.EUR.SP00.A?format=jsondata&startPeriod=$start&endPeriod=$end',
-            ['cur' => '', 'start' => $start->format('Y-m-d'), 'end' => $start->modify('+1 day')->format('Y-m-d')]);
+        $auth_token = eascompliance_get_oauth_token();
+
+        $url = eascompliance_api_url() . eascompliance_format('/v2/ioss_exchange_rates/$year',
+            ['year' => $start->format('Y')]);
 
         $options = array(
-            'method' => 'GET',
-            'timeout' => 5,
+                'method' => 'GET',
+                'headers' => array(
+                        'Authorization' => 'Bearer ' . $auth_token,
+                ),
+                'sslverify' => true,
         );
-        $res = (new WP_Http)->request($url, $options);
-        if (is_wp_error($res)) {
-            throw new Exception($res->get_error_message());
+
+        $req = (new WP_Http)->request($url, $options);
+        if (is_wp_error($req)) {
+            throw new Exception($req->get_error_message());
         }
 
-        $response_status = (string)$res['response']['code'];
+        $response_status = (string)$req['response']['code'];
         if ('200' !== $response_status) {
-            throw new Exception($response_status . ' ' . $res['response']['message']);
+            eascompliance_log('error', 'Exchange rate failed with status $s request $r', array('r'=>$req, 's'=>$response_status));
+            throw new Exception($response_status . ' ' . $req['response']['message']);
         }
-        $data = json_decode($res['body'], true);
-        update_option('easproj_standard_mode_ioss_threshold_exchange_rates', $res['body']);
+        $data = json_decode($req['body'], true);
+        update_option('easproj_standard_mode_ioss_threshold_exchange_rates', $req['body']);
         update_option('easproj_standard_mode_ioss_threshold_exchange_rates_date', $start->format('Y-m-d'));
     }
 
-    $currency_ix = -1;
-    foreach($data['structure']['dimensions']['series'][1]['values'] as $ix=>$v) {
-        if ($v['id'] === $currency) {
-            $currency_ix = $ix;
+    $exchange_rate = null;
+    foreach ($data as $r) {
+        if ($r['fromCurrency'] === $currency) {
+            $exchange_rate = (float)$r['annualRate'];
+            break;
         }
     }
-    if ($currency_ix === -1) {
-        return null;
-    }
-
-    $exchange_rate = (float)$data['dataSets'][0]['series'][eascompliance_format('0:$ix:0:0:0', ['ix'=>$currency_ix])]['observations'][0][0];
 
     return $exchange_rate;
 }
@@ -9474,7 +9471,7 @@ function eascompliance_woocommerce_sections_settings_tab_compliance() {
         if ('yes' === get_option('easproj_standard_mode') && 'yes' === get_option('easproj_standard_mode_ioss_threshold')) {
             $currency = get_woocommerce_currency();
             if ($currency !== 'EUR') {
-                $exchange_rate = eascompliance_eucb_exchange_rate($currency);
+                $exchange_rate = eascompliance_exchange_rate($currency);
 
                 if (is_null($exchange_rate)) {
                     update_option('easproj_standard_mode_ioss_threshold', 'no');
