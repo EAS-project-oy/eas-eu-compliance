@@ -479,7 +479,15 @@ jQuery(document).ready(function ($) {
     })
 
     //for most of themes styles 'submit' buttons we copy some styles from #place_order
-    button_copy_style('#place_order', '.button_calc')
+    let from = '#place_order'
+    let to = '.button_calc'
+    button_copy_style(from, to)
+
+    // copy display style when it is not 'none'
+    if ( $(from).css('display') !== 'none') {
+        $(to).css('display', $(from).css('display'))
+    }
+
 
     let div_styles = 'display flex-direction background background-color font-family position display vertical-align outline line-height float letter-spacing font-weight box-sizing transition padding font-size color border cursor z-index text-transform'.split(' ')
     for (let i = 0; i < div_styles.length; i++) {

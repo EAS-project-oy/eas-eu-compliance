@@ -98,9 +98,17 @@ wc.blocksCheckout.registerCheckoutBlock({
 					$('.wc-block-checkout__payment-method .wc-block-components-checkout-step__container').show()
 				} else {
 					// copy styles from place order button
-					window.eascompliance?.button_copy_style?.('.wc-block-components-checkout-place-order-button:not(.button_calc)', '.button_calc')
-					if ($('.wc-block-components-checkout-place-order-button:not(.button_calc)').hasClass('wc-block-components-checkout-place-order-button--full-width')) {
-						$('.button_calc').css('width', '100%')
+					let from = '.wc-block-components-checkout-place-order-button:not(.button_calc)'
+					let to = '.button_calc'
+
+					// copy display style when it is not 'none'
+					if ($(from).css('display') !== 'none') {
+						$(to).css('display', $(from).css('display'))
+					}
+
+					window.eascompliance?.button_copy_style?.(from, to)
+					if ($(from).hasClass('wc-block-components-checkout-place-order-button--full-width')) {
+						$(to).css('width', '100%')
 					}
 
 					// empty available payment methods, change no payment methods message and hide checkout step container
@@ -347,12 +355,12 @@ wc.blocksCheckout.registerCheckoutBlock({
 					'id': "eascompliance_button_calculate_taxes",
 					'className': 'wc-block-components-checkout-place-order-button button_calc',
 					'onClick': onCalculateClick,
-					'style': {'display': placeOrderVisible ? 'none' : 'block'}
+					'style': {'display': placeOrderVisible ? 'none' : ''}
 				},
 				buttonText
 			),
 			E('div', {
-				'style': {'display': placeOrderVisible ? 'none' : 'block'}
+				'style': {'display': placeOrderVisible ? 'none' : ''}
 			}, message2),
 		)
 
