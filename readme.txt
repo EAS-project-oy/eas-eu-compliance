@@ -6,7 +6,7 @@ Requires at least: 4.8.0
 Requires PHP: 7.4
 WC tested up to: 11.0.1
 Tested up to: 7.0
-Stable Tag: 1.8.16
+Stable Tag: 1.8.20
 Last updated time: 17.08.2026
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,15 @@ EAS project providing service for assistance installation.
 3. No worries about OSS or IOSS reporting to authorities, everything is done by us. 
 
 == Changelog ==
+= 1.8.20 =
+* Added Direct EAS API Integration: Integrated direct currency exchange rate syncing via the EAS API.
+* Expanded Order Metadata: Included product SKU and manufacturer code within the order breakdown payload.
+* Improved Checkout Blocks Tax Recalculation: Smoother tax calculation reset when updating item quantities in the cart.
+* Improved Admin Order Controls: Refined "Add fee" and "Add tax" button states on the Admin Order page to only disable when the delivery country is supported.
+* Improved Button Styling: Updated visual styling for the checkout "Calculate" button across classic and block checkouts.
+* Fixed WooCommerce PayPal Payments: Resolved order total calculation mismatches during checkout with PayPal Payments.
+* Fixed Checkout Block Validation: Fixed display issues with the "Calculate" button and validation messages for company VAT numbers.
+
 = 1.8.16 =
 * Fixed issue with sending HS code for landed cost calculation.
 
