@@ -5032,8 +5032,8 @@ function eascompliance_cart_total($current_total = null)
                 $cart_total_log .= 'allow for classic checkout request; ';
 
                 $cart_total_tax = array_sum($cart->get_taxes());
-                $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart_total_tax;
-                $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax;', ['t'=> $cart_total, 'tax'=>$cart_total_tax]);
+                $cart_total = $cart->get_cart_contents_total() + $cart->get_shipping_total() + $cart->get_fee_total() + $cart_total_tax;
+                $cart_total_log .= eascompliance_format('set to $t for standard_mode with ioss_threshold tax $tax fee $fee;', ['t'=> $cart_total, 'tax'=>$cart_total_tax, 'fee'=>$cart->get_fee_total()]);
             }
 
             return $cart_total;
