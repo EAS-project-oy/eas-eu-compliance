@@ -2510,6 +2510,11 @@ function eascompliance_company_vat_check($company_vat, $country)
         //remove non alpha-numerics
         $vat = preg_replace('/[^0-9A-Z]/i', '', $company_vat);
 
+        // for Greece, first two letters of VAT are EL
+        if ($country === 'GR') {
+            $country = 'EL';
+        }
+
         //remove first two letters of country code
         $vat = preg_replace("/^{$country}(.*)$/i", '${1}', $vat);
 
@@ -2585,17 +2590,18 @@ function eascompliance_company_vat_check($company_vat, $country)
         throw new EAScomplianceBreakException();
 
 	}
-    catch (EAScomplianceBreakException $ex) {
-        eascompliance_log('calculate', 'vat validation of $v in $c returns code $r', ['r'=>$res, 'v'=>$vat, 'c'=>$country]);
-        return $res;
-    }
+    catch (EAScomplianceBreakException $ex) {}
     catch (Exception $ex) {
 		eascompliance_log('error', $ex);
-		$res = -6;
+        $res = -7;
 	}
     finally {
 		restore_error_handler();
 	}
+
+    eascompliance_log('calculate', 'vat validation of $v in $c returns code $r', ['r'=>$res, 'v'=>$vat, 'c'=>$country]);
+    return $res;
+
 }
 
 

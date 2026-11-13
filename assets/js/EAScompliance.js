@@ -454,12 +454,15 @@ jQuery(document).ready(function ($) {
 
                 $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
 
+                let company_vat = $company_vat.val()
+                let shipping_country = $('#'+shipping+'_country').val()
+
                 let j = await $.post({
                     url: plugin_ajax_object.ajax_url,
                     data: {
                         'action': 'eascompliance_company_vat_validate_ajax',
-                        'shipping_company_vat':  $company_vat.val(),
-                        'shipping_country': $('#'+shipping+'_country').val()
+                        'shipping_company_vat': company_vat,
+                        'shipping_country': shipping_country
                     },
                     dataType: 'json'
                 })
@@ -469,7 +472,7 @@ jQuery(document).ready(function ($) {
                     $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
                     $company_vat_validate.fadeOut().after($ok)
                 } else {
-                    let $err = $('<div>', {"text": plugin_dictionary.vat_validation_failed, "class": "eascompliance_vat_message eascompliance_company_vat_message_fail"})
+                    let $err = $('<div>', {"text": plugin_dictionary.vat_validation_failed.replace('$vat', company_vat).replace('$country', shipping_country), "class": "eascompliance_vat_message eascompliance_company_vat_message_fail"})
                     $company_vat_validate.parent().find('.eascompliance_vat_message').remove()
                     $company_vat_validate.after($err)
                 }
